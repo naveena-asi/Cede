@@ -49,9 +49,11 @@ window.alert = function(msg) { window.showAlert(msg); };
 
 function setState(patch) {
   Object.assign(state, patch);
+  window.state = state;
   render();
 }
 window.setState = setState;
+window.state = state;
 
 // ─── Router ───
 function render() {
@@ -285,6 +287,8 @@ function bindCustomer() {
   if (logout) logout.addEventListener('click', () => setState({ portal: null, screen: 'dashboard' }));
   const endorse = $('#btn-endorsement');
   if (endorse) endorse.addEventListener('click', () => setState({ screen: 'endorsement' }));
+  const newReq = $('#btn-new-request');
+  if (newReq) newReq.addEventListener('click', () => setState({ screen: 'endorsement' }));
   const back = $('#btn-back-dash');
   if (back) back.addEventListener('click', () => setState({ screen: 'dashboard' }));
   const back2 = $('#btn-back-dash2');
@@ -305,6 +309,7 @@ function brokerNav() {
   const items = [
     { icon: '📊', label: 'Dashboard', screen: 'dashboard' },
     { icon: '👥', label: 'Clients', screen: 'clients' },
+    { icon: '🌱', label: 'Prospects', screen: 'prospects' },
     { icon: '🚀', label: 'Onboarding', screen: 'onboarding' },
     { icon: '📁', label: 'Submissions', screen: 'submission' },
     { icon: '💬', label: 'Quotes', screen: 'quotes' },
@@ -314,6 +319,8 @@ function brokerNav() {
     { icon: '💰', label: 'Commissions', screen: 'commissions' },
     { icon: '📝', label: 'Claims', screen: 'claims' },
     { icon: '📅', label: 'Activity', screen: 'activity' },
+    { icon: '📄', label: 'Documents', screen: 'documents' },
+    { icon: '🎯', label: 'Market', screen: 'market' },
     { icon: '🏢', label: 'Carriers', screen: 'carriers' },
   ];
   return `
@@ -371,6 +378,9 @@ function renderBrokerPortal() {
     'policies': renderBrokerPolicies,
     'policy-details': renderBrokerPolicyDetails,
     'policy-pdf': renderPolicyPdfPreview,
+    'policies-analytics': renderPoliciesAnalytics,
+    'policies-coi-center': renderPoliciesCOICenter,
+    'policies-ai': renderPoliciesAIAssistant,
     'renewals': renderBrokerRenewals,
     'renewal-details': renderBrokerRenewalDetails,
     'renewal-calendar': renderRenewalCalendar,
@@ -389,11 +399,39 @@ function renderBrokerPortal() {
     'activity-details': renderActivityDetails,
     'clients': renderBrokerClients,
     'client-details': renderBrokerClientDetails,
+    'clients-book': renderClientsBookOfBusiness,
+    'clients-segmentation': renderClientsSegmentation,
+    'clients-retention': renderClientsRetention,
+    'clients-crosssell': renderClientsCrossSell,
+    'clients-ai': renderClientsAIAssistant,
     'policy-loss-runs': renderBrokerLossRuns,
     'policy-edit': renderBrokerPolicyEdit,
     'policy-renew': renderBrokerPolicyRenew,
     'policy-cancel': renderBrokerPolicyCancel,
-    'coi-workbench': renderBrokerCOIWorkbench
+    'coi-workbench': renderBrokerCOIWorkbench,
+    'documents': renderDocumentsLibrary,
+    'document-details': renderDocumentDetails,
+    'document-esign': renderDocumentEsignCenter,
+    'document-upload': renderDocumentUploadCenter,
+    'document-checklist': renderDocumentChecklistDashboard,
+    'document-compliance': renderDocumentComplianceReport,
+    'document-analytics': renderDocumentAnalytics,
+    'document-ai': renderDocumentAIAssistant,
+    'market': renderMarketDashboard,
+    'market-submission': renderMarketSubmissionDetail,
+    'market-wizard': renderMarketRoutingWizard,
+    'market-appetite': renderMarketAppetiteLibrary,
+    'market-quotes': renderMarketQuoteComparison,
+    'market-analytics': renderMarketAnalytics,
+    'market-ai': renderMarketAIAssistant,
+    'prospects': renderProspectsDashboard,
+    'prospects-kanban': renderProspectsKanban,
+    'prospects-list': renderProspectsList,
+    'prospect-details': renderProspectDetail,
+    'prospect-wizard': renderProspectQualificationWizard,
+    'prospects-lost': renderProspectsLostAnalyzer,
+    'prospects-import': renderProspectsImportCenter,
+    'prospects-analytics': renderProspectsAnalytics
   };
   
   content = routes[state.screen] ? routes[state.screen]() : renderBrokerDashboard();
@@ -735,6 +773,7 @@ function renderBrokerQuotes() {
   </div>
 
   <div class="data-table-wrapper">
+    <div class="table-scroll">
     <table class="data-table">
       <thead><tr>
         <th>Quote ID</th><th>Client / Prospect</th><th>LOB</th><th>Effective</th><th>Carriers</th><th>Best Premium</th><th>Best Carrier</th><th>Appetite</th><th>Stage</th><th>Expires</th><th>Producer</th><th>Action</th>
@@ -742,21 +781,22 @@ function renderBrokerQuotes() {
       <tbody>
         ${rows.length === 0 ? `<tr><td colspan="12" style="text-align:center; color:var(--text-muted); padding:var(--space-xl);">No quotes match these filters.</td></tr>` : rows.map(q => `
         <tr style="${q.expires && new Date(q.expires) < new Date('2026-04-25') && q.stage !== 'bound' && q.stage !== 'lost' ? 'background:rgba(255,167,38,0.04);' : ''}">
-          <td><strong style="color:var(--mga-accent); cursor:pointer; font-family:monospace;" onclick="window.setState({screen:'quote-details', currentQuoteId:'${q.id}'})">${q.id}</strong>${q.tags.length ? `<div style="margin-top:2px;">${q.tags.map(t => `<span style="font-size:0.65rem; color:var(--mga-accent); margin-right:4px;">${t}</span>`).join('')}</div>` : ''}</td>
-          <td>${q.client}${q.is_prospect ? '<span style="font-size:0.65rem; background:rgba(255,167,38,0.15); color:var(--status-amber); padding:1px 6px; border-radius:8px; margin-left:6px;">PROSPECT</span>' : ''}</td>
-          <td>${q.lob}</td>
-          <td>${q.effective}</td>
+          <td style="white-space:nowrap;"><strong style="color:var(--mga-accent); cursor:pointer; font-family:monospace;" onclick="window.setState({screen:'quote-details', currentQuoteId:'${q.id}'})">${q.id}</strong>${q.tags.length ? `<div style="margin-top:2px;">${q.tags.map(t => `<span style="font-size:0.65rem; color:var(--mga-accent); margin-right:4px;">${t}</span>`).join('')}</div>` : ''}</td>
+          <td style="white-space:nowrap;">${q.client}${q.is_prospect ? '<span style="font-size:0.65rem; background:rgba(255,167,38,0.15); color:var(--status-amber); padding:1px 6px; border-radius:8px; margin-left:6px;">PROSPECT</span>' : ''}</td>
+          <td style="white-space:nowrap;">${q.lob}</td>
+          <td style="white-space:nowrap;">${q.effective}</td>
           <td><strong>${q.carriers_count}</strong></td>
-          <td>${q.best_premium ? '<strong>$' + q.best_premium.toLocaleString() + '</strong>' : '<span style="color:var(--text-muted);">—</span>'}</td>
-          <td style="font-size:0.85rem;">${q.best_carrier || '<span style="color:var(--text-muted);">—</span>'}</td>
-          <td>${q.appetite_match !== null ? `<div style="display:flex; align-items:center; gap:6px;"><div style="width:36px; height:6px; background:var(--bg-card); border-radius:3px; overflow:hidden;"><div style="height:100%; width:${q.appetite_match}%; background:${apptColor(q.appetite_match)};"></div></div><strong style="color:${apptColor(q.appetite_match)};">${q.appetite_match}</strong></div>` : '<span style="color:var(--text-muted);">—</span>'}</td>
-          <td>${stageBadge(q.stage)}${q.lost_reason ? `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">${q.lost_reason}</div>` : ''}</td>
-          <td style="font-size:0.85rem; ${q.expires && new Date(q.expires) < new Date('2026-04-25') && q.stage !== 'bound' && q.stage !== 'lost' ? 'color:var(--status-amber); font-weight:600;' : ''}">${q.expires || '—'}</td>
-          <td style="font-size:0.85rem;">${q.producer}</td>
+          <td style="white-space:nowrap;">${q.best_premium ? '<strong>$' + q.best_premium.toLocaleString() + '</strong>' : '<span style="color:var(--text-muted);">—</span>'}</td>
+          <td style="font-size:0.85rem; white-space:nowrap;">${q.best_carrier || '<span style="color:var(--text-muted);">—</span>'}</td>
+          <td style="white-space:nowrap;">${q.appetite_match !== null ? `<div style="display:flex; align-items:center; gap:6px;"><div style="width:36px; height:6px; background:var(--bg-card); border-radius:3px; overflow:hidden;"><div style="height:100%; width:${q.appetite_match}%; background:${apptColor(q.appetite_match)};"></div></div><strong style="color:${apptColor(q.appetite_match)};">${q.appetite_match}</strong></div>` : '<span style="color:var(--text-muted);">—</span>'}</td>
+          <td style="white-space:nowrap;">${stageBadge(q.stage)}${q.lost_reason ? `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">${q.lost_reason}</div>` : ''}</td>
+          <td style="font-size:0.85rem; white-space:nowrap; ${q.expires && new Date(q.expires) < new Date('2026-04-25') && q.stage !== 'bound' && q.stage !== 'lost' ? 'color:var(--status-amber); font-weight:600;' : ''}">${q.expires || '—'}</td>
+          <td style="font-size:0.85rem; white-space:nowrap;">${q.producer}</td>
           <td><button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'quote-details', currentQuoteId:'${q.id}'})">Open</button></td>
         </tr>`).join('')}
       </tbody>
     </table>
+    </div>
     <div style="padding: var(--space-md); color: var(--text-muted); font-size: 0.8rem;">Showing ${rows.length} quote${rows.length===1?'':'s'} · Pipeline: $${(rows.reduce((s,q)=>s+(q.best_premium||0),0)/1000).toFixed(0)}k</div>
   </div>
 
@@ -848,6 +888,7 @@ function renderBrokerBindings() {
   </div>
 
   <div class="data-table-wrapper">
+    <div class="table-scroll">
     <table class="data-table">
       <thead><tr>
         <th>Binding ID</th><th>Client</th><th>Type</th><th>LOB</th><th>Carrier</th><th>Premium</th><th>Effective</th><th>Subjectivities</th><th>e-Sig</th><th>Payment</th><th>Stage</th><th>Action</th>
@@ -857,13 +898,13 @@ function renderBrokerBindings() {
           const subjPct = b.subj_total > 0 ? (b.subj_done / b.subj_total) * 100 : 100;
           return `
           <tr style="${b.subj_total > b.subj_done && b.stage !== 'declined' && b.stage !== 'issued' ? 'background:rgba(255,167,38,0.04);' : ''}">
-            <td><strong style="color:var(--mga-accent); cursor:pointer; font-family:monospace;" onclick="window.setState({screen:'binding-details', currentBindingId:'${b.id}'})">${b.id}</strong>${b.conditional ? '<div style="font-size:0.7rem; color:var(--status-amber);">⚠ Conditional</div>' : ''}</td>
-            <td>${b.client}<div style="font-family:monospace; font-size:0.7rem; color:var(--text-muted);">${b.quote_id}</div></td>
-            <td><span class="badge badge-blue"><span class="badge-dot badge-dot-blue"></span>${b.type}</span></td>
-            <td>${b.lob}</td>
-            <td style="font-size:0.85rem;">${b.carrier}</td>
-            <td><strong>$${b.premium.toLocaleString()}</strong><div style="font-size:0.7rem; color:var(--text-muted);">${b.billing}</div></td>
-            <td>${b.effective}</td>
+            <td style="white-space:nowrap;"><strong style="color:var(--mga-accent); cursor:pointer; font-family:monospace;" onclick="window.setState({screen:'binding-details', currentBindingId:'${b.id}'})">${b.id}</strong>${b.conditional ? '<div style="font-size:0.7rem; color:var(--status-amber);">⚠ Conditional</div>' : ''}</td>
+            <td style="white-space:nowrap;">${b.client}<div style="font-family:monospace; font-size:0.7rem; color:var(--text-muted);">${b.quote_id}</div></td>
+            <td style="white-space:nowrap;"><span class="badge badge-blue"><span class="badge-dot badge-dot-blue"></span>${b.type}</span></td>
+            <td style="white-space:nowrap;">${b.lob}</td>
+            <td style="font-size:0.85rem; white-space:nowrap;">${b.carrier}</td>
+            <td style="white-space:nowrap;"><strong>$${b.premium.toLocaleString()}</strong><div style="font-size:0.7rem; color:var(--text-muted);">${b.billing}</div></td>
+            <td style="white-space:nowrap;">${b.effective}</td>
             <td>${b.subj_total === 0 ? '<span style="color:var(--text-muted);">—</span>' : `<div style="display:flex; align-items:center; gap:6px;"><div style="width:50px; height:6px; background:var(--bg-card); border-radius:3px; overflow:hidden;"><div style="height:100%; width:${subjPct}%; background:${subjPct === 100 ? 'var(--status-green)' : subjPct >= 50 ? 'var(--status-amber)' : 'var(--status-red)'};"></div></div><strong>${b.subj_done}/${b.subj_total}</strong></div>`}</td>
             <td>${b.esig_status === 'Signed' ? badge('green', 'Signed') : b.esig_status === 'Viewed' ? badge('amber', 'Viewed') : b.esig_status === 'Sent' ? badge('blue', 'Sent') : badge('gray', 'Not Sent')}</td>
             <td>${b.payment_status === 'Applied' ? badge('green', 'Applied') : b.payment_status === 'Received' ? badge('blue', 'Received') : badge('gray', b.payment_status)}</td>
@@ -873,6 +914,7 @@ function renderBrokerBindings() {
         }).join('')}
       </tbody>
     </table>
+    </div>
     <div style="padding: var(--space-md); color: var(--text-muted); font-size: 0.8rem;">Showing ${rows.length} binding${rows.length===1?'':'s'} · Pipeline: $${(rows.reduce((s,b)=>s+b.premium,0)/1000).toFixed(0)}k</div>
   </div>
 
@@ -881,24 +923,337 @@ function renderBrokerBindings() {
   </div>`;
 }
 
-function renderBrokerPolicies() {
+function _policySubNav(active) {
+  const tabs = [
+    { key: 'policies',            label: 'Portfolio',   icon: '📋' },
+    { key: 'policies-analytics',  label: 'Analytics',   icon: '📊' },
+    { key: 'policies-coi-center', label: 'COI Center',  icon: '📄' },
+    { key: 'policies-ai',         label: 'AI Assistant',icon: '🤖' }
+  ];
   return `
-  <h2 style="margin-bottom: var(--space-lg);">Policies</h2>
-  ${kpiCards(D.brokerPoliciesKPIs, 3)}
-  <div class="data-table-wrapper">
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderBrokerPolicies() {
+  const p = D.policiesExtended;
+  const stageFilter = state.policyStage || 'all';
+  const filters = state.policyFilters || {};
+  const byStage = D.policyStages.map(s => ({ ...s, count: p.filter(x => x.stage === s.key).length, premium: p.filter(x => x.stage === s.key).reduce((sum,x) => sum + x.premium, 0) }));
+
+  let rows = p;
+  if (stageFilter !== 'all') rows = rows.filter(x => x.stage === stageFilter);
+  if (filters.lob && filters.lob !== 'All') rows = rows.filter(x => x.lob === filters.lob);
+  if (filters.carrier && filters.carrier !== 'All') rows = rows.filter(x => x.carrier.includes(filters.carrier));
+  if (filters.producer && filters.producer !== 'All') rows = rows.filter(x => x.producer === filters.producer);
+  if (filters.search) {
+    const q = filters.search.toLowerCase();
+    rows = rows.filter(r => (r.id + ' ' + r.client + ' ' + r.lob + ' ' + r.carrier).toLowerCase().includes(q));
+  }
+  const uniqLob = [...new Set(p.map(x => x.lob))];
+  const uniqCarrier = [...new Set(p.map(x => x.carrier.split(' / ')[0]))];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Policy Portfolio</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${p.length} active · $${(p.reduce((s,x)=>s+x.premium,0)/1000).toFixed(0)}k premium · live EPIC sync</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'policies-coi-center'})">📄 COI Center</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'policies-analytics'})">📊 Portfolio Analytics</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'submission', wizardStep:1})">+ New Policy</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.brokerPoliciesKPIs, 6)}
+
+  ${_policySubNav('policies')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">POLICY STATUS PIPELINE</div>
+    <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:var(--space-sm);">
+      <div onclick="window.setState({policyStage:'all'})" style="cursor:pointer; background:var(--bg-card); padding:var(--space-md); border-radius:var(--radius-md); border-left:3px solid var(--mga-accent); ${stageFilter==='all'?'outline:1px solid var(--mga-accent);':''}">
+        <div style="color:var(--text-muted); font-size:0.7rem; text-transform:uppercase;">All Policies</div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+          <div style="font-size:1.5rem; font-weight:700;">${p.length}</div>
+          <div style="color:var(--mga-accent); font-size:0.85rem; font-weight:600;">$${(p.reduce((s,x)=>s+x.premium,0)/1000).toFixed(0)}k</div>
+        </div>
+      </div>
+      ${byStage.map(s => {
+        const colorVar = s.color === 'red' ? 'var(--status-red)' : s.color === 'amber' ? 'var(--status-amber)' : s.color === 'green' ? 'var(--status-green)' : s.color === 'blue' ? 'var(--status-blue)' : 'var(--text-muted)';
+        return `
+        <div onclick="window.setState({policyStage:'${s.key}'})" style="cursor:pointer; background:var(--bg-card); padding:var(--space-md); border-radius:var(--radius-md); border-left:3px solid ${colorVar}; ${stageFilter===s.key?'outline:1px solid '+colorVar+';':''}">
+          <div style="color:var(--text-muted); font-size:0.7rem; text-transform:uppercase;">${s.key}</div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline;">
+            <div style="font-size:1.5rem; font-weight:700;">${s.count}</div>
+            <div style="color:${colorVar}; font-size:0.8rem; font-weight:600;">$${(s.premium/1000).toFixed(0)}k</div>
+          </div>
+          <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">${s.desc}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-md);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search policy #, client, carrier..." value="${filters.search || ''}" oninput="window.setState({policyFilters: Object.assign({}, window.state?.policyFilters || {}, {search: this.value})})"/>
+      <select class="form-input" style="width:160px;" onchange="window.setState({policyFilters: Object.assign({}, window.state?.policyFilters || {}, {lob: this.value})})">
+        <option>All</option>${uniqLob.map(l => `<option ${filters.lob===l?'selected':''}>${l}</option>`).join('')}
+      </select>
+      <select class="form-input" style="width:160px;" onchange="window.setState({policyFilters: Object.assign({}, window.state?.policyFilters || {}, {carrier: this.value})})">
+        <option>All</option>${uniqCarrier.map(c => `<option ${filters.carrier===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+      <select class="form-input" style="width:160px;" onchange="window.setState({policyFilters: Object.assign({}, window.state?.policyFilters || {}, {producer: this.value})})">
+        <option>All</option>
+        ${['Sarah Chen','Mike Torres','Lisa Park'].map(pr => `<option ${filters.producer===pr?'selected':''}>${pr}</option>`).join('')}
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({policyFilters:{}, policyStage:'all'})">Reset</button>
+      <button class="btn btn-secondary btn-sm" onclick="window.showAlert('Exporting ${rows.length} policies to CSV')">Export</button>
+    </div>
+    <div class="table-scroll">
     <table class="data-table">
-      <thead><tr><th>Policy #</th><th>EPIC ID</th><th>Client</th><th>Type</th><th>Billing</th><th>Expiry</th><th>Status</th><th>Action</th></tr></thead>
+      <thead><tr><th>Policy #</th><th>Client</th><th>LOB</th><th>Carrier</th><th>Premium</th><th>Effective</th><th>Expiry</th><th>Loss Ratio</th><th>Claims</th><th>State</th><th>Producer</th><th>Status</th><th>Action</th></tr></thead>
       <tbody>
-        ${D.brokerPoliciesList.map(p => `
+        ${rows.map(r => `
         <tr>
-          <td><strong style="color:var(--text-primary); font-family:monospace;">${p.id}</strong></td>
-          <td><span style="font-size:0.75rem; color:var(--text-muted); font-family:monospace;">${p.epic_id}</span></td>
-          <td>${p.client}</td><td>${p.type}</td><td>${p.billing_type}</td>
-          <td>${p.expiry}</td><td>${badge(p.statusColor, p.status)}</td>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'policy-details'})">${r.id}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${r.epic_id}</div></td>
+          <td style="white-space:nowrap;"><strong>${r.client}</strong></td>
+          <td style="white-space:nowrap;">${r.lob}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.carrier}</td>
+          <td style="white-space:nowrap;"><strong>$${r.premium.toLocaleString()}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${r.billing}</div></td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.effective}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.expiry}</td>
+          <td style="white-space:nowrap;"><strong style="color:${r.loss_ratio<=30?'var(--status-green)':r.loss_ratio<=60?'var(--mga-accent)':'var(--status-red)'};">${r.loss_ratio}%</strong></td>
+          <td style="white-space:nowrap;">${r.claims_open>0 ? `<span style="color:var(--status-amber);">${r.claims_open} open</span>` : '—'}</td>
+          <td>${r.state}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.producer}</td>
+          <td style="white-space:nowrap;">${badge(D.policyStages.find(s => s.key===r.stage)?.color || 'gray', r.stage)}</td>
           <td><button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'policy-details'})">View</button></td>
         </tr>`).join('')}
       </tbody>
     </table>
+    </div>
+    ${rows.length === 0 ? `<div style="text-align:center; color:var(--text-muted); padding: var(--space-xl);">No policies match this filter.</div>` : ''}
+    <div style="padding: var(--space-md); color:var(--text-muted); font-size:0.8rem;">Showing ${rows.length} of ${p.length} · $${(rows.reduce((s,x)=>s+x.premium,0)/1000).toFixed(0)}k premium</div>
+  </div>`;
+}
+
+function renderPoliciesAnalytics() {
+  const a = D.policyAnalytics;
+  const maxLob = Math.max(...a.premium_by_lob.map(x => x.premium));
+  const maxCarrier = Math.max(...a.carrier_concentration.map(x => x.premium));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Portfolio Analytics</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Premium mix · carrier concentration · loss ratios · retention · expiration calendar</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <select class="form-input" style="width:160px;"><option>YTD</option><option>Last 12 months</option><option>Trailing 24 months</option></select>
+      <button class="btn btn-primary" onclick="window.showAlert('Export queued — portfolio analytics')">Export</button>
+    </div>
+  </div>
+
+  ${_policySubNav('policies-analytics')}
+
+  ${kpiCards(D.brokerPoliciesKPIs, 6)}
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin: var(--space-lg) 0;">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">PREMIUM BY LOB</div>
+      ${a.premium_by_lob.map(l => `
+        <div style="margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <span><strong>${l.lob}</strong> <span style="color:var(--text-muted);">· ${l.policies} policies</span></span>
+            <span><strong>$${(l.premium/1e6).toFixed(2)}M</strong> <span style="color:var(--text-muted);">(${l.share}%)</span></span>
+          </div>
+          <div style="background:var(--bg-card); height:10px; border-radius:5px; overflow:hidden;"><div style="height:100%; width:${(l.premium/maxLob)*100}%; background:linear-gradient(90deg, var(--mga-accent), #a67dff);"></div></div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">CARRIER CONCENTRATION</div>
+      ${a.carrier_concentration.map(c => `
+        <div style="margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <span><strong>${c.carrier}</strong> <span style="color:var(--text-muted);">· ${c.policies} policies</span></span>
+            <span><strong style="color:${c.share >= 20 ? 'var(--status-amber)' : 'var(--text-primary)'};">${c.share}%</strong> <span style="color:var(--text-muted);">$${(c.premium/1e6).toFixed(2)}M</span></span>
+          </div>
+          <div style="background:var(--bg-card); height:10px; border-radius:5px; overflow:hidden;"><div style="height:100%; width:${(c.premium/maxCarrier)*100}%; background:${c.share >= 20 ? 'var(--status-amber)' : 'var(--mga-accent)'};"></div></div>
+        </div>`).join('')}
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background: rgba(255,171,0,0.1); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--status-amber);">
+        ⚠ Liberty/SEMC concentration at 27% — above 20% threshold. Consider diversification for E&O risk.
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">LOSS RATIO BY LOB vs INDUSTRY BENCHMARK</div>
+    <table class="data-table">
+      <thead><tr><th>LOB</th><th>Earned Premium</th><th>Incurred</th><th>Our LR</th><th>Industry Benchmark</th><th>Variance</th></tr></thead>
+      <tbody>
+        ${a.loss_ratio_by_lob.map(l => { const v = l.ratio - l.benchmark; return `
+        <tr>
+          <td><strong>${l.lob}</strong></td>
+          <td>$${(l.earned/1e6).toFixed(2)}M</td>
+          <td>$${(l.incurred/1e6).toFixed(2)}M</td>
+          <td><strong style="color:${l.ratio<=40?'var(--status-green)':l.ratio<=60?'var(--mga-accent)':'var(--status-red)'};">${l.ratio}%</strong></td>
+          <td style="color:var(--text-muted);">${l.benchmark}%</td>
+          <td style="color:${v<0?'var(--status-green)':'var(--status-red)'};">${v>0?'+':''}${v} pp</td>
+        </tr>`; }).join('')}
+      </tbody>
+    </table>
+    <div style="margin-top: var(--space-sm); padding: var(--space-sm); background: rgba(0,230,118,0.1); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--status-green);">
+      ✓ All LOBs beat industry benchmarks. Book is outperforming peers on loss experience.
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">RETENTION BY TIER (YTD ${a.retention.ytd}%)</div>
+      ${a.retention.by_tier.map(t => `
+        <div style="margin-bottom: var(--space-md);">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <span><strong>${t.tier}</strong> <span style="color:var(--text-muted);">· ${t.retained} retained, ${t.lost} lost</span></span>
+            <strong style="color:${t.rate>=92?'var(--status-green)':t.rate>=85?'var(--mga-accent)':'var(--status-amber)'};">${t.rate}%</strong>
+          </div>
+          <div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden;"><div style="height:100%; width:${t.rate}%; background:${t.rate>=92?'var(--status-green)':t.rate>=85?'var(--mga-accent)':'var(--status-amber)'};"></div></div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">LOST POLICIES — REASON ANALYSIS</div>
+      ${a.retention.lost_reasons.map(r => `
+        <div style="margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <span><strong>${r.reason}</strong></span>
+            <span><strong>${r.count}</strong> <span style="color:var(--text-muted);">(${r.pct}%)</span></span>
+          </div>
+          <div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden;"><div style="height:100%; width:${r.pct*2.5}%; background:var(--status-red); opacity:0.7;"></div></div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">EXPIRATION CALENDAR (NEXT 180+ DAYS)</div>
+    <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:var(--space-sm);">
+      ${a.expiration_calendar.map(b => {
+        const colorVar = b.color === 'red' ? 'var(--status-red)' : b.color === 'amber' ? 'var(--status-amber)' : b.color === 'blue' ? 'var(--status-blue)' : 'var(--text-muted)';
+        return `
+        <div style="background:var(--bg-card); padding:var(--space-md); border-radius:var(--radius-md); border-left:3px solid ${colorVar};">
+          <div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase;">${b.bucket}</div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:4px;">
+            <div style="font-size:1.4rem; font-weight:700; color:${colorVar};">${b.count}</div>
+            <div style="color:${colorVar}; font-size:0.8rem; font-weight:600;">$${(b.premium/1e6).toFixed(1)}M</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function renderPoliciesCOICenter() {
+  const coi = D.policyBulkCOI;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Bulk COI Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Issue · track · renew · distribute certificates of insurance at scale</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Bulk renewing ${coi.filter(c=>c.status==='Issued').length} expiring COIs')">🔄 Bulk Renew</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'coi-workbench'})">+ Issue COI</button>
+    </div>
+  </div>
+
+  ${_policySubNav('policies-coi-center')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Total COIs</div><div class="kpi-value">${coi.length + 28}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Pending</div><div class="kpi-value warning">${coi.filter(c => c.status === 'Pending').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Expiring &lt; 30d</div><div class="kpi-value warning">4</div></div>
+    <div class="kpi-card"><div class="kpi-label">Issued (30d)</div><div class="kpi-value">22</div></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">CERTIFICATES OF INSURANCE</div>
+    <table class="data-table">
+      <thead><tr><th>Policy #</th><th>Client</th><th>Certificate Holder</th><th>Status</th><th>Issued</th><th>Expires</th><th>Action</th></tr></thead>
+      <tbody>
+        ${coi.map(c => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${c.policy}</strong></td>
+          <td><strong>${c.client}</strong></td>
+          <td>${c.holder}</td>
+          <td>${badge(c.status==='Issued'?'green':'amber', c.status)}</td>
+          <td style="font-size:0.82rem;">${c.issued}</td>
+          <td style="font-size:0.82rem;">${c.expires}</td>
+          <td style="display:flex; gap:4px;">
+            <button class="btn btn-secondary btn-sm" onclick="window.showAlert('Downloading COI for ${c.holder}')">⬇</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Sending COI to ${c.holder}')">Send</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">AUTO-ISSUANCE RULES</div>
+    <div style="font-size:0.85rem; line-height:1.9;">
+      <div>🔁 <strong>Annual auto-renewal</strong> 30 days before COI expiration (configurable)</div>
+      <div>📧 <strong>Auto-delivery</strong> to certificate holder email + broker portal</div>
+      <div>🏢 <strong>Additional Insured / Waiver of Subro</strong> applied per policy schedule</div>
+      <div>⚖ <strong>Compliance check</strong> — required holder language verified</div>
+      <div>📋 <strong>Audit log</strong> retained 7 years (CA DOI)</div>
+    </div>
+  </div>`;
+}
+
+function renderPoliciesAIAssistant() {
+  const chat = D.policyAIChat;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">AI Policy Assistant</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Search, summarize, flag issues across your ${D.policiesExtended.length} policies</div>
+    </div>
+  </div>
+
+  ${_policySubNav('policies-ai')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); display:flex; flex-direction:column; min-height:540px;">
+      <div style="flex:1; overflow-y:auto; padding-right:8px;">
+        ${chat.map(m => `
+          <div class="doc-ai-msg doc-ai-msg-${m.role}">
+            <div class="doc-ai-avatar doc-ai-avatar-${m.role}">${m.role==='ai'?'🤖':'🧑‍💼'}</div>
+            <div class="doc-ai-bubble">${m.text.replace(/\n/g,'<br/>')}</div>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top: var(--space-md); display:flex; gap: var(--space-sm);">
+        <input class="form-input" style="flex:1;" placeholder="Ask about any policy or portfolio metric..."/>
+        <button class="btn btn-primary" onclick="window.showAlert('AI processing your request…')">Send →</button>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">SUGGESTED PROMPTS</div>
+        ${[
+          'Policies expiring in 45d with LR > 50%',
+          'Largest carrier by premium concentration',
+          'Clients with single-LOB policies (cross-sell)',
+          'Summarize Magnolia\'s coverage package',
+          'Which policies non-renewing by carrier?',
+          'Book-of-business trend last 4 quarters'
+        ].map(p => `<div class="doc-ai-prompt" onclick="window.showAlert('Running: ${p}')">${p}</div>`).join('')}
+      </div>
+    </div>
   </div>`;
 }
 
@@ -997,6 +1352,7 @@ function renderBrokerRenewals() {
   </div>
 
   <div class="data-table-wrapper">
+    <div class="table-scroll">
     <table class="data-table">
       <thead><tr>
         <th>Renewal ID</th><th>Client</th><th>Tier</th><th>LOB</th><th>Expiry</th><th>Days</th>
@@ -1005,21 +1361,22 @@ function renderBrokerRenewals() {
       <tbody>
         ${rows.length === 0 ? `<tr><td colspan="12" style="text-align:center; color:var(--text-muted); padding:var(--space-xl);">No renewals match these filters.</td></tr>` : rows.map(r => `
         <tr style="${r.days <= 30 && r.stage !== 'closed' ? 'background:rgba(255,82,82,0.04);' : ''}">
-          <td><strong style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'renewal-details', currentRenewalId:'${r.id}'})">${r.id}</strong>${r.open_claims ? `<div style="font-size:0.7rem; color:var(--status-red);">⚠ ${r.open_claims} open claim</div>` : ''}</td>
-          <td>${r.client}<div style="font-family:monospace; font-size:0.7rem; color:var(--text-muted);">${r.policy_id}</div></td>
-          <td>${tierBadge(r.tier)}</td>
-          <td>${r.lob}</td>
-          <td>${r.expiry}</td>
-          <td style="${r.days <= 30 ? 'color:var(--status-red); font-weight:600;' : r.days <= 60 ? 'color:var(--status-amber);' : ''}">${r.days > 0 ? r.days + 'd' : 'Closed'}</td>
+          <td style="white-space:nowrap;"><strong style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'renewal-details', currentRenewalId:'${r.id}'})">${r.id}</strong>${r.open_claims ? `<div style="font-size:0.7rem; color:var(--status-red);">⚠ ${r.open_claims} open claim</div>` : ''}</td>
+          <td style="white-space:nowrap;">${r.client}<div style="font-family:monospace; font-size:0.7rem; color:var(--text-muted);">${r.policy_id}</div></td>
+          <td style="white-space:nowrap;">${tierBadge(r.tier)}</td>
+          <td style="white-space:nowrap;">${r.lob}</td>
+          <td style="white-space:nowrap;">${r.expiry}</td>
+          <td style="white-space:nowrap; ${r.days <= 30 ? 'color:var(--status-red); font-weight:600;' : r.days <= 60 ? 'color:var(--status-amber);' : ''}">${r.days > 0 ? r.days + 'd' : 'Closed'}</td>
           <td style="white-space:nowrap;">$${(r.current_premium/1000).toFixed(0)}k → <strong>$${(r.projected/1000).toFixed(0)}k</strong></td>
-          <td style="color:${deltaColor(r.delta_pct)}; font-weight:600;">${r.delta_pct > 0 ? '+' : ''}${r.delta_pct.toFixed(1)}%</td>
-          <td><div style="display:flex; align-items:center; gap:6px;"><div style="width:36px; height:6px; background:var(--bg-card); border-radius:3px; overflow:hidden;"><div style="height:100%; width:${r.retention_score}%; background:${scoreColor(r.retention_score)};"></div></div><strong style="color:${scoreColor(r.retention_score)};">${r.retention_score}</strong></div><div style="font-size:0.7rem; color:var(--text-muted);">${r.retention_tier}</div></td>
-          <td>${badge(r.statusColor, r.status)}</td>
-          <td style="font-size:0.85rem;">${r.producer}</td>
+          <td style="white-space:nowrap; color:${deltaColor(r.delta_pct)}; font-weight:600;">${r.delta_pct > 0 ? '+' : ''}${r.delta_pct.toFixed(1)}%</td>
+          <td style="white-space:nowrap;"><div style="display:flex; align-items:center; gap:6px;"><div style="width:36px; height:6px; background:var(--bg-card); border-radius:3px; overflow:hidden;"><div style="height:100%; width:${r.retention_score}%; background:${scoreColor(r.retention_score)};"></div></div><strong style="color:${scoreColor(r.retention_score)};">${r.retention_score}</strong></div><div style="font-size:0.7rem; color:var(--text-muted);">${r.retention_tier}</div></td>
+          <td style="white-space:nowrap;">${badge(r.statusColor, r.status)}</td>
+          <td style="font-size:0.85rem; white-space:nowrap;">${r.producer}</td>
           <td><button class="btn btn-primary btn-sm" onclick="window.setState({screen:'renewal-details', currentRenewalId:'${r.id}'})">Manage</button></td>
         </tr>`).join('')}
       </tbody>
     </table>
+    </div>
     <div style="padding: var(--space-md); color: var(--text-muted); font-size: 0.8rem;">
       Showing ${rows.length} renewal${rows.length===1?'':'s'} · Pipeline value: $${(rows.reduce((s,r)=>s+r.projected,0)/1000).toFixed(0)}k
     </div>
@@ -1120,6 +1477,7 @@ function renderBrokerClaims() {
   ${Object.keys(filters).length > 0 ? `<div style="margin:-4px 0 var(--space-md) 0; font-size:0.8rem; color:var(--text-muted);">Active filters: ${Object.entries(filters).filter(([,v]) => v && v !== 'All').map(([k,v]) => `<span style="background:rgba(68,138,255,0.15); color:#82b1ff; padding:2px 8px; border-radius:10px; margin-right:6px;">${k}: ${v}</span>`).join('')}</div>` : ''}
 
   <div class="data-table-wrapper">
+    <div class="table-scroll">
     <table class="data-table">
       <thead><tr>
         <th>Claim #</th><th>Client</th><th>LOB</th><th>Loss Type</th><th>Loss Date</th>
@@ -1128,21 +1486,22 @@ function renderBrokerClaims() {
       <tbody>
         ${rows.length === 0 ? `<tr><td colspan="12" style="text-align:center; color:var(--text-muted); padding:var(--space-xl);">No claims match these filters.</td></tr>` : rows.map(c => `
         <tr>
-          <td><strong style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'claim-details', claimTab:'overview', currentClaimId:'${c.id}'})">${c.internal_no}</strong><div style="font-size:0.72rem; color:var(--text-muted);">${c.carrier_no}</div></td>
-          <td>${c.client}</td>
-          <td>${c.lob}</td>
-          <td>${c.loss_type}</td>
-          <td>${c.loss_date}</td>
-          <td>${agePill(c.age_days)}</td>
-          <td>$${c.reserve.toLocaleString()}</td>
-          <td>$${c.paid.toLocaleString()}</td>
-          <td>${flags(c) || '<span style="color:var(--text-muted);">—</span>'}</td>
-          <td>${badge(c.statusColor, c.status)}</td>
-          <td>${slaPill(c.sla_due)}</td>
+          <td style="white-space:nowrap;"><strong style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'claim-details', claimTab:'overview', currentClaimId:'${c.id}'})">${c.internal_no}</strong><div style="font-size:0.72rem; color:var(--text-muted);">${c.carrier_no}</div></td>
+          <td style="white-space:nowrap;">${c.client}</td>
+          <td style="white-space:nowrap;">${c.lob}</td>
+          <td style="white-space:nowrap;">${c.loss_type}</td>
+          <td style="white-space:nowrap;">${c.loss_date}</td>
+          <td style="white-space:nowrap;">${agePill(c.age_days)}</td>
+          <td style="white-space:nowrap;">$${c.reserve.toLocaleString()}</td>
+          <td style="white-space:nowrap;">$${c.paid.toLocaleString()}</td>
+          <td style="white-space:nowrap;">${flags(c) || '<span style="color:var(--text-muted);">—</span>'}</td>
+          <td style="white-space:nowrap;">${badge(c.statusColor, c.status)}</td>
+          <td style="white-space:nowrap;">${slaPill(c.sla_due)}</td>
           <td><button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'claim-details', claimTab:'overview', currentClaimId:'${c.id}'})">Open</button></td>
         </tr>`).join('')}
       </tbody>
     </table>
+    </div>
     <div style="padding: var(--space-md); color: var(--text-muted); font-size: 0.8rem;">
       Showing ${rows.length} claim${rows.length===1?'':'s'} · Scope: ${scope === 'my' ? 'My Claims' : scope === 'team' ? 'Team' : 'Closed / Denied'}
     </div>
@@ -2334,31 +2693,434 @@ function renderActivityAnalytics() {
   </div>`;
 }
 
-function renderBrokerClients() {
+function _clientSubNav(active) {
+  const tabs = [
+    { key: 'clients',              label: 'Directory',      icon: '📋' },
+    { key: 'clients-book',         label: 'Book',           icon: '💼' },
+    { key: 'clients-segmentation', label: 'Segmentation',   icon: '🎯' },
+    { key: 'clients-retention',    label: 'Retention',      icon: '📈' },
+    { key: 'clients-crosssell',    label: 'Cross-Sell',     icon: '🔀' },
+    { key: 'clients-ai',           label: 'AI Assistant',   icon: '🤖' }
+  ];
   return `
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
-    <h2 style="margin: 0;">Clients</h2>
-    <button class="btn btn-primary" onclick="window.setState({screen: 'submission', wizardStep: 1})">+ Add New Client</button>
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _tierBadge(tier) {
+  const t = D.clientTiers.find(x => x.tier === tier);
+  return badge(t?.color || 'gray', tier);
+}
+function _riskIndicator(r) {
+  const map = { low: { color: 'var(--status-green)', icon: '●' }, medium: { color: 'var(--status-amber)', icon: '●' }, high: { color: 'var(--status-red)', icon: '●' } };
+  const x = map[r] || map.medium;
+  return `<span style="color:${x.color};">${x.icon}</span>`;
+}
+
+function renderBrokerClients() {
+  const filters = state.clientFilters || {};
+  let rows = D.brokerClients;
+  if (filters.tier && filters.tier !== 'All') rows = rows.filter(c => c.tier === filters.tier);
+  if (filters.industry && filters.industry !== 'All') rows = rows.filter(c => c.industry === filters.industry);
+  if (filters.status && filters.status !== 'All') rows = rows.filter(c => c.status === filters.status);
+  if (filters.producer && filters.producer !== 'All') rows = rows.filter(c => c.producer === filters.producer);
+  if (filters.search) {
+    const q = filters.search.toLowerCase();
+    rows = rows.filter(c => (c.id + ' ' + c.name + ' ' + c.industry + ' ' + c.state).toLowerCase().includes(q));
+  }
+  const uniqInd = [...new Set(D.brokerClients.map(c => c.industry))];
+  const uniqStatus = [...new Set(D.brokerClients.map(c => c.status))];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Client Directory</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${D.brokerClients.length} active clients · $${(D.brokerClients.reduce((s,c)=>s+c.premium,0)/1e6).toFixed(2)}M book</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'clients-crosssell'})">🔀 Cross-Sell</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'clients-retention'})">📈 Retention</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'submission', wizardStep:1})">+ Add Client</button>
+    </div>
   </div>
-  ${kpiCards(D.brokerClientsKPIs, 3)}
-  <div class="filter-bar" style="margin-bottom: var(--space-lg);">
-    <input class="form-input" placeholder="Search: _____" />
-    <select class="form-input"><option>Status Filter ▼</option></select>
-  </div>
-  <div class="data-table-wrapper">
+
+  ${kpiCards(D.brokerClientsKPIs, 6)}
+
+  ${_clientSubNav('clients')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-md);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search client, industry, state, ID..." value="${filters.search || ''}" oninput="window.setState({clientFilters: Object.assign({}, window.state?.clientFilters || {}, {search: this.value})})"/>
+      <select class="form-input" style="width:160px;" onchange="window.setState({clientFilters: Object.assign({}, window.state?.clientFilters || {}, {tier: this.value})})">
+        <option>All</option>${D.clientTiers.map(t => `<option ${filters.tier===t.tier?'selected':''}>${t.tier}</option>`).join('')}
+      </select>
+      <select class="form-input" style="width:180px;" onchange="window.setState({clientFilters: Object.assign({}, window.state?.clientFilters || {}, {industry: this.value})})">
+        <option>All</option>${uniqInd.map(i => `<option ${filters.industry===i?'selected':''}>${i}</option>`).join('')}
+      </select>
+      <select class="form-input" style="width:160px;" onchange="window.setState({clientFilters: Object.assign({}, window.state?.clientFilters || {}, {status: this.value})})">
+        <option>All</option>${uniqStatus.map(s => `<option ${filters.status===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <select class="form-input" style="width:160px;" onchange="window.setState({clientFilters: Object.assign({}, window.state?.clientFilters || {}, {producer: this.value})})">
+        <option>All</option>
+        ${['Sarah Chen','Mike Torres','Lisa Park'].map(p => `<option ${filters.producer===p?'selected':''}>${p}</option>`).join('')}
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({clientFilters:{}})">Reset</button>
+    </div>
+    <div class="table-scroll">
     <table class="data-table">
-      <thead><tr><th>Name</th><th>Policies</th><th>Carrier</th><th>Exp Date</th><th>Premium</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Risk</th><th>Client</th><th>Tier</th><th>Industry</th><th>Revenue</th><th>State</th><th>Policies</th><th>LOBs</th><th>Premium</th><th>NPS</th><th>LR</th><th>Exp</th><th>Producer</th><th>Status</th><th></th></tr></thead>
       <tbody>
-        ${D.brokerClients.map(c => `
+        ${rows.map(c => `
         <tr>
-          <td>${c.name}</td><td>${c.policies}</td><td>${c.carrier}</td><td>${c.expDate}</td><td>${c.premium}</td>
-          <td>${badge(c.statusColor, c.status)}</td>
+          <td style="font-size:1rem;">${_riskIndicator(c.risk)}</td>
+          <td style="white-space:nowrap;"><strong style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'client-details'})">${c.name}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${c.id}</div></td>
+          <td style="white-space:nowrap;">${_tierBadge(c.tier)}</td>
+          <td style="white-space:nowrap;">${c.industry}</td>
+          <td style="white-space:nowrap;">${c.revenue}</td>
+          <td>${c.state}</td>
+          <td>${c.policies}</td>
+          <td style="font-size:0.78rem; white-space:nowrap;">${c.lobs.join(', ')}</td>
+          <td style="white-space:nowrap;"><strong>$${(c.premium/1000).toFixed(0)}k</strong></td>
+          <td><strong style="color:${c.nps>=75?'var(--status-green)':c.nps>=55?'var(--mga-accent)':'var(--status-amber)'};">${c.nps}</strong></td>
+          <td><strong style="color:${c.loss_ratio<=30?'var(--status-green)':c.loss_ratio<=60?'var(--mga-accent)':'var(--status-red)'};">${c.loss_ratio}%</strong></td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${c.exp_date}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${c.producer}</td>
+          <td style="white-space:nowrap;">${badge(c.statusColor, c.status)}</td>
           <td><button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'client-details'})">View</button></td>
         </tr>`).join('')}
       </tbody>
     </table>
-    <div style="padding: var(--space-md); text-align: right; color: var(--text-muted); font-size: 0.85rem;">
-      Pagination: &lt; 1 2 &gt;
+    </div>
+    ${rows.length === 0 ? `<div style="text-align:center; color:var(--text-muted); padding: var(--space-xl);">No clients match this filter.</div>` : ''}
+    <div style="padding: var(--space-md); color:var(--text-muted); font-size:0.8rem;">Showing ${rows.length} of ${D.brokerClients.length} clients · $${(rows.reduce((s,c)=>s+c.premium,0)/1000).toFixed(0)}k premium</div>
+  </div>`;
+}
+
+function renderClientsBookOfBusiness() {
+  const b = D.clientAnalytics.book_of_business;
+  const life = D.clientAnalytics.lifecycle_stages;
+  const clients = D.brokerClients.slice().sort((a,b) => b.premium - a.premium);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Book of Business</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Your total book: $${(b.total_premium/1e6).toFixed(2)}M across ${b.total_clients} clients</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Export queued — book of business')">Export</button>
+  </div>
+
+  ${_clientSubNav('clients-book')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Total Premium</div><div class="kpi-value">$${(b.total_premium/1e6).toFixed(2)}M</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg per Client</div><div class="kpi-value">$${(b.avg_per_client/1000).toFixed(0)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Multi-LOB</div><div class="kpi-value">${b.multi_lob} <span style="color:var(--text-muted); font-size:0.8rem; font-weight:400;">/ ${b.total_clients}</span></div></div>
+    <div class="kpi-card"><div class="kpi-label">Single-LOB (cross-sell)</div><div class="kpi-value warning">${b.single_lob}</div></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">TIER DISTRIBUTION</div>
+      ${[
+        { tier: 'Platinum', count: b.platinum, color: 'var(--status-blue)' },
+        { tier: 'Gold',     count: b.gold,     color: 'var(--status-amber)' },
+        { tier: 'Silver',   count: b.silver,   color: '#9aa0a6' },
+        { tier: 'Bronze',   count: b.bronze,   color: '#a5673f' }
+      ].map(t => {
+        const pct = Math.round((t.count / b.total_clients) * 100);
+        return `
+        <div style="margin-bottom: var(--space-md);">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <strong>${t.tier}</strong>
+            <span><strong>${t.count}</strong> <span style="color:var(--text-muted);">(${pct}%)</span></span>
+          </div>
+          <div style="background:var(--bg-card); height:10px; border-radius:5px; overflow:hidden;"><div style="height:100%; width:${pct}%; background:${t.color};"></div></div>
+        </div>`;
+      }).join('')}
+      <div style="margin-top: var(--space-md); font-size:0.78rem; color:var(--text-muted);">💡 ${D.clientTiers.find(t=>t.tier==='Platinum').desc}</div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">LIFECYCLE STAGES</div>
+      ${life.map(l => `
+        <div style="margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <strong>${l.stage}</strong>
+            <span><strong>${l.count}</strong> <span style="color:var(--text-muted);">(${l.pct}%)</span></span>
+          </div>
+          <div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden;"><div style="height:100%; width:${l.pct*2}%; background:${l.stage.includes('At-Risk')?'var(--status-red)':l.stage.includes('Onboarding')?'var(--status-green)':'var(--mga-accent)'};"></div></div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom:var(--space-lg);">
+    <div class="section-title">TOP CLIENTS BY PREMIUM</div>
+    <table class="data-table">
+      <thead><tr><th>Rank</th><th>Client</th><th>Tier</th><th>Industry</th><th>Policies</th><th>Premium</th><th>% of Book</th><th>LR</th><th>Producer</th></tr></thead>
+      <tbody>
+        ${clients.slice(0,10).map((c,i) => `
+        <tr>
+          <td><strong>#${i+1}</strong></td>
+          <td><strong>${c.name}</strong></td>
+          <td>${_tierBadge(c.tier)}</td>
+          <td>${c.industry}</td>
+          <td>${c.policies}</td>
+          <td><strong>$${(c.premium/1000).toFixed(0)}k</strong></td>
+          <td>${((c.premium/b.total_premium)*100).toFixed(1)}%</td>
+          <td><strong style="color:${c.loss_ratio<=30?'var(--status-green)':c.loss_ratio<=60?'var(--mga-accent)':'var(--status-red)'};">${c.loss_ratio}%</strong></td>
+          <td style="font-size:0.82rem;">${c.producer}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">RECENT ACTIVITY</div>
+    ${D.clientActivities.map(a => `
+      <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle);">
+        <div style="width:32px; height:32px; border-radius:50%; background:var(--bg-card); display:flex; align-items:center; justify-content:center;">${ {Call:'📞', Email:'📧', Meeting:'🤝'}[a.type] || '📋' }</div>
+        <div style="flex:1;">
+          <div style="display:flex; justify-content:space-between;"><strong style="font-size:0.88rem;">${a.client}</strong><span style="color:var(--text-muted); font-size:0.78rem;">${a.ts}</span></div>
+          <div style="font-size:0.82rem;">${a.type} · ${a.subject}</div>
+          <div style="color:var(--text-muted); font-size:0.72rem;">by ${a.producer}</div>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderClientsSegmentation() {
+  const seg = D.clientAnalytics.segmentation_by_industry;
+  const max = Math.max(...seg.map(s => s.premium));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Client Segmentation</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">By industry · premium · NPS · loss ratio — identify concentration &amp; quality</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Export queued — segmentation')">Export</button>
+  </div>
+
+  ${_clientSubNav('clients-segmentation')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">SEGMENT BY INDUSTRY</div>
+    <table class="data-table">
+      <thead><tr><th>Industry</th><th>Clients</th><th>Premium</th><th>Share</th><th>Avg NPS</th><th>Loss Ratio</th><th>Quality</th></tr></thead>
+      <tbody>
+        ${seg.map(s => { const qual = s.loss_ratio <= 30 && s.avg_nps >= 75 ? 'Premium' : s.loss_ratio <= 50 && s.avg_nps >= 65 ? 'Good' : s.loss_ratio <= 65 ? 'Watch' : 'Remediate'; const qualColor = qual === 'Premium' ? 'green' : qual === 'Good' ? 'blue' : qual === 'Watch' ? 'amber' : 'red'; return `
+        <tr>
+          <td><strong>${s.industry}</strong></td>
+          <td>${s.clients}</td>
+          <td><strong>$${(s.premium/1e6).toFixed(2)}M</strong></td>
+          <td><div style="display:flex; align-items:center; gap:6px;"><div style="width:60px; height:6px; background:var(--bg-card); border-radius:3px; overflow:hidden;"><div style="height:100%; width:${(s.premium/max)*100}%; background:var(--mga-accent);"></div></div><span>${((s.premium/14_200_000)*100).toFixed(0)}%</span></div></td>
+          <td><strong style="color:${s.avg_nps>=75?'var(--status-green)':s.avg_nps>=55?'var(--mga-accent)':'var(--status-amber)'};">${s.avg_nps}</strong></td>
+          <td><strong style="color:${s.loss_ratio<=30?'var(--status-green)':s.loss_ratio<=60?'var(--mga-accent)':'var(--status-red)'};">${s.loss_ratio}%</strong></td>
+          <td>${badge(qualColor, qual)}</td>
+        </tr>`; }).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">CONCENTRATION RISK</div>
+      <div style="padding: var(--space-md); background: rgba(255,171,0,0.1); border-left: 3px solid var(--status-amber); border-radius:var(--radius-sm); margin-bottom: var(--space-sm); font-size:0.85rem;">
+        ⚠ Construction is 22% of book — above 20% concentration threshold. Consider diversification.
+      </div>
+      <div style="padding: var(--space-md); background: rgba(0,230,118,0.1); border-left: 3px solid var(--status-green); border-radius:var(--radius-sm); margin-bottom: var(--space-sm); font-size:0.85rem;">
+        ✓ Top 3 industries (Construction, Tech, Healthcare) account for 57% of premium with LR &lt; 25%.
+      </div>
+      <div style="padding: var(--space-md); background: rgba(255,82,82,0.1); border-left: 3px solid var(--status-red); border-radius:var(--radius-sm); font-size:0.85rem;">
+        ⚠ Food Services segment has 62% LR — above profitable threshold. Review underwriting.
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">GROWTH OPPORTUNITIES</div>
+      ${[
+        { seg: 'Tech',        growth: '+24%', note: '18 clients · high NPS · LR 14%' },
+        { seg: 'Healthcare',  growth: '+18%', note: '16 clients · best LR 12% · expanding locations' },
+        { seg: 'Construction',growth: '+12%', note: 'Largest segment · stable · referrals strong' }
+      ].map(o => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle);">
+          <div><strong>${o.seg}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${o.note}</div></div>
+          <strong style="color:var(--status-green);">${o.growth} YoY</strong>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderClientsRetention() {
+  const a = D.clientAnalytics;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Retention &amp; Churn Analytics</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Quarterly retention · churn by tier · at-risk clients · save actions</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Launching remediation campaign for ' + ${a.at_risk.length} + ' at-risk clients')">🛟 Save At-Risk</button>
+  </div>
+
+  ${_clientSubNav('clients-retention')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">QUARTERLY RETENTION TREND</div>
+      <div style="display:flex; align-items:flex-end; gap:var(--space-md); height: 200px; padding-bottom: var(--space-md);">
+        ${a.retention_quarterly.map(q => `
+          <div style="flex:1; text-align:center;">
+            <div style="color:var(--text-muted); font-size:0.75rem;">${q.rate}%</div>
+            <div style="background:linear-gradient(180deg, var(--mga-accent), #a67dff); height:${q.rate*2}px; border-radius:var(--radius-sm); margin: 4px 0;"></div>
+            <div style="font-size:0.8rem; font-weight:600;">${q.q}</div>
+            <div style="color:var(--text-muted); font-size:0.7rem;">${q.retained}R / ${q.lost}L</div>
+          </div>`).join('')}
+      </div>
+      <div style="padding: var(--space-sm); background: rgba(0,230,118,0.1); border-radius:var(--radius-sm); font-size:0.82rem; color:var(--status-green);">
+        ✓ 5-quarter average retention: 93.4%. Within top-quartile industry benchmark.
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">CHURN BY TIER</div>
+      ${a.churn_by_tier.map(t => `
+        <div style="margin-bottom: var(--space-md);">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <span>${_tierBadge(t.tier)} <span style="color:var(--text-muted);">· ${t.churn} lost</span></span>
+            <strong style="color:${t.rate<=5?'var(--status-green)':t.rate<=12?'var(--mga-accent)':'var(--status-amber)'};">${t.rate}%</strong>
+          </div>
+          <div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden;"><div style="height:100%; width:${t.rate*4}%; background:${t.rate<=5?'var(--status-green)':t.rate<=12?'var(--mga-accent)':'var(--status-amber)'};"></div></div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">AT-RISK CLIENTS — SAVE ACTIONS</div>
+    <table class="data-table">
+      <thead><tr><th>Client</th><th>Risk Reason</th><th>Producer</th><th>Recommended Action</th><th>Action</th></tr></thead>
+      <tbody>
+        ${a.at_risk.map(r => `
+        <tr>
+          <td><strong>${r.client}</strong></td>
+          <td style="font-size:0.85rem;">${r.reason}</td>
+          <td style="font-size:0.82rem;">${r.producer}</td>
+          <td style="font-size:0.85rem;">${r.action}</td>
+          <td><button class="btn btn-secondary btn-sm" onclick="window.showAlert('Starting save campaign for ${r.client}')">Execute</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function renderClientsCrossSell() {
+  const opps = D.clientAnalytics.cross_sell_opportunities;
+  const total_opp = opps.reduce((s,o) => s + o.est_premium, 0);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Cross-Sell Opportunity Analyzer</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${opps.length} opportunities identified · $${(total_opp/1000).toFixed(0)}k potential premium · AI-scored fit</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Creating prospects for all ' + ${opps.length} + ' cross-sell opportunities')">🚀 Convert All to Prospects</button>
+  </div>
+
+  ${_clientSubNav('clients-crosssell')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Opportunities</div><div class="kpi-value">${opps.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Potential Premium</div><div class="kpi-value">$${(total_opp/1000).toFixed(0)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Fit Score</div><div class="kpi-value">${Math.round(opps.reduce((s,o)=>s+o.fit,0)/opps.length)}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">High-Fit (≥85)</div><div class="kpi-value">${opps.filter(o=>o.fit>=85).length}</div></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">IDENTIFIED OPPORTUNITIES</div>
+    <table class="data-table">
+      <thead><tr><th>Client</th><th>Coverage Gap</th><th>Rationale</th><th>Est. Premium</th><th>Fit</th><th>Producer</th><th>Action</th></tr></thead>
+      <tbody>
+        ${opps.map(o => `
+        <tr>
+          <td><strong>${o.client}</strong></td>
+          <td>${badge('amber', o.gap)}</td>
+          <td style="font-size:0.85rem; max-width:380px;">${o.rationale}</td>
+          <td><strong>$${(o.est_premium/1000).toFixed(0)}k</strong></td>
+          <td>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <div class="market-fit-bar"><div class="market-fit-fill" style="width:${o.fit}%; background:${o.fit>=85?'var(--status-green)':'var(--mga-accent)'};"></div></div>
+              <strong style="color:${o.fit>=85?'var(--status-green)':'var(--mga-accent)'};">${o.fit}%</strong>
+            </div>
+          </td>
+          <td style="font-size:0.82rem;">${o.producer}</td>
+          <td style="display:flex; gap:4px;">
+            <button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'prospect-wizard', prospectWizardStep:1})">Create Prospect</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'submission', wizardStep:1})">Quote</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">💡 CROSS-SELL PLAYBOOK</div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); font-size:0.85rem; line-height:1.6;">
+      <div style="padding:var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>🎯 Best timing</strong>
+        <p style="color:var(--text-muted); margin-top:6px;">30–60 days before existing renewal — natural review moment.</p>
+      </div>
+      <div style="padding:var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>📊 Highest close rate</strong>
+        <p style="color:var(--text-muted); margin-top:6px;">Cyber adds to existing GL clients — 62% close rate historically.</p>
+      </div>
+      <div style="padding:var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>⚡ Fastest to revenue</strong>
+        <p style="color:var(--text-muted); margin-top:6px;">Umbrella to Auto/GL clients — &lt; 14 days typical.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderClientsAIAssistant() {
+  const chat = D.clientAIChat;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">AI Client Assistant</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Search, summarize, and analyze across your ${D.brokerClients.length} clients</div>
+    </div>
+  </div>
+
+  ${_clientSubNav('clients-ai')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); display:flex; flex-direction:column; min-height:540px;">
+      <div style="flex:1; overflow-y:auto; padding-right:8px;">
+        ${chat.map(m => `
+          <div class="doc-ai-msg doc-ai-msg-${m.role}">
+            <div class="doc-ai-avatar doc-ai-avatar-${m.role}">${m.role==='ai'?'🤖':'🧑‍💼'}</div>
+            <div class="doc-ai-bubble">${m.text.replace(/\n/g,'<br/>')}</div>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top: var(--space-md); display:flex; gap: var(--space-sm);">
+        <input class="form-input" style="flex:1;" placeholder="Ask about any client, segment, or book metric..."/>
+        <button class="btn btn-primary" onclick="window.showAlert('AI processing your request…')">Send →</button>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">SUGGESTED PROMPTS</div>
+        ${[
+          'Show my top-10 at-risk clients',
+          'Which Platinum clients need a QBR?',
+          'Cross-sell opportunities for Magnolia',
+          'Summarize TechCorp\'s coverage package',
+          'Clients with single LOB above $50k premium',
+          'Industry segments with LR > 60%'
+        ].map(p => `<div class="doc-ai-prompt" onclick="window.showAlert('Running: ${p}')">${p}</div>`).join('')}
+      </div>
     </div>
   </div>`;
 }
@@ -6045,6 +6807,8 @@ function renderBrokerCommissions() {
     <h2 style="margin:0;">Commission Management</h2>
     <div style="display:flex; gap:var(--space-sm); flex-wrap:wrap;">
       <button class="btn btn-secondary" onclick="window.setState({screen:'commission-recon'})">🔄 Reconciliation</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'commission-exception'})">⚠ Exceptions</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'commission-producer'})">👤 Producer View</button>
       <button class="btn btn-secondary" onclick="window.setState({screen:'commission-statements'})">📥 Statements</button>
       <button class="btn btn-secondary" onclick="window.setState({screen:'commission-payout-approval'})">💸 Payouts</button>
       <button class="btn btn-secondary" onclick="window.setState({screen:'commission-schedules'})">📋 Schedules</button>
@@ -6113,27 +6877,29 @@ function renderBrokerCommissions() {
       <button class="btn btn-ghost btn-sm" id="comm-reset">Reset</button>
     </div>
     <div class="data-table-wrapper">
+      <div class="table-scroll">
       <table class="data-table">
         <thead><tr><th>Comm ID</th><th>Carrier</th><th>Policy / Client</th><th>LOB</th><th>Type</th><th>Premium</th><th>Rate</th><th>Earned</th><th>Paid</th><th>Expected Pay</th><th>Producer</th><th>Status</th><th>Action</th></tr></thead>
         <tbody>
           ${rows.length === 0 ? `<tr><td colspan="13" style="text-align:center; color:var(--text-muted); padding:var(--space-xl);">No commission records match these filters.</td></tr>` : rows.map(c => `
           <tr style="${c.status==='Exception'?'background:rgba(255,82,82,0.04);':''}">
-            <td><strong style="color:var(--mga-accent); font-family:monospace;">${c.id}</strong>${c.statement ? `<div style="font-size:0.7rem; color:var(--text-muted);">${c.statement}</div>` : ''}</td>
-            <td>${c.carrier}</td>
-            <td>${c.client}<div style="font-family:monospace; font-size:0.7rem; color:var(--text-muted);">${c.policy}</div></td>
-            <td>${c.lob}</td>
-            <td>${c.txType === 'Clawback' ? badge('gray', c.txType) : c.txType === 'Contingent' ? badge('blue', c.txType) : c.txType === 'Override/Bonus' ? badge('amber', c.txType) : c.txType}</td>
-            <td>${c.premium < 0 ? '<span style="color:var(--status-red);">-$'+Math.abs(c.premium).toLocaleString()+'</span>' : '$'+c.premium.toLocaleString()}</td>
+            <td style="white-space:nowrap;"><strong style="color:var(--mga-accent); font-family:monospace;">${c.id}</strong>${c.statement ? `<div style="font-size:0.7rem; color:var(--text-muted);">${c.statement}</div>` : ''}</td>
+            <td style="white-space:nowrap;">${c.carrier}</td>
+            <td style="white-space:nowrap;">${c.client}<div style="font-family:monospace; font-size:0.7rem; color:var(--text-muted);">${c.policy}</div></td>
+            <td style="white-space:nowrap;">${c.lob}</td>
+            <td style="white-space:nowrap;">${c.txType === 'Clawback' ? badge('gray', c.txType) : c.txType === 'Contingent' ? badge('blue', c.txType) : c.txType === 'Override/Bonus' ? badge('amber', c.txType) : c.txType}</td>
+            <td style="white-space:nowrap;">${c.premium < 0 ? '<span style="color:var(--status-red);">-$'+Math.abs(c.premium).toLocaleString()+'</span>' : '$'+c.premium.toLocaleString()}</td>
             <td>${c.rate}%</td>
-            <td><strong style="color:${c.earned<0?'var(--status-red)':'var(--text-primary)'};">${c.earned<0?'-$'+Math.abs(c.earned).toLocaleString():'$'+c.earned.toLocaleString()}</strong></td>
-            <td>${c.paid ? '$'+c.paid.toLocaleString() : '<span style="color:var(--text-muted);">—</span>'}</td>
-            <td style="font-size:0.85rem;">${c.expected_pay}${c.paid_date ? `<div style="font-size:0.7rem; color:var(--status-green);">Paid ${c.paid_date}</div>` : ''}</td>
-            <td style="font-size:0.85rem;">${c.producer}</td>
-            <td>${badge(c.statusColor, c.status)}${c.exception_reason ? `<div style="font-size:0.7rem; color:var(--status-red); margin-top:2px;">${c.exception_reason}</div>` : ''}</td>
+            <td style="white-space:nowrap;"><strong style="color:${c.earned<0?'var(--status-red)':'var(--text-primary)'};">${c.earned<0?'-$'+Math.abs(c.earned).toLocaleString():'$'+c.earned.toLocaleString()}</strong></td>
+            <td style="white-space:nowrap;">${c.paid ? '$'+c.paid.toLocaleString() : '<span style="color:var(--text-muted);">—</span>'}</td>
+            <td style="font-size:0.85rem; white-space:nowrap;">${c.expected_pay}${c.paid_date ? `<div style="font-size:0.7rem; color:var(--status-green);">Paid ${c.paid_date}</div>` : ''}</td>
+            <td style="font-size:0.85rem; white-space:nowrap;">${c.producer}</td>
+            <td style="white-space:nowrap;">${badge(c.statusColor, c.status)}${c.exception_reason ? `<div style="font-size:0.7rem; color:var(--status-red); margin-top:2px;">${c.exception_reason}</div>` : ''}</td>
             <td>${c.status === 'Exception' ? `<button class="btn btn-primary btn-sm" onclick="window.setState({screen:'commission-exception', currentExceptionId:'${c.id}'})">Resolve</button>` : c.status === 'Pending' ? `<button class="btn btn-secondary btn-sm" onclick="window.showAlert('Commission ${c.id} approval requested')">Request</button>` : `<button class="btn btn-ghost btn-sm" onclick="window.showAlert('Commission detail for ${c.id}')">View</button>`}</td>
           </tr>`).join('')}
         </tbody>
       </table>
+      </div>
       <div style="padding: var(--space-md); color: var(--text-muted); font-size: 0.8rem;">Showing ${rows.length} commission line${rows.length===1?'':'s'} · Total earned: $${rows.reduce((s,c)=>s+c.earned,0).toLocaleString()}</div>
     </div>
   </div>
@@ -8288,6 +9054,2243 @@ function renderOnboardingAnalytics() {
   </div>`;
 }
 
+// ════════════════════════════════════════════════════════════════
+// DOCUMENTS MODULE
+// ════════════════════════════════════════════════════════════════
+const _docStatusColor = {
+  'Signed': 'green', 'Active': 'green', 'Pending Signature': 'amber',
+  'Pending Review': 'amber', 'Expiring': 'amber', 'Draft': 'gray',
+  'Archived': 'gray', 'Expired': 'red'
+};
+
+function _docSubNav(active) {
+  const tabs = [
+    { key: 'documents',             label: 'Library',       icon: '📚' },
+    { key: 'document-esign',        label: 'e-Signature',   icon: '✍️' },
+    { key: 'document-upload',       label: 'Upload / Import', icon: '⬆️' },
+    { key: 'document-checklist',    label: 'Checklists',    icon: '☑' },
+    { key: 'document-compliance',   label: 'Compliance',    icon: '⚖️' },
+    { key: 'document-analytics',    label: 'Analytics',     icon: '📊' },
+    { key: 'document-ai',           label: 'AI Assistant',  icon: '🤖' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderDocumentsLibrary() {
+  const q = (state.docQuery || '').toLowerCase();
+  const cat = state.docCategory || 'all';
+  const docs = D.documentLibrary.filter(d =>
+    (cat === 'all' || d.category === cat) &&
+    (!q || d.name.toLowerCase().includes(q) || d.client.toLowerCase().includes(q) || d.policy.toLowerCase().includes(q) || d.id.toLowerCase().includes(q))
+  );
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Document Management &amp; e-Signature</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Centralized, audit-ready vault · ACORD / DOI / HIPAA / GLBA compliant</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'document-upload'})">⬆ Upload</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'document-esign'})">✍ Send for Signature</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Generating new document from template…')">+ New Document</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.documentKPIs, 6)}
+
+  ${_docSubNav('documents')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">DOCUMENT CATEGORIES</div>
+      <div class="doc-category-grid">
+        <div class="doc-category-card${cat==='all'?' active':''}" onclick="window.setState({docCategory:'all'})">
+          <span class="doc-category-icon">📁</span>
+          <div><strong>All Documents</strong><div style="color:var(--text-muted); font-size:0.8rem;">Everything</div></div>
+          <span class="doc-category-count">${D.documentLibrary.length}</span>
+        </div>
+        ${D.documentCategories.map(c => `
+          <div class="doc-category-card${cat===c.key?' active':''}" onclick="window.setState({docCategory:'${c.key}'})">
+            <span class="doc-category-icon">${c.icon}</span>
+            <div><strong>${c.name}</strong><div style="color:var(--text-muted); font-size:0.8rem;">${c.desc}</div></div>
+            <span class="doc-category-count">${c.count}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">STATUS WORKFLOW</div>
+      <div class="doc-status-flow">
+        ${D.documentStatuses.map((s,i) => `
+          <div class="doc-status-step">
+            <span class="doc-status-dot doc-status-${(_docStatusColor[s]||'gray')}"></span>
+            <span>${s}</span>
+          </div>
+          ${i < D.documentStatuses.length-1 ? '<span class="doc-status-arrow">›</span>' : ''}
+        `).join('')}
+      </div>
+      <div style="margin-top: var(--space-md); display:flex; gap:var(--space-sm); flex-wrap:wrap; font-size:0.78rem;">
+        <span class="doc-legend"><span class="doc-legend-dot" style="background:var(--status-green);"></span>Compliant</span>
+        <span class="doc-legend"><span class="doc-legend-dot" style="background:var(--status-amber);"></span>Expiring</span>
+        <span class="doc-legend"><span class="doc-legend-dot" style="background:var(--status-red);"></span>Missing</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-md); align-items:center;">
+      <div style="flex:1; position:relative;">
+        <input type="text" class="form-input" placeholder="🔍 Search documents, clients, policies, IDs..." value="${state.docQuery || ''}" style="padding-left:12px;" oninput="window.setState({docQuery:this.value})"/>
+      </div>
+      <select class="form-input" style="width:160px;"><option>All LOB</option><option>Workers Comp</option><option>General Liability</option><option>Cyber</option><option>BOP</option></select>
+      <select class="form-input" style="width:160px;"><option>All Status</option>${D.documentStatuses.map(s=>`<option>${s}</option>`).join('')}</select>
+      <button class="btn btn-secondary btn-sm" onclick="window.showAlert('Exporting ${docs.length} documents to CSV')">Export</button>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>ID</th><th>Document</th><th>Type</th><th>Client / Policy</th><th>LOB</th><th>Version</th><th>Status</th><th>Expires</th><th>Uploaded</th><th>Action</th></tr></thead>
+      <tbody>
+        ${docs.map(d => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.8rem;">${d.id}</td>
+          <td><strong style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'document-details', currentDocId:'${d.id}'})">${d.name}</strong><div style="color:var(--text-muted); font-size:0.75rem;">${d.size}</div></td>
+          <td>${d.type}</td>
+          <td><div><strong>${d.client}</strong></div><div style="color:var(--text-muted); font-size:0.75rem; font-family:monospace;">${d.policy}</div></td>
+          <td>${d.lob}</td>
+          <td>v${d.version}</td>
+          <td>${badge(d.statusColor, d.status)}</td>
+          <td style="font-size:0.85rem;">${d.expires}</td>
+          <td style="font-size:0.85rem;"><div>${d.uploaded}</div><div style="color:var(--text-muted); font-size:0.75rem;">${d.uploadedBy}</div></td>
+          <td style="display:flex; gap:4px;">
+            <button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'document-details', currentDocId:'${d.id}'})">View</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Downloading ${d.name}')">⬇</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    ${docs.length === 0 ? `<div style="text-align:center; color:var(--text-muted); padding: var(--space-xl);">No documents found for this filter.</div>` : ''}
+  </div>`;
+}
+
+function renderDocumentDetails() {
+  const d = D.documentDetail;
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'documents'})" style="padding:4px 8px; margin-left:-8px;">← Back to Library</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">${d.name}</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px; font-family:monospace;">${d.id} · ${d.type} · v${d.version} · ${d.size} · ${d.pages} pages</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Downloading ${d.name}')">⬇ Download</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Share link copied — expires in 7 days')">🔗 Share</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Reminder sent to 2 pending signers')">🔔 Remind</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'document-esign'})">✍ e-Signature</button>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">DOCUMENT PREVIEW</div>
+      <div class="doc-preview">
+        <div class="doc-preview-page">
+          <div class="doc-preview-watermark">BINDER</div>
+          <div style="display:flex; justify-content:space-between; border-bottom: 2px solid #4a4af0; padding-bottom:8px; margin-bottom:16px;">
+            <div>
+              <div style="font-size:0.7rem; color:#888;">CERTIFICATE OF INSURANCE / BINDER</div>
+              <div style="font-weight:700; font-size:1.1rem; color:#111;">Liberty Mutual Insurance</div>
+            </div>
+            <div style="text-align:right; font-family:monospace; font-size:0.75rem; color:#4a4af0;">BDR-48821-05</div>
+          </div>
+          <div style="font-size:0.75rem; color:#333; line-height:1.6;">
+            <p><strong>Named Insured:</strong> ${d.client}</p>
+            <p><strong>Policy #:</strong> ${d.policy}</p>
+            <p><strong>Effective:</strong> ${d.effective}</p>
+            <p style="margin-top:10px;">This binder evidences temporary coverage subject to the conditions described in the attached policy schedule. Full policy will be issued within 30 days.</p>
+            <p style="margin-top:10px; color:#888; font-size:0.65rem;">— Page 1 of ${d.pages} —</p>
+          </div>
+        </div>
+        <div style="display:flex; gap:var(--space-sm); margin-top: var(--space-md); align-items:center; justify-content:center;">
+          <button class="btn btn-ghost btn-sm">◀</button>
+          <span style="color:var(--text-muted); font-size:0.85rem;">Page 1 of ${d.pages}</span>
+          <button class="btn btn-ghost btn-sm">▶</button>
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Comparing v1 vs v2 side-by-side')">⇄ Compare Versions</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">STATUS</div>
+        <div style="margin-bottom:var(--space-md);">${badge('amber', d.status)}</div>
+        <div style="font-size:0.85rem; line-height:1.9;">
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Uploaded</span><span>${d.uploaded}</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Uploaded By</span><span>${d.uploadedBy}</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Effective</span><span>${d.effective}</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Sign Deadline</span><strong style="color:var(--status-amber);">${d.expires}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Confidentiality</span><span>${d.confidentiality}</span></div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">LINKED ENTITIES</div>
+        <div style="font-size:0.85rem; line-height:1.9;">
+          <div>👥 <strong>${d.client}</strong></div>
+          <div style="font-family:monospace; color:var(--text-muted);">📋 ${d.policy}</div>
+          <div>🏢 ${d.carrier}</div>
+          <div>📂 ${d.lob}</div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">SECURITY &amp; RETENTION</div>
+        <div style="font-size:0.82rem; line-height:1.8;">
+          <div><span style="color:var(--text-muted);">Encryption:</span> ${d.encryption}</div>
+          <div><span style="color:var(--text-muted);">Retention:</span> ${d.retention}</div>
+          <div><span style="color:var(--text-muted);">Deletion Date:</span> ${d.deletion}</div>
+          <div><span style="color:var(--text-muted);">Last Accessed:</span> ${d.lastAccessed}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">SIGNERS &amp; SIGNATURE TRAIL</div>
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Signed At</th><th>IP / Method</th></tr></thead>
+        <tbody>
+          ${d.signers.map(s => `
+          <tr>
+            <td><strong>${s.name}</strong></td>
+            <td>${s.role}</td>
+            <td>${badge(s.status==='Signed'?'green':s.status==='Viewed'?'amber':'blue', s.status)}</td>
+            <td style="font-size:0.82rem;">${s.signed}</td>
+            <td style="font-size:0.75rem; color:var(--text-muted);">${s.ip}<br/>${s.method}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">METADATA</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; font-size:0.85rem;">
+        ${d.metadata.map(m => `<div><div style="color:var(--text-muted); font-size:0.75rem;">${m.k}</div><strong>${m.v}</strong></div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">VERSION HISTORY</div>
+      ${d.versions.map(v => `
+        <div style="display:flex; gap:var(--space-md); padding:var(--space-sm) 0; border-bottom:1px solid var(--border-subtle);">
+          <div style="background:var(--mga-accent); color:#fff; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-sm); font-weight:700; font-size:0.85rem;">v${v.v}</div>
+          <div style="flex:1;">
+            <div style="font-size:0.85rem;">${v.change}</div>
+            <div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">${v.date} · ${v.by}</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Viewing v${v.v}')">View</button>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">AUDIT TRAIL (CHAIN-OF-CUSTODY)</div>
+      <div style="max-height:320px; overflow-y:auto;">
+      ${d.auditTrail.map(a => `
+        <div style="display:flex; gap:var(--space-sm); padding:6px 0; border-bottom:1px solid var(--border-subtle); font-size:0.82rem;">
+          <div style="color:var(--text-muted); font-family:monospace; min-width:140px;">${a.ts}</div>
+          <div style="flex:1;"><strong>${a.actor}</strong> — ${a.event}</div>
+          <div style="color:var(--text-muted); font-family:monospace; font-size:0.75rem;">${a.ip}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">ACCESS CONTROLS</div>
+    <table class="data-table">
+      <thead><tr><th>Role / User</th><th>Access Level</th><th>Action</th></tr></thead>
+      <tbody>
+        ${d.permissions.map(p => `
+        <tr>
+          <td><strong>${p.role}</strong></td>
+          <td>${badge(p.access==='Owner'?'blue':p.access==='Edit'?'green':p.access==='Sign'?'amber':'gray', p.access)}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="window.showAlert('Revoked ${p.role}')">Revoke</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function renderDocumentEsignCenter() {
+  const env = D.documentEnvelopes;
+  const pending = env.filter(e => e.status !== 'Signed');
+  const signed = env.filter(e => e.status === 'Signed');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">e-Signature Request Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Bulk send · templates · status dashboard · DocuSign / Adobe Sign / built-in</div>
+    </div>
+    <div style="display:flex; gap: var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Opening template library — 24 templates')">📋 Templates</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Bulk reminders sent — 6 envelopes')">📧 Bulk Reminder</button>
+      <button class="btn btn-primary" onclick="window.showAlert('New envelope wizard launched')">+ New Envelope</button>
+    </div>
+  </div>
+
+  ${_docSubNav('document-esign')}
+
+  <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Envelopes Sent (30d)</div><div class="kpi-value">328</div></div>
+    <div class="kpi-card"><div class="kpi-label">Pending</div><div class="kpi-value warning">${pending.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Signed (30d)</div><div class="kpi-value">${signed.length + 262}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Completion Rate</div><div class="kpi-value">82%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Sign Time</div><div class="kpi-value">4.2h</div></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">PENDING ENVELOPES</div>
+    <table class="data-table">
+      <thead><tr><th>Envelope</th><th>Document</th><th>Client</th><th>Signatory</th><th>Sent</th><th>Viewed</th><th>Expires</th><th>Provider</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        ${pending.map(e => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.8rem;">${e.id}</td>
+          <td><strong style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'document-details', currentDocId:'${e.doc}'})">${e.docName}</strong><div style="color:var(--text-muted); font-size:0.75rem; font-family:monospace;">${e.doc}</div></td>
+          <td>${e.client}</td>
+          <td>${e.signatory}</td>
+          <td style="font-size:0.82rem;">${e.sent}</td>
+          <td style="font-size:0.82rem;">${e.viewed}</td>
+          <td style="font-size:0.82rem;">${e.expires}</td>
+          <td>${e.provider}</td>
+          <td>${badge(e.status==='Viewed'?'amber':e.status==='In Progress'?'blue':'blue', e.status)}</td>
+          <td style="display:flex; gap:4px;">
+            <button class="btn btn-secondary btn-sm" onclick="window.showAlert('Reminder sent to ${e.signatory}')">Remind</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Voided ${e.id}')">Void</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">RECENTLY SIGNED</div>
+      <table class="data-table">
+        <thead><tr><th>Envelope</th><th>Document</th><th>Client</th><th>Signed</th><th>Provider</th></tr></thead>
+        <tbody>
+          ${signed.map(e => `
+          <tr>
+            <td style="font-family:monospace; font-size:0.8rem;">${e.id}</td>
+            <td><strong style="color:var(--mga-accent);">${e.docName}</strong></td>
+            <td>${e.client}</td>
+            <td style="font-size:0.82rem;">${e.signed}</td>
+            <td>${e.provider}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">QUICK TEMPLATES</div>
+      ${['ACORD 125 Commercial App','Binder + TRIA Election','COI Request','Endorsement Confirmation','Privacy & GLBA Notice','Renewal Offer Acceptance'].map(t => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+          <div><strong style="font-size:0.88rem;">${t}</strong></div>
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Launching ${t}')">Send →</button>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderDocumentUploadCenter() {
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Upload &amp; Import Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Bulk upload · carrier sync · email-to-document · OCR &amp; data extraction</div>
+    </div>
+  </div>
+
+  ${_docSubNav('document-upload')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="doc-dropzone" onclick="window.showAlert('File picker opened')">
+      <div style="font-size:3rem; margin-bottom: var(--space-sm);">⬆</div>
+      <h3 style="margin:0;">Drag &amp; drop files here</h3>
+      <div style="color:var(--text-muted); margin-top:var(--space-sm);">or <strong style="color:var(--mga-accent); cursor:pointer;">browse files</strong> — supports PDF, DOCX, JPG, PNG, XLSX up to 50 MB each</div>
+      <div style="display:flex; gap:var(--space-sm); margin-top: var(--space-lg); flex-wrap:wrap; justify-content:center;">
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('Camera opened')">📱 Mobile Camera</button>
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('Connecting to carrier portals…')">🏢 Carrier Sync</button>
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('Email intake configured — docs@quantana.com.au')">📧 Email-to-Doc</button>
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('OCR scan started — extracting fields…')">🔍 OCR &amp; Extract</button>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">AUTOMATIC FILING</div>
+      <div style="font-size:0.85rem; line-height:1.8;">
+        <div>📁 Client folder: <strong>Auto-matched by policy #</strong></div>
+        <div>🏷️ Metadata: <strong>Auto-tagged from OCR</strong></div>
+        <div>📂 Smart folder: <strong>AI categorizes</strong></div>
+        <div>✅ Compliance check: <strong>Auto-applied on upload</strong></div>
+        <div>🔔 Checklist update: <strong>Item marked done</strong></div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem; color:var(--text-muted);">
+        💡 95% of uploads file themselves with no manual tagging.
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">IN-FLIGHT UPLOADS</div>
+    ${[
+      { name: 'Loss_Run_Coastal_2023-2025.pdf', size: '2.4 MB', progress: 100, status: 'OCR Complete — auto-filed to Coastal Realty' },
+      { name: 'ACORD_125_DataCore.pdf',        size: '1.1 MB', progress: 100, status: 'Metadata extracted — pending compliance review' },
+      { name: 'COI_Certificate_Landlord.pdf',  size: '284 KB', progress: 72,  status: 'Uploading…' },
+      { name: 'Bulk_import_archive.zip',       size: '48.2 MB',progress: 44,  status: 'Expanding & scanning 124 files…' }
+    ].map(f => `
+      <div style="display:flex; gap:var(--space-md); padding: var(--space-sm) 0; align-items:center; border-bottom:1px solid var(--border-subtle);">
+        <div style="width:28px;">📄</div>
+        <div style="flex:1;">
+          <div style="display:flex; justify-content:space-between; font-size:0.88rem;"><strong>${f.name}</strong><span style="color:var(--text-muted);">${f.size}</span></div>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin:2px 0;">${f.status}</div>
+          <div style="background:var(--bg-card); height:4px; border-radius:2px; overflow:hidden;"><div style="height:100%; width:${f.progress}%; background:${f.progress===100?'var(--status-green)':'var(--mga-accent)'};"></div></div>
+        </div>
+        <div style="width:40px; text-align:right; font-size:0.82rem;">${f.progress}%</div>
+      </div>`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">CARRIER PORTAL SYNC STATUS</div>
+    <table class="data-table">
+      <thead><tr><th>Carrier</th><th>Integration</th><th>Last Sync</th><th>Pulled (30d)</th><th>Pushed (30d)</th><th>Status</th></tr></thead>
+      <tbody>
+        ${[
+          { c: 'Liberty Mutual / SEMC', i: 'API',    last: '2026-04-18 08:02', pulled: 142, pushed: 38, ok: true },
+          { c: 'CNA',                   i: 'SFTP',   last: '2026-04-18 07:20', pulled: 88,  pushed: 24, ok: true },
+          { c: 'Hartford',              i: 'API',    last: '2026-04-18 06:45', pulled: 64,  pushed: 18, ok: true },
+          { c: 'AMTrust',               i: 'Email',  last: '2026-04-17 18:10', pulled: 22,  pushed: 8,  ok: false },
+          { c: 'Travelers',             i: 'API',    last: '2026-04-18 06:10', pulled: 71,  pushed: 15, ok: true }
+        ].map(s => `
+        <tr>
+          <td><strong>${s.c}</strong></td>
+          <td>${s.i}</td>
+          <td style="font-size:0.82rem;">${s.last}</td>
+          <td>${s.pulled}</td>
+          <td>${s.pushed}</td>
+          <td>${badge(s.ok?'green':'amber', s.ok?'Healthy':'Degraded')}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function renderDocumentChecklistDashboard() {
+  const tasks = D.documentAutomatedTasks;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Document Checklist Dashboard</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Dynamic checklists tied to LOB · auto-complete on upload/sign · owner routing</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Generating new checklist from LOB template')">+ New Checklist</button>
+  </div>
+
+  ${_docSubNav('document-checklist')}
+
+  <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    ${D.documentChecklist.map(c => {
+      const pct = Math.round((c.done / c.total) * 100);
+      const color = pct === 100 ? 'var(--status-green)' : pct >= 70 ? 'var(--mga-accent)' : 'var(--status-amber)';
+      return `
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-sm);">
+            <div>
+              <strong style="font-size:1rem;">${c.client}</strong>
+              <div style="font-family:monospace; color:var(--text-muted); font-size:0.78rem;">${c.policy}</div>
+            </div>
+            <span style="background:var(--bg-card); padding:4px 8px; border-radius:var(--radius-sm); font-size:0.78rem;">${c.lob}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <span style="color:var(--text-muted);">${c.done}/${c.total} complete</span>
+            <strong style="color:${color};">${pct}%</strong>
+          </div>
+          <div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden; margin-bottom: var(--space-md);"><div style="height:100%; width:${pct}%; background:${color};"></div></div>
+          ${c.items.map(i => `
+            <div style="display:flex; align-items:center; gap: var(--space-sm); padding: 4px 0; font-size:0.82rem;">
+              <span style="width:16px; height:16px; border-radius:50%; background:${i.status==='done'?'var(--status-green)':'var(--bg-card)'}; border:${i.status==='done'?'none':'2px solid var(--border-medium)'}; display:inline-flex; align-items:center; justify-content:center; color:#fff; font-size:0.65rem;">${i.status==='done'?'✓':''}</span>
+              <div style="flex:1; ${i.status==='done'?'color:var(--text-muted); text-decoration:line-through;':''}">${i.name}</div>
+              <span style="color:var(--text-muted); font-size:0.72rem;">${i.owner} · ${i.due}</span>
+            </div>`).join('')}
+          <div style="margin-top: var(--space-md); font-size:0.82rem;"><span style="color:var(--text-muted);">Owner:</span> <strong>${c.owner}</strong></div>
+        </div>`;
+    }).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">AUTOMATED TASKS QUEUE</div>
+    <table class="data-table">
+      <thead><tr><th>Task ID</th><th>Task</th><th>Entity</th><th>Due</th><th>Owner</th><th>Priority</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        ${tasks.map(t => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.8rem;">${t.id}</td>
+          <td><strong>${t.task}</strong></td>
+          <td>${t.entity}</td>
+          <td style="font-size:0.82rem;">${t.due}</td>
+          <td>${t.owner}</td>
+          <td>${badge(t.priority==='Urgent'?'red':t.priority==='High'?'amber':t.priority==='Med'?'blue':'gray', t.priority)}</td>
+          <td>${badge(t.status==='Done'?'green':t.status==='In Progress'?'blue':'amber', t.status)}</td>
+          <td><button class="btn btn-secondary btn-sm" onclick="window.showAlert('Task ${t.id} marked complete')">Resolve</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function renderDocumentComplianceReport() {
+  const a = D.documentAnalytics;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Compliance &amp; Retention Reports</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">State DOI retention · e-signature audit · disclosures · audit-readiness scoring</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Generating audit report PDF')">📥 Export PDF</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Kicking off quarterly compliance sweep')">▶ Run Sweep</button>
+    </div>
+  </div>
+
+  ${_docSubNav('document-compliance')}
+
+  <div style="display:grid; grid-template-columns: 1fr 2fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); text-align:center;">
+      <div class="section-title" style="text-align:left;">AUDIT-READINESS SCORE</div>
+      <div style="font-size:4rem; font-weight:800; color:var(--status-green); margin: var(--space-md) 0;">${a.compliance_score.overall}%</div>
+      <div style="color:var(--text-muted); font-size:0.85rem;">Above 95% = audit-ready · Above 90% = strong · Below 85% = remediation</div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">SUB-SCORES</div>
+      ${a.compliance_score.subs.map(s => `
+        <div style="margin-bottom: var(--space-md);">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <span><strong>${s.k}</strong></span>
+            <strong style="color:${s.v>=95?'var(--status-green)':s.v>=90?'var(--mga-accent)':'var(--status-amber)'};">${s.v}%</strong>
+          </div>
+          <div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden;"><div style="height:100%; width:${s.v}%; background:${s.v>=95?'var(--status-green)':s.v>=90?'var(--mga-accent)':'var(--status-amber)'};"></div></div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">RETENTION BY STATE (DOI RULES)</div>
+    <table class="data-table">
+      <thead><tr><th>State</th><th>Retention Rule</th><th>Docs Under Rule</th><th>Oldest Doc</th><th>Auto-Delete</th><th>Status</th></tr></thead>
+      <tbody>
+        ${a.retention.map(r => `
+        <tr>
+          <td><strong>${r.state}</strong></td>
+          <td>${r.years} years</td>
+          <td>${r.docs.toLocaleString()}</td>
+          <td style="font-size:0.82rem; color:var(--text-muted);">${2026 - r.years}-01-01</td>
+          <td>${badge('green','Enabled')}</td>
+          <td>${badge(r.compliant?'green':'amber', r.compliant?'Compliant':'Review Needed')}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">E-SIGNATURE AUDIT TRAIL — LAST 30 DAYS</div>
+      <div style="font-size:0.85rem; line-height:1.9;">
+        <div style="display:flex; justify-content:space-between;"><span>Envelopes Sent</span><strong>328</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span>Signed w/ IP + timestamp</span><strong style="color:var(--status-green);">268 (100%)</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span>Multi-factor auth used</span><strong style="color:var(--status-green);">244 (91%)</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span>Avg authentication strength</span><strong>SMS OTP + ID</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span>Disputes / Voided</span><strong>4</strong></div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">OPEN COMPLIANCE ITEMS</div>
+      ${[
+        { item: 'FL retention policy review',        severity: 'Medium', due: '2026-04-30' },
+        { item: 'Privacy notice refresh — GLBA 2026', severity: 'High',  due: '2026-04-25' },
+        { item: 'Signed disclosure audit — Q1 batch', severity: 'Low',   due: '2026-05-10' },
+        { item: 'HIPAA BAA renewals (5 carriers)',    severity: 'Medium',due: '2026-05-15' }
+      ].map(i => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle);">
+          <div><strong>${i.item}</strong><div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">Due ${i.due}</div></div>
+          ${badge(i.severity==='High'?'red':i.severity==='Medium'?'amber':'gray', i.severity)}
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderDocumentAnalytics() {
+  const a = D.documentAnalytics;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Document Analytics</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Completion · e-sign funnel · time-to-package · storage · top doc types</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <select class="form-input" style="width:160px;"><option>Last 30 days</option><option>YTD</option><option>Last 12 months</option></select>
+      <button class="btn btn-primary" onclick="window.showAlert('Export queued — document analytics')">Export</button>
+    </div>
+  </div>
+
+  ${_docSubNav('document-analytics')}
+
+  ${kpiCards(D.documentKPIs, 6)}
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg); margin-top: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">COMPLETION RATE BY PRODUCER</div>
+      <table class="data-table">
+        <thead><tr><th>Producer</th><th>Packages</th><th>Avg Days</th><th>Rate</th></tr></thead>
+        <tbody>
+          ${a.completion_by_producer.map(p => `
+          <tr>
+            <td><strong>${p.name}</strong></td>
+            <td>${p.packages}</td>
+            <td>${p.avg_days}d</td>
+            <td><strong style="color:${p.rate>=90?'var(--status-green)':p.rate>=85?'var(--mga-accent)':'var(--status-amber)'};">${p.rate}%</strong></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">E-SIGNATURE FUNNEL</div>
+      ${a.esign_funnel.map((s,i) => `
+        <div style="margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <span><strong>${s.stage}</strong> <span style="color:var(--text-muted);">${s.count}</span></span>
+            <strong>${s.pct}%</strong>
+          </div>
+          <div style="background:var(--bg-card); height:22px; border-radius:4px; overflow:hidden; position:relative;">
+            <div style="height:100%; width:${s.pct}%; background:linear-gradient(90deg, var(--mga-accent), #a67dff);"></div>
+          </div>
+        </div>`).join('')}
+      <div style="margin-top:var(--space-md); padding:var(--space-sm); background:var(--bg-card); border-radius:var(--radius-md); font-size:0.82rem; color:var(--text-muted);">
+        💡 Biggest drop-off: Started → Completed (4%). Consider simplifying multi-page binder.
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">TIME TO FULL DOCUMENT PACKAGE</div>
+      ${a.time_to_package.map(r => `
+        <div style="display:flex; align-items:center; margin-bottom: var(--space-sm); font-size:0.9rem;">
+          <div style="width:120px;">${r.range}</div>
+          <div style="flex:1; background:var(--bg-card); height:10px; border-radius:5px; overflow:hidden; margin:0 var(--space-sm);"><div style="height:100%; width:${r.pct*2}%; background:${r.range.startsWith('<')?'var(--status-green)':r.range.startsWith('3')?'var(--mga-accent)':'var(--status-amber)'};"></div></div>
+          <div style="width:90px; text-align:right;"><strong>${r.count}</strong> <span style="color:var(--text-muted);">(${r.pct}%)</span></div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">STORAGE USAGE &amp; COST</div>
+      <table class="data-table">
+        <thead><tr><th>Tier</th><th>GB</th><th>Monthly Cost</th></tr></thead>
+        <tbody>
+          ${a.storage.map(s => `
+          <tr>
+            <td><strong>${s.tier}</strong></td>
+            <td>${s.gb} GB</td>
+            <td>${s.cost}</td>
+          </tr>`).join('')}
+          <tr style="background:var(--bg-card); font-weight:700;">
+            <td>TOTAL</td>
+            <td>${a.storage.reduce((s,x)=>s+x.gb,0)} GB</td>
+            <td>$207/mo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">MOST REQUESTED DOCUMENT TYPES</div>
+    ${a.top_doc_types.map(t => `
+      <div style="display:flex; align-items:center; margin-bottom: var(--space-sm); font-size:0.9rem;">
+        <div style="width:160px;"><strong>${t.type}</strong></div>
+        <div style="flex:1; background:var(--bg-card); height:12px; border-radius:6px; overflow:hidden; margin:0 var(--space-sm);">
+          <div style="height:100%; width:${(t.count/1300)*100}%; background:${t.bottleneck?'var(--status-amber)':'var(--mga-accent)'};"></div>
+        </div>
+        <div style="width:120px; text-align:right;"><strong>${t.count.toLocaleString()}</strong> ${t.bottleneck?`<span style="color:var(--status-amber); font-size:0.75rem;">⚠ bottleneck</span>`:''}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderDocumentAIAssistant() {
+  const chat = D.documentAIChat;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">AI Document Assistant</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Chat to find, summarize, draft, or send any document · OCR-aware · audit-safe</div>
+    </div>
+  </div>
+
+  ${_docSubNav('document-ai')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); display:flex; flex-direction:column; min-height:540px;">
+      <div style="flex:1; overflow-y:auto; padding-right:8px;">
+        ${chat.map(m => `
+          <div class="doc-ai-msg doc-ai-msg-${m.role}">
+            <div class="doc-ai-avatar doc-ai-avatar-${m.role}">${m.role==='ai'?'🤖':'🧑‍💼'}</div>
+            <div class="doc-ai-bubble">${m.text.replace(/\n/g,'<br/>')}</div>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top: var(--space-md); display:flex; gap: var(--space-sm);">
+        <input class="form-input" style="flex:1;" placeholder="Ask about any document — e.g. 'Find all unsigned binders for Magnolia'"/>
+        <button class="btn btn-primary" onclick="window.showAlert('AI processing your request…')">Send →</button>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap: var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">SUGGESTED PROMPTS</div>
+        ${[
+          'Show unsigned binders expiring this week',
+          'Summarize the Magnolia WC policy package',
+          'Draft a COI request for Apex Industries',
+          'List documents missing GLBA disclosure',
+          'Find all Loss Runs uploaded in last 30 days',
+          'Compare v1 and v2 of DOC-10480'
+        ].map(p => `
+          <div class="doc-ai-prompt" onclick="window.showAlert('Running: ${p}')">${p}</div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">CAPABILITIES</div>
+        <div style="font-size:0.85rem; line-height:1.9;">
+          <div>🔍 Semantic search across ${D.documentLibrary.length}+ docs</div>
+          <div>📝 Auto-summary of any policy or claim</div>
+          <div>✍ Draft endorsements, COIs, letters</div>
+          <div>📊 Extract fields from scanned PDFs (OCR)</div>
+          <div>⚖ Flag missing disclosures</div>
+          <div>🔐 Audit-safe — all actions logged</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// MARKET ROUTING MODULE
+// ════════════════════════════════════════════════════════════════
+function _marketSubNav(active) {
+  const tabs = [
+    { key: 'market',           label: 'Dashboard',      icon: '📡' },
+    { key: 'market-wizard',    label: 'Routing Wizard', icon: '🧭' },
+    { key: 'market-quotes',    label: 'Quote Compare',  icon: '⚖' },
+    { key: 'market-appetite',  label: 'Appetite Library', icon: '📖' },
+    { key: 'market-analytics', label: 'Analytics',      icon: '📊' },
+    { key: 'market-ai',        label: 'AI Assistant',   icon: '🤖' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderMarketDashboard() {
+  const subs = D.marketSubmissions;
+  const stages = [
+    { key: 'Received',          color: 'blue'  },
+    { key: 'Data Validated',    color: 'blue'  },
+    { key: 'Appetite Scored',   color: 'amber' },
+    { key: 'Routed',            color: 'amber' },
+    { key: 'Quoted',            color: 'green' },
+    { key: 'Bound',             color: 'green' },
+    { key: 'Placed',            color: 'green' },
+    { key: 'Declined',          color: 'red'   },
+    { key: 'Withdrawn',         color: 'gray'  }
+  ];
+  const counts = stages.map(s => ({ ...s, n: subs.filter(x => x.status === s.key).length }));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Market Routing</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Intelligent carrier routing · AI appetite matching · E&amp;S &amp; specialty access</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'market-appetite'})">📖 Appetite Library</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'market-wizard'})">🧭 Route Submission</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.marketKPIs, 6)}
+
+  ${_marketSubNav('market')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">LIVE PIPELINE — ${subs.length} OPEN SUBMISSIONS</div>
+    <div class="market-pipeline">
+      ${counts.map((s,i) => `
+        <div class="market-stage market-stage-${s.color}">
+          <div class="market-stage-count">${s.n}</div>
+          <div class="market-stage-label">${s.key}</div>
+        </div>
+        ${i < counts.length-1 ? '<span class="market-stage-arrow">›</span>' : ''}`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-md); align-items:center;">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search submission, client, LOB..." oninput="window.setState({marketQuery:this.value})" value="${state.marketQuery||''}"/>
+      <select class="form-input" style="width:160px;"><option>All LOB</option><option>Workers Comp</option><option>General Liability</option><option>Cyber</option><option>BOP</option></select>
+      <select class="form-input" style="width:160px;"><option>All Status</option>${D.marketStatuses.map(s=>`<option>${s}</option>`).join('')}</select>
+      <select class="form-input" style="width:140px;"><option>All Tiers</option><option>Preferred</option><option>Standard</option><option>E&S</option></select>
+      <button class="btn btn-secondary btn-sm" onclick="window.showAlert('Exporting ${subs.length} submissions to CSV')">Export</button>
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Submission</th><th>Client</th><th>LOB</th><th>Premium</th><th>State</th><th>Fit</th><th>Carriers</th><th>Best Rate</th><th>Mode</th><th>Status</th><th>Producer</th><th>Action</th></tr></thead>
+      <tbody>
+        ${subs.filter(s => !state.marketQuery || [s.id,s.client,s.lob].some(v => v.toLowerCase().includes((state.marketQuery||'').toLowerCase()))).map(s => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'market-submission', currentSubId:'${s.id}'})">${s.id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${s.client}</strong><div style="color:var(--text-muted); font-size:0.72rem;">NAICS ${s.naics}</div></td>
+          <td style="white-space:nowrap;">${s.lob}</td>
+          <td style="white-space:nowrap;">$${s.premium.toLocaleString()}</td>
+          <td>${s.state}</td>
+          <td style="white-space:nowrap;"><div class="market-fit-bar"><div class="market-fit-fill" style="width:${s.appetite}%; background:${s.appetite>=85?'var(--status-green)':s.appetite>=70?'var(--mga-accent)':'var(--status-amber)'};"></div></div><span style="font-size:0.75rem;">${s.appetite}%</span></td>
+          <td style="white-space:nowrap;"><div style="display:flex; gap:4px; font-size:0.75rem;"><span title="Routed">📤${s.routed}</span><span title="Quoted" style="color:var(--status-green);">💬${s.quoted}</span><span title="Pending" style="color:var(--status-amber);">⏳${s.pending}</span><span title="Declined" style="color:var(--status-red);">✗${s.declined}</span></div></td>
+          <td style="white-space:nowrap;"><strong>${s.best_rate}</strong></td>
+          <td style="white-space:nowrap;">${badge(s.mode==='Auto'?'blue':'gray', s.mode)}</td>
+          <td style="white-space:nowrap;">${badge(s.statusColor, s.status)}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${s.producer}</td>
+          <td><button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'market-submission', currentSubId:'${s.id}'})">View</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">AUTOMATED ROUTING TASKS</div>
+      <table class="data-table">
+        <thead><tr><th>Task</th><th>Entity</th><th>Owner</th><th>Priority</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.marketAutomatedTasks.map(t => `
+          <tr>
+            <td><strong style="font-size:0.85rem;">${t.task}</strong></td>
+            <td style="font-size:0.8rem;">${t.entity}</td>
+            <td style="font-size:0.8rem;">${t.owner}</td>
+            <td>${badge(t.priority==='Urgent'?'red':t.priority==='High'?'amber':t.priority==='Med'?'blue':'gray', t.priority)}</td>
+            <td>${badge(t.status==='Done'?'green':t.status==='In Progress'?'blue':'amber', t.status)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">CARRIER HEALTH — RESPONSE TIME</div>
+      ${D.marketAnalytics.carrier_health.map(c => `
+        <div style="margin-bottom:var(--space-md);">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <span><strong>${c.carrier}</strong> <span style="color:var(--text-muted);">· ${c.response_hr}h avg · ${c.comp_score} comp score</span></span>
+            ${badge(c.relationship==='Strong'?'green':c.relationship==='Healthy'?'blue':'amber', c.relationship)}
+          </div>
+          <div style="background:var(--bg-card); height:6px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${Math.max(10, 100 - c.response_hr)}%; background:${c.response_hr<=20?'var(--status-green)':c.response_hr<=30?'var(--mga-accent)':'var(--status-amber)'};"></div></div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderMarketSubmissionDetail() {
+  const s = D.marketSubmissionDetail;
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'market'})" style="padding:4px 8px; margin-left:-8px;">← Back to Market Routing</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">${s.client} — Submission 360°</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px; font-family:monospace;">${s.id} · ${s.lob} · ${s.state} · NAICS ${s.naics} ${s.naics_desc} · Eff ${s.effective}</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Chasing 2 pending carriers')">🔔 Chase Pending</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'market-quotes'})">⚖ Compare Quotes</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Moving to Binding — Liberty Mutual @ 12.4%')">🔒 Bind Best Quote</button>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Appetite Score</div><div class="kpi-value" style="color:var(--status-green);">${s.appetite_score}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Completeness</div><div class="kpi-value">${s.completeness}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Red Flags</div><div class="kpi-value">${s.red_flags}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Carriers Routed</div><div class="kpi-value">${s.routed_carriers.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Premium Target</div><div class="kpi-value">$${(s.premium_target/1000).toFixed(0)}k</div></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">CARRIER RESPONSES</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Carrier</th><th>Method</th><th>Fit</th><th>Sent</th><th>Responded</th><th>Response Time</th><th>Rate</th><th>Premium</th><th>Status</th></tr></thead>
+        <tbody>
+          ${s.routed_carriers.map(c => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${c.carrier}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${c.note}</div></td>
+            <td style="white-space:nowrap;">${badge(c.method==='API'?'green':c.method==='Portal'?'blue':'gray', c.method)}</td>
+            <td style="white-space:nowrap;"><strong style="color:${c.appetite>=90?'var(--status-green)':c.appetite>=75?'var(--mga-accent)':'var(--status-amber)'};">${c.appetite}%</strong></td>
+            <td style="font-size:0.8rem; white-space:nowrap;">${c.sent}</td>
+            <td style="font-size:0.8rem; white-space:nowrap;">${c.responded}</td>
+            <td style="font-size:0.8rem; white-space:nowrap;">${c.response_hr !== null ? c.response_hr.toFixed(1) + 'h' : '—'}</td>
+            <td style="white-space:nowrap;"><strong>${c.rate}</strong></td>
+            <td style="white-space:nowrap;">${c.premium ? '$' + c.premium.toLocaleString() : '—'}</td>
+            <td style="white-space:nowrap;">${badge(c.status==='Quoted'?'green':c.status==='Declined'?'red':'amber', c.status)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">TOP RECOMMENDED MARKETS</div>
+      ${s.recommendations.map((r,i) => `
+        <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <strong>${i+1}. ${r.carrier}</strong>
+            <span style="color:var(--status-green); font-weight:700;">${r.fit}%</span>
+          </div>
+          <div style="color:var(--text-muted); font-size:0.78rem; line-height:1.5;">${r.reason}</div>
+        </div>`).join('')}
+      <button class="btn btn-primary btn-sm" style="width:100%; margin-top: var(--space-md);" onclick="window.showAlert('Re-routing to top 3 recommended markets')">Re-route to Top 3</button>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">RISK PROFILE &amp; EXPOSURES</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; font-size:0.85rem;">
+        ${s.exposures.map(e => `<div><div style="color:var(--text-muted); font-size:0.75rem;">${e.k}</div><strong>${e.v}</strong></div>`).join('')}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">ROUTING TIMELINE (AUDIT TRAIL)</div>
+      <div style="max-height:380px; overflow-y:auto;">
+      ${s.timeline.map(t => `
+        <div style="display:flex; gap:var(--space-sm); padding:8px 0; border-bottom:1px solid var(--border-subtle);">
+          <div style="font-family:monospace; color:var(--text-muted); font-size:0.75rem; min-width:120px;">${t.ts}</div>
+          <div style="flex:1; font-size:0.85rem;">${t.event}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMarketRoutingWizard() {
+  const step = state.marketWizardStep || 1;
+  const steps = ['Intake', 'Risk Profile', 'Appetite Match', 'Route', 'Confirm'];
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'market'})" style="padding:4px 8px; margin-left:-8px;">← Back to Market Routing</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Intelligent Routing Wizard</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Step-by-step guided routing · AI appetite scoring · auto-route to top markets</div>
+    </div>
+  </div>
+
+  ${_marketSubNav('market-wizard')}
+
+  <div class="market-stepper">
+    ${steps.map((s,i) => `
+      <div class="market-step${i+1 === step ? ' active' : ''}${i+1 < step ? ' done' : ''}">
+        <div class="market-step-num">${i+1 < step ? '✓' : i+1}</div>
+        <div class="market-step-label">${s}</div>
+      </div>
+      ${i < steps.length-1 ? '<div class="market-step-line"></div>' : ''}`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-xl); margin-bottom: var(--space-lg);">
+    ${step === 1 ? `
+      <h3 style="margin-top:0;">Step 1 — Submission Intake</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:var(--space-lg);">AI will auto-extract data from ACORD forms, applications, or supplemental documents.</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+        <div class="form-group"><label class="form-label">Client</label><input class="form-input" value="Magnolia Construction LLC"/></div>
+        <div class="form-group"><label class="form-label">LOB</label><select class="form-input"><option>Workers Comp</option><option>General Liability</option><option>Cyber</option><option>BOP</option></select></div>
+        <div class="form-group"><label class="form-label">Effective Date</label><input class="form-input" type="date" value="2026-05-01"/></div>
+        <div class="form-group"><label class="form-label">Premium Target</label><input class="form-input" value="$184,700"/></div>
+        <div class="form-group"><label class="form-label">State(s)</label><input class="form-input" value="CA"/></div>
+        <div class="form-group"><label class="form-label">NAICS</label><input class="form-input" value="238220 — Plumbing / HVAC Contractors"/></div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong style="color:var(--status-green);">✓ Data validated · 100% complete · 0 red flags</strong>
+          <div style="color:var(--text-muted); font-size:0.8rem;">Loss runs uploaded · W-9 on file · FEIN verified</div>
+        </div>
+        <button class="btn btn-secondary btn-sm">View Source Docs</button>
+      </div>
+    ` : step === 2 ? `
+      <h3 style="margin-top:0;">Step 2 — Risk Profile</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:var(--space-lg);">Exposures, loss history, and underwriting factors used to score carrier appetite.</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md);">
+        ${D.marketSubmissionDetail.exposures.map(e => `
+          <div class="form-group">
+            <label class="form-label">${e.k}</label>
+            <input class="form-input" value="${e.v}"/>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem; color:var(--text-muted);">
+        💡 Clean loss history (22% 3-yr LR) + low ExpMod (0.92) = Preferred tier candidate
+      </div>
+    ` : step === 3 ? `
+      <h3 style="margin-top:0;">Step 3 — Appetite Match</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:var(--space-lg);">AI-ranked carriers by fit against appetite rules. Select which markets to route to.</div>
+      ${D.marketSubmissionDetail.routed_carriers.slice(0,6).map((c,i) => `
+        <div style="display:flex; gap:var(--space-md); padding: var(--space-sm); margin-bottom: var(--space-xs); background:var(--bg-card); border-radius:var(--radius-md); align-items:center;">
+          <input type="checkbox" ${i < 5 ? 'checked' : ''}/>
+          <div style="flex:1;">
+            <strong>${i+1}. ${c.carrier}</strong>
+            <div style="color:var(--text-muted); font-size:0.78rem;">${c.note} · Method: ${c.method}</div>
+          </div>
+          <div class="market-fit-bar" style="width:120px;"><div class="market-fit-fill" style="width:${c.appetite}%; background:${c.appetite>=90?'var(--status-green)':c.appetite>=75?'var(--mga-accent)':'var(--status-amber)'};"></div></div>
+          <strong style="min-width:40px; text-align:right; color:${c.appetite>=90?'var(--status-green)':c.appetite>=75?'var(--mga-accent)':'var(--status-amber)'};">${c.appetite}%</strong>
+        </div>`).join('')}
+    ` : step === 4 ? `
+      <h3 style="margin-top:0;">Step 4 — Route Configuration</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:var(--space-lg);">Configure how submissions are dispatched — parallel, sequential, or mixed.</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+        <div class="form-group">
+          <label class="form-label">Routing Strategy</label>
+          <div class="radio-group">
+            <span class="radio-pill active">Parallel (all at once)</span>
+            <span class="radio-pill">Sequential (waterfall)</span>
+            <span class="radio-pill">Primary + fallback</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Response Deadline</label>
+          <select class="form-input"><option>48 hours (standard)</option><option>24 hours (urgent)</option><option>5 days (E&S)</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Producer Notification</label>
+          <select class="form-input"><option>On first quote received</option><option>On every quote</option><option>On all quotes in</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Client Visibility</label>
+          <select class="form-input"><option>Hidden until best quote selected</option><option>Live updates to client portal</option></select>
+        </div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(108,92,231,0.1); border:1px solid var(--border-accent); border-radius:var(--radius-md);">
+        <strong>Summary:</strong> Route to 5 carriers in parallel via API. 48h deadline. Auto-chase non-responsive carriers at 24h. Producer notified on first quote received.
+      </div>
+    ` : `
+      <h3 style="margin-top:0;">Step 5 — Review &amp; Confirm</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:var(--space-lg);">Final review before dispatch. Submission audit trail will begin upon confirmation.</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+        <div style="background:var(--bg-card); padding: var(--space-md); border-radius:var(--radius-md);">
+          <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; margin-bottom: var(--space-sm);">SUBMISSION</div>
+          <div style="font-size:0.88rem; line-height:1.9;">
+            <div><span style="color:var(--text-muted);">Client:</span> <strong>Magnolia Construction LLC</strong></div>
+            <div><span style="color:var(--text-muted);">LOB:</span> Workers Comp</div>
+            <div><span style="color:var(--text-muted);">Premium:</span> $184,700</div>
+            <div><span style="color:var(--text-muted);">State:</span> CA</div>
+            <div><span style="color:var(--text-muted);">Effective:</span> 2026-05-01</div>
+          </div>
+        </div>
+        <div style="background:var(--bg-card); padding: var(--space-md); border-radius:var(--radius-md);">
+          <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; margin-bottom: var(--space-sm);">ROUTING</div>
+          <div style="font-size:0.88rem; line-height:1.9;">
+            <div><span style="color:var(--text-muted);">Carriers:</span> <strong>5 selected</strong></div>
+            <div><span style="color:var(--text-muted);">Strategy:</span> Parallel via API</div>
+            <div><span style="color:var(--text-muted);">Deadline:</span> 48 hours</div>
+            <div><span style="color:var(--text-muted);">Auto-chase:</span> @ 24h</div>
+            <div><span style="color:var(--text-muted);">Producer alert:</span> First quote</div>
+          </div>
+        </div>
+      </div>
+      <div id="route-result" style="display:none; margin-top: var(--space-md); padding: var(--space-md); background: rgba(0,230,118,0.12); border-left: 4px solid var(--status-green); border-radius:var(--radius-md);">
+        <strong style="color:var(--status-green);">✓ Submission routed to 5 carriers.</strong> Envelope SUB-92199 created. Tracking active. You'll receive a notification when the first quote arrives.
+      </div>
+    `}
+  </div>
+
+  <div style="display:flex; justify-content:space-between;">
+    <button class="btn btn-secondary" ${step === 1 ? 'disabled' : ''} onclick="window.setState({marketWizardStep: ${Math.max(1, step-1)}})">← Back</button>
+    ${step < 5 ? `
+      <button class="btn btn-primary" onclick="window.setState({marketWizardStep: ${step+1}})">Continue →</button>
+    ` : `
+      <button class="btn btn-primary" id="btn-route-now" onclick="document.getElementById('route-result').style.display='block'; this.textContent='✓ Routed — Opening Submission 360°…'; this.disabled=true; setTimeout(() => window.setState({screen:'market-submission', currentSubId:'SUB-92104'}), 1400);">🧭 Route to 5 Carriers</button>
+    `}
+  </div>`;
+}
+
+function renderMarketAppetiteLibrary() {
+  const lib = D.marketAppetiteLibrary;
+  const tierFilter = state.marketTierFilter || 'all';
+  const filtered = lib.filter(c => tierFilter === 'all' || c.tier === tierFilter);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Carrier Appetite Library &amp; Rules</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${lib.length} contracted carriers · Live API feeds · Do-Not-Route &amp; override controls</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Syncing appetite data from carrier APIs…')">🔄 Refresh All</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Opening rule editor')">+ New Rule</button>
+    </div>
+  </div>
+
+  ${_marketSubNav('market-appetite')}
+
+  <div style="display:flex; gap:var(--space-xs); margin-bottom: var(--space-lg);">
+    ${['all','Preferred','Standard','E&S','Specialty'].map(t => `
+      <div class="doc-subnav-tab${tierFilter===t?' active':''}" onclick="window.setState({marketTierFilter:'${t}'})" style="padding:6px 12px;">${t === 'all' ? 'All Tiers' : t}</div>`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">CONTRACTED CARRIERS</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Carrier</th><th>Tier</th><th>LOBs</th><th>States</th><th>Premium Range</th><th>API</th><th>Hit Ratio</th><th>Avg Response</th><th>Capacity</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${filtered.map(c => `
+        <tr${c.do_not_route ? ' style="opacity:0.6;"' : ''}>
+          <td style="white-space:nowrap;"><strong>${c.carrier}</strong>${c.do_not_route?' <span style="color:var(--status-red); font-size:0.7rem;">🚫 DO NOT ROUTE</span>':''}</td>
+          <td style="white-space:nowrap;">${badge(c.tier==='Preferred'?'green':c.tier==='Standard'?'blue':c.tier==='E&S'?'amber':'gray', c.tier)}</td>
+          <td style="font-size:0.78rem; white-space:nowrap;">${c.lobs.join(', ')}</td>
+          <td style="font-size:0.78rem; white-space:nowrap;">${c.states}</td>
+          <td style="font-size:0.78rem; white-space:nowrap;">${c.premium_range}</td>
+          <td>${c.api ? badge('green','API') : badge('gray','Portal')}</td>
+          <td style="white-space:nowrap;"><strong style="color:${c.hit_ratio>=60?'var(--status-green)':c.hit_ratio>=45?'var(--mga-accent)':'var(--status-amber)'};">${c.hit_ratio}%</strong></td>
+          <td style="white-space:nowrap;">${c.avg_time_hr}h</td>
+          <td style="white-space:nowrap;">${c.capacity}</td>
+          <td style="white-space:nowrap;">${badge(c.status==='Healthy'?'green':c.status==='Slow'?'amber':'red', c.status)}</td>
+          <td style="display:flex; gap:4px; white-space:nowrap;">
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Editing ${c.carrier} rules')">Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert(${c.do_not_route?`'Enabling routing for ${c.carrier}'`:`'${c.carrier} added to Do-Not-Route'`})">${c.do_not_route?'Enable':'Block'}</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">APPETITE RULES ENGINE</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Rule ID</th><th>Carrier</th><th>LOB</th><th>Rule</th><th>Priority</th><th>Hits (30d)</th><th>Enabled</th><th>Action</th></tr></thead>
+      <tbody>
+        ${D.marketAppetiteRules.map(r => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.8rem; white-space:nowrap;">${r.id}</td>
+          <td style="white-space:nowrap;"><strong>${r.carrier}</strong></td>
+          <td style="white-space:nowrap;">${r.lob}</td>
+          <td style="font-size:0.82rem; max-width:420px;">${r.rule}</td>
+          <td style="white-space:nowrap;"><strong>#${r.priority}</strong></td>
+          <td style="white-space:nowrap;">${r.hits_30d}</td>
+          <td style="white-space:nowrap;">${badge(r.enabled?'green':'gray', r.enabled?'Active':'Paused')}</td>
+          <td style="display:flex; gap:4px; white-space:nowrap;">
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Editing rule ${r.id}')">Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Testing rule ${r.id} against 30 days of submissions')">Test</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMarketQuoteComparison() {
+  const q = D.marketQuoteComparisons;
+  const s = D.marketSubmissionDetail;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Quote Comparison &amp; Proposal Builder</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${s.id} · ${s.client} · ${s.lob} · Side-by-side · AI-picked best quote</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Generating branded proposal PDF')">📄 Build Proposal</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Sharing quote grid with client portal')">🔗 Share with Client</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Proceeding to Binding — Liberty Mutual')">🔒 Select &amp; Bind</button>
+    </div>
+  </div>
+
+  ${_marketSubNav('market-quotes')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">SIDE-BY-SIDE COMPARISON</div>
+    <div class="market-quote-grid">
+      ${q.map(quote => `
+        <div class="market-quote-card${quote.recommended?' recommended':''}">
+          ${quote.recommended ? `<div class="market-quote-badge">⭐ AI Recommended</div>` : ''}
+          <div class="market-quote-name">${quote.carrier}</div>
+          <div class="market-quote-premium">$${quote.premium.toLocaleString()}</div>
+          <div class="market-quote-rate">${quote.rate} rate</div>
+          <div style="height:1px; background:var(--border-subtle); margin: var(--space-md) 0;"></div>
+          <div class="market-quote-row"><span>TRIA</span><strong>${quote.tria}</strong></div>
+          <div class="market-quote-row"><span>Deductible</span><strong>${quote.deductible}</strong></div>
+          <div class="market-quote-row"><span>Limits</span><strong>${quote.limit}</strong></div>
+          <div class="market-quote-row"><span>Fit Score</span><strong style="color:var(--status-green);">${quote.score}%</strong></div>
+          <div style="margin-top: var(--space-sm);">
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">CREDITS APPLIED</div>
+            ${quote.credits.map(c => `<span style="display:inline-block; padding:2px 8px; background:rgba(0,230,118,0.12); color:var(--status-green); border-radius:var(--radius-sm); font-size:0.72rem; margin:2px 2px 0 0;">${c}</span>`).join('')}
+          </div>
+          <button class="btn ${quote.recommended?'btn-primary':'btn-secondary'} btn-sm" style="width:100%; margin-top: var(--space-md);" onclick="window.showAlert('Selecting ${quote.carrier}')">${quote.recommended?'Bind This Quote':'Select'}</button>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">PROPOSAL PREVIEW</div>
+      <div style="background:#fafaf6; color:#222; padding: 32px; border-radius:var(--radius-sm); min-height:280px;">
+        <div style="border-bottom: 3px solid #4a4af0; padding-bottom:10px; margin-bottom:16px;">
+          <div style="font-size:0.75rem; color:#888;">INSURANCE PROPOSAL</div>
+          <div style="font-weight:700; font-size:1.2rem; color:#111;">${s.client}</div>
+          <div style="color:#666; font-size:0.8rem;">${s.lob} · Effective ${s.effective}</div>
+        </div>
+        <div style="font-size:0.82rem; line-height:1.7; color:#333;">
+          <p><strong>Recommended Carrier:</strong> Liberty Mutual Insurance</p>
+          <p><strong>Annual Premium:</strong> $22,903 (including TRIA)</p>
+          <p><strong>Rate:</strong> 12.4% (industry avg: 13.8%)</p>
+          <p><strong>Savings vs. incumbent:</strong> $3,420 (13%)</p>
+          <p style="margin-top:12px; color:#555;">This proposal presents the most competitive quote from 3 responsive markets out of 5 routed carriers. The recommended Liberty Mutual placement offers 15% schedule credit reflecting your strong safety program and 0.92 experience mod.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">SIMILAR RISKS — PLACEMENT HISTORY</div>
+      <div style="font-size:0.82rem; line-height:1.8;">
+        ${[
+          { client: 'Cornerstone Builders', rate: '12.2%', carrier: 'Liberty Mutual' },
+          { client: 'Bay Area Contracting', rate: '12.6%', carrier: 'SEMC' },
+          { client: 'Pacific HVAC Co.',      rate: '13.0%', carrier: 'AMTrust' },
+          { client: 'Delta Construction',    rate: '12.4%', carrier: 'Liberty Mutual' },
+          { client: 'Summit Builders',       rate: '12.8%', carrier: 'Liberty Mutual' }
+        ].map(r => `
+          <div style="padding: 6px 0; border-bottom: 1px solid var(--border-subtle); display:flex; justify-content:space-between;">
+            <div><strong>${r.client}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${r.carrier}</div></div>
+            <strong>${r.rate}</strong>
+          </div>`).join('')}
+        <div style="margin-top: var(--space-sm); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--text-muted);">
+          📊 Avg for class 5403 in CA: <strong>12.6%</strong>. Your recommended quote at 12.4% is competitive.
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMarketAnalytics() {
+  const a = D.marketAnalytics;
+  const maxCarrier = Math.max(...a.hit_ratio_by_carrier.map(c=>c.rate));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Market Routing Analytics</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Hit ratio · time-to-quote · decline analysis · carrier health · source attribution</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <select class="form-input" style="width:160px;"><option>Last 30 days</option><option>YTD</option><option>Last 12 months</option></select>
+      <button class="btn btn-primary" onclick="window.showAlert('Export queued — market analytics')">Export</button>
+    </div>
+  </div>
+
+  ${_marketSubNav('market-analytics')}
+
+  ${kpiCards(D.marketKPIs, 6)}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin: var(--space-lg) 0;">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">HIT RATIO BY CARRIER</div>
+      ${a.hit_ratio_by_carrier.map(c => `
+        <div style="margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <span><strong>${c.carrier}</strong> <span style="color:var(--text-muted);">· ${c.bound}/${c.quoted} bound (${c.submitted} submitted)</span></span>
+            <strong style="color:${c.rate>=60?'var(--status-green)':c.rate>=45?'var(--mga-accent)':'var(--status-amber)'};">${c.rate}%</strong>
+          </div>
+          <div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden;"><div style="height:100%; width:${(c.rate/maxCarrier)*100}%; background:${c.rate>=60?'var(--status-green)':c.rate>=45?'var(--mga-accent)':'var(--status-amber)'};"></div></div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">AUTO vs MANUAL ROUTING</div>
+      <div style="text-align:center; padding: var(--space-md) 0;">
+        <div style="font-size:3rem; font-weight:800; color:var(--status-green);">${a.auto_vs_manual.auto}%</div>
+        <div style="color:var(--text-muted); font-size:0.85rem;">Auto-routed submissions</div>
+      </div>
+      <div style="background:var(--bg-card); height:12px; border-radius:6px; overflow:hidden; display:flex; margin-bottom:var(--space-md);">
+        <div style="background:var(--status-green); width:${a.auto_vs_manual.auto}%;"></div>
+        <div style="background:var(--status-amber); width:${a.auto_vs_manual.manual}%;"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:0.85rem; line-height:1.9;">
+        <div><span style="display:inline-block; width:10px; height:10px; background:var(--status-green); border-radius:2px; margin-right:4px;"></span>Auto — avg ${a.auto_vs_manual.auto_avg_hr}h quote</div>
+        <div><span style="display:inline-block; width:10px; height:10px; background:var(--status-amber); border-radius:2px; margin-right:4px;"></span>Manual — avg ${a.auto_vs_manual.manual_avg_hr}h quote</div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--text-muted);">
+        💡 Goal: 80%+ auto-routed. Target &lt; 4h first-quote response.
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">TIME-TO-QUOTE DISTRIBUTION</div>
+      ${a.time_to_quote.map(r => `
+        <div style="display:flex; align-items:center; margin-bottom: var(--space-sm); font-size:0.9rem;">
+          <div style="width:120px;">${r.range}</div>
+          <div style="flex:1; background:var(--bg-card); height:10px; border-radius:5px; overflow:hidden; margin:0 var(--space-sm);"><div style="height:100%; width:${r.pct*2}%; background:${r.range.startsWith('<')?'var(--status-green)':r.range.startsWith('4')?'var(--mga-accent)':'var(--status-amber)'};"></div></div>
+          <div style="width:90px; text-align:right;"><strong>${r.count}</strong> <span style="color:var(--text-muted);">(${r.pct}%)</span></div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">DECLINE REASON ANALYSIS</div>
+      ${a.decline_reasons.map(r => `
+        <div style="display:flex; align-items:center; margin-bottom: var(--space-sm); font-size:0.9rem;">
+          <div style="width:170px;">${r.reason}</div>
+          <div style="flex:1; background:var(--bg-card); height:10px; border-radius:5px; overflow:hidden; margin:0 var(--space-sm);"><div style="height:100%; width:${r.pct*3}%; background:var(--status-red); opacity:0.8;"></div></div>
+          <div style="width:70px; text-align:right;"><strong>${r.count}</strong></div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">HIT RATIO BY LOB</div>
+      <table class="data-table">
+        <thead><tr><th>LOB</th><th>Volume</th><th>Hit Ratio</th></tr></thead>
+        <tbody>
+          ${a.hit_ratio_by_lob.map(l => `
+          <tr>
+            <td><strong>${l.lob}</strong></td>
+            <td>${l.volume}</td>
+            <td><strong style="color:${l.rate>=55?'var(--status-green)':l.rate>=45?'var(--mga-accent)':'var(--status-amber)'};">${l.rate}%</strong></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">SUBMISSION VOLUME &amp; PLACEMENT BY SOURCE</div>
+      <table class="data-table">
+        <thead><tr><th>Source</th><th>Submissions</th><th>Placed</th><th>Rate</th></tr></thead>
+        <tbody>
+          ${a.volume_by_source.map(s => `
+          <tr>
+            <td><strong>${s.source}</strong></td>
+            <td>${s.submissions}</td>
+            <td>${s.placed}</td>
+            <td><strong style="color:${s.rate>=60?'var(--status-green)':s.rate>=45?'var(--mga-accent)':'var(--status-amber)'};">${s.rate}%</strong></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function renderMarketAIAssistant() {
+  const chat = D.marketAIChat;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">AI Routing Assistant</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Chat to route risks, analyze markets, and draft instructions · learns from placements</div>
+    </div>
+  </div>
+
+  ${_marketSubNav('market-ai')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); display:flex; flex-direction:column; min-height:540px;">
+      <div style="flex:1; overflow-y:auto; padding-right:8px;">
+        ${chat.map(m => `
+          <div class="doc-ai-msg doc-ai-msg-${m.role}">
+            <div class="doc-ai-avatar doc-ai-avatar-${m.role}">${m.role==='ai'?'🤖':'🧑‍💼'}</div>
+            <div class="doc-ai-bubble">${m.text.replace(/\n/g,'<br/>')}</div>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top: var(--space-md); display:flex; gap: var(--space-sm);">
+        <input class="form-input" style="flex:1;" placeholder="Ask AI to route a risk, recommend markets, or analyze placements..."/>
+        <button class="btn btn-primary" onclick="window.showAlert('AI processing your request…')">Send →</button>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap: var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">SUGGESTED PROMPTS</div>
+        ${[
+          'Route this $250k GL risk for TX construction client',
+          'Top 3 markets for a $1M cyber risk in healthcare',
+          'Why did Zurich decline SUB-92100?',
+          'Which carrier has highest hit ratio for CA WC?',
+          'Compare Liberty vs AMTrust for class 5403',
+          'Find E&S markets for declined submissions'
+        ].map(p => `
+          <div class="doc-ai-prompt" onclick="window.showAlert('Running: ${p}')">${p}</div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">CAPABILITIES</div>
+        <div style="font-size:0.85rem; line-height:1.9;">
+          <div>🎯 AI appetite matching (47 carriers)</div>
+          <div>🚀 One-click parallel routing</div>
+          <div>📊 Predict best carrier from risk profile</div>
+          <div>🔍 Decline reason analysis</div>
+          <div>📈 Learns from every placement</div>
+          <div>🌐 E&amp;S &amp; specialty market access</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// PROSPECTS & LEADS MODULE
+// ════════════════════════════════════════════════════════════════
+function _prospectSubNav(active) {
+  const tabs = [
+    { key: 'prospects',            label: 'Dashboard',     icon: '📊' },
+    { key: 'prospects-kanban',     label: 'Pipeline',      icon: '🗂️' },
+    { key: 'prospects-list',       label: 'List',          icon: '📋' },
+    { key: 'prospect-wizard',      label: 'Qualify',       icon: '🧭' },
+    { key: 'prospects-lost',       label: 'Lost Analyzer', icon: '🔍' },
+    { key: 'prospects-import',     label: 'Import',        icon: '⬆' },
+    { key: 'prospects-analytics',  label: 'Analytics',     icon: '📈' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _scoreColor(s) {
+  return s >= 80 ? 'var(--status-green)' : s >= 65 ? 'var(--mga-accent)' : s >= 50 ? 'var(--status-amber)' : 'var(--status-red)';
+}
+function _scoreBadge(s) {
+  const label = s >= 80 ? '🔥 Hot' : s >= 65 ? '☀ Warm' : s >= 50 ? '❄ Cool' : '🧊 Cold';
+  return `<span style="padding:2px 8px; border-radius:var(--radius-sm); background:${_scoreColor(s)}22; color:${_scoreColor(s)}; font-size:0.72rem; font-weight:600;">${label} ${s}</span>`;
+}
+
+function renderProspectsDashboard() {
+  const p = D.prospects;
+  const hot = p.filter(x => x.score >= 80 && x.stage !== 'Won' && x.stage !== 'Lost');
+  const stale = p.filter(x => x.stage !== 'Won' && x.stage !== 'Lost' && x.next_due && x.next_due < '2026-04-18');
+  const byStage = D.prospectStages.map(s => ({ ...s, count: p.filter(x => x.stage === s.key).length, value: p.filter(x => x.stage === s.key).reduce((sum,x) => sum + x.value, 0) }));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Prospects &amp; Leads</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Capture · qualify · nurture · convert · full sales pipeline for broker producers</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'prospects-import'})">⬆ Import Leads</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'prospects-kanban'})">🗂 View Pipeline</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'prospect-wizard', prospectWizardStep:1})">+ New Lead</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.prospectKPIs, 6)}
+
+  ${_prospectSubNav('prospects')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom:var(--space-lg);">
+    <div class="section-title">SALES FUNNEL — PIPELINE BY STAGE</div>
+    <div class="market-pipeline">
+      ${byStage.map((s,i) => `
+        <div class="market-stage market-stage-${s.color}">
+          <div class="market-stage-count">${s.count}</div>
+          <div class="market-stage-label">${s.key}</div>
+          <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">$${(s.value/1000).toFixed(0)}k</div>
+        </div>
+        ${i < byStage.length - 1 ? '<span class="market-stage-arrow">›</span>' : ''}
+      `).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔥 HOT LEADS — IMMEDIATE ATTENTION (${hot.length})</div>
+      <table class="data-table">
+        <thead><tr><th>Company</th><th>Score</th><th>Stage</th><th>Value</th><th>Next Action</th><th>Due</th><th></th></tr></thead>
+        <tbody>
+          ${hot.slice(0,6).map(x => `
+          <tr>
+            <td><strong style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'prospect-details', currentProspectId:'${x.id}'})">${x.company}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${x.industry}</div></td>
+            <td>${_scoreBadge(x.score)}</td>
+            <td>${badge(D.prospectStages.find(s => s.key===x.stage)?.color || 'gray', x.stage)}</td>
+            <td><strong>$${(x.value/1000).toFixed(0)}k</strong></td>
+            <td style="font-size:0.82rem;">${x.next_action}</td>
+            <td style="font-size:0.82rem;">${x.next_due}</td>
+            <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'prospect-details', currentProspectId:'${x.id}'})">→</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">⚠ STALLED / OVERDUE FOLLOW-UPS (${stale.length})</div>
+      ${stale.map(x => `
+        <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle);">
+          <div style="width:48px; height:48px; background:var(--bg-card); border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0;">${x.score >= 80 ? '🔥' : x.score >= 65 ? '☀' : '❄'}</div>
+          <div style="flex:1;">
+            <div style="display:flex; justify-content:space-between;"><strong style="font-size:0.9rem;">${x.company}</strong><span style="color:var(--status-amber); font-size:0.78rem;">Due: ${x.next_due}</span></div>
+            <div style="color:var(--text-muted); font-size:0.78rem;">${x.next_action}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${x.stage} · Producer: ${x.producer}</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'prospect-details', currentProspectId:'${x.id}'})">View</button>
+        </div>`).join('') || '<div style="color:var(--text-muted); text-align:center; padding: var(--space-lg);">✓ No overdue follow-ups</div>'}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">AUTOMATED TASKS</div>
+      <table class="data-table">
+        <thead><tr><th>Task</th><th>Entity</th><th>Owner</th><th>Due</th><th>Priority</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.prospectAutomatedTasks.map(t => `
+          <tr>
+            <td><strong style="font-size:0.85rem;">${t.task}</strong></td>
+            <td style="font-size:0.82rem;">${t.entity}</td>
+            <td style="font-size:0.82rem;">${t.owner}</td>
+            <td style="font-size:0.82rem;">${t.due}</td>
+            <td>${badge(t.priority==='Urgent'?'red':t.priority==='High'?'amber':t.priority==='Med'?'blue':'gray', t.priority)}</td>
+            <td>${badge(t.status==='Done'?'green':t.status==='In Progress'?'blue':'amber', t.status)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">PRODUCER LEADERBOARD (30D)</div>
+      ${D.prospectAnalytics.by_producer.map((p,i) => `
+        <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); align-items:center;">
+          <div style="width:28px; height:28px; background:${i===0?'var(--status-green)':i===1?'var(--mga-accent)':'var(--bg-card)'}; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem;">${i+1}</div>
+          <div style="flex:1;">
+            <div style="font-size:0.88rem;"><strong>${p.name}</strong></div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${p.open} open · ${p.won_30d} won · $${(p.pipeline/1e6).toFixed(2)}M pipeline</div>
+          </div>
+          <strong style="color:${p.win_rate>=30?'var(--status-green)':p.win_rate>=20?'var(--mga-accent)':'var(--status-amber)'};">${p.win_rate}%</strong>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderProspectsKanban() {
+  const stages = D.prospectStages.filter(s => s.key !== 'Lost');
+  const p = D.prospects;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Pipeline Kanban</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Drag cards across stages · probability-weighted pipeline · ${p.filter(x=>x.stage!=='Won'&&x.stage!=='Lost').length} open</div>
+    </div>
+    <div style="display:flex; gap: var(--space-sm);">
+      <select class="form-input" style="width:160px;"><option>All Producers</option><option>Sarah Chen</option><option>Mike Torres</option><option>Lisa Park</option></select>
+      <button class="btn btn-primary" onclick="window.setState({screen:'prospect-wizard', prospectWizardStep:1})">+ New Lead</button>
+    </div>
+  </div>
+
+  ${_prospectSubNav('prospects-kanban')}
+
+  <div class="kanban-board">
+    ${stages.map(stage => {
+      const cards = p.filter(x => x.stage === stage.key);
+      const value = cards.reduce((s,c) => s + c.value, 0);
+      return `
+      <div class="kanban-col kanban-col-${stage.color}">
+        <div class="kanban-col-header">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="doc-status-dot doc-status-${stage.color}"></span>
+            <strong>${stage.key}</strong>
+          </div>
+          <span style="background:var(--bg-card); padding:2px 8px; border-radius:var(--radius-sm); font-size:0.72rem; font-weight:600;">${cards.length}</span>
+        </div>
+        <div style="padding: 0 var(--space-sm); font-size:0.75rem; color:var(--text-muted); margin-bottom: var(--space-sm);">$${(value/1000).toFixed(0)}k · ${stage.prob}% prob</div>
+        <div class="kanban-col-body">
+          ${cards.map(c => `
+          <div class="kanban-card" onclick="window.setState({screen:'prospect-details', currentProspectId:'${c.id}'})">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: 6px;">
+              <strong style="font-size:0.85rem; line-height:1.3;">${c.company}</strong>
+              ${_scoreBadge(c.score)}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${c.contact}</div>
+            <div style="margin-top: var(--space-sm); font-size:0.78rem; display:flex; justify-content:space-between;">
+              <span>💼 ${c.lob.join(' · ')}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border-subtle);">
+              <span style="color:var(--mga-accent); font-weight:700;">$${(c.value/1000).toFixed(0)}k</span>
+              <span style="color:var(--text-muted); font-size:0.72rem;">${c.next_due}</span>
+            </div>
+            ${c.tags.length ? `<div style="margin-top:6px;">${c.tags.map(t => `<span style="font-size:0.68rem; padding:1px 6px; background:var(--bg-card); border-radius:var(--radius-sm); color:var(--text-muted); margin-right:2px;">${t}</span>`).join('')}</div>` : ''}
+          </div>`).join('') || '<div style="color:var(--text-muted); text-align:center; padding: var(--space-md); font-size:0.82rem;">— empty —</div>'}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderProspectsList() {
+  const q = (state.prospectQuery || '').toLowerCase();
+  const stageFilter = state.prospectStageFilter || 'all';
+  const producerFilter = state.prospectProducerFilter || 'all';
+  const p = D.prospects.filter(x =>
+    (stageFilter === 'all' || x.stage === stageFilter) &&
+    (producerFilter === 'all' || x.producer === producerFilter) &&
+    (!q || [x.company, x.contact, x.id, x.industry].some(f => f.toLowerCase().includes(q)))
+  );
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Lead List</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${p.length} prospects · filterable, sortable, bulk-actionable</div>
+    </div>
+    <div style="display:flex; gap: var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Exporting ${p.length} prospects to CSV')">Export</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'prospect-wizard', prospectWizardStep:1})">+ New Lead</button>
+    </div>
+  </div>
+
+  ${_prospectSubNav('prospects-list')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-md);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search company, contact, ID..." value="${state.prospectQuery || ''}" oninput="window.setState({prospectQuery:this.value})"/>
+      <select class="form-input" style="width:160px;" onchange="window.setState({prospectStageFilter:this.value})">
+        <option value="all">All Stages</option>
+        ${D.prospectStages.map(s => `<option value="${s.key}" ${stageFilter===s.key?'selected':''}>${s.key}</option>`).join('')}
+      </select>
+      <select class="form-input" style="width:160px;" onchange="window.setState({prospectProducerFilter:this.value})">
+        <option value="all">All Producers</option>
+        <option value="Sarah Chen"  ${producerFilter==='Sarah Chen'?'selected':''}>Sarah Chen</option>
+        <option value="Mike Torres" ${producerFilter==='Mike Torres'?'selected':''}>Mike Torres</option>
+        <option value="Lisa Park"   ${producerFilter==='Lisa Park'?'selected':''}>Lisa Park</option>
+      </select>
+      <select class="form-input" style="width:160px;"><option>All Sources</option><option>Referral</option><option>Website</option><option>Trade Show</option><option>Cold Outreach</option><option>Carrier Referral</option></select>
+      <select class="form-input" style="width:140px;"><option>All Scores</option><option>Hot (80+)</option><option>Warm (65-79)</option><option>Cool (50-64)</option><option>Cold (&lt;50)</option></select>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>ID</th><th>Company</th><th>Contact</th><th>Industry</th><th>Source</th><th>LOB</th><th>Revenue</th><th>State</th><th>Score</th><th>Stage</th><th>Value</th><th>Producer</th><th>Next</th><th></th></tr></thead>
+      <tbody>
+        ${p.map(x => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.78rem;">${x.id}</td>
+          <td><strong style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'prospect-details', currentProspectId:'${x.id}'})">${x.company}</strong></td>
+          <td>${x.contact}<div style="color:var(--text-muted); font-size:0.72rem;">${x.email}</div></td>
+          <td>${x.industry}</td>
+          <td>${x.source}</td>
+          <td style="font-size:0.78rem;">${x.lob.join(', ')}</td>
+          <td>${x.revenue}</td>
+          <td>${x.state}</td>
+          <td>${_scoreBadge(x.score)}</td>
+          <td>${badge(D.prospectStages.find(s => s.key===x.stage)?.color || 'gray', x.stage)}</td>
+          <td><strong>$${(x.value/1000).toFixed(0)}k</strong></td>
+          <td style="font-size:0.82rem;">${x.producer}</td>
+          <td style="font-size:0.78rem;">${x.next_due}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'prospect-details', currentProspectId:'${x.id}'})">→</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    ${p.length === 0 ? `<div style="text-align:center; color:var(--text-muted); padding: var(--space-xl);">No prospects match this filter.</div>` : ''}
+  </div>`;
+}
+
+function renderProspectDetail() {
+  const d = D.prospectDetail;
+  const checklistDone = d.checklist.filter(c => c.done).length;
+  const checklistPct = Math.round((checklistDone / d.checklist.length) * 100);
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'prospects-list'})" style="padding:4px 8px; margin-left:-8px;">← Back to List</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">${d.company}${d.dba ? ` <span style="color:var(--text-muted); font-size:0.8rem; font-weight:400;">(${d.dba})</span>` : ''}</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px; font-family:monospace;">${d.id} · ${d.industry} · NAICS ${d.naics} · ${d.state} · Est. ${d.established}</div>
+    </div>
+    <div style="display:flex; gap: var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Logging activity')">📞 Log Activity</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'submission', wizardStep:1})">💬 Create Quote</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'onboarding-wizard'})">🚀 Move to Onboarding</button>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Lead Score</div><div class="kpi-value" style="color:${_scoreColor(d.score)};">${d.score}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Stage</div><div class="kpi-value" style="font-size:1.2rem; color:var(--status-amber);">${d.stage}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Probability</div><div class="kpi-value">${d.prob}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Deal Value</div><div class="kpi-value">$${(d.value/1000).toFixed(0)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Days Open</div><div class="kpi-value">21</div></div>
+    <div class="kpi-card"><div class="kpi-label">Checklist</div><div class="kpi-value">${checklistDone}/${d.checklist.length}</div></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">CONTACTS</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+        <div style="background:var(--bg-card); padding: var(--space-md); border-radius:var(--radius-md); border: 2px solid var(--border-accent);">
+          <div style="font-size:0.72rem; color:var(--mga-accent); text-transform:uppercase; font-weight:700;">⭐ PRIMARY DECISION MAKER</div>
+          <div style="margin-top:4px;"><strong>${d.primary_contact.name}</strong></div>
+          <div style="color:var(--text-muted); font-size:0.82rem;">${d.primary_contact.title}</div>
+          <div style="margin-top:6px; font-size:0.82rem; line-height:1.6;">📧 ${d.primary_contact.email}<br/>📞 ${d.primary_contact.phone}</div>
+          <div style="margin-top:6px; font-size:0.72rem; color:var(--status-green);">${d.primary_contact.buying_role}</div>
+        </div>
+        ${d.other_contacts.map(c => `
+        <div style="background:var(--bg-card); padding: var(--space-md); border-radius:var(--radius-md);">
+          <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:600;">${c.decision_maker ? 'DECISION MAKER' : 'INFLUENCER'}</div>
+          <div style="margin-top:4px;"><strong>${c.name}</strong></div>
+          <div style="color:var(--text-muted); font-size:0.82rem;">${c.title}</div>
+          <div style="margin-top:6px; font-size:0.82rem; line-height:1.6;">📧 ${c.email}<br/>📞 ${c.phone}</div>
+          <div style="margin-top:6px; font-size:0.72rem; color:var(--text-muted);">${c.buying_role}</div>
+        </div>`).join('')}
+      </div>
+      <div style="margin-top:var(--space-md); display:flex; gap: var(--space-sm); color:var(--text-muted); font-size:0.78rem;">
+        🌐 ${d.website} · 💼 ${d.linkedin}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">LEAD SCORE BREAKDOWN</div>
+      ${d.score_breakdown.map(s => `
+        <div style="margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px;">
+            <span>${s.factor}</span>
+            <strong>${s.value}/${s.weight}</strong>
+          </div>
+          <div style="background:var(--bg-card); height:5px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${(s.value/s.weight)*100}%; background:${(s.value/s.weight) >= 0.9 ? 'var(--status-green)' : (s.value/s.weight) >= 0.7 ? 'var(--mga-accent)' : 'var(--status-amber)'};"></div></div>
+        </div>`).join('')}
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.78rem;">
+        <strong style="color:${_scoreColor(d.score)};">Total: ${d.score_breakdown.reduce((s,x)=>s+x.value,0)} / ${d.score_breakdown.reduce((s,x)=>s+x.weight,0)}</strong>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">INSURANCE &amp; RISK PROFILE</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; font-size:0.85rem;">
+        <div><div style="color:var(--text-muted); font-size:0.75rem;">Current Carrier</div><strong>${d.insurance_profile.current_carrier}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.75rem;">Expiration</div><strong style="color:var(--status-amber);">${d.insurance_profile.exp_date}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.75rem;">Lines Needed</div><strong>${d.insurance_profile.lob_needed.join(', ')}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.75rem;">Loss Ratio (3yr)</div><strong>${d.insurance_profile.loss_ratio_3yr}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.75rem;">Prior Claims</div><strong>${d.insurance_profile.prior_claims}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.75rem;">Revenue</div><strong>${d.revenue}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.75rem;">Employees</div><strong>${d.employees}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.75rem;">Fleet</div><strong>${d.insurance_profile.fleet_size} units · ${d.insurance_profile.annual_miles}</strong></div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background: rgba(255,171,0,0.1); border-left: 3px solid var(--status-amber); border-radius:var(--radius-sm); font-size:0.82rem;">
+        ⚠ <strong>Coverage gaps identified:</strong> ${d.insurance_profile.coverage_gaps.join(' · ')}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">QUALIFICATION ANSWERS</div>
+      <div style="max-height:300px; overflow-y:auto;">
+      ${d.qualification.map(q => `
+        <div style="padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle);">
+          <div style="color:var(--text-muted); font-size:0.75rem;">${q.q}</div>
+          <div style="font-size:0.88rem; margin-top:2px;"><strong>${q.a}</strong></div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">ACTIVITY TIMELINE</div>
+      <div style="max-height:380px; overflow-y:auto;">
+      ${d.activities.map(a => `
+        <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle);">
+          <div style="width:32px; height:32px; border-radius:50%; background:var(--bg-card); display:flex; align-items:center; justify-content:center; flex-shrink:0;">${ {Call:'📞',Email:'📧',Meeting:'🤝',Task:'✅',Lead:'🌱'}[a.type] || '📋' }</div>
+          <div style="flex:1;">
+            <div style="display:flex; justify-content:space-between;"><strong style="font-size:0.85rem;">${a.type}</strong><span style="color:var(--text-muted); font-size:0.72rem;">${a.ts}</span></div>
+            <div style="font-size:0.82rem; margin-top:2px;">${a.note}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">by ${a.actor}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">SMART PROSPECT CHECKLIST (${checklistDone}/${d.checklist.length} · ${checklistPct}%)</div>
+      <div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden; margin-bottom: var(--space-md);"><div style="height:100%; width:${checklistPct}%; background:${checklistPct===100?'var(--status-green)':checklistPct>=70?'var(--mga-accent)':'var(--status-amber)'};"></div></div>
+      ${d.checklist.map(c => `
+        <div style="display:flex; align-items:center; gap: var(--space-sm); padding: 6px 0; font-size:0.85rem;">
+          <span style="width:18px; height:18px; border-radius:50%; background:${c.done?'var(--status-green)':'var(--bg-card)'}; border:${c.done?'none':'2px solid var(--border-medium)'}; display:inline-flex; align-items:center; justify-content:center; color:#fff; font-size:0.68rem;">${c.done?'✓':''}</span>
+          <div style="flex:1; ${c.done?'color:var(--text-muted); text-decoration:line-through;':''}">${c.name}</div>
+          <span style="color:var(--text-muted); font-size:0.72rem;">${c.owner}</span>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">OPEN TASKS</div>
+      ${d.tasks.map(t => `
+        <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); align-items:center;">
+          <div style="flex:1;">
+            <div style="font-size:0.85rem; ${t.status==='Done'?'color:var(--text-muted); text-decoration:line-through;':''}">${t.task}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${t.owner} · Due ${t.due}</div>
+          </div>
+          ${badge(t.priority==='Urgent'?'red':t.priority==='High'?'amber':'blue', t.priority)}
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">DOCUMENTS</div>
+      ${d.documents.map(doc => `
+        <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); align-items:center;">
+          <div style="width:28px;">📄</div>
+          <div style="flex:1;">
+            <div style="font-size:0.85rem;"><strong>${doc.name}</strong></div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${doc.type} · ${doc.added}</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Opening ${doc.name}')">View</button>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🤖 AI SUGGESTIONS</div>
+      ${d.suggestions.map(s => `
+        <div style="padding: var(--space-sm); background: rgba(108,92,231,0.1); border-left: 3px solid var(--mga-accent); border-radius:var(--radius-sm); margin-bottom: var(--space-sm); font-size:0.82rem; line-height:1.5;">💡 ${s}</div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderProspectQualificationWizard() {
+  const step = state.prospectWizardStep || 1;
+  const steps = ['Capture','Enrichment','Qualification','Scoring','Assign'];
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'prospects'})" style="padding:4px 8px; margin-left:-8px;">← Back to Prospects</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Lead Qualification Wizard</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Capture → enrich → qualify → score → auto-assign to producer</div>
+    </div>
+  </div>
+
+  ${_prospectSubNav('prospect-wizard')}
+
+  <div class="market-stepper">
+    ${steps.map((s,i) => `
+      <div class="market-step${i+1 === step ? ' active' : ''}${i+1 < step ? ' done' : ''}">
+        <div class="market-step-num">${i+1 < step ? '✓' : i+1}</div>
+        <div class="market-step-label">${s}</div>
+      </div>
+      ${i < steps.length-1 ? '<div class="market-step-line"></div>' : ''}`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-xl); margin-bottom: var(--space-lg);">
+    ${step === 1 ? `
+      <h3 style="margin-top:0;">Step 1 — Lead Capture</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:var(--space-lg);">Auto-duplicate check runs as you type. Dedup against existing prospects + active clients.</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+        <div class="form-group"><label class="form-label">Company Name</label><input class="form-input" placeholder="Acme Corp" value="Westshore Logistics"/></div>
+        <div class="form-group"><label class="form-label">DBA (if any)</label><input class="form-input" placeholder="Optional" value="Westshore Express"/></div>
+        <div class="form-group"><label class="form-label">Primary Contact</label><input class="form-input" value="Emma Blake"/></div>
+        <div class="form-group"><label class="form-label">Title</label><input class="form-input" value="Operations Director"/></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" value="emma@westshore.com"/></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-input" value="(415) 555-0184"/></div>
+        <div class="form-group">
+          <label class="form-label">Lead Source</label>
+          <select class="form-input">
+            <option>Referral</option><option>Website</option><option>Trade Show</option><option>Cold Outreach</option><option>Carrier Referral</option><option>Event</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Campaign / Referrer</label><input class="form-input" value="Partner — Kempers"/></div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(0,230,118,0.1); border-left: 3px solid var(--status-green); border-radius:var(--radius-md); font-size:0.85rem;">
+        <strong style="color:var(--status-green);">✓ No duplicates found.</strong> New prospect record will be created.
+      </div>
+    ` : step === 2 ? `
+      <h3 style="margin-top:0;">Step 2 — Data Enrichment</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:var(--space-lg);">Auto-enriched from Dun & Bradstreet, ZoomInfo, LinkedIn, and carrier appetite previews.</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md);">
+        <div class="form-group"><label class="form-label">Industry</label><input class="form-input" value="Transportation & Trucking"/></div>
+        <div class="form-group"><label class="form-label">NAICS</label><input class="form-input" value="484110"/></div>
+        <div class="form-group"><label class="form-label">Year Founded</label><input class="form-input" value="2018"/></div>
+        <div class="form-group"><label class="form-label">Annual Revenue</label><input class="form-input" value="$18M"/></div>
+        <div class="form-group"><label class="form-label">Employees</label><input class="form-input" value="48"/></div>
+        <div class="form-group"><label class="form-label">State</label><input class="form-input" value="CA"/></div>
+        <div class="form-group"><label class="form-label">Website</label><input class="form-input" value="westshorelogistics.com"/></div>
+        <div class="form-group"><label class="form-label">LinkedIn</label><input class="form-input" value="linkedin.com/company/westshore-logistics"/></div>
+        <div class="form-group"><label class="form-label">D&B Risk</label><input class="form-input" value="Low" style="color:var(--status-green);"/></div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(108,92,231,0.1); border-left: 3px solid var(--mga-accent); border-radius:var(--radius-md); font-size:0.85rem;">
+        🤖 <strong>Carrier appetite preview:</strong> 14 contracted carriers match this risk profile. Top 3: Liberty Mutual (96%), SEMC (94%), Progressive Fleet (91%).
+      </div>
+    ` : step === 3 ? `
+      <h3 style="margin-top:0;">Step 3 — Qualification Questionnaire</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:var(--space-lg);">Fast qualification. Can be sent to client via portal link or filled in together on a call.</div>
+      ${D.prospectDetail.qualification.map(q => `
+        <div class="form-group" style="margin-bottom: var(--space-md);">
+          <label class="form-label">${q.q}</label>
+          <input class="form-input" value="${q.a}"/>
+        </div>`).join('')}
+    ` : step === 4 ? `
+      <h3 style="margin-top:0;">Step 4 — Lead Scoring</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:var(--space-lg);">Composite score from demographic, behavioral, financial, insurance, and referral signals.</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl); align-items:center;">
+        <div style="text-align:center;">
+          <div style="font-size:5rem; font-weight:800; color:var(--status-green);">${D.prospectDetail.score}</div>
+          <div>${_scoreBadge(D.prospectDetail.score)}</div>
+          <div style="color:var(--text-muted); font-size:0.85rem; margin-top:var(--space-sm);">Predicted close probability: <strong>85%</strong></div>
+        </div>
+        <div>
+          ${D.prospectDetail.score_breakdown.map(s => `
+            <div style="margin-bottom: var(--space-sm);">
+              <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+                <span>${s.factor}</span>
+                <strong>${s.value}/${s.weight}</strong>
+              </div>
+              <div style="background:var(--bg-card); height:6px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${(s.value/s.weight)*100}%; background:${(s.value/s.weight) >= 0.9 ? 'var(--status-green)' : (s.value/s.weight) >= 0.7 ? 'var(--mga-accent)' : 'var(--status-amber)'};"></div></div>
+            </div>`).join('')}
+        </div>
+      </div>
+    ` : `
+      <h3 style="margin-top:0;">Step 5 — Auto-Assign &amp; Launch</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:var(--space-lg);">Producer auto-suggested based on territory, LOB expertise, current workload, and historical win rate.</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+        <div style="background:var(--bg-card); padding: var(--space-md); border-radius:var(--radius-md);">
+          <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; margin-bottom: var(--space-sm);">RECOMMENDED PRODUCER</div>
+          <div style="display:flex; align-items:center; gap: var(--space-md);">
+            <div style="width:48px; height:48px; background:var(--mga-accent); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700;">SC</div>
+            <div>
+              <strong>Sarah Chen</strong>
+              <div style="color:var(--text-muted); font-size:0.78rem;">Territory: CA-North · Auto/WC expert · 34% win rate · 48 open leads</div>
+            </div>
+          </div>
+          <div style="margin-top: var(--space-sm); padding: var(--space-sm); background: rgba(0,230,118,0.12); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--status-green);">
+            ✓ Top performer for Transportation $10–25M segment (74% historical close)
+          </div>
+        </div>
+        <div style="background:var(--bg-card); padding: var(--space-md); border-radius:var(--radius-md);">
+          <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; margin-bottom: var(--space-sm);">AUTO-TASKS ON ASSIGNMENT</div>
+          <div style="font-size:0.85rem; line-height:1.9;">
+            <div>✅ Call new lead within <strong>5 minutes</strong> (score 92)</div>
+            <div>✅ Send welcome email w/ discovery questionnaire</div>
+            <div>✅ Schedule needs analysis meeting (within 48h)</div>
+            <div>✅ Add to "Hot Lead" nurture sequence</div>
+            <div>✅ Manager CC'd on thread</div>
+          </div>
+        </div>
+      </div>
+      <div id="lead-result" style="display:none; margin-top: var(--space-md); padding: var(--space-md); background: rgba(0,230,118,0.12); border-left: 4px solid var(--status-green); border-radius:var(--radius-md);">
+        <strong style="color:var(--status-green);">✓ Lead created &amp; assigned.</strong> PRO-2042 assigned to Sarah Chen. 5 automated tasks created. Hot-lead alert sent via Slack.
+      </div>
+    `}
+  </div>
+
+  <div style="display:flex; justify-content:space-between;">
+    <button class="btn btn-secondary" ${step === 1 ? 'disabled' : ''} onclick="window.setState({prospectWizardStep: ${Math.max(1, step-1)}})">← Back</button>
+    ${step < 5 ? `
+      <button class="btn btn-primary" onclick="window.setState({prospectWizardStep: ${step+1}})">Continue →</button>
+    ` : `
+      <button class="btn btn-primary" onclick="document.getElementById('lead-result').style.display='block'; this.textContent='✓ Created'; this.disabled=true;">✓ Create Lead &amp; Assign</button>
+    `}
+  </div>`;
+}
+
+function renderProspectsLostAnalyzer() {
+  const lost = D.prospects.filter(x => x.stage === 'Lost');
+  const r = D.prospectLostReasons;
+  const total = r.reduce((s,x) => s + x.count, 0);
+  const recoverable_value = r.filter(x => x.recoverable).reduce((s,x) => s + (x.count * x.avg_value), 0);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Lost Opportunity Analyzer</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${total} lost opportunities · reason codes · recoverable pipeline · auto-nurture</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Launching 30-day re-engagement nurture campaign to ' + ${r.filter(x=>x.recoverable).reduce((s,x)=>s+x.count,0)} + ' recoverable leads')">🔁 Re-engage Recoverables</button>
+    </div>
+  </div>
+
+  ${_prospectSubNav('prospects-lost')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Total Lost</div><div class="kpi-value">${total}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Recoverable</div><div class="kpi-value" style="color:var(--status-green);">${r.filter(x=>x.recoverable).reduce((s,x)=>s+x.count,0)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Recoverable Value</div><div class="kpi-value">$${(recoverable_value/1e6).toFixed(2)}M</div></div>
+    <div class="kpi-card"><div class="kpi-label">In Nurture Drip</div><div class="kpi-value">${r.filter(x=>x.recoverable).reduce((s,x)=>s+x.count,0) - 4}</div></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">LOST REASON ANALYSIS</div>
+      ${r.map(x => `
+        <div style="margin-bottom: var(--space-md);">
+          <div style="display:flex; justify-content:space-between; font-size:0.88rem; margin-bottom:4px; align-items:center;">
+            <div>
+              <strong>${x.reason}</strong>
+              <span style="color:var(--text-muted); font-size:0.78rem; margin-left:var(--space-sm);">${x.count} leads · avg $${(x.avg_value/1000).toFixed(0)}k</span>
+              ${x.recoverable ? '<span style="color:var(--status-green); font-size:0.72rem; margin-left:var(--space-sm);">♻ Recoverable</span>' : '<span style="color:var(--text-muted); font-size:0.72rem; margin-left:var(--space-sm);">✗ Not recoverable</span>'}
+            </div>
+            <strong>${x.pct}%</strong>
+          </div>
+          <div style="background:var(--bg-card); height:10px; border-radius:5px; overflow:hidden;"><div style="height:100%; width:${x.pct*3}%; background:${x.recoverable?'var(--status-green)':'var(--status-red)'}; opacity:0.7;"></div></div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">💡 COACHING INSIGHTS</div>
+      <div style="font-size:0.85rem; line-height:1.7;">
+        <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); margin-bottom: var(--space-sm);">🎯 <strong>Price</strong> is the #1 reason — 31%. Consider carrier-tier training for producers.</div>
+        <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); margin-bottom: var(--space-sm);">📞 <strong>No response</strong> (5%) has a 68% recovery rate when re-engaged via SMS.</div>
+        <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);">⏰ <strong>Timing</strong> losses should be tagged by renewal date for automated re-engagement 60 days before expiry.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">LOST LEADS — RECENT (${lost.length})</div>
+    <table class="data-table">
+      <thead><tr><th>ID</th><th>Company</th><th>Value</th><th>Lost Reason</th><th>Lost Date</th><th>Producer</th><th>Next</th><th>Action</th></tr></thead>
+      <tbody>
+        ${lost.map(x => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.78rem;">${x.id}</td>
+          <td><strong>${x.company}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${x.industry}</div></td>
+          <td>${x.revenue}</td>
+          <td>${badge('red', x.lost_reason || 'Other')}</td>
+          <td style="font-size:0.82rem;">${x.last_activity}</td>
+          <td style="font-size:0.82rem;">${x.producer}</td>
+          <td style="font-size:0.82rem;">${x.next_action}</td>
+          <td><button class="btn btn-secondary btn-sm" onclick="window.showAlert('Adding ${x.company} to 30-day re-engagement drip')">🔁 Re-engage</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function renderProspectsImportCenter() {
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Lead Import &amp; Enrichment Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Bulk import · smart de-dup · auto-enrichment · source tracking</div>
+    </div>
+  </div>
+
+  ${_prospectSubNav('prospects-import')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="doc-dropzone" onclick="window.showAlert('File picker opened')">
+      <div style="font-size:3rem; margin-bottom: var(--space-sm);">⬆</div>
+      <h3 style="margin:0;">Drop CSV / Excel here</h3>
+      <div style="color:var(--text-muted); margin-top:var(--space-sm);">or <strong style="color:var(--mga-accent); cursor:pointer;">browse files</strong> — we'll auto-map columns, de-dup, and enrich</div>
+      <div style="display:flex; gap:var(--space-sm); margin-top: var(--space-lg); flex-wrap:wrap; justify-content:center;">
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('Email intake configured — leads@quantana.com.au')">📧 Email-to-Lead</button>
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('Connecting to ZoomInfo…')">🔗 ZoomInfo Sync</button>
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('Connecting to Salesforce…')">☁️ Salesforce Import</button>
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('Webhook URL copied')">🔌 Webhook (website forms)</button>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">IMPORT RULES</div>
+      <div style="font-size:0.85rem; line-height:1.9;">
+        <div>🔍 <strong>Duplicate check:</strong> Name + email + FEIN</div>
+        <div>✨ <strong>Auto-enrichment:</strong> D&B, LinkedIn, ZoomInfo</div>
+        <div>🎯 <strong>Auto-scoring:</strong> On import</div>
+        <div>👤 <strong>Auto-assign:</strong> Territory + LOB + load</div>
+        <div>📧 <strong>Welcome sequence:</strong> Triggers automatically</div>
+        <div>⚖ <strong>Compliance:</strong> GDPR/CCPA consent tracked</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">RECENT IMPORTS</div>
+    <table class="data-table">
+      <thead><tr><th>Source</th><th>File / Batch</th><th>Total</th><th>New</th><th>Duplicates</th><th>Enriched</th><th>Assigned</th><th>Imported</th><th>Status</th></tr></thead>
+      <tbody>
+        ${[
+          { src: 'CSV Upload',     file: 'Q2_2026_TradeShow_Leads.csv',        total: 184, new: 156, dup: 28, enr: 142, assg: 156, ts: '2026-04-17 09:12', ok: true  },
+          { src: 'Website Form',   file: 'nexusbroker.com/quote',               total: 42,  new: 38,  dup: 4,  enr: 38,  assg: 38,  ts: '2026-04-17 02:00', ok: true  },
+          { src: 'Email Intake',   file: 'leads@quantana.com.au',               total: 12,  new: 10,  dup: 2,  enr: 10,  assg: 10,  ts: '2026-04-16 18:44', ok: true  },
+          { src: 'ZoomInfo Sync',  file: 'California Transportation $10-25M',   total: 88,  new: 72,  dup: 16, enr: 88,  assg: 72,  ts: '2026-04-15 11:30', ok: true  },
+          { src: 'CSV Upload',     file: 'Partner_Referrals_Apr.xlsx',          total: 24,  new: 22,  dup: 2,  enr: 18,  assg: 0,   ts: '2026-04-14 16:15', ok: false }
+        ].map(i => `
+        <tr>
+          <td>${i.src}</td>
+          <td style="font-family:monospace; font-size:0.78rem;">${i.file}</td>
+          <td>${i.total}</td>
+          <td><strong style="color:var(--status-green);">${i.new}</strong></td>
+          <td style="color:var(--status-amber);">${i.dup}</td>
+          <td>${i.enr}</td>
+          <td>${i.assg}</td>
+          <td style="font-size:0.8rem;">${i.ts}</td>
+          <td>${badge(i.ok?'green':'amber', i.ok?'Complete':'Manual review')}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">DATA HYGIENE</div>
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md);">
+      <div class="kpi-card"><div class="kpi-label">Duplicates Prevented</div><div class="kpi-value" style="color:var(--status-green);">52</div></div>
+      <div class="kpi-card"><div class="kpi-label">Enrichment Success</div><div class="kpi-value">94%</div></div>
+      <div class="kpi-card"><div class="kpi-label">Email Verified</div><div class="kpi-value">97%</div></div>
+      <div class="kpi-card"><div class="kpi-label">Pending Review</div><div class="kpi-value warning">6</div></div>
+    </div>
+  </div>`;
+}
+
+function renderProspectsAnalytics() {
+  const a = D.prospectAnalytics;
+  const maxFunnel = a.conversion_funnel[0].count;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Prospects Analytics</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Conversion · source ROI · pipeline value · win/loss · scoring accuracy</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <select class="form-input" style="width:160px;"><option>Last 90 days</option><option>YTD</option><option>Last 12 months</option></select>
+      <button class="btn btn-primary" onclick="window.showAlert('Export queued — prospects analytics')">Export</button>
+    </div>
+  </div>
+
+  ${_prospectSubNav('prospects-analytics')}
+
+  ${kpiCards(D.prospectKPIs, 6)}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin: var(--space-lg) 0;">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">CONVERSION FUNNEL (90 DAYS)</div>
+      ${a.conversion_funnel.map(s => `
+        <div style="margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; font-size:0.88rem; margin-bottom:4px;">
+            <strong>${s.stage}</strong>
+            <span><strong>${s.count}</strong> <span style="color:var(--text-muted);">(${s.pct}%)</span></span>
+          </div>
+          <div style="background:var(--bg-card); height:22px; border-radius:4px; overflow:hidden;">
+            <div style="height:100%; width:${(s.count/maxFunnel)*100}%; background:linear-gradient(90deg, var(--mga-accent), #a67dff);"></div>
+          </div>
+        </div>`).join('')}
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem; color:var(--text-muted);">
+        💡 Biggest drop-off: Lead → Qualified (27pp). Focus on discovery meeting quality.
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">PIPELINE VALUE BY STAGE</div>
+      ${a.pipeline_by_stage.map(s => `
+        <div style="padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div><strong style="font-size:0.88rem;">${s.stage}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${s.count} deals</div></div>
+            <strong style="color:var(--mga-accent);">$${(s.value/1000).toFixed(0)}k</strong>
+          </div>
+        </div>`).join('')}
+      <div style="margin-top: var(--space-sm); padding: var(--space-sm); background: rgba(108,92,231,0.1); border-radius:var(--radius-sm); font-size:0.85rem;">
+        <strong>Weighted Forecast:</strong> <span style="color:var(--mga-accent);">$${((a.pipeline_by_stage.reduce((s,x,i) => s + x.value * (D.prospectStages.find(ps => ps.key===x.stage)?.prob || 0) / 100, 0))/1000).toFixed(0)}k</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">LEAD SOURCE ROI</div>
+      <table class="data-table">
+        <thead><tr><th>Source</th><th>Leads</th><th>Won</th><th>Cost</th><th>Revenue</th><th>ROI</th></tr></thead>
+        <tbody>
+          ${a.source_roi.map(s => `
+          <tr>
+            <td><strong>${s.source}</strong></td>
+            <td>${s.leads}</td>
+            <td>${s.converted}</td>
+            <td>$${(s.cost/1000).toFixed(0)}k</td>
+            <td>$${(s.revenue/1000).toFixed(0)}k</td>
+            <td><strong style="color:var(--status-green);">${s.roi}</strong></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">TIME TO CONVERT BY SOURCE</div>
+      ${a.time_to_convert.map(s => `
+        <div style="margin-bottom: var(--space-md);">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <strong>${s.source}</strong>
+            <span><strong>${s.avg_days}d</strong> <span style="color:var(--text-muted);">· ${s.rate}% conversion</span></span>
+          </div>
+          <div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden;"><div style="height:100%; width:${(s.rate/50)*100}%; background:${s.rate>=40?'var(--status-green)':s.rate>=25?'var(--mga-accent)':'var(--status-amber)'};"></div></div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">PRODUCER PERFORMANCE</div>
+      <table class="data-table">
+        <thead><tr><th>Producer</th><th>Open</th><th>Won (30d)</th><th>Pipeline</th><th>Win Rate</th><th>Avg Days</th></tr></thead>
+        <tbody>
+          ${a.by_producer.map(p => `
+          <tr>
+            <td><strong>${p.name}</strong></td>
+            <td>${p.open}</td>
+            <td>${p.won_30d}</td>
+            <td>$${(p.pipeline/1e6).toFixed(2)}M</td>
+            <td><strong style="color:${p.win_rate>=30?'var(--status-green)':p.win_rate>=20?'var(--mga-accent)':'var(--status-amber)'};">${p.win_rate}%</strong></td>
+            <td>${p.avg_days}d</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">LEAD SCORING MODEL ACCURACY</div>
+      <table class="data-table">
+        <thead><tr><th>Score Band</th><th>Predicted Win %</th><th>Actual Win %</th><th>Variance</th></tr></thead>
+        <tbody>
+          ${a.score_accuracy.map(s => { const v = s.actual_win - s.predicted_win; return `
+          <tr>
+            <td><strong>${s.band}</strong></td>
+            <td>${s.predicted_win}%</td>
+            <td>${s.actual_win}%</td>
+            <td style="color:${Math.abs(v)<=4?'var(--status-green)':'var(--status-amber)'};">${v>=0?'+':''}${v} pp</td>
+          </tr>`; }).join('')}
+        </tbody>
+      </table>
+      <div style="margin-top: var(--space-sm); padding: var(--space-sm); background: rgba(0,230,118,0.1); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--text-muted);">
+        ✓ Model accuracy within ±4pp across all bands. Last recalibrated: 2026-04-01.
+      </div>
+    </div>
+  </div>`;
+}
+
 function bindBroker() {
   const logout = $('#btn-logout');
   if (logout) logout.addEventListener('click', () => setState({ portal: null, screen: 'dashboard' }));
@@ -8367,6 +11370,9 @@ function bindBroker() {
 
   const prevStep = $('#btn-prev-step');
   if (prevStep) prevStep.addEventListener('click', () => setState({ wizardStep: state.wizardStep - 1 }));
+
+  const saveDraft = $('#btn-save-draft');
+  if (saveDraft) saveDraft.addEventListener('click', () => window.showAlert('Submission saved as draft — resume from Dashboard > Drafts'));
 
   const bindNow = $('#btn-bind-now');
   if (bindNow) bindNow.addEventListener('click', () => {
@@ -8536,6 +11542,44 @@ function bindBroker() {
     ];
     setState({ fnolDraft: draft });
   });
+
+  // FNOL dropzone — click to pick files + drag-and-drop
+  const fnolDrop = $('#fnol-dropzone');
+  if (fnolDrop) {
+    const addFile = (name, size) => {
+      const draft = { ...(state.fnolDraft || {}) };
+      draft.files = [...(draft.files || []), {
+        name,
+        category: /\.(jpg|jpeg|png|gif)$/i.test(name) ? 'Photo' : /report/i.test(name) ? 'Police Report' : /medical|er|discharge/i.test(name) ? 'Medical Record' : 'Document',
+        size: (size / (1024 * 1024)).toFixed(1) + ' MB'
+      }];
+      setState({ fnolDraft: draft });
+    };
+    fnolDrop.addEventListener('click', () => {
+      const picker = document.createElement('input');
+      picker.type = 'file';
+      picker.multiple = true;
+      picker.onchange = () => {
+        [...picker.files].forEach(f => addFile(f.name, f.size));
+      };
+      picker.click();
+    });
+    fnolDrop.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      fnolDrop.style.borderColor = 'var(--mga-accent)';
+      fnolDrop.style.background = 'rgba(108,92,231,0.08)';
+    });
+    fnolDrop.addEventListener('dragleave', () => {
+      fnolDrop.style.borderColor = 'var(--border-subtle)';
+      fnolDrop.style.background = 'var(--bg-secondary)';
+    });
+    fnolDrop.addEventListener('drop', (e) => {
+      e.preventDefault();
+      fnolDrop.style.borderColor = 'var(--border-subtle)';
+      fnolDrop.style.background = 'var(--bg-secondary)';
+      [...(e.dataTransfer?.files || [])].forEach(f => addFile(f.name, f.size));
+    });
+  }
   $$('[data-file-remove]').forEach(btn => btn.addEventListener('click', () => {
     const draft = { ...(state.fnolDraft || {}) };
     const i = parseInt(btn.dataset.fileRemove);

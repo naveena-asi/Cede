@@ -1058,7 +1058,109 @@ export const esigEnvelopes = [
 export const brokerPoliciesKPIs = [
   { label: 'Active Policies', value: '847' },
   { label: 'Total Premium', value: '$14.2M' },
-  { label: 'Endorsements in Progress', value: '4' }
+  { label: 'Expiring ≤ 30d', value: '12', warning: true },
+  { label: 'Endorsements Open', value: '4' },
+  { label: 'Loss Ratio (YTD)', value: '42%' },
+  { label: 'Retention (YTD)', value: '91%' }
+];
+
+export const policyStages = [
+  { key: 'In-Force',        color: 'green', desc: 'Active, clean' },
+  { key: 'Endorsement',     color: 'blue',  desc: 'Endorsement pending' },
+  { key: 'Expiring',        color: 'amber', desc: '< 60 days to expiry' },
+  { key: 'Non-Renewing',    color: 'amber', desc: 'Carrier NOI issued' },
+  { key: 'Cancelled',       color: 'red',   desc: 'Mid-term cancellation' },
+  { key: 'Expired',         color: 'gray',  desc: 'No active coverage' }
+];
+
+export const policiesExtended = [
+  { id: 'SEMC-WC-2025-48821', epic_id: 'POL-19283-99', client: 'Magnolia Construction LLC',  lob: 'Workers Comp',          carrier: 'SEMC / Liberty',    carrier_code: 'SEMC',  effective: '2025-06-01', expiry: '2026-06-01', premium: 184700, billing: 'Agency Bill', state: 'CA', producer: 'Sarah Chen',  stage: 'In-Force',    loss_ratio: 18, claims_open: 0, commission: 22164, endorsements: 1, cois: 3 },
+  { id: 'CNA-GL-2025-33102',  epic_id: 'POL-11022-44', client: 'Apex Industries',            lob: 'General Liability',     carrier: 'CNA',               carrier_code: 'CNA',   effective: '2025-04-12', expiry: '2026-04-12', premium: 52000,  billing: 'Direct Bill', state: 'CA', producer: 'Mike Torres', stage: 'Expiring',    loss_ratio: 32, claims_open: 1, commission: 5200,  endorsements: 0, cois: 2 },
+  { id: 'LIB-BOP-20291',      epic_id: 'POL-44122-11', client: 'Ridge Builders',             lob: 'BOP',                   carrier: 'Liberty Mutual',    carrier_code: 'LIB',   effective: '2025-05-01', expiry: '2026-05-01', premium: 93100,  billing: 'Agency Bill', state: 'CA', producer: 'Mike Torres', stage: 'Expiring',    loss_ratio: 24, claims_open: 0, commission: 11172, endorsements: 0, cois: 1 },
+  { id: 'HTF-BOP-2025-90112', epic_id: 'POL-55841-22', client: 'Harbor Foods',               lob: 'BOP',                   carrier: 'Hartford',          carrier_code: 'HTF',   effective: '2025-03-18', expiry: '2026-03-18', premium: 38200,  billing: 'Direct Bill', state: 'CA', producer: 'Sarah Chen',  stage: 'Expired',     loss_ratio: 41, claims_open: 0, commission: 4202,  endorsements: 0, cois: 1 },
+  { id: 'TRV-AUTO-2026-11223',epic_id: 'POL-67731-11', client: 'Delta Logistics',            lob: 'Commercial Auto',       carrier: 'Travelers',         carrier_code: 'TRV',   effective: '2025-08-05', expiry: '2026-08-05', premium: 142800, billing: 'Agency Bill', state: 'CA', producer: 'Sarah Chen',  stage: 'In-Force',    loss_ratio: 28, claims_open: 1, commission: 16422, endorsements: 1, cois: 4 },
+  { id: 'CNA-CYB-2026-88102', epic_id: 'POL-78221-33', client: 'TechCorp Inc',               lob: 'Cyber',                 carrier: 'CNA',               carrier_code: 'CNA',   effective: '2025-07-22', expiry: '2026-07-22', premium: 256100, billing: 'Agency Bill', state: 'CA', producer: 'Sarah Chen',  stage: 'In-Force',    loss_ratio: 12, claims_open: 0, commission: 38415, endorsements: 0, cois: 2 },
+  { id: 'LIB-PRO-2025-22841', epic_id: 'POL-81293-44', client: 'Summit Medical',             lob: 'Professional Liability',carrier: 'Liberty Mutual',    carrier_code: 'LIB',   effective: '2025-09-12', expiry: '2026-09-12', premium: 78500,  billing: 'Direct Bill', state: 'NY', producer: 'Sarah Chen',  stage: 'Endorsement', loss_ratio: 8,  claims_open: 0, commission: 7850,  endorsements: 1, cois: 1 },
+  { id: 'AMT-WC-2025-44821',  epic_id: 'POL-90014-55', client: 'Coastal Realty',             lob: 'Workers Comp',          carrier: 'AMTrust',           carrier_code: 'AMT',   effective: '2025-05-14', expiry: '2026-05-14', premium: 38900,  billing: 'Agency Bill', state: 'FL', producer: 'Lisa Park',   stage: 'Expiring',    loss_ratio: 54, claims_open: 2, commission: 4668,  endorsements: 0, cois: 1 },
+  { id: 'CNA-WC-2024-55012',  epic_id: 'POL-12293-66', client: 'Blue Ridge Supplies',        lob: 'Workers Comp',          carrier: 'CNA',               carrier_code: 'CNA',   effective: '2025-02-18', expiry: '2026-02-18', premium: 62400,  billing: 'Direct Bill', state: 'IL', producer: 'Sarah Chen',  stage: 'Cancelled',   loss_ratio: 78, claims_open: 1, commission: 0,     endorsements: 0, cois: 0 },
+  { id: 'HTF-BOP-2024-77004', epic_id: 'POL-22893-77', client: 'Peak Fitness Co.',           lob: 'BOP',                   carrier: 'Hartford',          carrier_code: 'HTF',   effective: '2025-01-20', expiry: '2026-01-20', premium: 28400,  billing: 'Direct Bill', state: 'AZ', producer: 'Mike Torres', stage: 'Expired',     loss_ratio: 88, claims_open: 0, commission: 0,     endorsements: 0, cois: 0 },
+  { id: 'LIB-UMB-2025-88103', epic_id: 'POL-33844-88', client: 'Magnolia Construction LLC',  lob: 'Umbrella',              carrier: 'Liberty Mutual',    carrier_code: 'LIB',   effective: '2025-06-01', expiry: '2026-06-01', premium: 18200,  billing: 'Agency Bill', state: 'CA', producer: 'Sarah Chen',  stage: 'In-Force',    loss_ratio: 0,  claims_open: 0, commission: 1820,  endorsements: 0, cois: 2 },
+  { id: 'CHB-DO-2025-10091',  epic_id: 'POL-43281-99', client: 'TechCorp Inc',               lob: 'D&O',                   carrier: 'Chubb',             carrier_code: 'CHB',   effective: '2025-07-22', expiry: '2026-07-22', premium: 48500,  billing: 'Direct Bill', state: 'CA', producer: 'Sarah Chen',  stage: 'In-Force',    loss_ratio: 0,  claims_open: 0, commission: 4850,  endorsements: 0, cois: 0 },
+  { id: 'TRV-WC-2025-22004',  epic_id: 'POL-55932-00', client: 'Delta Logistics',            lob: 'Workers Comp',          carrier: 'Travelers',         carrier_code: 'TRV',   effective: '2025-08-05', expiry: '2026-08-05', premium: 88400,  billing: 'Agency Bill', state: 'CA', producer: 'Sarah Chen',  stage: 'In-Force',    loss_ratio: 22, claims_open: 0, commission: 10166, endorsements: 0, cois: 1 },
+  { id: 'ZUR-PRP-2025-60012', epic_id: 'POL-66233-11', client: 'Summit Medical',             lob: 'Property',              carrier: 'Zurich',            carrier_code: 'ZUR',   effective: '2025-09-12', expiry: '2026-09-12', premium: 94200,  billing: 'Agency Bill', state: 'NY', producer: 'Sarah Chen',  stage: 'In-Force',    loss_ratio: 14, claims_open: 0, commission: 11304, endorsements: 0, cois: 3 },
+  { id: 'NWD-AUTO-2025-41201',epic_id: 'POL-77833-22', client: 'Harbor Foods',               lob: 'Commercial Auto',       carrier: 'Nationwide',        carrier_code: 'NWD',   effective: '2025-03-18', expiry: '2026-03-18', premium: 42800,  billing: 'Agency Bill', state: 'CA', producer: 'Sarah Chen',  stage: 'Non-Renewing',loss_ratio: 96, claims_open: 2, commission: 5136,  endorsements: 0, cois: 1 }
+];
+
+export const policyAnalytics = {
+  premium_by_lob: [
+    { lob: 'Workers Comp',           premium: 4_820_000, policies: 148, share: 34 },
+    { lob: 'General Liability',      premium: 3_120_000, policies: 162, share: 22 },
+    { lob: 'Commercial Auto',        premium: 2_240_000, policies: 94,  share: 16 },
+    { lob: 'BOP',                    premium: 1_580_000, policies: 118, share: 11 },
+    { lob: 'Cyber',                  premium: 1_240_000, policies: 42,  share: 9  },
+    { lob: 'Professional Liability', premium: 620_000,   policies: 38,  share: 4  },
+    { lob: 'Property',               premium: 380_000,   policies: 28,  share: 3  },
+    { lob: 'Umbrella / D&O / Other', premium: 220_000,   policies: 56,  share: 1  }
+  ],
+  carrier_concentration: [
+    { carrier: 'Liberty Mutual / SEMC', premium: 3_820_000, share: 27, policies: 182 },
+    { carrier: 'CNA',                   premium: 2_420_000, share: 17, policies: 124 },
+    { carrier: 'Travelers',             premium: 2_140_000, share: 15, policies: 98  },
+    { carrier: 'Hartford',              premium: 1_640_000, share: 12, policies: 112 },
+    { carrier: 'AMTrust',               premium: 1_180_000, share: 8,  policies: 84  },
+    { carrier: 'Zurich',                premium: 980_000,   share: 7,  policies: 42  },
+    { carrier: 'Chubb',                 premium: 820_000,   share: 6,  policies: 38  },
+    { carrier: 'Nationwide',            premium: 580_000,   share: 4,  policies: 52  },
+    { carrier: 'Other (5 carriers)',    premium: 620_000,   share: 4,  policies: 115 }
+  ],
+  loss_ratio_by_lob: [
+    { lob: 'Workers Comp',           earned: 4_820_000, incurred: 2_120_000, ratio: 44, benchmark: 62 },
+    { lob: 'General Liability',      earned: 3_120_000, incurred: 1_340_000, ratio: 43, benchmark: 58 },
+    { lob: 'Commercial Auto',        earned: 2_240_000, incurred: 1_210_000, ratio: 54, benchmark: 68 },
+    { lob: 'BOP',                    earned: 1_580_000, incurred: 520_000,   ratio: 33, benchmark: 52 },
+    { lob: 'Cyber',                  earned: 1_240_000, incurred: 384_000,   ratio: 31, benchmark: 48 },
+    { lob: 'Professional Liability', earned: 620_000,   incurred: 186_000,   ratio: 30, benchmark: 55 },
+    { lob: 'Property',               earned: 380_000,   incurred: 146_000,   ratio: 38, benchmark: 58 }
+  ],
+  retention: {
+    ytd: 91.4,
+    by_tier: [
+      { tier: 'Platinum', retained: 94, lost: 6,  rate: 94 },
+      { tier: 'Gold',     retained: 128,lost: 14, rate: 90 },
+      { tier: 'Silver',   retained: 168,lost: 22, rate: 88 },
+      { tier: 'Bronze',   retained: 84, lost: 20, rate: 81 }
+    ],
+    lost_reasons: [
+      { reason: 'Price', count: 22, pct: 35 },
+      { reason: 'Non-renewed by carrier', count: 12, pct: 19 },
+      { reason: 'Acquired / consolidated', count: 8, pct: 13 },
+      { reason: 'Broker switch', count: 11, pct: 17 },
+      { reason: 'Business closed', count: 6, pct: 10 },
+      { reason: 'Other', count: 4, pct: 6 }
+    ]
+  },
+  expiration_calendar: [
+    { bucket: '0–30d',   count: 12, premium: 1_820_000, color: 'red'   },
+    { bucket: '31–60d',  count: 28, premium: 3_240_000, color: 'amber' },
+    { bucket: '61–90d',  count: 47, premium: 4_120_000, color: 'amber' },
+    { bucket: '91–180d', count: 118,premium: 6_840_000, color: 'blue'  },
+    { bucket: '180d+',   count: 642,premium: 14_180_000,color: 'gray'  }
+  ]
+};
+
+export const policyBulkCOI = [
+  { policy: 'SEMC-WC-2025-48821', client: 'Magnolia Construction LLC', holder: 'Kroger Real Estate',  status: 'Issued',  issued: '2026-04-15', expires: '2027-04-15' },
+  { policy: 'SEMC-WC-2025-48821', client: 'Magnolia Construction LLC', holder: 'Prologis Trust',      status: 'Issued',  issued: '2026-03-22', expires: '2027-03-22' },
+  { policy: 'TRV-AUTO-2026-11223',client: 'Delta Logistics',           holder: 'Amazon Freight',      status: 'Pending', issued: '—',          expires: '—' },
+  { policy: 'LIB-PRO-2025-22841', client: 'Summit Medical',            holder: 'Blue Shield Network', status: 'Pending', issued: '—',          expires: '—' },
+  { policy: 'CNA-CYB-2026-88102', client: 'TechCorp Inc',              holder: 'Vendor — SaaS MSA',   status: 'Issued',  issued: '2026-04-01', expires: '2027-04-01' },
+  { policy: 'LIB-UMB-2025-88103', client: 'Magnolia Construction LLC', holder: 'General Contractor',  status: 'Issued',  issued: '2026-04-10', expires: '2027-04-10' }
+];
+
+export const policyAIChat = [
+  { role: 'ai',   text: 'Hi! I can find policies, summarize coverage, or flag issues. Try: "Which policies expire in the next 45 days with loss ratio > 50%?"' },
+  { role: 'user', text: 'Which policies expire in the next 45 days with loss ratio > 50%?' },
+  { role: 'ai',   text: 'Found 2 policies matching:\n• **AMT-WC-2025-44821** — Coastal Realty · LR 54% · expires 2026-05-14\n• **NWD-AUTO-2025-41201** — Harbor Foods · LR 96% · expires 2026-03-18 (already non-renewing)\n\nRecommend proactive market search for Coastal Realty now to get ahead of renewal.' }
 ];
 
 export const brokerRenewalsKPIs = [
@@ -1432,19 +1534,104 @@ export const claimsAnalytics = {
 
 export const brokerClientsKPIs = [
   { label: 'Total Clients', value: '127' },
-  { label: 'New This Month', value: '8' },
-  { label: 'Retention Rate', value: '94%' }
+  { label: 'New (30d)', value: '8' },
+  { label: 'Book of Business', value: '$14.2M' },
+  { label: 'Retention Rate', value: '94%', warning: false },
+  { label: 'Cross-Sell Ready', value: '38' },
+  { label: 'At-Risk', value: '14', warning: true }
 ];
 
 export const brokerClients = [
-  { name: 'Magnolia Constr', policies: 3, carrier: 'SEMC / Liberty Mutual', expDate: '2026-06-01', premium: '$184,700', status: 'Active', statusColor: 'green' },
-  { name: 'Apex Industries', policies: 2, carrier: 'CNA', expDate: '2026-04-12', premium: '$92,400', status: 'Active', statusColor: 'green' },
-  { name: 'TechCorp Inc', policies: 4, carrier: 'Liberty Mutual', expDate: '2026-07-22', premium: '$256,100', status: 'Active', statusColor: 'green' },
-  { name: 'Coastal Realty', policies: 1, carrier: 'AMTrust', expDate: '2026-05-14', premium: '$38,900', status: 'Pending', statusColor: 'amber' },
-  { name: 'Ridge Builders', policies: 2, carrier: 'AMTrust', expDate: '2026-05-30', premium: '$93,250', status: 'Renewal Due', statusColor: 'amber' },
-  { name: 'Delta Logistics', policies: 3, carrier: 'Travelers', expDate: '2026-08-05', premium: '$142,800', status: 'Active', statusColor: 'green' },
-  { name: 'Harbor Foods', policies: 2, carrier: 'Hartford', expDate: '2026-03-18', premium: '$76,500', status: 'Expiring', statusColor: 'red' },
-  { name: 'Summit Medical', policies: 5, carrier: 'CNA', expDate: '2026-09-12', premium: '$312,450', status: 'Active', statusColor: 'green' }
+  { id: 'CLI-1001', name: 'Magnolia Construction LLC', tier: 'Platinum', industry: 'Construction',  naics: '238220', revenue: '$42M', employees: 180, state: 'CA', policies: 3, lobs: ['WC','GL','Umbrella'],         carrier: 'SEMC / Liberty',    premium: 202900, exp_date: '2026-06-01', status: 'Active',      statusColor: 'green', producer: 'Sarah Chen',  last_contact: '2026-04-15', onboarded: '2019-06-01', nps: 82, loss_ratio: 14, cross_sell: ['Cyber'],          risk: 'low'    },
+  { id: 'CLI-1002', name: 'Apex Industries',            tier: 'Gold',     industry: 'Manufacturing', naics: '332999', revenue: '$28M', employees: 120, state: 'CA', policies: 2, lobs: ['GL','Property'],                carrier: 'CNA',               premium: 92400,  exp_date: '2026-04-12', status: 'Expiring',    statusColor: 'amber', producer: 'Mike Torres', last_contact: '2026-04-08', onboarded: '2020-04-12', nps: 64, loss_ratio: 32, cross_sell: ['WC','Cyber'],     risk: 'medium' },
+  { id: 'CLI-1003', name: 'TechCorp Inc',               tier: 'Platinum', industry: 'Tech',          naics: '541511', revenue: '$84M', employees: 340, state: 'CA', policies: 4, lobs: ['Cyber','D&O','GL','Property'], carrier: 'CNA / Chubb',       premium: 304600, exp_date: '2026-07-22', status: 'Active',      statusColor: 'green', producer: 'Sarah Chen',  last_contact: '2026-04-14', onboarded: '2021-07-22', nps: 88, loss_ratio: 12, cross_sell: ['WC'],              risk: 'low'    },
+  { id: 'CLI-1004', name: 'Coastal Realty',             tier: 'Silver',   industry: 'Real Estate',   naics: '531210', revenue: '$6.4M',employees: 42,  state: 'FL', policies: 1, lobs: ['WC'],                           carrier: 'AMTrust',           premium: 38900,  exp_date: '2026-05-14', status: 'Expiring',    statusColor: 'amber', producer: 'Lisa Park',   last_contact: '2026-03-28', onboarded: '2023-05-14', nps: 48, loss_ratio: 54, cross_sell: ['GL','Property'],  risk: 'high'   },
+  { id: 'CLI-1005', name: 'Ridge Builders',             tier: 'Gold',     industry: 'Construction',  naics: '236220', revenue: '$18M', employees: 88,  state: 'CA', policies: 2, lobs: ['BOP','Commercial Auto'],       carrier: 'Liberty Mutual',    premium: 93250,  exp_date: '2026-05-30', status: 'Renewal Due', statusColor: 'amber', producer: 'Mike Torres', last_contact: '2026-04-10', onboarded: '2021-05-30', nps: 72, loss_ratio: 24, cross_sell: ['WC','Umbrella'],  risk: 'medium' },
+  { id: 'CLI-1006', name: 'Delta Logistics',            tier: 'Platinum', industry: 'Logistics',     naics: '484110', revenue: '$52M', employees: 240, state: 'CA', policies: 3, lobs: ['Commercial Auto','WC','GL'],    carrier: 'Travelers',         premium: 312800, exp_date: '2026-08-05', status: 'Active',      statusColor: 'green', producer: 'Sarah Chen',  last_contact: '2026-04-12', onboarded: '2018-08-05', nps: 84, loss_ratio: 26, cross_sell: ['Cyber'],          risk: 'low'    },
+  { id: 'CLI-1007', name: 'Harbor Foods',               tier: 'Silver',   industry: 'Food Services', naics: '311421', revenue: '$9.2M',employees: 56,  state: 'CA', policies: 2, lobs: ['BOP','Commercial Auto'],       carrier: 'Hartford/Nationwide', premium: 81000,exp_date: '2026-03-18', status: 'At Risk',     statusColor: 'red',   producer: 'Sarah Chen',  last_contact: '2026-03-10', onboarded: '2022-03-18', nps: 42, loss_ratio: 76, cross_sell: [],                  risk: 'high'   },
+  { id: 'CLI-1008', name: 'Summit Medical',             tier: 'Platinum', industry: 'Healthcare',    naics: '621111', revenue: '$38M', employees: 164, state: 'NY', policies: 5, lobs: ['Professional','BOP','Cyber','Property','WC'], carrier: 'CNA / Liberty / Zurich', premium: 412450, exp_date: '2026-09-12', status: 'Active', statusColor: 'green', producer: 'Sarah Chen', last_contact: '2026-04-13', onboarded: '2017-09-12', nps: 91, loss_ratio: 10, cross_sell: ['D&O'],        risk: 'low'    },
+  { id: 'CLI-1009', name: 'Blue Ridge Supplies',        tier: 'Bronze',   industry: 'Wholesale',     naics: '424410', revenue: '$3.8M',employees: 22,  state: 'IL', policies: 1, lobs: ['WC'],                           carrier: 'CNA',               premium: 12000,  exp_date: '2026-02-18', status: 'Cancelled',   statusColor: 'red',   producer: 'Sarah Chen',  last_contact: '2026-02-10', onboarded: '2023-02-18', nps: 22, loss_ratio: 78, cross_sell: [],                  risk: 'high'   },
+  { id: 'CLI-1010', name: 'Peak Fitness Co.',           tier: 'Bronze',   industry: 'Recreation',    naics: '713940', revenue: '$2.8M',employees: 24,  state: 'AZ', policies: 1, lobs: ['BOP'],                          carrier: 'Hartford',          premium: 28400,  exp_date: '2026-01-20', status: 'Cancelled',   statusColor: 'red',   producer: 'Mike Torres', last_contact: '2026-01-15', onboarded: '2022-01-20', nps: 28, loss_ratio: 88, cross_sell: [],                  risk: 'high'   },
+  { id: 'CLI-1011', name: 'DataCore Inc',               tier: 'Gold',     industry: 'Tech',          naics: '541512', revenue: '$15M', employees: 48,  state: 'TX', policies: 2, lobs: ['Cyber','D&O'],                  carrier: 'CNA / Chubb',       premium: 148000, exp_date: '2026-07-22', status: 'Active',      statusColor: 'green', producer: 'Sarah Chen',  last_contact: '2026-04-16', onboarded: '2024-07-22', nps: 78, loss_ratio: 18, cross_sell: ['GL','Professional'],risk: 'low'    },
+  { id: 'CLI-1012', name: 'Valley Logistics',           tier: 'Gold',     industry: 'Logistics',     naics: '484110', revenue: '$22M', employees: 112, state: 'CA', policies: 3, lobs: ['Commercial Auto','WC','GL'],    carrier: 'Travelers',         premium: 142800, exp_date: '2026-11-08', status: 'Active',      statusColor: 'green', producer: 'Sarah Chen',  last_contact: '2026-04-11', onboarded: '2022-11-08', nps: 74, loss_ratio: 28, cross_sell: ['Cyber'],          risk: 'medium' },
+  { id: 'CLI-1013', name: 'Bright Horizon Academy',     tier: 'Silver',   industry: 'Education',     naics: '611110', revenue: '$4.8M',employees: 42,  state: 'CA', policies: 3, lobs: ['WC','Professional','Property'], carrier: 'Nationwide',        premium: 72000,  exp_date: '2026-06-30', status: 'Active',      statusColor: 'green', producer: 'Sarah Chen',  last_contact: '2026-04-10', onboarded: '2026-04-18', nps: 80, loss_ratio: 8,  cross_sell: ['Cyber','Auto'],   risk: 'low'    }
+];
+
+export const clientTiers = [
+  { tier: 'Platinum', min: 200000, color: 'blue',  desc: 'Strategic accounts · white-glove service' },
+  { tier: 'Gold',     min: 75000,  color: 'amber', desc: 'Core accounts · dedicated CSR' },
+  { tier: 'Silver',   min: 25000,  color: 'gray',  desc: 'Standard accounts · shared service' },
+  { tier: 'Bronze',   min: 0,      color: 'gray',  desc: 'Small accounts · self-service portal' }
+];
+
+export const clientAnalytics = {
+  book_of_business: {
+    total_premium: 14_200_000,
+    total_clients: 127,
+    avg_per_client: 111811,
+    multi_lob: 84,
+    single_lob: 43,
+    platinum: 18, gold: 34, silver: 42, bronze: 33
+  },
+  segmentation_by_industry: [
+    { industry: 'Construction',   clients: 24, premium: 3_120_000, avg_nps: 78, loss_ratio: 22 },
+    { industry: 'Tech',           clients: 18, premium: 2_640_000, avg_nps: 84, loss_ratio: 14 },
+    { industry: 'Healthcare',     clients: 16, premium: 2_420_000, avg_nps: 86, loss_ratio: 12 },
+    { industry: 'Logistics',      clients: 14, premium: 1_840_000, avg_nps: 79, loss_ratio: 27 },
+    { industry: 'Manufacturing',  clients: 12, premium: 1_420_000, avg_nps: 68, loss_ratio: 32 },
+    { industry: 'Real Estate',    clients: 10, premium: 820_000,   avg_nps: 62, loss_ratio: 44 },
+    { industry: 'Food Services',  clients:  8, premium: 620_000,   avg_nps: 58, loss_ratio: 62 },
+    { industry: 'Other',          clients: 25, premium: 1_320_000, avg_nps: 70, loss_ratio: 34 }
+  ],
+  retention_quarterly: [
+    { q: 'Q1 2025', retained: 118, lost: 8,  rate: 94 },
+    { q: 'Q2 2025', retained: 122, lost: 6,  rate: 95 },
+    { q: 'Q3 2025', retained: 119, lost: 11, rate: 91 },
+    { q: 'Q4 2025', retained: 124, lost: 8,  rate: 94 },
+    { q: 'Q1 2026', retained: 121, lost: 9,  rate: 93 }
+  ],
+  churn_by_tier: [
+    { tier: 'Platinum', churn: 3,  rate: 4  },
+    { tier: 'Gold',     churn: 8,  rate: 10 },
+    { tier: 'Silver',   churn: 14, rate: 12 },
+    { tier: 'Bronze',   churn: 17, rate: 19 }
+  ],
+  at_risk: [
+    { client: 'Harbor Foods',        reason: 'Loss ratio 76% · NPS dropped 20pts',    producer: 'Sarah Chen',  action: 'Remediation call scheduled' },
+    { client: 'Coastal Realty',      reason: 'Only 1 LOB · LR 54% · Competitor bid',  producer: 'Lisa Park',   action: 'Present renewal comparison' },
+    { client: 'Peak Fitness Co.',    reason: 'Mid-term cancellation · LR 88%',         producer: 'Mike Torres', action: '30-day nurture restart' },
+    { client: 'Apex Industries',     reason: 'Expiring in 14 days · Quoted w/ 2 markets', producer: 'Mike Torres', action: 'Schedule decision call' }
+  ],
+  cross_sell_opportunities: [
+    { client: 'Magnolia Construction', gap: 'Cyber',          rationale: '$42M revenue · IT footprint · no current Cyber coverage',  est_premium: 24000, fit: 94, producer: 'Sarah Chen' },
+    { client: 'TechCorp Inc',          gap: 'Workers Comp',   rationale: '340 employees · currently PEO-covered · better rate available', est_premium: 82000, fit: 88, producer: 'Sarah Chen' },
+    { client: 'Delta Logistics',       gap: 'Cyber',          rationale: 'TMS systems · customer PII · regulatory exposure',       est_premium: 48000, fit: 86, producer: 'Sarah Chen' },
+    { client: 'Ridge Builders',        gap: 'Umbrella',       rationale: 'Auto + GL exposure · below industry umbrella norm',      est_premium: 12000, fit: 82, producer: 'Mike Torres' },
+    { client: 'Summit Medical',        gap: 'D&O',            rationale: 'Growing 5-location group · board formation',             est_premium: 36000, fit: 78, producer: 'Sarah Chen' },
+    { client: 'Apex Industries',       gap: 'WC + Cyber',     rationale: 'Mfg exposure + ERP data · existing relationship',         est_premium: 54000, fit: 76, producer: 'Mike Torres' }
+  ],
+  lifecycle_stages: [
+    { stage: 'Onboarding (< 90d)',    count: 8,  pct: 6 },
+    { stage: 'Active (< 2yr)',         count: 42, pct: 33 },
+    { stage: 'Mature (2–5yr)',         count: 54, pct: 43 },
+    { stage: 'Legacy (5yr+)',          count: 18, pct: 14 },
+    { stage: 'At-Risk',                count: 5,  pct: 4  }
+  ]
+};
+
+export const clientActivities = [
+  { client: 'Magnolia Construction', type: 'Email',    subject: 'COI request — Kroger',             ts: '2026-04-17 09:22', producer: 'Sarah Chen' },
+  { client: 'TechCorp Inc',          type: 'Meeting',  subject: 'Q2 coverage review',               ts: '2026-04-16 14:00', producer: 'Sarah Chen' },
+  { client: 'Apex Industries',       type: 'Call',     subject: 'Renewal decision follow-up',       ts: '2026-04-16 11:30', producer: 'Mike Torres' },
+  { client: 'Harbor Foods',          type: 'Meeting',  subject: 'Remediation — loss trends',        ts: '2026-04-15 10:00', producer: 'Sarah Chen' },
+  { client: 'Summit Medical',        type: 'Email',    subject: 'D&O quote comparison',             ts: '2026-04-15 08:40', producer: 'Sarah Chen' },
+  { client: 'Delta Logistics',       type: 'Call',     subject: 'Cross-sell: Cyber discovery',      ts: '2026-04-14 15:10', producer: 'Sarah Chen' }
+];
+
+export const clientAIChat = [
+  { role: 'ai',   text: 'Hi! Ask me about any client in your book. Try: "Show my top-10 at-risk clients by premium" or "What cross-sell opportunities exist for Magnolia?"' },
+  { role: 'user', text: 'What cross-sell opportunities exist for Magnolia Construction?' },
+  { role: 'ai',   text: 'Magnolia Construction currently has 3 policies ($202,900 premium): WC, GL, Umbrella.\n\n**Gap identified: Cyber**\n• Rationale: $42M revenue · 180 employees · IT footprint with customer data\n• Estimated premium: ~$24,000\n• Fit score: 94% · CNA or Chubb are top carrier candidates\n\nWant me to create a cross-sell opportunity in Prospects?' }
 ];
 
 // ─── MGA Portal Data ───
@@ -1619,3 +1806,598 @@ export const activityAnalytics = {
     { name: 'David Kim', score: 71, tier: 'Needs Focus' }
   ]
 };
+
+// ─── Documents Module Data ───
+export const documentKPIs = [
+  { label: 'Total Documents', value: '4,812' },
+  { label: 'Pending Signatures', value: '28', warning: true },
+  { label: 'Expiring < 30d', value: '14', warning: true },
+  { label: 'Storage Used', value: '142 GB' },
+  { label: 'Compliance Score', value: '96%' },
+  { label: 'e-Sign Adoption', value: '93%' }
+];
+
+export const documentCategories = [
+  { key: 'client',     icon: '👥', name: 'Client & Prospect',     desc: 'Applications, ID proof, W-9, loss runs',     count: 1284 },
+  { key: 'policy',     icon: '📋', name: 'Policy Lifecycle',      desc: 'Binders, decs, endorsements, COIs, ID cards', count: 1962 },
+  { key: 'carrier',    icon: '🏢', name: 'Carrier & Submission',  desc: 'ACORD forms, underwriting Qs, quotes',        count: 748  },
+  { key: 'claims',     icon: '📝', name: 'Claims & Loss',         desc: 'FNOL, adjuster reports, settlement docs',     count: 312  },
+  { key: 'billing',    icon: '💰', name: 'Billing & Financial',   desc: 'Invoices, payment proofs, commission stmts',  count: 284  },
+  { key: 'compliance', icon: '⚖️', name: 'Compliance & Legal',    desc: 'e-signatures, disclosures, privacy notices',  count: 158  },
+  { key: 'marketing',  icon: '📣', name: 'Marketing & Misc',      desc: 'Welcome kits, risk management reports',       count: 64   }
+];
+
+export const documentStatuses = ['Draft','Pending Review','Pending Signature','Signed','Active','Expiring','Expired','Archived'];
+
+export const documentLibrary = [
+  { id: 'DOC-10482', name: 'ACORD 125 — Commercial Application.pdf', category: 'carrier',    type: 'ACORD 125',        client: 'Magnolia Construction LLC', policy: 'SEMC-WC-2025-48821', lob: 'Workers Comp',        version: 3, size: '1.4 MB',  uploaded: '2026-04-12', uploadedBy: 'Sarah Chen',     status: 'Signed',            statusColor: 'green', expires: '—',           confidentiality: 'Internal',  signers: 2, signed: 2 },
+  { id: 'DOC-10481', name: 'Certificate of Insurance — Landlord.pdf', category: 'policy',    type: 'COI',              client: 'Apex Industries',           policy: 'CNA-GL-2025-33102',  lob: 'General Liability',   version: 1, size: '284 KB', uploaded: '2026-04-17', uploadedBy: 'Mike Torres',    status: 'Active',            statusColor: 'green', expires: '2027-04-01',  confidentiality: 'Shared',    signers: 1, signed: 1 },
+  { id: 'DOC-10480', name: 'Workers Comp Binder 2026-05-01.pdf',      category: 'policy',    type: 'Binder',           client: 'Magnolia Construction LLC', policy: 'SEMC-WC-2025-48821', lob: 'Workers Comp',        version: 2, size: '820 KB', uploaded: '2026-04-15', uploadedBy: 'Sarah Chen',     status: 'Pending Signature', statusColor: 'amber', expires: '2026-04-25',  confidentiality: 'Internal',  signers: 3, signed: 1 },
+  { id: 'DOC-10479', name: 'Loss Run — Liberty 2023-2025.pdf',        category: 'client',    type: 'Loss Run',         client: 'Ridge Builders',            policy: '—',                  lob: 'Workers Comp',        version: 1, size: '2.1 MB', uploaded: '2026-04-10', uploadedBy: 'Lisa Park',      status: 'Active',            statusColor: 'green', expires: '—',           confidentiality: 'Internal',  signers: 0, signed: 0 },
+  { id: 'DOC-10478', name: 'FNOL — Slip & Fall Incident.pdf',         category: 'claims',    type: 'FNOL',             client: 'Valley Logistics',          policy: 'HTF-GL-2025-44208',  lob: 'General Liability',   version: 1, size: '612 KB', uploaded: '2026-04-09', uploadedBy: 'David Kim',      status: 'Signed',            statusColor: 'green', expires: '—',           confidentiality: 'Internal',  signers: 2, signed: 2 },
+  { id: 'DOC-10477', name: 'Endorsement — Add Location 1400 Ind.pdf', category: 'policy',    type: 'Endorsement',      client: 'Magnolia Construction LLC', policy: 'SEMC-WC-2025-48821', lob: 'Workers Comp',        version: 1, size: '198 KB', uploaded: '2026-04-08', uploadedBy: 'Sarah Chen',     status: 'Pending Signature', statusColor: 'amber', expires: '2026-04-22',  confidentiality: 'Internal',  signers: 2, signed: 0 },
+  { id: 'DOC-10476', name: 'Commission Statement — Liberty Apr.pdf',  category: 'billing',   type: 'Commission Stmt',  client: 'Agency-wide',               policy: '—',                  lob: 'Multi',               version: 1, size: '1.8 MB', uploaded: '2026-04-05', uploadedBy: 'Finance Bot',    status: 'Active',            statusColor: 'green', expires: '—',           confidentiality: 'Internal',  signers: 0, signed: 0 },
+  { id: 'DOC-10475', name: 'Privacy Notice & GLBA Disclosure.pdf',    category: 'compliance',type: 'Disclosure',       client: 'TechCorp Inc',              policy: '—',                  lob: 'Cyber',               version: 2, size: '96 KB',  uploaded: '2026-04-04', uploadedBy: 'Sarah Chen',     status: 'Signed',            statusColor: 'green', expires: '2027-04-04',  confidentiality: 'Shared',    signers: 1, signed: 1 },
+  { id: 'DOC-10474', name: 'W-9 Form — Harbor Foods.pdf',             category: 'client',    type: 'W-9',              client: 'Harbor Foods',              policy: '—',                  lob: '—',                   version: 1, size: '42 KB',  uploaded: '2026-04-03', uploadedBy: 'Client Upload',  status: 'Active',            statusColor: 'green', expires: '—',           confidentiality: 'Internal',  signers: 1, signed: 1 },
+  { id: 'DOC-10473', name: 'COI — Apex Expiring.pdf',                 category: 'policy',    type: 'COI',              client: 'Apex Industries',           policy: 'CNA-GL-2025-33102',  lob: 'General Liability',   version: 1, size: '276 KB', uploaded: '2025-04-20', uploadedBy: 'Mike Torres',    status: 'Expiring',          statusColor: 'amber', expires: '2026-05-01',  confidentiality: 'Shared',    signers: 1, signed: 1 },
+  { id: 'DOC-10472', name: 'Quote — AMTrust GL Coastal.pdf',          category: 'carrier',   type: 'Quote',            client: 'Coastal Realty',            policy: '—',                  lob: 'General Liability',   version: 1, size: '412 KB', uploaded: '2026-04-02', uploadedBy: 'Lisa Park',      status: 'Draft',             statusColor: 'gray',  expires: '2026-05-02',  confidentiality: 'Internal',  signers: 0, signed: 0 },
+  { id: 'DOC-10471', name: 'Welcome Kit — TechCorp.pdf',              category: 'marketing', type: 'Welcome Kit',      client: 'TechCorp Inc',              policy: '—',                  lob: 'Cyber',               version: 1, size: '3.2 MB', uploaded: '2026-03-29', uploadedBy: 'Sarah Chen',     status: 'Active',            statusColor: 'green', expires: '—',           confidentiality: 'Shared',    signers: 0, signed: 0 },
+  { id: 'DOC-10470', name: 'FNOL — Data Breach DataCore.pdf',         category: 'claims',    type: 'FNOL',             client: 'DataCore Inc',              policy: 'CNA-CYB-2024-22093', lob: 'Cyber',               version: 2, size: '1.1 MB', uploaded: '2026-03-28', uploadedBy: 'David Kim',      status: 'Pending Review',    statusColor: 'amber', expires: '—',           confidentiality: 'Confidential', signers: 2, signed: 1 },
+  { id: 'DOC-10469', name: 'Invoice — Summit Medical Q2.pdf',         category: 'billing',   type: 'Invoice',          client: 'Summit Medical',            policy: 'LIB-PRO-2025-22841', lob: 'Professional Liability', version: 1, size: '84 KB', uploaded: '2026-03-26', uploadedBy: 'Finance Bot',    status: 'Active',            statusColor: 'green', expires: '2026-05-26',  confidentiality: 'Shared',    signers: 0, signed: 0 },
+  { id: 'DOC-10468', name: 'Declinations — Hartford BOP.pdf',         category: 'carrier',   type: 'Declination',      client: 'Ridge Builders',            policy: '—',                  lob: 'BOP',                 version: 1, size: '118 KB', uploaded: '2026-03-24', uploadedBy: 'Mike Torres',    status: 'Archived',          statusColor: 'gray',  expires: '—',           confidentiality: 'Internal',  signers: 0, signed: 0 }
+];
+
+export const documentDetail = {
+  id: 'DOC-10480',
+  name: 'Workers Comp Binder 2026-05-01.pdf',
+  type: 'Binder',
+  category: 'policy',
+  client: 'Magnolia Construction LLC',
+  policy: 'SEMC-WC-2025-48821',
+  lob: 'Workers Comp',
+  carrier: 'Liberty Mutual / SEMC',
+  size: '820 KB',
+  pages: 8,
+  version: 2,
+  status: 'Pending Signature',
+  uploaded: '2026-04-15 09:32 AM',
+  uploadedBy: 'Sarah Chen',
+  effective: '2026-05-01',
+  expires: '2026-04-25 (signature deadline)',
+  confidentiality: 'Internal',
+  retention: '7 years (CA DOI §2695.5)',
+  deletion: '2033-05-01',
+  encryption: 'AES-256 at rest · TLS 1.3 in transit',
+  lastAccessed: '2026-04-17 14:08',
+  permissions: [
+    { role: 'Producer (Sarah Chen)', access: 'Owner' },
+    { role: 'CSR Team',              access: 'Edit' },
+    { role: 'Underwriter (Liberty)', access: 'View' },
+    { role: 'Client (Magnolia)',     access: 'Sign' }
+  ],
+  signers: [
+    { name: 'Sarah Chen',         role: 'Producer',   status: 'Signed',  signed: '2026-04-15 09:45', ip: '192.168.10.22', method: 'Click-to-sign' },
+    { name: 'Marc Henderson',     role: 'Underwriter',status: 'Sent',    signed: '—',                ip: '—',             method: '—' },
+    { name: 'James Reynolds',     role: 'Client',     status: 'Viewed',  signed: '—',                ip: '72.14.188.4',   method: '—' }
+  ],
+  versions: [
+    { v: 2, date: '2026-04-15', by: 'Sarah Chen',  change: 'Updated effective date to 2026-05-01 per UW request' },
+    { v: 1, date: '2026-04-11', by: 'Sarah Chen',  change: 'Initial binder generated from quote QT-48821' }
+  ],
+  auditTrail: [
+    { ts: '2026-04-17 14:08', actor: 'James Reynolds (Client)',    event: 'Viewed via portal link',  ip: '72.14.188.4' },
+    { ts: '2026-04-15 10:02', actor: 'DocuSign Envelope',          event: 'Envelope sent to 3 signers', ip: '—' },
+    { ts: '2026-04-15 09:45', actor: 'Sarah Chen',                 event: 'Signed as Producer',      ip: '192.168.10.22' },
+    { ts: '2026-04-15 09:32', actor: 'Sarah Chen',                 event: 'Uploaded v2',             ip: '192.168.10.22' },
+    { ts: '2026-04-11 16:20', actor: 'System',                     event: 'Generated from template ACORD-Binder-v2', ip: '—' }
+  ],
+  metadata: [
+    { k: 'Policy Number',    v: 'SEMC-WC-2025-48821' },
+    { k: 'LOB',              v: 'Workers Comp' },
+    { k: 'Effective Date',   v: '2026-05-01' },
+    { k: 'Expiration Date',  v: '2027-05-01' },
+    { k: 'Premium',          v: '$184,700' },
+    { k: 'State',            v: 'CA' },
+    { k: 'Red-Flag',         v: 'None' },
+    { k: 'Exposure Class',   v: 'Class 5403 — Carpentry' }
+  ]
+};
+
+export const documentChecklist = [
+  { client: 'Magnolia Construction LLC', policy: 'SEMC-WC-2025-48821', owner: 'Sarah Chen',  lob: 'Workers Comp', total: 8, done: 7, items: [
+    { name: 'ACORD 125 Application',       status: 'done',    owner: 'Producer',  due: '2026-04-10' },
+    { name: 'Loss Runs (3-yr)',            status: 'done',    owner: 'Client',    due: '2026-04-10' },
+    { name: 'W-9 Form',                    status: 'done',    owner: 'Client',    due: '2026-04-10' },
+    { name: 'Quote Proposal',              status: 'done',    owner: 'Producer',  due: '2026-04-12' },
+    { name: 'Binder',                      status: 'done',    owner: 'Producer',  due: '2026-04-15' },
+    { name: 'Signed Binder',               status: 'pending', owner: 'Client',    due: '2026-04-25' },
+    { name: 'TRIA Election Form',          status: 'done',    owner: 'Client',    due: '2026-04-25' },
+    { name: 'COI to Landlord',             status: 'done',    owner: 'CSR',       due: '2026-05-01' }
+  ]},
+  { client: 'Apex Industries', policy: 'CNA-GL-2025-33102', owner: 'Mike Torres', lob: 'General Liability', total: 6, done: 4, items: [
+    { name: 'ACORD 125 Application',       status: 'done',    owner: 'Producer',  due: '2026-04-01' },
+    { name: 'Loss Runs',                   status: 'done',    owner: 'Client',    due: '2026-04-01' },
+    { name: 'Renewal Questionnaire',       status: 'pending', owner: 'Client',    due: '2026-04-20' },
+    { name: 'Quote Proposal',              status: 'done',    owner: 'Producer',  due: '2026-04-08' },
+    { name: 'Signed Renewal Offer',        status: 'pending', owner: 'Client',    due: '2026-04-28' },
+    { name: 'COI — Landlord Update',       status: 'done',    owner: 'CSR',       due: '2026-04-15' }
+  ]},
+  { client: 'TechCorp Inc', policy: 'CNA-CYB-2026-88102', owner: 'Sarah Chen', lob: 'Cyber', total: 7, done: 5, items: [
+    { name: 'Cyber Questionnaire',         status: 'done',    owner: 'Client',    due: '2026-03-28' },
+    { name: 'Security Audit Summary',      status: 'done',    owner: 'Client',    due: '2026-03-30' },
+    { name: 'Privacy Policy',              status: 'done',    owner: 'Client',    due: '2026-03-30' },
+    { name: 'ACORD 125',                   status: 'done',    owner: 'Producer',  due: '2026-04-01' },
+    { name: 'Quote Proposal',              status: 'done',    owner: 'Producer',  due: '2026-04-02' },
+    { name: 'Signed Binder',               status: 'pending', owner: 'Client',    due: '2026-04-22' },
+    { name: 'Welcome Kit Delivered',       status: 'pending', owner: 'CSR',       due: '2026-05-01' }
+  ]}
+];
+
+export const documentEnvelopes = [
+  { id: 'ENV-8842', doc: 'DOC-10480', docName: 'Workers Comp Binder', client: 'Magnolia Construction LLC', signatory: 'James Reynolds', sent: '2026-04-15 10:02', viewed: '2026-04-17 14:08', expires: '2026-04-25', status: 'Viewed',   provider: 'DocuSign' },
+  { id: 'ENV-8841', doc: 'DOC-10477', docName: 'Endorsement — Add Loc', client: 'Magnolia Construction LLC', signatory: 'James Reynolds', sent: '2026-04-08 11:14', viewed: '—',                expires: '2026-04-22', status: 'Sent',     provider: 'DocuSign' },
+  { id: 'ENV-8840', doc: 'DOC-10472', docName: 'Coastal Realty Quote', client: 'Coastal Realty',            signatory: 'Lena Park',       sent: '2026-04-02 15:22', viewed: '2026-04-03 09:40', expires: '2026-05-02', status: 'Viewed',   provider: 'Adobe Sign' },
+  { id: 'ENV-8839', doc: 'DOC-10470', docName: 'FNOL DataCore',         client: 'DataCore Inc',              signatory: 'Ross Patel',      sent: '2026-03-28 09:48', viewed: '2026-03-28 13:10', expires: '2026-04-28', status: 'In Progress', provider: 'Built-in' },
+  { id: 'ENV-8838', doc: 'DOC-10482', docName: 'ACORD 125 — Magnolia',  client: 'Magnolia Construction LLC', signatory: 'James Reynolds', sent: '2026-04-12 08:10', viewed: '2026-04-12 09:22', expires: '—',          status: 'Signed',   provider: 'DocuSign', signed: '2026-04-12 09:45' },
+  { id: 'ENV-8837', doc: 'DOC-10475', docName: 'Privacy Notice TechCorp',client: 'TechCorp Inc',             signatory: 'Alex Kim',        sent: '2026-04-04 10:05', viewed: '2026-04-04 10:30', expires: '—',          status: 'Signed',   provider: 'DocuSign', signed: '2026-04-04 10:45' }
+];
+
+export const documentAutomatedTasks = [
+  { id: 'T-DOC-204', task: 'Request missing ACORD application',       entity: 'Ridge Builders',        due: '2026-04-20', owner: 'Mike Torres', priority: 'High',   status: 'Open' },
+  { id: 'T-DOC-203', task: 'Send e-signature request for endorsement',entity: 'Magnolia Construction', due: '2026-04-18', owner: 'Sarah Chen',  priority: 'High',   status: 'In Progress' },
+  { id: 'T-DOC-202', task: 'Follow up on unsigned binder',            entity: 'Magnolia Construction', due: '2026-04-22', owner: 'Sarah Chen',  priority: 'Urgent', status: 'Open' },
+  { id: 'T-DOC-201', task: 'Notify 30 days before COI expiration',    entity: 'Apex Industries',       due: '2026-04-01', owner: 'Mike Torres', priority: 'Med',    status: 'Done' },
+  { id: 'T-DOC-200', task: 'Archive expired policy documents',        entity: '12 expired policies',   due: '2026-04-25', owner: 'Compliance',  priority: 'Low',    status: 'Open' },
+  { id: 'T-DOC-199', task: 'Compliance review — signed disclosures',  entity: 'Q1 onboarding batch',   due: '2026-04-19', owner: 'Compliance',  priority: 'Med',    status: 'In Progress' }
+];
+
+export const documentAnalytics = {
+  completion_by_producer: [
+    { name: 'Sarah Chen', rate: 96, avg_days: 4.1, packages: 38 },
+    { name: 'Mike Torres', rate: 88, avg_days: 6.3, packages: 26 },
+    { name: 'Lisa Park',  rate: 93, avg_days: 5.0, packages: 25 },
+    { name: 'David Kim',  rate: 81, avg_days: 7.8, packages: 17 }
+  ],
+  esign_funnel: [
+    { stage: 'Sent',        count: 328, pct: 100 },
+    { stage: 'Viewed',      count: 301, pct: 92 },
+    { stage: 'Started',     count: 284, pct: 87 },
+    { stage: 'Completed',   count: 271, pct: 83 },
+    { stage: 'Signed',      count: 268, pct: 82 }
+  ],
+  time_to_package: [
+    { range: '< 3 days',    count: 58, pct: 44 },
+    { range: '3–7 days',    count: 42, pct: 32 },
+    { range: '7–14 days',   count: 22, pct: 17 },
+    { range: '14+ days',    count: 10, pct: 7  }
+  ],
+  storage: [
+    { tier: 'Active',  gb: 92,  cost: '$184/mo' },
+    { tier: 'Archive', gb: 42,  cost: '$21/mo' },
+    { tier: 'Cold',    gb: 8,   cost: '$2/mo' }
+  ],
+  top_doc_types: [
+    { type: 'COI',                count: 1284, bottleneck: false },
+    { type: 'Binder',             count: 612,  bottleneck: false },
+    { type: 'ACORD 125',          count: 486,  bottleneck: false },
+    { type: 'Endorsement',        count: 402,  bottleneck: true  },
+    { type: 'Loss Run',           count: 312,  bottleneck: false },
+    { type: 'Commission Stmt',    count: 284,  bottleneck: false },
+    { type: 'FNOL',               count: 198,  bottleneck: false }
+  ],
+  compliance_score: {
+    overall: 96,
+    subs: [
+      { k: 'Retention Policy Automation', v: 100 },
+      { k: 'e-Signature Audit Trail',     v: 98  },
+      { k: 'Signed Disclosures Current',  v: 94  },
+      { k: 'Retention Deletion On-Time',  v: 92  }
+    ]
+  },
+  retention: [
+    { state: 'CA', years: 7,  docs: 1820, compliant: true },
+    { state: 'NY', years: 6,  docs: 742,  compliant: true },
+    { state: 'TX', years: 5,  docs: 618,  compliant: true },
+    { state: 'FL', years: 5,  docs: 480,  compliant: false },
+    { state: 'IL', years: 7,  docs: 312,  compliant: true }
+  ]
+};
+
+// ─── Prospects & Leads Module Data ───
+export const prospectKPIs = [
+  { label: 'Open Prospects', value: '218' },
+  { label: 'Hot Leads (>80)', value: '34' },
+  { label: 'Pipeline Value', value: '$2.84M' },
+  { label: 'Avg Lead→Close', value: '18d' },
+  { label: 'Conversion Rate', value: '27%' },
+  { label: 'Overdue Follow-ups', value: '11', warning: true }
+];
+
+export const prospectStages = [
+  { key: 'Prospect',      color: 'gray',  prob: 10 },
+  { key: 'Lead',          color: 'blue',  prob: 25 },
+  { key: 'Qualified',     color: 'blue',  prob: 40 },
+  { key: 'Quoted',        color: 'amber', prob: 55 },
+  { key: 'Proposal Sent', color: 'amber', prob: 70 },
+  { key: 'Negotiation',   color: 'amber', prob: 85 },
+  { key: 'Won',           color: 'green', prob: 100 },
+  { key: 'Lost',          color: 'red',   prob: 0  }
+];
+
+export const prospects = [
+  { id: 'PRO-2041', company: 'Westshore Logistics',      contact: 'Emma Blake',     email: 'emma@westshore.com',   phone: '(415) 555-0184', source: 'Referral',        campaign: 'Partner — Kempers',   industry: 'Transportation', naics: '484110', revenue: '$18M',  employees: 48,  state: 'CA', lob: ['Commercial Auto','WC'], current_carrier: 'Progressive', exp_date: '2026-06-15', stage: 'Negotiation',   prob: 85, score: 92, value: 168000, producer: 'Sarah Chen',  owner_id: 'sc',  received: '2026-03-28', last_activity: '2026-04-17', next_action: 'Send final proposal',         next_due: '2026-04-19', tags: ['Hot','Referral'],        notes: '5-year operating history, clean losses. Decision maker ready.' },
+  { id: 'PRO-2040', company: 'Helix Biotech',            contact: 'David Wu',       email: 'dwu@helixbio.com',     phone: '(408) 555-0122', source: 'Website',         campaign: 'Google Ads — Cyber',  industry: 'Biotech',        naics: '541714', revenue: '$42M',  employees: 112, state: 'CA', lob: ['Cyber','D&O','GL'],      current_carrier: 'Chubb',       exp_date: '2026-05-30', stage: 'Proposal Sent', prob: 70, score: 88, value: 420000, producer: 'Sarah Chen',  owner_id: 'sc',  received: '2026-04-02', last_activity: '2026-04-16', next_action: 'Follow up on proposal',       next_due: '2026-04-18', tags: ['Hot','High Value'],      notes: 'SOC2 certified, strong security posture.' },
+  { id: 'PRO-2039', company: 'Summit Dental Group',      contact: 'Dr. Priya Shah', email: 'priya@summitdent.com', phone: '(916) 555-0177', source: 'Trade Show',      campaign: 'CDA Conference 2026', industry: 'Healthcare',     naics: '621210', revenue: '$8.4M', employees: 34,  state: 'CA', lob: ['Professional','BOP','WC'], current_carrier: 'CNA',       exp_date: '2026-07-01', stage: 'Quoted',        prob: 55, score: 78, value: 56000,  producer: 'Lisa Park',   owner_id: 'lp',  received: '2026-04-05', last_activity: '2026-04-15', next_action: 'Schedule needs analysis call',next_due: '2026-04-20', tags: ['Warm'],                 notes: '3 locations. Looking to consolidate carriers.' },
+  { id: 'PRO-2038', company: 'Cascade HVAC Services',    contact: 'Ramon Ortiz',    email: 'ramon@cascadehvac.com',phone: '(503) 555-0199', source: 'Referral',        campaign: 'Client — Magnolia',   industry: 'Construction',   naics: '238220', revenue: '$12M',  employees: 62,  state: 'OR', lob: ['WC','GL','Auto'],        current_carrier: 'AMTrust',     exp_date: '2026-08-10', stage: 'Qualified',     prob: 40, score: 82, value: 94000,  producer: 'Sarah Chen',  owner_id: 'sc',  received: '2026-04-08', last_activity: '2026-04-14', next_action: 'Request loss runs',           next_due: '2026-04-19', tags: ['Hot','Referral'],       notes: 'Referred by Magnolia. High intent.' },
+  { id: 'PRO-2037', company: 'Neon Brewing Co.',         contact: 'Jill Nguyen',    email: 'jill@neonbrew.com',    phone: '(510) 555-0156', source: 'Website',         campaign: 'Organic Search',      industry: 'Manufacturing',  naics: '312120', revenue: '$6.2M', employees: 28,  state: 'CA', lob: ['Liquor Liab','GL','Property'], current_carrier: 'Liberty', exp_date: '2026-09-01', stage: 'Lead',          prob: 25, score: 64, value: 34000,  producer: 'Mike Torres', owner_id: 'mt',  received: '2026-04-12', last_activity: '2026-04-13', next_action: 'Discovery call',              next_due: '2026-04-19', tags: ['Warm'],                 notes: 'Growing brewery, 2 taprooms planned.' },
+  { id: 'PRO-2036', company: 'Fleet Flex Rentals',       contact: 'Marcus Lee',     email: 'marcus@fleetflex.com', phone: '(213) 555-0141', source: 'Cold Outreach',   campaign: 'Q2 SDR Outbound',     industry: 'Auto Rental',    naics: '532111', revenue: '$22M',  employees: 54,  state: 'CA', lob: ['Commercial Auto','GL'],  current_carrier: 'Travelers',   exp_date: '2026-10-15', stage: 'Prospect',      prob: 10, score: 48, value: 0,      producer: 'Mike Torres', owner_id: 'mt',  received: '2026-04-15', last_activity: '2026-04-15', next_action: 'Initial discovery email',     next_due: '2026-04-18', tags: ['Cold'],                 notes: 'No current contact — outbound only.' },
+  { id: 'PRO-2035', company: 'Bright Horizon Academy',   contact: 'Dana Carter',    email: 'dana@brighthorizon.ed',phone: '(415) 555-0133', source: 'Referral',        campaign: 'Partner — EduBenefit',industry: 'Education',      naics: '611110', revenue: '$4.8M', employees: 42,  state: 'CA', lob: ['WC','Professional','Property'], current_carrier: 'Nationwide', exp_date: '2026-06-30', stage: 'Won',           prob: 100,score: 91, value: 72000,  producer: 'Sarah Chen',  owner_id: 'sc',  received: '2026-03-10', last_activity: '2026-04-10', next_action: 'Hand-off to onboarding',      next_due: '2026-04-18', tags: ['Won'],                  notes: 'Closed — moving to onboarding this week.' },
+  { id: 'PRO-2034', company: 'Cipher Security Labs',     contact: 'Alex Kim',       email: 'alex@cipherlabs.io',   phone: '(650) 555-0168', source: 'Carrier Referral',campaign: 'CNA Referral Q2',     industry: 'Tech',           naics: '541512', revenue: '$15M',  employees: 48,  state: 'CA', lob: ['Cyber','D&O','Professional'], current_carrier: 'AIG',      exp_date: '2026-07-22', stage: 'Qualified',     prob: 40, score: 86, value: 148000, producer: 'Sarah Chen',  owner_id: 'sc',  received: '2026-04-06', last_activity: '2026-04-16', next_action: 'Underwriting meeting',        next_due: '2026-04-22', tags: ['Hot','Carrier Ref'],    notes: 'Carrier appetite confirmed. Fast-track.' },
+  { id: 'PRO-2033', company: 'Quickpath Couriers',       contact: 'Jenny Ha',       email: 'jenny@quickpath.com',  phone: '(408) 555-0194', source: 'Event',           campaign: 'PIA Webinar Apr',     industry: 'Logistics',      naics: '492110', revenue: '$9.8M', employees: 72,  state: 'CA', lob: ['Auto','WC','GL'],        current_carrier: 'Progressive', exp_date: '2026-11-08', stage: 'Lead',          prob: 25, score: 58, value: 48000,  producer: 'Mike Torres', owner_id: 'mt',  received: '2026-04-13', last_activity: '2026-04-14', next_action: 'Send discovery questionnaire',next_due: '2026-04-19', tags: ['Warm'],                 notes: '72 drivers. Past loss concerns.' },
+  { id: 'PRO-2032', company: 'Grove Street Eatery',      contact: 'Tomás Reyes',    email: 'tom@groveeatery.com',  phone: '(818) 555-0122', source: 'Website',         campaign: 'Organic Search',      industry: 'Restaurant',     naics: '722511', revenue: '$2.4M', employees: 18,  state: 'CA', lob: ['BOP','WC','Liquor'],     current_carrier: 'Hartford',    exp_date: '2026-05-20', stage: 'Lost',          prob: 0,  score: 42, value: 0,      producer: 'Lisa Park',   owner_id: 'lp',  received: '2026-03-20', last_activity: '2026-04-04', next_action: '30-day nurture drip',         next_due: '2026-05-04', tags: ['Lost','Nurture'],       notes: 'Lost to incumbent. Price sensitive.', lost_reason: 'Price' },
+  { id: 'PRO-2031', company: 'Steelhead Machining',      contact: 'Carl Weaver',    email: 'carl@steelhead.com',   phone: '(714) 555-0188', source: 'Cold Outreach',   campaign: 'Q2 SDR Outbound',     industry: 'Manufacturing',  naics: '332710', revenue: '$14M',  employees: 58,  state: 'CA', lob: ['WC','Property','GL'],    current_carrier: 'Berkshire',   exp_date: '2026-12-01', stage: 'Proposal Sent', prob: 70, score: 76, value: 118000, producer: 'Sarah Chen',  owner_id: 'sc',  received: '2026-03-25', last_activity: '2026-04-12', next_action: 'Proposal follow-up',          next_due: '2026-04-18', tags: ['Warm'],                 notes: 'Multi-site, complex WC exposure.' },
+  { id: 'PRO-2030', company: 'Aurora Wellness Clinics',  contact: 'Dr. Nina Patel', email: 'nina@aurorawell.com',  phone: '(415) 555-0192', source: 'Trade Show',      campaign: 'CMA Health Expo',     industry: 'Healthcare',     naics: '621111', revenue: '$6.8M', employees: 32,  state: 'CA', lob: ['Professional','BOP','Cyber'], current_carrier: 'The Doctors', exp_date: '2026-08-15', stage: 'Quoted',        prob: 55, score: 84, value: 92000,  producer: 'Lisa Park',   owner_id: 'lp',  received: '2026-04-04', last_activity: '2026-04-15', next_action: 'Present quote comparison',    next_due: '2026-04-20', tags: ['Hot'],                  notes: 'Expanding 3rd location Q3.' },
+  { id: 'PRO-2029', company: 'GreenLeaf Landscaping',    contact: 'Rob Delgado',    email: 'rob@greenleaf.com',    phone: '(916) 555-0118', source: 'Website',         campaign: 'Facebook Ads',        industry: 'Services',       naics: '561730', revenue: '$3.2M', employees: 24,  state: 'CA', lob: ['WC','GL','Auto'],        current_carrier: 'AMTrust',     exp_date: '2027-01-10', stage: 'Prospect',      prob: 10, score: 54, value: 0,      producer: 'Mike Torres', owner_id: 'mt',  received: '2026-04-16', last_activity: '2026-04-16', next_action: 'First contact email',         next_due: '2026-04-18', tags: ['Cold'],                 notes: 'Seasonal business. Large workforce.' },
+  { id: 'PRO-2028', company: 'Lakeshore Food Mart',      contact: 'Priya Menon',    email: 'priya@lakeshoremart.com',phone:'(510) 555-0148',source: 'Cold Outreach',   campaign: 'Q1 SDR',              industry: 'Retail',         naics: '445110', revenue: '$4.6M', employees: 38,  state: 'CA', lob: ['BOP','WC'],              current_carrier: 'State Farm',  exp_date: '2026-07-12', stage: 'Lost',          prob: 0,  score: 48, value: 0,      producer: 'Mike Torres', owner_id: 'mt',  received: '2026-03-08', last_activity: '2026-03-29', next_action: 'Suppressed',                  next_due: '—',         tags: ['Lost'],                 notes: 'Not ready to switch.', lost_reason: 'Timing' }
+];
+
+export const prospectDetail = {
+  id: 'PRO-2041',
+  company: 'Westshore Logistics',
+  dba: 'Westshore Express',
+  industry: 'Transportation & Trucking',
+  naics: '484110',
+  naics_desc: 'General Freight Trucking, Local',
+  revenue: '$18M',
+  employees: 48,
+  state: 'CA',
+  established: 2018,
+  website: 'westshorelogistics.com',
+  linkedin: 'linkedin.com/company/westshore-logistics',
+  primary_contact: { name: 'Emma Blake', title: 'Operations Director', email: 'emma@westshore.com', phone: '(415) 555-0184', decision_maker: true, buying_role: 'Primary Decision Maker' },
+  other_contacts: [
+    { name: 'Carlos Rivera',  title: 'CFO',   email: 'carlos@westshore.com',  phone: '(415) 555-0189', decision_maker: true,  buying_role: 'Financial Approver' },
+    { name: 'Janet Morris',   title: 'HR Manager', email: 'janet@westshore.com', phone: '(415) 555-0190', decision_maker: false, buying_role: 'Influencer (WC)' }
+  ],
+  score: 92,
+  score_breakdown: [
+    { factor: 'Demographic Fit (industry, size, state)',  weight: 25, value: 24 },
+    { factor: 'Behavioral (website visits, email opens)', weight: 15, value: 14 },
+    { factor: 'Financial Profile (revenue, growth)',      weight: 15, value: 14 },
+    { factor: 'Insurance Profile (carrier exp, LOBs)',    weight: 20, value: 19 },
+    { factor: 'Referral Quality / Source',                weight: 15, value: 15 },
+    { factor: 'Decision Authority Identified',            weight: 10, value:  6 }
+  ],
+  stage: 'Negotiation',
+  prob: 85,
+  value: 168000,
+  source: 'Referral',
+  campaign: 'Partner — Kempers',
+  producer: 'Sarah Chen',
+  received: '2026-03-28',
+  next_action: 'Send final proposal',
+  next_due: '2026-04-19',
+  insurance_profile: {
+    current_carrier: 'Progressive Commercial',
+    exp_date: '2026-06-15',
+    lob_needed: ['Commercial Auto','WC','GL','Umbrella'],
+    coverage_gaps: ['No Cyber','Umbrella limit insufficient'],
+    prior_claims: '2 (auto, both < $25k, closed)',
+    loss_ratio_3yr: '18%',
+    fleet_size: 28,
+    annual_miles: '1.8M',
+    hazmat: false
+  },
+  qualification: [
+    { q: 'Primary motivation to switch?',            a: 'Better service + bundled umbrella' },
+    { q: 'Expected effective date?',                 a: '2026-06-15 (current exp)' },
+    { q: 'Target premium budget?',                   a: '$150–180k total program' },
+    { q: 'Decision timeline?',                       a: '30 days — board reviews May 15' },
+    { q: 'Other brokers competing?',                 a: 'One — incumbent (Marsh)' },
+    { q: 'Must-have carriers?',                      a: 'A.M. Best A-rated or better' },
+    { q: 'Safety / risk management program?',        a: 'Yes — Samsara telematics fleet-wide' }
+  ],
+  activities: [
+    { ts: '2026-04-17 15:20', type: 'Email',   actor: 'Sarah Chen',  note: 'Sent revised proposal with Liberty + umbrella option' },
+    { ts: '2026-04-15 10:05', type: 'Meeting', actor: 'Sarah Chen',  note: 'Needs analysis call with Emma & Carlos — 45min' },
+    { ts: '2026-04-12 14:30', type: 'Call',    actor: 'Sarah Chen',  note: 'Discovery call w/ Emma (Ops). Strong fit.' },
+    { ts: '2026-04-10 09:15', type: 'Email',   actor: 'System',      note: 'Discovery questionnaire sent — completed same day' },
+    { ts: '2026-04-08 11:00', type: 'Task',    actor: 'Auto',        note: 'Assigned to Sarah Chen (territory + Auto LOB expertise)' },
+    { ts: '2026-03-28 08:40', type: 'Lead',    actor: 'System',      note: 'Lead captured — referral from Kempers, auto-scored 92' }
+  ],
+  tasks: [
+    { task: 'Send final proposal v3',           due: '2026-04-19', owner: 'Sarah Chen', status: 'Open',         priority: 'Urgent' },
+    { task: 'Schedule signing call w/ CFO',     due: '2026-04-21', owner: 'Sarah Chen', status: 'Open',         priority: 'High'   },
+    { task: 'Prep broker-of-record letter',     due: '2026-04-20', owner: 'CSR Team',   status: 'Open',         priority: 'Med'    },
+    { task: 'Confirm A.M. Best ratings slide',  due: '2026-04-18', owner: 'Sarah Chen', status: 'Done',         priority: 'Med'    }
+  ],
+  documents: [
+    { name: 'Westshore_Proposal_v3.pdf',   type: 'Proposal',        added: '2026-04-17' },
+    { name: 'Loss_Runs_2023-2025.pdf',     type: 'Loss Run',        added: '2026-04-12' },
+    { name: 'ACORD_125_Draft.pdf',         type: 'Application',     added: '2026-04-10' },
+    { name: 'W-9_Westshore.pdf',           type: 'W-9',             added: '2026-04-10' }
+  ],
+  checklist: [
+    { name: 'First contact within 48h',             done: true,  owner: 'Producer' },
+    { name: 'Duplicate check passed',               done: true,  owner: 'System' },
+    { name: 'Discovery questionnaire completed',    done: true,  owner: 'Client' },
+    { name: 'Needs analysis meeting',               done: true,  owner: 'Producer' },
+    { name: 'Loss runs collected',                  done: true,  owner: 'Client' },
+    { name: 'Proposal generated',                   done: true,  owner: 'Producer' },
+    { name: 'Decision-maker identified',            done: true,  owner: 'Producer' },
+    { name: 'Verbal commitment',                    done: false, owner: 'Producer' },
+    { name: 'Signed BOR letter',                    done: false, owner: 'Client' }
+  ],
+  suggestions: [
+    'This prospect matches your top-performing book (Transportation $10–25M) with 74% historical close rate.',
+    'Fast-track to Onboarding on verbal: all prerequisites are met except BOR letter.',
+    'Similar risks placed with Liberty Mutual at 12.8–13.2% rate.'
+  ]
+};
+
+export const prospectAutomatedTasks = [
+  { id: 'T-LEAD-501', task: 'Call new lead within 5 minutes (score 92)', entity: 'PRO-2029 GreenLeaf',       due: '2026-04-18 17:45', owner: 'Mike Torres',  priority: 'Urgent', status: 'Open' },
+  { id: 'T-LEAD-502', task: 'Send discovery questionnaire',              entity: 'PRO-2037 Neon Brewing',     due: '2026-04-19',       owner: 'Mike Torres',  priority: 'High',   status: 'Open' },
+  { id: 'T-LEAD-503', task: 'Schedule needs analysis meeting',           entity: 'PRO-2034 Cipher Security',  due: '2026-04-22',       owner: 'Sarah Chen',   priority: 'High',   status: 'In Progress' },
+  { id: 'T-LEAD-504', task: 'Create quote opportunity',                  entity: 'PRO-2038 Cascade HVAC',     due: '2026-04-20',       owner: 'Sarah Chen',   priority: 'Med',    status: 'Open' },
+  { id: 'T-LEAD-505', task: 'Follow up on lost lead in 30 days',         entity: 'PRO-2032 Grove Eatery',     due: '2026-05-04',       owner: 'Auto-nurture', priority: 'Low',    status: 'Open' },
+  { id: 'T-LEAD-506', task: 'Stalled opportunity — manager notified',    entity: 'PRO-2031 Steelhead',        due: '2026-04-18',       owner: 'Sales Mgr',    priority: 'High',   status: 'In Progress' }
+];
+
+export const prospectLostReasons = [
+  { reason: 'Price',                      count: 22, pct: 31, avg_value: 42000, recoverable: true  },
+  { reason: 'Stayed with incumbent',      count: 14, pct: 20, avg_value: 58000, recoverable: true  },
+  { reason: 'Timing — not ready',         count: 11, pct: 16, avg_value: 36000, recoverable: true  },
+  { reason: 'Coverage gaps / appetite',   count:  8, pct: 11, avg_value: 72000, recoverable: false },
+  { reason: 'Chose another broker',       count:  7, pct: 10, avg_value: 84000, recoverable: false },
+  { reason: 'Business closed / paused',   count:  5, pct:  7, avg_value: 28000, recoverable: false },
+  { reason: 'No response',                count:  4, pct:  5, avg_value: 24000, recoverable: true  }
+];
+
+export const prospectAnalytics = {
+  conversion_funnel: [
+    { stage: 'Prospect',      count: 412, pct: 100 },
+    { stage: 'Lead',          count: 286, pct: 69  },
+    { stage: 'Qualified',     count: 172, pct: 42  },
+    { stage: 'Quoted',        count: 124, pct: 30  },
+    { stage: 'Proposal Sent', count:  94, pct: 23  },
+    { stage: 'Negotiation',   count:  58, pct: 14  },
+    { stage: 'Won',           count:  42, pct: 10  }
+  ],
+  time_to_convert: [
+    { source: 'Referral',         avg_days: 14, rate: 42 },
+    { source: 'Website',          avg_days: 22, rate: 24 },
+    { source: 'Trade Show',       avg_days: 28, rate: 32 },
+    { source: 'Carrier Referral', avg_days: 12, rate: 48 },
+    { source: 'Cold Outreach',    avg_days: 38, rate: 14 },
+    { source: 'Event',            avg_days: 25, rate: 28 }
+  ],
+  pipeline_by_stage: [
+    { stage: 'Prospect',      value: 320000,  count: 42 },
+    { stage: 'Lead',          value: 520000,  count: 38 },
+    { stage: 'Qualified',     value: 680000,  count: 32 },
+    { stage: 'Quoted',        value: 580000,  count: 26 },
+    { stage: 'Proposal Sent', value: 468000,  count: 18 },
+    { stage: 'Negotiation',   value: 272000,  count: 12 }
+  ],
+  by_producer: [
+    { name: 'Sarah Chen',  open: 48, won_30d: 14, win_rate: 34, pipeline: 1_420_000, avg_days: 16 },
+    { name: 'Lisa Park',   open: 32, won_30d: 10, win_rate: 29, pipeline: 780_000,   avg_days: 19 },
+    { name: 'Mike Torres', open: 42, won_30d: 8,  win_rate: 21, pipeline: 620_000,   avg_days: 24 },
+    { name: 'David Kim',   open: 26, won_30d: 6,  win_rate: 24, pipeline: 410_000,   avg_days: 22 }
+  ],
+  source_roi: [
+    { source: 'Carrier Referral', leads: 62,  converted: 30, cost: 0,      revenue: 520000,  roi: '∞'    },
+    { source: 'Referral',         leads: 108, converted: 45, cost: 12000,  revenue: 1240000, roi: '10230%' },
+    { source: 'Trade Show',       leads: 84,  converted: 27, cost: 38000,  revenue: 620000,  roi: '1532%'  },
+    { source: 'Website',          leads: 128, converted: 31, cost: 24000,  revenue: 480000,  roi: '1900%'  },
+    { source: 'Cold Outreach',    leads: 176, converted: 25, cost: 42000,  revenue: 380000,  roi: '804%'   },
+    { source: 'Event',            leads: 52,  converted: 15, cost: 18000,  revenue: 260000,  roi: '1344%'  }
+  ],
+  score_accuracy: [
+    { band: '90–100', predicted_win: 78, actual_win: 74 },
+    { band: '80–89',  predicted_win: 58, actual_win: 61 },
+    { band: '70–79',  predicted_win: 38, actual_win: 42 },
+    { band: '60–69',  predicted_win: 22, actual_win: 24 },
+    { band: '50–59',  predicted_win: 10, actual_win: 12 },
+    { band: '< 50',   predicted_win:  4, actual_win:  6 }
+  ],
+  activity_completion: [
+    { name: 'Sarah Chen',  scheduled: 64, completed: 61, rate: 95 },
+    { name: 'Lisa Park',   scheduled: 42, completed: 38, rate: 90 },
+    { name: 'Mike Torres', scheduled: 58, completed: 48, rate: 83 },
+    { name: 'David Kim',   scheduled: 32, completed: 24, rate: 75 }
+  ]
+};
+
+export const prospectAIChat = [
+  { role: 'ai',   text: 'Hi! I can help you qualify leads, prioritize follow-ups, or suggest next-best-actions. Try: "Show my hottest leads that haven\'t been contacted in 3 days."' },
+  { role: 'user', text: 'Show my hottest leads that haven\'t been contacted in 3 days.' },
+  { role: 'ai',   text: 'Found 2 high-score leads overdue for follow-up:\n• **PRO-2038 Cascade HVAC** — Score 82 · last contact 2026-04-14 · owed: loss runs request\n• **PRO-2040 Helix Biotech** — Score 88 · last contact 2026-04-16 · owed: proposal follow-up\n\nWant me to schedule calls with both for tomorrow morning?' }
+];
+
+// ─── Market Routing Module Data ───
+export const marketKPIs = [
+  { label: 'Open Submissions', value: '34' },
+  { label: 'Auto-Routed (30d)', value: '82%' },
+  { label: 'Avg Time-to-Quote', value: '3.8h' },
+  { label: 'Hit Ratio', value: '41%' },
+  { label: 'Active Carriers', value: '47' },
+  { label: 'Declined (30d)', value: '18', warning: true }
+];
+
+export const marketStatuses = ['Received','Data Validated','Appetite Scored','Routed','Quoted','Declined','Withdrawn','Bound','Placed'];
+
+export const marketSubmissions = [
+  { id: 'SUB-92104', client: 'Magnolia Construction LLC', lob: 'Workers Comp',         premium: 184700, state: 'CA', naics: '238220', routed: 5, quoted: 3, declined: 1, pending: 1, best_rate: '12.4%', status: 'Quoted',          statusColor: 'green',  received: '2026-04-12', producer: 'Sarah Chen',  appetite: 92, mode: 'Auto', tier: 'Standard' },
+  { id: 'SUB-92103', client: 'DataCore Inc',              lob: 'Cyber',                premium: 256100, state: 'TX', naics: '541512', routed: 6, quoted: 4, declined: 2, pending: 0, best_rate: '8.1%',  status: 'Quoted',          statusColor: 'green',  received: '2026-04-14', producer: 'Sarah Chen',  appetite: 88, mode: 'Auto', tier: 'Preferred' },
+  { id: 'SUB-92102', client: 'Apex Industries',           lob: 'General Liability',    premium: 52000,  state: 'CA', naics: '332999', routed: 4, quoted: 2, declined: 0, pending: 2, best_rate: '—',     status: 'Routed',          statusColor: 'amber',  received: '2026-04-15', producer: 'Mike Torres', appetite: 78, mode: 'Auto', tier: 'Standard' },
+  { id: 'SUB-92101', client: 'Coastal Realty',            lob: 'General Liability',    premium: 38900,  state: 'FL', naics: '531210', routed: 8, quoted: 1, declined: 5, pending: 2, best_rate: '—',     status: 'Appetite Scored', statusColor: 'amber',  received: '2026-04-16', producer: 'Lisa Park',   appetite: 64, mode: 'Manual', tier: 'E&S' },
+  { id: 'SUB-92100', client: 'Ridge Builders',            lob: 'Workers Comp',         premium: 93100,  state: 'CA', naics: '236220', routed: 3, quoted: 0, declined: 3, pending: 0, best_rate: '—',     status: 'Declined',        statusColor: 'red',    received: '2026-04-10', producer: 'Mike Torres', appetite: 42, mode: 'Auto', tier: 'E&S' },
+  { id: 'SUB-92099', client: 'Summit Medical',            lob: 'Professional Liability',premium: 78500, state: 'NY', naics: '621111', routed: 4, quoted: 3, declined: 0, pending: 1, best_rate: '10.2%', status: 'Bound',           statusColor: 'green',  received: '2026-04-08', producer: 'Sarah Chen',  appetite: 94, mode: 'Auto', tier: 'Preferred' },
+  { id: 'SUB-92098', client: 'Harbor Foods',              lob: 'BOP',                  premium: 38200,  state: 'CA', naics: '311421', routed: 3, quoted: 2, declined: 1, pending: 0, best_rate: '11.0%', status: 'Placed',          statusColor: 'green',  received: '2026-04-05', producer: 'Sarah Chen',  appetite: 86, mode: 'Auto', tier: 'Standard' },
+  { id: 'SUB-92097', client: 'Valley Logistics',          lob: 'Commercial Auto',      premium: 142800, state: 'CA', naics: '484110', routed: 5, quoted: 2, declined: 2, pending: 1, best_rate: '11.5%', status: 'Routed',          statusColor: 'amber',  received: '2026-04-11', producer: 'Sarah Chen',  appetite: 81, mode: 'Auto', tier: 'Standard' },
+  { id: 'SUB-92096', client: 'TechCorp Inc',              lob: 'Cyber',                premium: 89400,  state: 'CA', naics: '541511', routed: 4, quoted: 3, declined: 1, pending: 0, best_rate: '14.5%', status: 'Quoted',          statusColor: 'green',  received: '2026-04-13', producer: 'Sarah Chen',  appetite: 89, mode: 'Auto', tier: 'Preferred' },
+  { id: 'SUB-92095', client: 'Peak Fitness Co.',          lob: 'BOP',                  premium: 28400,  state: 'AZ', naics: '713940', routed: 6, quoted: 0, declined: 4, pending: 2, best_rate: '—',     status: 'Withdrawn',       statusColor: 'gray',   received: '2026-04-04', producer: 'Mike Torres', appetite: 58, mode: 'Manual', tier: 'E&S' },
+  { id: 'SUB-92094', client: 'Delta Logistics',           lob: 'Commercial Auto',      premium: 142800, state: 'CA', naics: '484110', routed: 5, quoted: 3, declined: 1, pending: 1, best_rate: '11.5%', status: 'Bound',           statusColor: 'green',  received: '2026-04-02', producer: 'Sarah Chen',  appetite: 87, mode: 'Auto', tier: 'Standard' },
+  { id: 'SUB-92093', client: 'Blue Ridge Supplies',       lob: 'Workers Comp',         premium: 62400,  state: 'IL', naics: '424410', routed: 3, quoted: 2, declined: 1, pending: 0, best_rate: '12.0%', status: 'Placed',          statusColor: 'green',  received: '2026-03-28', producer: 'Sarah Chen',  appetite: 84, mode: 'Auto', tier: 'Standard' }
+];
+
+export const marketSubmissionDetail = {
+  id: 'SUB-92104',
+  client: 'Magnolia Construction LLC',
+  lob: 'Workers Comp',
+  state: 'CA',
+  naics: '238220',
+  naics_desc: 'Plumbing, Heating & Air-Conditioning Contractors',
+  premium_target: 184700,
+  effective: '2026-05-01',
+  producer: 'Sarah Chen',
+  received: '2026-04-12 08:22',
+  status: 'Quoted',
+  completeness: 100,
+  red_flags: 0,
+  appetite_score: 92,
+  exposures: [
+    { k: 'Annual Payroll',          v: '$2.4M' },
+    { k: 'Employee Count',          v: '38' },
+    { k: 'Locations',               v: '3 (CA)' },
+    { k: 'Class Code',              v: '5403 Carpentry' },
+    { k: 'Experience Mod',          v: '0.92' },
+    { k: '3-yr Loss Ratio',         v: '22%' },
+    { k: 'Open Claims',             v: '0' },
+    { k: 'Prior Declinations',      v: 'None (24 mo)' }
+  ],
+  timeline: [
+    { ts: '2026-04-15 16:40', event: 'Quote received from Liberty Mutual @ 12.4% — best rate' },
+    { ts: '2026-04-15 10:12', event: 'Quote received from AMTrust @ 13.1%' },
+    { ts: '2026-04-14 18:30', event: 'Quote received from SEMC @ 12.8%' },
+    { ts: '2026-04-14 09:05', event: 'Declined — Zurich (capacity exhausted in class)' },
+    { ts: '2026-04-13 14:20', event: 'Routed to 5 carriers via API + 1 via portal' },
+    { ts: '2026-04-13 11:08', event: 'Appetite scored — 92% fit · Top match: Liberty Mutual' },
+    { ts: '2026-04-12 09:50', event: 'Data validated — 100% complete, 0 red flags' },
+    { ts: '2026-04-12 08:22', event: 'Submission received from onboarding' }
+  ],
+  routed_carriers: [
+    { carrier: 'Liberty Mutual',  method: 'API',      sent: '2026-04-13 14:20', responded: '2026-04-15 16:40', response_hr: 50.3, appetite: 96, status: 'Quoted',   rate: '12.4%', premium: 22903, note: 'Best quote · 15% schedule credit applied' },
+    { carrier: 'AMTrust',         method: 'API',      sent: '2026-04-13 14:20', responded: '2026-04-15 10:12', response_hr: 43.9, appetite: 91, status: 'Quoted',   rate: '13.1%', premium: 24195, note: 'Within underwriting authority' },
+    { carrier: 'SEMC / Liberty',  method: 'API',      sent: '2026-04-13 14:20', responded: '2026-04-14 18:30', response_hr: 28.2, appetite: 94, status: 'Quoted',   rate: '12.8%', premium: 23642, note: 'Standard workers comp appetite match' },
+    { carrier: 'Zurich',          method: 'API',      sent: '2026-04-13 14:20', responded: '2026-04-14 09:05', response_hr: 18.8, appetite: 72, status: 'Declined', rate: '—',     premium: 0,     note: 'Capacity exhausted — class 5403' },
+    { carrier: 'Travelers',       method: 'Portal',   sent: '2026-04-13 14:22', responded: '—',                response_hr: null, appetite: 83, status: 'Pending',   rate: '—',     premium: 0,     note: 'Chase sent 2026-04-17' },
+    { carrier: 'Hartford',        method: 'API',      sent: '2026-04-13 14:20', responded: '—',                response_hr: null, appetite: 78, status: 'Pending',   rate: '—',     premium: 0,     note: 'Chase sent 2026-04-17' }
+  ],
+  recommendations: [
+    { carrier: 'Liberty Mutual',  fit: 96, reason: 'Top-quartile appetite for class 5403; 14% avg schedule credit; 92% hit ratio in last 12 mo' },
+    { carrier: 'SEMC / Liberty',  fit: 94, reason: 'Sub-carrier variant with matching appetite; shorter quote turnaround (28h vs 50h)' },
+    { carrier: 'AMTrust',         fit: 91, reason: 'Strong CA WC book; binding authority up to $250k; competitive rates in 12–14%' }
+  ]
+};
+
+export const marketAppetiteLibrary = [
+  { carrier: 'Liberty Mutual',   tier: 'Preferred', lobs: ['WC','GL','BOP','Auto','Property'], states: 'All 50',     premium_range: '$50k – $5M',   api: true, hit_ratio: 64, avg_time_hr: 18, capacity: '$15M',  status: 'Healthy',  do_not_route: false },
+  { carrier: 'SEMC / Liberty',   tier: 'Preferred', lobs: ['WC','GL'],                         states: 'CA,NV,OR,WA',premium_range: '$25k – $2M',   api: true, hit_ratio: 71, avg_time_hr: 16, capacity: '$5M',   status: 'Healthy',  do_not_route: false },
+  { carrier: 'CNA',              tier: 'Preferred', lobs: ['GL','Cyber','Property'],           states: 'All 50',     premium_range: '$30k – $3M',   api: true, hit_ratio: 58, avg_time_hr: 22, capacity: '$10M',  status: 'Healthy',  do_not_route: false },
+  { carrier: 'Hartford',         tier: 'Preferred', lobs: ['BOP','Auto','Umbrella'],           states: 'All 50',     premium_range: '$15k – $2M',   api: true, hit_ratio: 52, avg_time_hr: 24, capacity: '$8M',   status: 'Healthy',  do_not_route: false },
+  { carrier: 'Travelers',        tier: 'Preferred', lobs: ['Auto','Property','WC'],            states: 'All 50',     premium_range: '$50k – $5M',   api: true, hit_ratio: 48, avg_time_hr: 28, capacity: '$12M',  status: 'Slow',     do_not_route: false },
+  { carrier: 'AMTrust',          tier: 'Standard',  lobs: ['WC','GL'],                         states: '44 states',  premium_range: '$10k – $500k', api: true, hit_ratio: 61, avg_time_hr: 20, capacity: '$1M',   status: 'Healthy',  do_not_route: false },
+  { carrier: 'Zurich',           tier: 'Standard',  lobs: ['GL','Property','Cyber'],           states: 'All 50',     premium_range: '$100k – $10M', api: true, hit_ratio: 34, avg_time_hr: 36, capacity: '$25M',  status: 'Slow',     do_not_route: false },
+  { carrier: 'Chubb',            tier: 'Standard',  lobs: ['Cyber','D&O','Professional'],      states: 'All 50',     premium_range: '$25k – $5M',   api: true, hit_ratio: 42, avg_time_hr: 30, capacity: '$15M',  status: 'Healthy',  do_not_route: false },
+  { carrier: 'Markel (E&S)',     tier: 'E&S',       lobs: ['GL','Professional','Specialty'],   states: 'All 50',     premium_range: '$5k – $1M',    api: true, hit_ratio: 38, avg_time_hr: 40, capacity: '$5M',   status: 'Healthy',  do_not_route: false },
+  { carrier: 'Scottsdale (E&S)', tier: 'E&S',       lobs: ['GL','Commercial Property'],        states: 'All 50',     premium_range: '$5k – $500k',  api: false, hit_ratio: 28, avg_time_hr: 72, capacity: '$2M',   status: 'Degraded', do_not_route: false },
+  { carrier: 'RLI (Specialty)',  tier: 'Specialty', lobs: ['Umbrella','Contractors','Surety'], states: 'All 50',     premium_range: '$2k – $1M',    api: true, hit_ratio: 56, avg_time_hr: 26, capacity: '$10M',  status: 'Healthy',  do_not_route: false },
+  { carrier: 'Nationwide',       tier: 'Standard',  lobs: ['BOP','Auto','Property'],           states: 'All 50',     premium_range: '$10k – $2M',   api: true, hit_ratio: 45, avg_time_hr: 32, capacity: '$6M',   status: 'Healthy',  do_not_route: true  }
+];
+
+export const marketAppetiteRules = [
+  { id: 'APP-01', carrier: 'Liberty Mutual', lob: 'Workers Comp', rule: 'Class codes 5000–5999 · Payroll $500k–$10M · CA/NV/OR/WA · No losses >$50k in 3 yrs', priority: 1, enabled: true, hits_30d: 142 },
+  { id: 'APP-02', carrier: 'AMTrust',        lob: 'Workers Comp', rule: 'Class codes 5000–5999, 8000–8999 · Payroll <$5M · 44 states · ExperienceMod ≤ 1.2', priority: 2, enabled: true, hits_30d: 118 },
+  { id: 'APP-03', carrier: 'CNA',            lob: 'Cyber',        rule: 'Revenue <$500M · No PHI without HIPAA controls · Multi-factor auth required',         priority: 1, enabled: true, hits_30d: 86 },
+  { id: 'APP-04', carrier: 'Chubb',          lob: 'Cyber',        rule: 'Tech & professional services · Revenue $10M–$5B · SOC2 or equivalent preferred',     priority: 1, enabled: true, hits_30d: 72 },
+  { id: 'APP-05', carrier: 'Markel (E&S)',   lob: 'GL',           rule: 'Contractors · Artisan trades · Limits to $2M/$4M · Prior loss runs required',        priority: 3, enabled: true, hits_30d: 58 },
+  { id: 'APP-06', carrier: 'Travelers',      lob: 'Commercial Auto', rule: 'Fleets 5–100 units · No hazmat · Driver MVRs on file · No at-fault in 24 mo',    priority: 2, enabled: true, hits_30d: 94 },
+  { id: 'APP-07', carrier: 'Zurich',         lob: 'Property',     rule: 'TIV $1M–$50M · COPE scoring ≥ 70 · Sprinklered for manufacturing',                  priority: 2, enabled: false, hits_30d: 12 }
+];
+
+export const marketQuoteComparisons = [
+  { carrier: 'Liberty Mutual', premium: 22903, rate: '12.4%', tria: 'Included', deductible: '$0',    limit: '$1M / $1M / $1M', credits: ['15% schedule', '5% safety'], score: 96, recommended: true  },
+  { carrier: 'SEMC / Liberty', premium: 23642, rate: '12.8%', tria: 'Included', deductible: '$0',    limit: '$1M / $1M / $1M', credits: ['10% schedule'],              score: 94, recommended: false },
+  { carrier: 'AMTrust',        premium: 24195, rate: '13.1%', tria: '+$485',    deductible: '$0',    limit: '$1M / $1M / $1M', credits: ['8% schedule'],               score: 91, recommended: false }
+];
+
+export const marketAnalytics = {
+  hit_ratio_by_carrier: [
+    { carrier: 'SEMC / Liberty', submitted: 84, quoted: 74, bound: 60, rate: 71 },
+    { carrier: 'Liberty Mutual', submitted: 128, quoted: 108, bound: 82, rate: 64 },
+    { carrier: 'AMTrust',        submitted: 96, quoted: 74, bound: 59, rate: 61 },
+    { carrier: 'CNA',            submitted: 72, quoted: 52, bound: 42, rate: 58 },
+    { carrier: 'RLI',            submitted: 44, quoted: 30, bound: 25, rate: 56 },
+    { carrier: 'Hartford',       submitted: 68, quoted: 42, bound: 35, rate: 52 },
+    { carrier: 'Travelers',      submitted: 82, quoted: 46, bound: 39, rate: 48 },
+    { carrier: 'Nationwide',     submitted: 56, quoted: 28, bound: 25, rate: 45 },
+    { carrier: 'Chubb',          submitted: 38, quoted: 20, bound: 16, rate: 42 }
+  ],
+  hit_ratio_by_lob: [
+    { lob: 'Workers Comp',           rate: 58, volume: 186 },
+    { lob: 'General Liability',      rate: 47, volume: 142 },
+    { lob: 'Commercial Auto',        rate: 44, volume: 88 },
+    { lob: 'Cyber',                  rate: 52, volume: 62 },
+    { lob: 'BOP',                    rate: 49, volume: 54 },
+    { lob: 'Professional Liability', rate: 41, volume: 38 }
+  ],
+  time_to_quote: [
+    { range: '< 4 hours',  count: 142, pct: 48 },
+    { range: '4–24 hours', count: 94,  pct: 32 },
+    { range: '1–3 days',   count: 42,  pct: 14 },
+    { range: '3+ days',    count: 18,  pct: 6  }
+  ],
+  auto_vs_manual: { auto: 82, manual: 18, auto_avg_hr: 3.8, manual_avg_hr: 18.4 },
+  decline_reasons: [
+    { reason: 'Capacity exhausted',       count: 42, pct: 27 },
+    { reason: 'Outside class appetite',   count: 38, pct: 24 },
+    { reason: 'Loss history',             count: 28, pct: 18 },
+    { reason: 'Premium below minimum',    count: 18, pct: 11 },
+    { reason: 'State not licensed',       count: 12, pct: 8  },
+    { reason: 'Incomplete submission',    count: 10, pct: 6  },
+    { reason: 'Other',                    count: 8,  pct: 6  }
+  ],
+  carrier_health: [
+    { carrier: 'Liberty Mutual', response_hr: 18, comp_score: 92, relationship: 'Strong' },
+    { carrier: 'SEMC / Liberty', response_hr: 16, comp_score: 94, relationship: 'Strong' },
+    { carrier: 'AMTrust',        response_hr: 20, comp_score: 88, relationship: 'Strong' },
+    { carrier: 'CNA',            response_hr: 22, comp_score: 84, relationship: 'Healthy' },
+    { carrier: 'Travelers',      response_hr: 28, comp_score: 72, relationship: 'At Risk' },
+    { carrier: 'Scottsdale',     response_hr: 72, comp_score: 54, relationship: 'At Risk' }
+  ],
+  volume_by_source: [
+    { source: 'Onboarding Wizard', submissions: 128, placed: 82, rate: 64 },
+    { source: 'Renewal Engine',    submissions: 94,  placed: 68, rate: 72 },
+    { source: 'Direct Upload',     submissions: 62,  placed: 24, rate: 39 },
+    { source: 'Email Intake',      submissions: 48,  placed: 18, rate: 37 },
+    { source: 'API (Producer)',    submissions: 38,  placed: 22, rate: 58 }
+  ]
+};
+
+export const marketAutomatedTasks = [
+  { id: 'T-MKT-401', task: 'Route to Liberty Mutual — appetite match 96%',  entity: 'SUB-92104 Magnolia', due: '2026-04-13', owner: 'Auto-route',   priority: 'High',   status: 'Done' },
+  { id: 'T-MKT-402', task: 'Chase quote — Travelers 48h overdue',            entity: 'SUB-92104 Magnolia', due: '2026-04-17', owner: 'Sarah Chen',   priority: 'High',   status: 'In Progress' },
+  { id: 'T-MKT-403', task: 'Notify producer — 3 quotes received',            entity: 'SUB-92104 Magnolia', due: '2026-04-16', owner: 'Auto-notify',  priority: 'Med',    status: 'Done' },
+  { id: 'T-MKT-404', task: 'Archive low-hit-ratio carrier — Scottsdale WC',  entity: 'Class 5403',         due: '2026-04-22', owner: 'Market Analyst', priority: 'Low',    status: 'Open' },
+  { id: 'T-MKT-405', task: 'Review manual override — SUB-92101',             entity: 'Coastal Realty',     due: '2026-04-19', owner: 'Lisa Park',    priority: 'High',   status: 'Open' },
+  { id: 'T-MKT-406', task: 'Re-route declined — find E&S market',            entity: 'SUB-92100 Ridge',    due: '2026-04-20', owner: 'Mike Torres',  priority: 'Urgent', status: 'Open' }
+];
+
+export const marketAIChat = [
+  { role: 'ai',   text: 'Hi! I can help route submissions, recommend markets, or analyze carrier fit. Try: "Route this $250k GL risk for a construction client in Texas."' },
+  { role: 'user', text: 'Route this $250k GL risk for a construction client in Texas.' },
+  { role: 'ai',   text: 'Analyzed risk profile: construction (class 5645), TX, $250k premium target.\n\n**Top 3 recommended markets:**\n1. **Liberty Mutual** — 94% fit · 58% hit ratio · avg 18h response\n2. **Markel E&S** — 89% fit (E&S specialty) · 42% hit ratio · avg 36h\n3. **Scottsdale E&S** — 81% fit · 28% hit ratio · avg 72h\n\nWould you like me to auto-route to all 3 in parallel?' },
+  { role: 'user', text: 'Yes, and skip Scottsdale — too slow.' },
+  { role: 'ai',   text: '✓ Routed to 2 carriers via API:\n• Liberty Mutual (primary) — sent 2026-04-18 14:22\n• Markel E&S (secondary) — sent 2026-04-18 14:22\n\nI\'ve also flagged Scottsdale in your Do-Not-Route preferences for construction risks <$500k. Expected first quote in ~18h.' }
+];
+
+export const documentAIChat = [
+  { role: 'ai',   text: 'Hi! I can help you find, summarize, or draft any document. Try: "Show unsigned binders expiring this week."' },
+  { role: 'user', text: 'Show unsigned binders expiring this week.' },
+  { role: 'ai',   text: 'Found 2 unsigned binders expiring within 7 days:\n• Magnolia Construction — DOC-10480 (expires 2026-04-25)\n• Endorsement Add Loc — DOC-10477 (expires 2026-04-22)\n\nWould you like me to send reminders to both signatories?' },
+  { role: 'user', text: 'Yes, and also summarize the Magnolia binder.' },
+  { role: 'ai',   text: '✓ Reminders sent to 2 signatories via DocuSign.\n\n**Summary — DOC-10480 Magnolia WC Binder v2:**\n• Carrier: Liberty Mutual / SEMC\n• Premium: $184,700 / yr · Effective 2026-05-01\n• 3 signers (1 signed, 1 viewed, 1 pending)\n• Conditional on TRIA election + down payment by 2026-04-25\n• No red-flag indicators detected.' }
+];
