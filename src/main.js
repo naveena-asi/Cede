@@ -173,127 +173,5047 @@ function bindLogin() {
 // ════════════════════════════════════════════════════════════════
 // CUSTOMER PORTAL
 // ════════════════════════════════════════════════════════════════
+function customerNav() {
+  const items = [
+    { icon: '🏠', label: 'Home',              screen: 'dashboard' },
+    { icon: '📋', label: 'My Policies',       screen: 'cust-policies' },
+    { icon: '📄', label: 'Documents Vault',   screen: 'cust-documents' },
+    { icon: '💳', label: 'Billing & Payments',screen: 'cust-billing' },
+    { icon: '🛡️', label: 'Claims Center',     screen: 'cust-claims' },
+    { icon: '⚠️', label: 'Risk & Safety',     screen: 'cust-risk' },
+    { icon: '💬', label: 'Messages',          screen: 'cust-messages' },
+    { icon: '👤', label: 'Profile',           screen: 'cust-profile' },
+    { icon: '📚', label: 'Resources',         screen: 'cust-resources' }
+  ];
+  return `
+  <nav class="side-nav customer-side-nav">
+    ${items.map(i => `
+      <div class="side-nav-item${(state.screen === i.screen || (i.screen === 'dashboard' && state.screen === 'dashboard')) ? ' active' : ''}" data-screen="${i.screen}">
+        <span class="side-nav-item-icon">${i.icon}</span>
+        <span>${i.label}</span>
+      </div>
+    `).join('')}
+    <div class="side-nav-cta">
+      <button class="btn btn-primary" style="width:100%" id="btn-cust-new-request">+ New Request</button>
+    </div>
+  </nav>`;
+}
+
 function renderCustomerPortal() {
   const u = D.USERS.customer;
-  const content = state.screen === 'endorsement' ? renderCustomerEndorsement() : renderCustomerDashboard();
+  let content;
+  const routes = {
+    'dashboard':               renderCustomerDashboard,
+    'endorsement':             renderCustomerEndorsement,
+    'cust-policies':           renderCustomerPolicies,
+    'cust-policy-details':     renderCustomerPolicyDetails,
+    'cust-servicing':          renderCustomerServicingWizard,
+    'cust-renewal-center':     renderCustomerRenewalCenter,
+    'cust-coi-generator':      renderCustomerCOIGenerator,
+    'cust-policy-history':     renderCustomerPolicyHistory,
+    'cust-documents':          renderCustomerVaultDashboard,
+    'cust-doc-library':        renderCustomerVaultLibrary,
+    'cust-doc-details':        renderCustomerVaultDetail,
+    'cust-doc-upload':         renderCustomerVaultUpload,
+    'cust-doc-esign':          renderCustomerVaultEsignInbox,
+    'cust-doc-expiring':       renderCustomerVaultExpiring,
+    'cust-doc-shares':         renderCustomerVaultShares,
+    'cust-billing':            renderCustomerBillingDashboard,
+    'cust-bill-invoices':      renderCustomerBillingInvoices,
+    'cust-bill-invoice-detail':renderCustomerBillingInvoiceDetail,
+    'cust-bill-pay':           renderCustomerBillingPayWizard,
+    'cust-bill-history':       renderCustomerBillingHistory,
+    'cust-bill-autopay':       renderCustomerBillingAutopay,
+    'cust-bill-pastdue':       renderCustomerBillingPastDue,
+    'cust-bill-dispute':       renderCustomerBillingDispute,
+    'cust-claims':             renderCustomerClaimsDashboard,
+    'cust-claims-list':        renderCustomerClaimsList,
+    'cust-claim-details':      renderCustomerClaimDetails,
+    'cust-claim-fnol':         renderCustomerClaimFnol,
+    'cust-claim-upload':       renderCustomerClaimUpload,
+    'cust-claim-settlement':   renderCustomerClaimSettlement,
+    'cust-claim-feedback':     renderCustomerClaimFeedback,
+    'cust-risk':               renderCustomerRiskDashboard,
+    'cust-risk-action-plan':   renderCustomerRiskActionPlan,
+    'cust-risk-library':       renderCustomerRiskLibrary,
+    'cust-risk-assessments':   renderCustomerRiskAssessments,
+    'cust-risk-incentives':    renderCustomerRiskIncentives,
+    'cust-risk-seasonal':      renderCustomerRiskSeasonal,
+    'cust-risk-reports':       renderCustomerRiskReports,
+    'cust-messages':           renderCustomerMessagesDashboard,
+    'cust-msg-list':           renderCustomerMessagesList,
+    'cust-msg-thread':         renderCustomerMessagesThread,
+    'cust-msg-new':            renderCustomerMessagesNew,
+    'cust-msg-chat':           renderCustomerMessagesLiveChat,
+    'cust-msg-kb':             renderCustomerMessagesKnowledgeBase,
+    'cust-msg-tickets':        renderCustomerMessagesTickets,
+    'cust-profile':            renderCustomerProfileDashboard,
+    'cust-profile-personal':   renderCustomerProfilePersonal,
+    'cust-profile-security':   renderCustomerProfileSecurity,
+    'cust-profile-notifs':     renderCustomerProfileNotifs,
+    'cust-profile-payment':    renderCustomerProfilePayment,
+    'cust-profile-linked':     renderCustomerProfileLinked,
+    'cust-profile-privacy':    renderCustomerProfilePrivacy,
+    'cust-resources':          renderCustomerLearnHub,
+    'cust-learn-search':       renderCustomerLearnSearch,
+    'cust-learn-article':      renderCustomerLearnArticle,
+    'cust-learn-glossary':     renderCustomerLearnGlossary,
+    'cust-learn-faq':          renderCustomerLearnFAQ,
+    'cust-learn-saved':        renderCustomerLearnSaved,
+    'cust-learn-suggest':      renderCustomerLearnSuggest
+  };
+  content = routes[state.screen] ? routes[state.screen]() : renderCustomerDashboard();
+
   return `
   <div class="top-bar customer-top-bar">
     <div class="top-bar-brand">
       <span class="top-bar-brand-icon">🏢</span>
       <span>SINGLEPOINT INSURANCE</span>
+      <span style="color:var(--text-muted); margin-left: var(--space-sm);">│ Client Portal</span>
     </div>
     <div class="top-bar-right">
+      <button class="btn btn-ghost btn-sm" onclick="window.showAlert('3 new notifications')">🔔 <span style="background:var(--status-red); color:#fff; border-radius:10px; padding:2px 6px; font-size:0.7rem;">3</span></button>
       <div class="top-bar-user">
-        <span>${u.name} (Customer)</span>
+        <span>${u.name}</span>
         <div class="top-bar-user-avatar">${u.avatar}</div>
       </div>
-      <button class="btn btn-ghost btn-sm" id="btn-logout">Logout ⎋</button>
+      <button class="btn btn-ghost btn-sm" id="btn-logout">⎋</button>
     </div>
   </div>
-  <div class="page-content">${content}</div>`;
+  <div class="app-layout">
+    ${customerNav()}
+    <div class="main-content">
+      <div class="page-content">${content}</div>
+    </div>
+  </div>`;
 }
 
 function renderCustomerDashboard() {
+  const u = D.USERS.customer;
+  const p = D.customerProducer;
+  const upcoming = D.customerPolicies.filter(x => x.days_to_expiry > 0 && x.days_to_expiry <= 90).sort((a,b) => a.days_to_expiry - b.days_to_expiry);
+  const pendingReqs = D.customerServicingRequests.filter(r => r.status !== 'Completed');
   return `
-  ${kpiCards(D.customerKPIs)}
-  <div class="data-table-wrapper">
-    <div class="data-table-header">
-      <h3>MY POLICIES</h3>
-      <button class="btn btn-primary btn-sm" id="btn-new-request">+ New Request</button>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: var(--space-lg); gap:var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Welcome back, ${u.name.split(' ')[0]} 👋</h2>
+      <div style="color:var(--text-muted); font-size:0.9rem; margin-top:4px;">${u.company} · Client since Jun 2019</div>
     </div>
+    <div class="producer-card">
+      <div class="producer-avatar" style="background:${p.photo_color};">${p.avatar}</div>
+      <div style="flex:1;">
+        <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:600;">${p.title}</div>
+        <div style="font-size:0.95rem; font-weight:700;">${p.name}</div>
+        <div style="font-size:0.78rem; color:var(--text-muted);">${p.phone} · ${p.email}</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="window.showAlert('Opening email to ${p.email}')">Contact</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.customerKPIs, 6)}
+
+  <div class="section-title" style="margin-top:var(--space-lg);">QUICK ACTIONS</div>
+  <div class="cust-quick-actions">
+    <div class="cust-quick-tile" onclick="window.setState({screen:'cust-coi-generator'})">
+      <span class="cust-quick-icon">📄</span>
+      <div><strong>Get COI</strong><div style="color:var(--text-muted); font-size:0.75rem;">Certificate of Insurance</div></div>
+    </div>
+    <div class="cust-quick-tile" onclick="window.setState({screen:'cust-servicing', currentPolicyId:D.customerPolicies[0].id, custServicingType:null})">
+      <span class="cust-quick-icon">✏️</span>
+      <div><strong>Request Change</strong><div style="color:var(--text-muted); font-size:0.75rem;">Endorsement / servicing</div></div>
+    </div>
+    <div class="cust-quick-tile" onclick="window.setState({screen:'cust-billing'})">
+      <span class="cust-quick-icon">💳</span>
+      <div><strong>Pay Premium</strong><div style="color:var(--text-muted); font-size:0.75rem;">Balance $15,392</div></div>
+    </div>
+    <div class="cust-quick-tile" onclick="window.setState({screen:'cust-claims'})">
+      <span class="cust-quick-icon">🛡️</span>
+      <div><strong>File a Claim</strong><div style="color:var(--text-muted); font-size:0.75rem;">24/7 intake</div></div>
+    </div>
+    <div class="cust-quick-tile" onclick="window.showAlert('Downloading ID card PDF')">
+      <span class="cust-quick-icon">🪪</span>
+      <div><strong>ID Cards</strong><div style="color:var(--text-muted); font-size:0.75rem;">Download or share</div></div>
+    </div>
+    <div class="cust-quick-tile" onclick="window.setState({screen:'cust-renewal-center'})">
+      <span class="cust-quick-icon">🔄</span>
+      <div><strong>Review Renewal</strong><div style="color:var(--text-muted); font-size:0.75rem;">1 awaiting acceptance</div></div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap:var(--space-lg); margin-top: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md);">
+        <div class="section-title" style="margin:0;">YOUR POLICIES (${D.customerPolicies.length})</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-policies'})">View all →</button>
+      </div>
+      <div class="cust-policy-grid">
+        ${D.customerPolicies.slice(0,4).map(p => _custPolicyCard(p, true)).join('')}
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📅 UPCOMING RENEWALS</div>
+        ${upcoming.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No renewals in next 90 days.</div>' : upcoming.map(p => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+            <div>
+              <div style="font-size:0.85rem; font-weight:600;">${p.type}</div>
+              <div style="color:var(--text-muted); font-size:0.72rem;">${p.carrier}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="color:var(--status-amber); font-weight:700; font-size:0.85rem;">${p.days_to_expiry}d</div>
+              <div style="color:var(--text-muted); font-size:0.72rem;">${p.expiry}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">⏳ OPEN REQUESTS (${pendingReqs.length})</div>
+        ${pendingReqs.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No open requests.</div>' : pendingReqs.map(r => `
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+            <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+              <strong>${r.type}</strong>
+              ${badge(r.statusColor, r.status)}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${r.description}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">ETA: ${r.eta}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── My Policies Module ───
+function _custPolicySubNav(active) {
+  const tabs = [
+    { key: 'cust-policies',        label: 'My Policies',    icon: '📋' },
+    { key: 'cust-renewal-center',  label: 'Renewal Center', icon: '🔄' },
+    { key: 'cust-coi-generator',   label: 'COI Generator',  icon: '📄' },
+    { key: 'cust-policy-history',  label: 'Activity',       icon: '📜' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _custPolicyCard(p, compact) {
+  const urgency = p.days_to_expiry < 0 ? 'past' : p.days_to_expiry <= 30 ? 'urgent' : p.days_to_expiry <= 90 ? 'soon' : 'ok';
+  return `
+    <div class="cust-policy-card cust-policy-card-${urgency}" onclick="window.setState({screen:'cust-policy-details', currentPolicyId:'${p.id}'})">
+      <div class="cust-policy-card-head">
+        <span class="cust-policy-icon">${p.icon}</span>
+        <div style="flex:1;">
+          <div class="cust-policy-type">${p.type}</div>
+          <div class="cust-policy-carrier">${p.carrier}</div>
+        </div>
+        ${badge(p.statusColor, p.status)}
+      </div>
+      <div class="cust-policy-id">${p.id}</div>
+      <div class="cust-policy-meta">
+        <div><div class="cust-policy-meta-label">Premium</div><strong>${p.premium_display}</strong></div>
+        <div><div class="cust-policy-meta-label">${p.days_to_expiry < 0 ? 'Renewed' : 'Expires in'}</div><strong style="color:${urgency==='urgent'||urgency==='past'?'var(--status-red)':urgency==='soon'?'var(--status-amber)':'var(--text-primary)'};">${p.days_to_expiry < 0 ? Math.abs(p.days_to_expiry) + 'd ago' : p.days_to_expiry + ' days'}</strong></div>
+      </div>
+      ${!compact && p.tags.length ? `<div class="cust-policy-tags">${p.tags.map(t => `<span class="cust-policy-tag">${t}</span>`).join('')}</div>` : ''}
+      <div class="cust-policy-actions" onclick="event.stopPropagation();">
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-policy-details', currentPolicyId:'${p.id}'})">View</button>
+        ${p.id_card_available ? `<button class="btn btn-ghost btn-sm" onclick="window.showAlert('Downloading ID Card for ${p.id}')">🪪 ID Card</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-coi-generator', currentPolicyId:'${p.id}'})">📄 COI</button>
+        ${p.has_renewal ? `<button class="btn btn-primary btn-sm" onclick="window.setState({screen:'cust-renewal-center'})">🔄 Review Renewal</button>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderCustomerPolicies() {
+  const filter = state.custPolicyFilter || 'all';
+  const policies = filter === 'all' ? D.customerPolicies : D.customerPolicies.filter(p => p.status === filter);
+  const statusCounts = ['all', ...D.customerPolicyStatuses].map(s => ({
+    key: s,
+    count: s === 'all' ? D.customerPolicies.length : D.customerPolicies.filter(x => x.status === s).length
+  })).filter(s => s.count > 0);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">My Policies</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${D.customerPolicies.length} active policies · $${(D.customerPolicies.reduce((s,p)=>s+p.premium,0)/1000).toFixed(0)}k total premium</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'cust-coi-generator'})">📄 Get COI</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Opening add-coverage request — routes to your producer')">+ Add New Coverage</button>
+    </div>
+  </div>
+
+  ${_custPolicySubNav('cust-policies')}
+
+  <div style="display:flex; gap:var(--space-xs); margin-bottom: var(--space-lg); flex-wrap:wrap;">
+    ${statusCounts.map(s => `
+      <div class="cust-pill${filter === s.key ? ' active' : ''}" onclick="window.setState({custPolicyFilter:'${s.key}'})">
+        ${s.key === 'all' ? 'All' : s.key} <span class="cust-pill-count">${s.count}</span>
+      </div>`).join('')}
+  </div>
+
+  <div class="cust-policy-grid">
+    ${policies.map(p => _custPolicyCard(p, false)).join('')}
+  </div>
+
+  ${policies.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding:var(--space-xl);">No policies match this filter.</div>' : ''}`;
+}
+
+function renderCustomerPolicyDetails() {
+  const p = D.customerPolicies.find(x => x.id === state.currentPolicyId) || D.customerPolicies[0];
+  const d = D.customerPolicyDetail;
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-policies'})" style="padding:4px 8px; margin-left:-8px;">← Back to My Policies</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-md); align-items:center;">
+      <div style="font-size:3rem;">${p.icon}</div>
+      <div>
+        <h2 style="margin:0;">${p.type}</h2>
+        <div style="color:var(--text-muted); font-size:0.85rem; font-family:monospace;">${p.id} · ${p.carrier_policy_no}</div>
+        <div style="margin-top:4px; display:flex; gap:8px; align-items:center; font-size:0.82rem;">
+          ${badge(p.statusColor, p.status)}
+          <span style="color:var(--text-muted);">·</span>
+          <span>${p.carrier} <span style="color:var(--text-muted); font-size:0.72rem;">(${p.carrier_rating})</span></span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm); flex-wrap:wrap;">
+      ${p.id_card_available ? `<button class="btn btn-secondary" onclick="window.showAlert('Downloading ID Card')">🪪 ID Card</button>` : ''}
+      <button class="btn btn-secondary" onclick="window.showAlert('Downloading Declarations Page PDF')">📥 Dec Page</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'cust-coi-generator', currentPolicyId:'${p.id}'})">📄 Get COI</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'cust-servicing', currentPolicyId:'${p.id}', custServicingType:null})">✏ Request Change</button>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Annual Premium</div><div class="kpi-value" style="font-size:1.4rem;">$${(p.premium/1000).toFixed(1)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Effective</div><div class="kpi-value" style="font-size:1rem;">${p.effective}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Expires</div><div class="kpi-value" style="font-size:1rem; color:${p.days_to_expiry<=30?'var(--status-amber)':'var(--text-primary)'};">${p.expiry}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Safety Score</div><div class="kpi-value" style="color:${p.safety_score>=80?'var(--status-green)':p.safety_score>=60?'var(--mga-accent)':'var(--status-amber)'};">${p.safety_score}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Balance Due</div><div class="kpi-value" style="color:${p.balance_due>0?'var(--status-amber)':'var(--text-primary)'};">$${p.balance_due.toLocaleString()}</div></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">COVERAGE SUMMARY</div>
+      ${p.coverage_summary.map(c => `
+        <div style="display:flex; justify-content:space-between; padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); font-size:0.88rem;">
+          <span>${c.k}</span>
+          <strong>${c.v}</strong>
+        </div>`).join('')}
+      <div style="display:flex; justify-content:space-between; padding: var(--space-sm) 0; font-size:0.88rem;">
+        <span style="color:var(--text-muted);">Deductible</span>
+        <strong>${p.deductible}</strong>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">BILLING</div>
+      <div style="font-size:0.85rem; line-height:1.9;">
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Premium</span><strong>${p.premium_display}</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Billing</span><span>${p.billing}</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Next payment</span><strong>${p.next_payment}</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Amount</span><strong>$${p.next_payment_amount.toLocaleString()}</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Balance due</span><strong style="color:${p.balance_due>0?'var(--status-amber)':'var(--status-green)'};">$${p.balance_due.toLocaleString()}</strong></div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:100%; margin-top:var(--space-md);" onclick="window.setState({screen:'cust-billing'})">${p.balance_due > 0 ? `Pay $${p.balance_due.toLocaleString()} Now →` : 'View Billing →'}</button>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">NAMED INSURED &amp; PARTIES</div>
+      <div style="font-size:0.88rem; line-height:1.9;">
+        <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase;">Named Insured</div><strong>${p.named_insured}</strong></div>
+        <div style="margin-top:var(--space-sm);"><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase;">Primary Location</div>${p.primary_location}</div>
+        ${p.additional_insureds.length ? `
+          <div style="margin-top:var(--space-sm);"><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase;">Additional Insureds (${p.additional_insureds.length})</div>${p.additional_insureds.map(a => `<div>• ${a}</div>`).join('')}</div>
+        ` : ''}
+        ${p.lienholders.length ? `
+          <div style="margin-top:var(--space-sm);"><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase;">Lienholders</div>${p.lienholders.map(l => `<div>• ${l}</div>`).join('')}</div>
+        ` : ''}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">EXPOSURES / SCHEDULE</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px 16px; font-size:0.88rem;">
+        ${p.exposures.map(e => `<div><div style="color:var(--text-muted); font-size:0.72rem;">${e.k}</div><strong>${e.v}</strong></div>`).join('')}
+      </div>
+      <div style="margin-top:var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem;">
+        <strong>Risk &amp; Safety:</strong> ${p.claim_count_3yr} claim${p.claim_count_3yr===1?'':'s'} in past 3 yrs · Safety score ${p.safety_score}/100
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">LOCATION &amp; PHOTOS</div>
+      <div style="background:var(--bg-card); border-radius:var(--radius-md); padding:var(--space-xl); text-align:center; margin-bottom: var(--space-md);">
+        <div style="font-size:2.4rem; margin-bottom:var(--space-sm);">🗺️</div>
+        <div style="font-size:0.88rem;">${p.primary_location}</div>
+        <div style="color:var(--text-muted); font-size:0.75rem; margin-top:4px;">Lat 38.5816° N, Lon 121.4944° W</div>
+      </div>
+      <div class="cust-photo-grid">
+        ${d.photos.map(ph => `
+          <div class="cust-photo" onclick="window.showAlert('Viewing ${ph.label}')">
+            <div style="font-size:2rem;">${ph.emoji}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">${ph.label}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">POLICY DOCUMENTS</div>
+      ${d.docs.map(doc => `
+        <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); align-items:center;">
+          <div style="width:28px;">📄</div>
+          <div style="flex:1;">
+            <div style="font-size:0.88rem; font-weight:600;">${doc.name}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${doc.type} · ${doc.size} · ${doc.uploaded}</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Downloading ${doc.name}')">⬇</button>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">POLICY TIMELINE</div>
+    ${d.timeline.map(t => `
+      <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle);">
+        <div style="color:var(--text-muted); font-family:monospace; font-size:0.75rem; min-width:140px;">${t.ts}</div>
+        <div style="flex:1; font-size:0.88rem;">${t.event}</div>
+        <div style="color:var(--text-muted); font-size:0.72rem;">${t.actor}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderCustomerServicingWizard() {
+  const p = D.customerPolicies.find(x => x.id === state.currentPolicyId) || D.customerPolicies[0];
+  const type = state.custServicingType;
+  const step = state.custServicingStep || 1;
+  const totalSteps = 4;
+  const steps = ['Select Type', 'Details', 'Review', 'Submitted'];
+
+  if (!type) {
+    return `
+    <div style="margin-bottom: var(--space-md);">
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-policy-details', currentPolicyId:'${p.id}'})" style="padding:4px 8px; margin-left:-8px;">← Back to Policy</button>
+    </div>
+    <div style="margin-bottom: var(--space-lg);">
+      <h2 style="margin:0;">Request a Policy Change</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Policy: <strong>${p.type}</strong> · ${p.id} · ${p.carrier}</div>
+    </div>
+
+    <div class="section-title">WHAT WOULD YOU LIKE TO CHANGE?</div>
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md);">
+      ${D.customerServicingTypes.map(t => `
+        <div class="cust-quick-tile" onclick="window.setState({custServicingType:'${t.key}', custServicingStep:2})">
+          <span class="cust-quick-icon">${t.icon}</span>
+          <div><strong>${t.name}</strong><div style="color:var(--text-muted); font-size:0.75rem;">${t.desc}</div></div>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  const typeObj = D.customerServicingTypes.find(t => t.key === type);
+
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-policy-details', currentPolicyId:'${p.id}', custServicingType:null, custServicingStep:1})" style="padding:4px 8px; margin-left:-8px;">← Back to Policy</button>
+  </div>
+  <div style="margin-bottom: var(--space-lg);">
+    <h2 style="margin:0;">${typeObj.icon} ${typeObj.name}</h2>
+    <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${p.type} · ${p.id}</div>
+  </div>
+
+  <div class="market-stepper" style="margin-bottom: var(--space-lg);">
+    ${steps.map((s,i) => `
+      <div class="market-step${i+1 === step ? ' active' : ''}${i+1 < step ? ' done' : ''}">
+        <div class="market-step-num">${i+1 < step ? '✓' : i+1}</div>
+        <div class="market-step-label">${s}</div>
+      </div>
+      ${i < steps.length - 1 ? '<div class="market-step-line"></div>' : ''}`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-xl); margin-bottom: var(--space-lg);">
+    ${step === 2 ? `
+      <h3 style="margin-top:0;">Tell us about the change</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Complete the fields below. Your producer, Sarah Chen, will review and confirm within 1 business day.</div>
+      ${type === 'vehicle' ? `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md);">
+          <div class="form-group"><label class="form-label">Action</label><select class="form-input"><option>Add vehicle</option><option>Remove vehicle</option><option>Replace vehicle</option></select></div>
+          <div class="form-group"><label class="form-label">Effective Date</label><input class="form-input" type="date" value="2026-04-25"/></div>
+          <div class="form-group"><label class="form-label">Year / Make / Model</label><input class="form-input" placeholder="2025 Ford F-250"/></div>
+          <div class="form-group"><label class="form-label">VIN</label><input class="form-input" placeholder="1FTEX1EP..."/></div>
+          <div class="form-group"><label class="form-label">Garaging Location</label><input class="form-input" value="1201 Industrial Blvd, Sacramento CA 95814"/></div>
+          <div class="form-group"><label class="form-label">Primary Driver</label><input class="form-input" placeholder="Driver name + DL #"/></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Additional Notes</label><textarea class="form-input" rows="3" placeholder="Any context for your producer…"></textarea></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Attach documents</label><input class="form-input" type="file" multiple/></div>
+        </div>
+      ` : type === 'address' ? `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md);">
+          <div class="form-group"><label class="form-label">Address Type</label><select class="form-input"><option>Business / HQ</option><option>Mailing</option><option>Billing</option></select></div>
+          <div class="form-group"><label class="form-label">Effective Date</label><input class="form-input" type="date" value="2026-04-25"/></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">New Address</label><input class="form-input" placeholder="Street address"/></div>
+          <div class="form-group"><label class="form-label">City</label><input class="form-input"/></div>
+          <div class="form-group"><label class="form-label">State</label><input class="form-input"/></div>
+          <div class="form-group"><label class="form-label">ZIP</label><input class="form-input"/></div>
+        </div>
+      ` : type === 'ai' ? `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md);">
+          <div class="form-group"><label class="form-label">Additional Insured Name</label><input class="form-input" placeholder="e.g. Kroger Real Estate"/></div>
+          <div class="form-group"><label class="form-label">Relationship</label><select class="form-input"><option>Landlord</option><option>Lender / Lienholder</option><option>Vendor / Client</option><option>General Contractor</option><option>Other</option></select></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Their Address</label><input class="form-input"/></div>
+          <div class="form-group"><label class="form-label">Effective Date</label><input class="form-input" type="date" value="2026-04-25"/></div>
+          <div class="form-group"><label class="form-label">Waiver of Subrogation?</label><select class="form-input"><option>No</option><option>Yes</option></select></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Contract / Reason</label><textarea class="form-input" rows="3" placeholder="Lease requires AI + Waiver of Subro…"></textarea></div>
+        </div>
+      ` : `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md);">
+          <div class="form-group"><label class="form-label">Effective Date</label><input class="form-input" type="date" value="2026-04-25"/></div>
+          <div class="form-group"><label class="form-label">Priority</label><select class="form-input"><option>Standard (1–2 business days)</option><option>Urgent (same day)</option></select></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Describe the change</label><textarea class="form-input" rows="5" placeholder="Describe what you need changed…"></textarea></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Attach documents</label><input class="form-input" type="file" multiple/></div>
+        </div>
+      `}
+    ` : step === 3 ? `
+      <h3 style="margin-top:0;">Review &amp; Submit</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Please review the details below before submitting.</div>
+      <div style="background:var(--bg-card); padding: var(--space-md); border-radius:var(--radius-md);">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap: 8px 16px; font-size:0.88rem;">
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Policy</div><strong>${p.type} · ${p.id}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Change Type</div><strong>${typeObj.name}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Effective</div><strong>2026-04-25</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Routed to</div><strong>Sarah Chen (your producer)</strong></div>
+        </div>
+        <div style="margin-top:var(--space-md); padding-top:var(--space-md); border-top: 1px solid var(--border-subtle); font-size:0.82rem; color:var(--text-muted);">
+          ℹ By submitting, you authorize your producer to process this change with ${p.carrier}. A confirmation will be sent to your email and updates will appear on your dashboard.
+        </div>
+      </div>
+    ` : `
+      <div style="text-align:center; padding: var(--space-xl) 0;">
+        <div style="font-size:4rem; margin-bottom: var(--space-md);">✅</div>
+        <h3 style="margin:0;">Request Submitted</h3>
+        <div style="color:var(--text-muted); margin-top: var(--space-sm);">Tracking number: <strong style="font-family:monospace; color:var(--mga-accent);">SR-20285</strong></div>
+        <div style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(0,230,118,0.1); border-radius:var(--radius-md); display:inline-block; font-size:0.88rem;">
+          📧 Confirmation email sent to you<br/>
+          👤 Sarah Chen notified · typical response: <strong>&lt; 1 business day</strong>
+        </div>
+      </div>
+    `}
+  </div>
+
+  ${step < 4 ? `
+    <div style="display:flex; justify-content:space-between;">
+      <button class="btn btn-secondary" onclick="window.setState({custServicingStep:${step - 1}${step === 2 ? ', custServicingType:null' : ''}})">← Back</button>
+      <button class="btn btn-primary" onclick="window.setState({custServicingStep:${step + 1}})">${step === 2 ? 'Review →' : 'Submit Request →'}</button>
+    </div>
+  ` : `
+    <div style="display:flex; gap:var(--space-sm); justify-content:center;">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'cust-policy-details', currentPolicyId:'${p.id}', custServicingType:null, custServicingStep:1})">Back to Policy</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'dashboard', custServicingType:null, custServicingStep:1})">Home</button>
+    </div>
+  `}`;
+}
+
+function renderCustomerRenewalCenter() {
+  const renewing = D.customerPolicies.filter(p => p.has_renewal);
+  const r = D.customerRenewalCompare;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Renewal Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Review, compare, and accept your renewal offers</div>
+    </div>
+  </div>
+
+  ${_custPolicySubNav('cust-renewal-center')}
+
+  ${renewing.length === 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-2xl); text-align:center;">
+      <div style="font-size:3rem; margin-bottom: var(--space-md);">🎉</div>
+      <h3 style="margin:0;">All caught up!</h3>
+      <div style="color:var(--text-muted); margin-top: var(--space-sm);">No renewals awaiting your review right now.</div>
+    </div>
+  ` : `
+    <div style="background:rgba(255,171,0,0.08); border:1px solid rgba(255,171,0,0.3); border-radius:var(--radius-lg); padding: var(--space-md); margin-bottom: var(--space-lg); display:flex; gap: var(--space-md); align-items:center;">
+      <div style="font-size:1.8rem;">⏰</div>
+      <div style="flex:1;">
+        <strong>Renewal awaiting your review</strong>
+        <div style="color:var(--text-muted); font-size:0.85rem;">Your ${renewing[0].type} policy renews ${renewing[0].expiry}. Review the comparison below and accept before expiry to ensure continuous coverage.</div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">CURRENT vs. RENEWAL COMPARISON</div>
+      <div class="cust-renewal-compare">
+        <div class="cust-renewal-col">
+          <div class="cust-renewal-col-head">CURRENT POLICY</div>
+          <div style="padding:var(--space-md);">
+            <div style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase;">Expires</div>
+            <div style="font-size:1.2rem; font-weight:700;">${r.effective_new}</div>
+            <div style="margin-top: var(--space-md); font-size:0.85rem; line-height:1.8;">
+              <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Premium</span><strong>$${r.current.premium.toLocaleString()}</strong></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Deductible</span><strong>$${r.current.deductible.toLocaleString()}</strong></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Aggregate</span><strong>$${r.current.aggregate.toLocaleString()}</strong></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Per Occurrence</span><strong>$${r.current.occurrence.toLocaleString()}</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="cust-renewal-arrow">→</div>
+        <div class="cust-renewal-col cust-renewal-col-new">
+          <div class="cust-renewal-col-head cust-renewal-col-head-new">RENEWAL OFFER</div>
+          <div style="padding:var(--space-md);">
+            <div style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase;">Effective</div>
+            <div style="font-size:1.2rem; font-weight:700;">${r.effective_new}</div>
+            <div style="font-size:0.72rem; color:var(--text-muted);">thru ${r.expiry_new}</div>
+            <div style="margin-top: var(--space-md); font-size:0.85rem; line-height:1.8;">
+              <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Premium</span><strong style="color:var(--status-amber);">$${r.renewal.premium.toLocaleString()} (+${r.rate_change}%)</strong></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Deductible</span><strong>$${r.renewal.deductible.toLocaleString()}</strong></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Aggregate</span><strong>$${r.renewal.aggregate.toLocaleString()}</strong></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Per Occurrence</span><strong>$${r.renewal.occurrence.toLocaleString()}</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: var(--space-lg);">
+        <div class="section-title">WHAT'S CHANGING</div>
+        <table class="data-table">
+          <thead><tr><th>Item</th><th>Current</th><th>Renewal</th><th>Note</th></tr></thead>
+          <tbody>
+            ${r.changes.map(c => `<tr><td><strong>${c.field}</strong></td><td>${c.before}</td><td><strong>${c.after}</strong></td><td style="font-size:0.82rem; color:var(--text-muted);">${c.note}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top: var(--space-lg); padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <div style="font-size:0.82rem; color:var(--text-muted); text-transform:uppercase; font-weight:600; margin-bottom:var(--space-sm);">💡 Why the rate change?</div>
+        ${r.rationale.map(x => `<div style="font-size:0.85rem; margin-bottom:4px;">• ${x}</div>`).join('')}
+      </div>
+
+      <div style="margin-top: var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="window.showAlert('Sarah Chen will call you within 1 business day to discuss options')">📞 Talk to Producer</button>
+        <button class="btn btn-secondary" onclick="window.setState({screen:'cust-servicing', currentPolicyId:'${r.policy}', custServicingType:'other', custServicingStep:2})">✏ Request Changes</button>
+        <button class="btn btn-primary" onclick="window.showAlert('✓ Renewal accepted · e-signature sent to your email')">✓ Accept Renewal &amp; e-Sign</button>
+      </div>
+    </div>
+  `}`;
+}
+
+function renderCustomerCOIGenerator() {
+  const p = D.customerPolicies.find(x => x.id === state.currentPolicyId) || D.customerPolicies[0];
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Certificate of Insurance (COI)</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Generate, download, or send a COI directly to a certificate holder</div>
+    </div>
+  </div>
+
+  ${_custPolicySubNav('cust-coi-generator')}
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">REQUEST NEW COI</div>
+      <div class="form-group" style="margin-bottom:var(--space-md);">
+        <label class="form-label">Which policy?</label>
+        <select class="form-input">
+          ${D.customerPolicies.map(x => `<option ${x.id===p.id?'selected':''}>${x.type} — ${x.id}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:var(--space-md);">
+        <label class="form-label">Certificate Holder Name</label>
+        <input class="form-input" placeholder="e.g. Kroger Real Estate"/>
+      </div>
+      <div class="form-group" style="margin-bottom:var(--space-md);">
+        <label class="form-label">Certificate Holder Address</label>
+        <input class="form-input" placeholder="Street, City, State, ZIP"/>
+      </div>
+      <div class="form-row" style="margin-bottom:var(--space-md);">
+        <div class="form-group"><label class="form-label">Named as Additional Insured?</label><select class="form-input"><option>No</option><option>Yes</option></select></div>
+        <div class="form-group"><label class="form-label">Waiver of Subrogation?</label><select class="form-input"><option>No</option><option>Yes</option></select></div>
+      </div>
+      <div class="form-group" style="margin-bottom:var(--space-md);">
+        <label class="form-label">Delivery</label>
+        <select class="form-input"><option>Download PDF only</option><option>Email to certificate holder</option><option>Both</option></select>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="window.showAlert('✓ COI generated · PDF downloading + email sent to holder')">Generate &amp; Send COI</button>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">PREVIEW</div>
+      <div style="background:#fafaf6; color:#222; padding: 24px; border-radius:var(--radius-sm); min-height:360px; font-family:Arial, sans-serif; font-size:0.78rem;">
+        <div style="border-bottom: 3px solid #4a4af0; padding-bottom:10px; margin-bottom:12px;">
+          <div style="font-size:0.65rem; color:#888; letter-spacing:0.08em;">ACORD 25 · CERTIFICATE OF LIABILITY INSURANCE</div>
+          <div style="font-weight:800; font-size:1.05rem; color:#111; margin-top:2px;">${p.carrier}</div>
+          <div style="color:#666; font-size:0.72rem;">via Bridgepoint Insurance Brokers</div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="font-weight:700;">INSURED:</div>
+          <div>${p.named_insured}</div>
+          <div style="color:#666;">${p.primary_location}</div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="font-weight:700;">POLICY:</div>
+          <div style="font-family:monospace;">${p.id}</div>
+          <div style="color:#666;">${p.effective} → ${p.expiry}</div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="font-weight:700;">COVERAGE:</div>
+          ${p.coverage_summary.slice(0,3).map(c => `<div style="display:flex; justify-content:space-between;"><span>${c.k}</span><strong>${c.v}</strong></div>`).join('')}
+        </div>
+        <div style="border-top:1px solid #ddd; padding-top:8px; color:#888; font-size:0.7rem;">
+          Certificate Holder receives same-day notification.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">YOUR ACTIVE CERTIFICATES (${D.customerCOIs.length})</div>
+    <div class="table-scroll">
     <table class="data-table">
-      <thead><tr>
-        <th>Policy #</th><th>Type</th><th>Carrier</th><th>Expiry</th><th>Action</th>
-      </tr></thead>
+      <thead><tr><th>COI #</th><th>Policy</th><th>Certificate Holder</th><th>Issued</th><th>Expires</th><th>Status</th><th>Action</th></tr></thead>
       <tbody>
-        ${D.customerPolicies.map(p => `
+        ${D.customerCOIs.map(c => `
         <tr>
-          <td>${p.id}</td>
-          <td>${p.type}</td>
-          <td>${p.carrier}</td>
-          <td>${p.expiry} ${p.expiring ? '⚠️' : ''}</td>
-          <td>
-            <button class="btn btn-secondary btn-sm">View</button>
-            <button class="btn btn-ghost btn-sm">COI</button>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;">${c.id}</td>
+          <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${c.policy}</td>
+          <td style="white-space:nowrap;"><strong>${c.holder}</strong></td>
+          <td style="white-space:nowrap;">${c.issued}</td>
+          <td style="white-space:nowrap;">${c.expires}</td>
+          <td style="white-space:nowrap;">${badge(c.statusColor, c.status)}</td>
+          <td style="display:flex; gap:4px;">
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Downloading ${c.id} PDF')">⬇</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Re-sending ${c.id} to ${c.holder}')">📧 Resend</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Renewing ${c.id}')">🔄 Renew</button>
           </td>
         </tr>`).join('')}
       </tbody>
     </table>
+    </div>
+  </div>`;
+}
+
+function renderCustomerPolicyHistory() {
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Policy Activity</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Full activity log across all your policies</div>
+    </div>
+    <button class="btn btn-secondary" onclick="window.showAlert('Exporting activity log to CSV')">Export</button>
   </div>
-  <div class="section-title">QUICK ACTIONS</div>
-  <div class="quick-actions">
-    <div class="quick-action-card"><span class="quick-action-icon">📄</span><span class="quick-action-label">Download COI</span></div>
-    <div class="quick-action-card"><span class="quick-action-icon">🔄</span><span class="quick-action-label">Request Renewal</span></div>
-    <div class="quick-action-card" id="btn-endorsement"><span class="quick-action-icon">✏️</span><span class="quick-action-label">Submit Endorsement</span></div>
+
+  ${_custPolicySubNav('cust-policy-history')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>When</th><th>Policy</th><th>Action</th><th>Details</th><th>By</th></tr></thead>
+      <tbody>
+        ${D.customerPolicyHistory.map(h => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${h.ts}</td>
+          <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${h.policy}</td>
+          <td style="white-space:nowrap;"><strong>${h.action}</strong></td>
+          <td style="white-space:nowrap;">${h.entity}</td>
+          <td style="color:var(--text-muted); white-space:nowrap;">${h.actor}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+// ─── Customer Documents Vault Module ───
+function _custVaultSubNav(active) {
+  const tabs = [
+    { key: 'cust-documents',     label: 'Dashboard',    icon: '📊' },
+    { key: 'cust-doc-library',   label: 'Library',      icon: '📚' },
+    { key: 'cust-doc-upload',    label: 'Upload',       icon: '⬆' },
+    { key: 'cust-doc-esign',     label: 'e-Sign Inbox', icon: '✍' },
+    { key: 'cust-doc-expiring',  label: 'Expiring',     icon: '⏰' },
+    { key: 'cust-doc-shares',    label: 'Shared Links', icon: '🔗' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _custDocIcon(type) {
+  const m = { 'Dec Page':'📋','Policy':'📘','Endorsement':'✏️','ID Card':'🪪','COI':'📄','Invoice':'💳','Receipt':'🧾','Finance Agmt':'📑','FNOL':'🛡️','Adjuster Rpt':'🔍','Settlement':'✅','Application':'📝','Disclosure':'⚖️','W-9':'📰','Safety Audit':'⚠️','LP Guide':'📚' };
+  return m[type] || '📄';
+}
+
+function _custDocRow(d, showNew) {
+  const urgency = d.statusColor === 'amber' ? 'soon' : d.statusColor === 'red' ? 'urgent' : 'ok';
+  return `
+    <div class="cust-doc-card cust-doc-card-${urgency}" onclick="window.setState({screen:'cust-doc-details', currentDocId:'${d.id}'})">
+      <div class="cust-doc-icon">${_custDocIcon(d.type)}</div>
+      <div style="flex:1; min-width:0;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <strong style="font-size:0.88rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.name}</strong>
+          ${showNew && d.new ? '<span class="cust-doc-new-badge">NEW</span>' : ''}
+        </div>
+        <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${d.type} · ${d.size}${d.policy !== '—' ? ' · ' + d.policy : ''}</div>
+        ${d.tags.length ? `<div style="margin-top:4px; display:flex; gap:4px; flex-wrap:wrap;">${d.tags.map(t => `<span class="cust-policy-tag">${t}</span>`).join('')}</div>` : ''}
+      </div>
+      <div style="text-align:right; font-size:0.72rem; color:var(--text-muted); flex-shrink:0;">
+        ${badge(d.statusColor, d.status)}
+        <div style="margin-top:4px;">${d.uploaded}</div>
+      </div>
+    </div>`;
+}
+
+function renderCustomerVaultDashboard() {
+  const p = D.customerProducer;
+  const recent = [...D.customerDocuments].sort((a,b) => b.uploaded.localeCompare(a.uploaded)).slice(0, 5);
+  const expiring = D.customerDocuments.filter(d => d.status === 'Expiring Soon');
+  const esignPending = D.customerEsignInbox.filter(e => e.status === 'Awaiting Signature');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Documents Vault</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Secure, searchable access to every policy document · 24/7 · audit-logged</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'cust-doc-upload'})">⬆ Upload</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Requesting missing document from your producer')">📧 Request from Agency</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'cust-doc-library'})">📚 Browse Library</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.customerVaultKPIs, 6)}
+
+  ${_custVaultSubNav('cust-documents')}
+
+  <div style="background: linear-gradient(135deg, rgba(108,92,231,0.12), rgba(63,81,181,0.05)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg); display:flex; gap:var(--space-md); align-items:center;">
+    <div class="producer-avatar" style="background:${p.photo_color}; width:36px; height:36px; font-size:0.8rem;">${p.avatar}</div>
+    <div style="flex:1; font-size:0.88rem;">
+      <strong>${p.name}</strong> says: <span style="color:var(--text-secondary);">"Hi James, here are your latest documents. Reach out anytime — and don't miss the 2 signatures waiting in your inbox."</span>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap: var(--space-sm); align-items:center;">
+      <div style="flex:1; position:relative;">
+        <input type="text" class="form-input" placeholder="🔍 Search all documents — try: 'auto ID card' or 'WC dec page'" value="${state.custDocQuery || ''}" oninput="window.setState({custDocQuery:this.value, screen:'cust-doc-library'})" style="padding-left:12px;"/>
+      </div>
+      <span style="color:var(--text-muted); font-size:0.82rem;">Try: <span style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'cust-doc-library', custDocQuery:'COI'})">COI</span> · <span style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'cust-doc-library', custDocQuery:'ID card'})">ID card</span> · <span style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'cust-doc-library', custDocQuery:'renewal'})">renewal</span></span>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md);">
+        <div class="section-title" style="margin:0;">📂 BROWSE BY CATEGORY</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-doc-library'})">See all →</button>
+      </div>
+      <div class="doc-category-grid">
+        ${D.customerVaultCategories.map(c => `
+          <div class="doc-category-card" onclick="window.setState({screen:'cust-doc-library', custDocCategory:'${c.key}'})">
+            <span class="doc-category-icon">${c.icon}</span>
+            <div><strong>${c.name}</strong><div style="color:var(--text-muted); font-size:0.75rem;">${c.desc}</div></div>
+            <span class="doc-category-count">${c.count}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">✍ PENDING YOUR SIGNATURE (${esignPending.length})</div>
+        ${esignPending.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">Nothing to sign. All caught up 🎉</div>' : esignPending.slice(0,3).map(e => `
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+            <div style="font-size:0.85rem; font-weight:600;">${e.doc}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${e.policy} · Deadline ${e.deadline}</div>
+            <button class="btn btn-primary btn-sm" style="margin-top:6px; width:100%;" onclick="window.setState({screen:'cust-doc-esign'})">Review &amp; Sign →</button>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">⏰ EXPIRING SOON (${expiring.length})</div>
+        ${expiring.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No documents expiring soon.</div>' : expiring.map(d => `
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;" onclick="window.setState({screen:'cust-doc-details', currentDocId:'${d.id}'})">
+            <div style="font-size:0.85rem; font-weight:600;">${d.name}</div>
+            <div style="color:var(--status-amber); font-size:0.72rem; margin-top:2px;">Expires ${d.expires}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-top: var(--space-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md);">
+      <div class="section-title" style="margin:0;">🆕 RECENTLY ADDED</div>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-doc-library'})">See all →</button>
+    </div>
+    <div class="cust-doc-list">
+      ${recent.map(d => _custDocRow(d, true)).join('')}
+    </div>
+  </div>`;
+}
+
+function renderCustomerVaultLibrary() {
+  const cat = state.custDocCategory || 'all';
+  const status = state.custDocStatus || 'all';
+  const q = (state.custDocQuery || '').toLowerCase();
+  const view = state.custDocView || 'grid';
+  let docs = D.customerDocuments;
+  if (cat !== 'all') docs = docs.filter(d => d.category === cat);
+  if (status !== 'all') docs = docs.filter(d => d.status === status);
+  if (q) docs = docs.filter(d => (d.name + ' ' + d.type + ' ' + d.policy + ' ' + d.carrier).toLowerCase().includes(q));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Document Library</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${docs.length} document${docs.length===1?'':'s'} · searchable · filter by policy, category, or status</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <div style="display:flex; background:var(--bg-card); border-radius:var(--radius-md); padding:2px;">
+        <button class="btn btn-ghost btn-sm" style="${view==='grid'?'background:var(--mga-accent); color:#fff;':''}" onclick="window.setState({custDocView:'grid'})">⊞ Grid</button>
+        <button class="btn btn-ghost btn-sm" style="${view==='list'?'background:var(--mga-accent); color:#fff;':''}" onclick="window.setState({custDocView:'list'})">☰ List</button>
+      </div>
+      <button class="btn btn-secondary" onclick="window.showAlert('Downloading ' + ${docs.length} + ' documents as ZIP')">⬇ Bulk Download</button>
+    </div>
+  </div>
+
+  ${_custVaultSubNav('cust-doc-library')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-md);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search by name, policy, carrier..." value="${state.custDocQuery || ''}" oninput="window.setState({custDocQuery:this.value})"/>
+      <select class="form-input" style="width:180px;" onchange="window.setState({custDocStatus:this.value})">
+        <option value="all">All Statuses</option>
+        ${D.customerVaultStatuses.map(s => `<option value="${s}" ${status===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({custDocCategory:'all', custDocStatus:'all', custDocQuery:''})">Reset</button>
+    </div>
+
+    <div style="display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+      <div class="cust-pill${cat==='all'?' active':''}" onclick="window.setState({custDocCategory:'all'})">All <span class="cust-pill-count">${D.customerDocuments.length}</span></div>
+      ${D.customerVaultCategories.map(c => `
+        <div class="cust-pill${cat===c.key?' active':''}" onclick="window.setState({custDocCategory:'${c.key}'})">${c.icon} ${c.name} <span class="cust-pill-count">${c.count}</span></div>`).join('')}
+    </div>
+  </div>
+
+  ${docs.length === 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-2xl); text-align:center;">
+      <div style="font-size:3rem; margin-bottom: var(--space-md);">🔍</div>
+      <h3 style="margin:0;">No documents found</h3>
+      <div style="color:var(--text-muted); margin-top: var(--space-sm);">Try clearing the filters or searching for something else.</div>
+    </div>
+  ` : view === 'grid' ? `
+    <div class="cust-doc-grid">
+      ${docs.map(d => `
+        <div class="cust-doc-tile" onclick="window.setState({screen:'cust-doc-details', currentDocId:'${d.id}'})">
+          <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+            <div style="font-size:2.4rem;">${_custDocIcon(d.type)}</div>
+            ${d.new ? '<span class="cust-doc-new-badge">NEW</span>' : ''}
+          </div>
+          <div style="margin-top: var(--space-sm);">
+            <div style="font-size:0.88rem; font-weight:700; line-height:1.3;">${d.name}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">${d.type} · ${d.size}</div>
+            ${d.policy !== '—' ? `<div style="color:var(--text-muted); font-size:0.7rem; font-family:monospace;">${d.policy}</div>` : ''}
+          </div>
+          <div style="margin-top: auto; padding-top: var(--space-sm); display:flex; justify-content:space-between; align-items:center;">
+            ${badge(d.statusColor, d.status)}
+            <div style="color:var(--text-muted); font-size:0.7rem;">${d.uploaded}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+  ` : `
+    <div class="cust-doc-list">
+      ${docs.map(d => _custDocRow(d, true)).join('')}
+    </div>
+  `}`;
+}
+
+function renderCustomerVaultDetail() {
+  const d = D.customerDocuments.find(x => x.id === state.currentDocId) || D.customerDocumentDetail;
+  const detail = D.customerDocumentDetail;
+  const esigned = d.esigned;
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-doc-library'})" style="padding:4px 8px; margin-left:-8px;">← Back to Library</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-md); align-items:center; min-width:0; flex:1;">
+      <div style="font-size:2.8rem;">${_custDocIcon(d.type)}</div>
+      <div style="min-width:0;">
+        <h2 style="margin:0; overflow:hidden; text-overflow:ellipsis;">${d.name}</h2>
+        <div style="color:var(--text-muted); font-size:0.85rem; font-family:monospace; margin-top:2px;">${d.id} · ${d.type} · ${d.size}${detail.pages ? ' · ' + detail.pages + ' pages' : ''}</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm); flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="window.showAlert('Downloading ${d.name} with watermark')">⬇ Download</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Share link copied · expires in 7 days')">🔗 Share</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Emailing ${d.name} to your address on file')">📧 Email Me</button>
+      ${d.policy !== '—' ? `<button class="btn btn-primary" onclick="window.setState({screen:'cust-policy-details', currentPolicyId:'${d.policy}'})">View Policy →</button>` : ''}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">DOCUMENT PREVIEW</div>
+      <div class="doc-preview">
+        <div class="doc-preview-page">
+          <div class="doc-preview-watermark">${(d.type || 'DOC').toUpperCase()}</div>
+          <div style="border-bottom: 2px solid #4a4af0; padding-bottom:8px; margin-bottom:16px;">
+            <div style="font-size:0.7rem; color:#888; letter-spacing:0.08em;">${d.carrier} · ${d.type}</div>
+            <div style="font-weight:800; font-size:1.1rem; color:#111;">${d.name.replace('.pdf','')}</div>
+          </div>
+          <div style="font-size:0.78rem; color:#333; line-height:1.7;">
+            <p><strong>Policy:</strong> ${d.policy}</p>
+            <p><strong>Carrier:</strong> ${d.carrier}</p>
+            <p><strong>Effective:</strong> ${d.effective}${d.expires !== '—' ? ` · <strong>Expires:</strong> ${d.expires}` : ''}</p>
+            <p style="margin-top:12px; color:#555;">This is a secure preview. Download the full document for complete coverage details, signatures, and schedule pages.</p>
+            <p style="margin-top:20px; color:#888; font-size:0.68rem;">— Page 1 of ${detail.pages || 1} —</p>
+          </div>
+          <div style="position:absolute; bottom:12px; left:12px; color:rgba(0,0,0,0.2); font-size:0.65rem;">🔒 James Reynolds · Magnolia Construction LLC</div>
+        </div>
+        <div style="display:flex; gap:var(--space-sm); margin-top: var(--space-md); align-items:center; justify-content:center;">
+          <button class="btn btn-ghost btn-sm">◀</button>
+          <span style="color:var(--text-muted); font-size:0.82rem;">Page 1 of ${detail.pages || 1}</span>
+          <button class="btn btn-ghost btn-sm">▶</button>
+          <span style="color:var(--text-muted); font-size:0.72rem; margin-left: var(--space-md);">🔒 Watermarked preview</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">STATUS</div>
+        ${badge(d.statusColor, d.status)}
+        <div style="font-size:0.85rem; line-height:1.8; margin-top: var(--space-sm);">
+          ${esigned ? `<div style="color:var(--status-green);">✓ e-Signed by ${d.signer} · ${d.signed_date}</div>` : ''}
+          ${d.expires !== '—' ? `<div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Expires</span><strong>${d.expires}</strong></div>` : ''}
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Uploaded</span><strong>${d.uploaded}</strong></div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">METADATA</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; font-size:0.82rem;">
+          ${detail.metadata.map(m => `<div><div style="color:var(--text-muted); font-size:0.7rem;">${m.k}</div><strong>${m.v}</strong></div>`).join('')}
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🔒 SECURITY</div>
+        <div style="font-size:0.82rem; line-height:1.8;">
+          <div><span style="color:var(--text-muted);">Encryption:</span> ${detail.encryption}</div>
+          <div><span style="color:var(--text-muted);">Access:</span> You only (view + download)</div>
+          ${esigned ? `<div><span style="color:var(--text-muted);">Signed from IP:</span> ${d.signed_ip || detail.signed_ip}</div>` : ''}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">ACCESS LOG</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>When</th><th>Who</th><th>Action</th><th>From IP</th></tr></thead>
+      <tbody>
+        ${detail.access_log.map(a => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${a.ts}</td>
+          <td style="white-space:nowrap;"><strong>${a.actor}</strong></td>
+          <td style="white-space:nowrap;">${a.action}</td>
+          <td style="font-family:monospace; font-size:0.78rem; color:var(--text-muted); white-space:nowrap;">${a.ip}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderCustomerVaultUpload() {
+  const items = D.customerUploadChecklist;
+  const completed = 0;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Upload Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Upload requested documents or new items · drag-and-drop, mobile camera, or pick files</div>
+    </div>
+  </div>
+
+  ${_custVaultSubNav('cust-doc-upload')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="doc-dropzone" id="cust-upload-dropzone" onclick="window.showAlert('File picker opened — mobile camera available')">
+      <div style="font-size:3rem; margin-bottom: var(--space-sm);">⬆</div>
+      <h3 style="margin:0;">Drop files here</h3>
+      <div style="color:var(--text-muted); margin-top:var(--space-sm);">or <strong style="color:var(--mga-accent);">browse files</strong> — PDF, JPG, PNG up to 20 MB each</div>
+      <div style="display:flex; gap:var(--space-sm); margin-top: var(--space-lg); justify-content:center; flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('Opening mobile camera for document capture')">📱 Scan with Camera</button>
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('Email documents to upload@yourinsurance.com')">📧 Email Upload</button>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">HOW IT WORKS</div>
+      <div style="font-size:0.85rem; line-height:1.9;">
+        <div>📁 <strong>Auto-filed</strong> to the right policy folder</div>
+        <div>🤖 <strong>OCR scan</strong> extracts key fields automatically</div>
+        <div>📧 <strong>Producer notified</strong> the moment you upload</div>
+        <div>✅ <strong>Checklist updated</strong> if matching a request</div>
+        <div>🔒 <strong>End-to-end encrypted</strong> · you only</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">📋 DOCUMENTS YOUR AGENCY NEEDS (${items.length})</div>
+      <div style="color:var(--text-muted); font-size:0.82rem;">${completed} of ${items.length} complete</div>
+    </div>
+
+    ${items.map(i => `
+      <div class="cust-upload-item${i.overdue ? ' overdue' : ''}">
+        <div style="width:32px; height:32px; border-radius:50%; border:2px solid ${i.overdue?'var(--status-red)':'var(--border-medium)'}; display:flex; align-items:center; justify-content:center; color:${i.overdue?'var(--status-red)':'var(--text-muted)'}; flex-shrink:0;">${i.overdue?'!':'○'}</div>
+        <div style="flex:1;">
+          <div style="display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap;">
+            <strong style="font-size:0.9rem;">${i.title}</strong>
+            ${i.required ? '<span class="cust-policy-tag" style="background:rgba(255,82,82,0.15); color:var(--status-red);">Required</span>' : '<span class="cust-policy-tag">Optional</span>'}
+            ${i.overdue ? '<span class="cust-policy-tag" style="background:rgba(255,82,82,0.15); color:var(--status-red);">Overdue</span>' : ''}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-top:3px;">${i.note}</div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">Requested by ${i.requested_by} on ${i.requested} · Accepts: ${i.accepts}</div>
+        </div>
+        <div style="display:flex; gap:4px;">
+          <button class="btn btn-primary btn-sm" onclick="window.showAlert('File picker opened for: ${i.title}')">⬆ Upload</button>
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Opening mobile camera')">📱</button>
+        </div>
+      </div>`).join('')}
+
+    <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem; color:var(--text-muted);">
+      💡 Upload any of these to automatically check them off your list. Your producer gets notified immediately.
+    </div>
+  </div>`;
+}
+
+function renderCustomerVaultEsignInbox() {
+  const inbox = D.customerEsignInbox;
+  const pending = inbox.filter(e => e.status === 'Awaiting Signature');
+  const completed = inbox.filter(e => e.status === 'Signed');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">e-Signature Inbox</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Review and sign documents securely · pre-filled fields · mobile-friendly</div>
+    </div>
+  </div>
+
+  ${_custVaultSubNav('cust-doc-esign')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Awaiting Your Signature</div><div class="kpi-value warning">${pending.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Signed (30d)</div><div class="kpi-value">${completed.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Turnaround</div><div class="kpi-value">2.4h</div></div>
+    <div class="kpi-card"><div class="kpi-label">This Year</div><div class="kpi-value">${inbox.length + 14}</div></div>
+  </div>
+
+  ${pending.length === 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-2xl); text-align:center;">
+      <div style="font-size:3rem; margin-bottom: var(--space-md);">🎉</div>
+      <h3 style="margin:0;">Inbox Zero</h3>
+      <div style="color:var(--text-muted); margin-top: var(--space-sm);">Nothing to sign. You're all caught up.</div>
+    </div>
+  ` : `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">⏳ AWAITING YOUR SIGNATURE (${pending.length})</div>
+      ${pending.map(e => `
+        <div class="cust-esign-card">
+          <div style="font-size:2rem;">✍</div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap;">
+              <strong>${e.doc}</strong>
+              ${badge('amber', 'Deadline ' + e.deadline)}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-top:4px;">${e.preview}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">${e.policy} · ${e.carrier} · ${e.pages} pages · Sent by ${e.sender} on ${e.sent}</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <button class="btn btn-primary btn-sm" onclick="window.showAlert('Opening e-signature flow for ${e.doc} — DocuSign')">✍ Review &amp; Sign</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Preview opened')">👁 Preview</button>
+          </div>
+        </div>`).join('')}
+    </div>
+  `}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">✓ RECENTLY SIGNED</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Document</th><th>Policy</th><th>Sent</th><th>Signed</th><th>Action</th></tr></thead>
+      <tbody>
+        ${completed.map(e => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${e.doc}</strong></td>
+          <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${e.policy}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${e.sent}</td>
+          <td style="font-size:0.82rem; white-space:nowrap; color:var(--status-green);">${e.signed}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="window.showAlert('Downloading signed copy of ${e.doc}')">⬇ Signed Copy</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderCustomerVaultExpiring() {
+  const expiring = D.customerDocuments.filter(d => d.status === 'Expiring Soon' || (d.expires !== '—' && d.expires && new Date(d.expires) < new Date('2026-07-01') && d.status !== 'Expired'));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Expiring Documents</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Act now to stay covered · automated reminders at 30/14/7/1 days</div>
+    </div>
+  </div>
+
+  ${_custVaultSubNav('cust-doc-expiring')}
+
+  ${expiring.length === 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-2xl); text-align:center;">
+      <div style="font-size:3rem; margin-bottom: var(--space-md);">✅</div>
+      <h3 style="margin:0;">Nothing expiring soon</h3>
+      <div style="color:var(--text-muted); margin-top: var(--space-sm);">All your documents are current.</div>
+    </div>
+  ` : `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">⏰ DOCUMENTS EXPIRING IN THE NEXT 90 DAYS (${expiring.length})</div>
+      ${expiring.map(d => `
+        <div class="cust-upload-item">
+          <div style="font-size:1.8rem;">${_custDocIcon(d.type)}</div>
+          <div style="flex:1;">
+            <strong>${d.name}</strong>
+            <div style="color:var(--text-muted); font-size:0.78rem; margin-top:3px;">${d.type} · ${d.policy}</div>
+            <div style="color:var(--status-amber); font-size:0.82rem; margin-top:3px; font-weight:600;">Expires ${d.expires}</div>
+          </div>
+          <div style="display:flex; gap:4px;">
+            <button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'cust-doc-details', currentDocId:'${d.id}'})">View</button>
+            ${d.type === 'COI' ? `<button class="btn btn-primary btn-sm" onclick="window.setState({screen:'cust-coi-generator'})">🔄 Renew COI</button>` : `<button class="btn btn-primary btn-sm" onclick="window.showAlert('Contacting Sarah Chen about renewing ${d.name}')">📞 Contact Producer</button>`}
+          </div>
+        </div>`).join('')}
+    </div>
+  `}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">🔔 NOTIFICATION PREFERENCES</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); font-size:0.85rem;">
+      <label style="display:flex; gap:var(--space-sm); align-items:center; padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); cursor:pointer;">
+        <input type="checkbox" checked/> 📧 Email alerts
+      </label>
+      <label style="display:flex; gap:var(--space-sm); align-items:center; padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); cursor:pointer;">
+        <input type="checkbox" checked/> 📱 SMS alerts
+      </label>
+      <label style="display:flex; gap:var(--space-sm); align-items:center; padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); cursor:pointer;">
+        <input type="checkbox"/> 🔔 Push notifications
+      </label>
+    </div>
+    <div style="margin-top: var(--space-md); font-size:0.82rem; color:var(--text-muted);">Remind me at: 30 days · 14 days · 7 days · 1 day before expiration</div>
+  </div>`;
+}
+
+function renderCustomerVaultShares() {
+  const shares = D.customerSharedLinks;
+  const active = shares.filter(s => s.status === 'Active');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Shared Links</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Secure, time-limited share links to third parties · full audit trail</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.setState({screen:'cust-doc-library'})">+ New Share</button>
+  </div>
+
+  ${_custVaultSubNav('cust-doc-shares')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Active Shares</div><div class="kpi-value">${active.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Views</div><div class="kpi-value">${shares.reduce((s,x)=>s+x.views,0)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Expired (30d)</div><div class="kpi-value">${shares.length - active.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Auto-expire Default</div><div class="kpi-value" style="font-size:1.2rem;">7 days</div></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">YOUR ACTIVE & RECENT SHARES</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Share ID</th><th>Document</th><th>Recipient</th><th>Created</th><th>Expires</th><th>Views</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        ${shares.map(s => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${s.id}</td>
+          <td style="white-space:nowrap;"><strong>${s.doc}</strong></td>
+          <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${s.recipient}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${s.created}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${s.expires}</td>
+          <td style="white-space:nowrap;"><strong>${s.views}</strong> view${s.views===1?'':'s'}</td>
+          <td style="white-space:nowrap;">${badge(s.statusColor, s.status)}</td>
+          <td style="display:flex; gap:4px;">
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Copied: ${s.link}')">📋 Copy Link</button>
+            ${s.status === 'Active' ? `<button class="btn btn-ghost btn-sm" onclick="window.showAlert('Revoked ${s.id}')">🚫 Revoke</button>` : `<button class="btn btn-ghost btn-sm" onclick="window.showAlert('Regenerating ${s.id}')">🔄 Reshare</button>`}
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">🔒 HOW SHARE LINKS WORK</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); font-size:0.85rem; line-height:1.6;">
+      <div style="padding:var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>⏰ Time-limited</strong>
+        <p style="color:var(--text-muted); margin-top:6px;">Every link auto-expires. Default is 7 days; you can choose 1–30.</p>
+      </div>
+      <div style="padding:var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>👁 View tracking</strong>
+        <p style="color:var(--text-muted); margin-top:6px;">See exactly when your recipient opened the document.</p>
+      </div>
+      <div style="padding:var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>🚫 Revocable</strong>
+        <p style="color:var(--text-muted); margin-top:6px;">Revoke any link instantly; it stops working immediately.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── Customer Billing & Payments Module ───
+function _custBillSubNav(active) {
+  const tabs = [
+    { key: 'cust-billing',        label: 'Dashboard',      icon: '📊' },
+    { key: 'cust-bill-invoices',  label: 'Invoices',       icon: '📃' },
+    { key: 'cust-bill-history',   label: 'History',        icon: '📜' },
+    { key: 'cust-bill-autopay',   label: 'Autopay & Plans',icon: '🔄' },
+    { key: 'cust-bill-pastdue',   label: 'Past Due',       icon: '⚠️' },
+    { key: 'cust-bill-dispute',   label: 'Disputes',       icon: '❓' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _custPaymentMethodLabel(id) {
+  const m = D.customerPaymentMethods.find(x => x.id === id);
+  return m ? m.label : '—';
+}
+
+function renderCustomerBillingDashboard() {
+  const p = D.customerProducer;
+  const due = D.customerInvoices.filter(i => i.status === 'Due' || i.status === 'Past Due' || i.status === 'Overdue');
+  const totalBalance = due.reduce((s,i) => s + i.balance, 0);
+  const nextDue = due.sort((a,b) => a.due.localeCompare(b.due))[0];
+  const paidYtd = D.customerPaymentHistory.filter(p => p.status === 'Settled' && p.date.startsWith('2026')).reduce((s,x) => s + Math.max(0, x.amount), 0);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Billing &amp; Payments</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Pay premium · manage autopay · view all invoices and receipts · PCI-compliant</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'cust-bill-autopay'})">🔄 Autopay</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'cust-bill-pay', currentInvoiceId:'${nextDue?.id || ''}'})">💳 Pay Now</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.customerBillingKPIs, 6)}
+
+  ${_custBillSubNav('cust-billing')}
+
+  ${totalBalance > 0 ? `
+    <div class="cust-balance-banner">
+      <div style="flex:1;">
+        <div style="color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em;">Total balance due</div>
+        <div style="font-size:2.4rem; font-weight:800; color:var(--status-amber);">$${totalBalance.toLocaleString()}</div>
+        <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:2px;">
+          ${due.length} invoice${due.length===1?'':'s'} · Next due <strong>${nextDue?.due}</strong> ($${nextDue?.balance.toLocaleString()})
+        </div>
+      </div>
+      <button class="btn btn-primary" style="font-size:1rem; padding: 14px 28px;" onclick="window.setState({screen:'cust-bill-pay', currentInvoiceId:'${nextDue?.id || ''}'})">Pay $${totalBalance.toLocaleString()} Now →</button>
+    </div>
+  ` : `
+    <div class="cust-balance-banner cust-balance-banner-clear">
+      <div style="flex:1;">
+        <div style="font-size:2rem;">🎉 You're all paid up</div>
+        <div style="color:var(--text-secondary); font-size:0.9rem; margin-top:2px;">No outstanding balance · next scheduled payment via autopay</div>
+      </div>
+    </div>
+  `}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap:var(--space-lg); margin-top: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md);">
+        <div class="section-title" style="margin:0;">OUTSTANDING INVOICES (${due.length})</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-bill-invoices'})">See all →</button>
+      </div>
+      ${due.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No open invoices.</div>' : due.map(i => `
+        <div class="cust-invoice-card cust-invoice-card-${i.urgent?'urgent':'soon'}" onclick="window.setState({screen:'cust-bill-invoice-detail', currentInvoiceId:'${i.id}'})">
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <strong>${i.policy_type}</strong>
+              ${badge(i.statusColor, i.status)}
+              ${i.autopay ? '<span class="cust-policy-tag" style="background:rgba(0,230,118,0.15); color:var(--status-green);">Autopay ON</span>' : ''}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px; font-family:monospace;">${i.id} · ${i.policy} · ${i.carrier}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${i.billing_type} · Issued ${i.issued}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:1.4rem; font-weight:800;">$${i.balance.toLocaleString()}</div>
+            <div style="color:${i.urgent?'var(--status-amber)':'var(--text-muted)'}; font-size:0.78rem; font-weight:600;">Due ${i.due}</div>
+            <button class="btn btn-primary btn-sm" style="margin-top:6px;" onclick="event.stopPropagation(); window.setState({screen:'cust-bill-pay', currentInvoiceId:'${i.id}'})">Pay ${i.autopay?'Early':'Now'} →</button>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background: linear-gradient(135deg, rgba(108,92,231,0.12), rgba(63,81,181,0.05)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-md); display:flex; gap:var(--space-sm); align-items:center;">
+        <div class="producer-avatar" style="background:${p.photo_color}; width:36px; height:36px; font-size:0.8rem;">${p.avatar}</div>
+        <div style="flex:1; font-size:0.82rem;">
+          <strong>${p.name}</strong> · <span style="color:var(--text-secondary);">"Your GL renewal invoice is ready — pay by 4/12 to avoid lapse."</span>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💳 PAYMENT METHODS</div>
+        ${D.customerPaymentMethods.slice(0,3).map(m => `
+          <div style="display:flex; gap: var(--space-sm); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); align-items:center;">
+            <div style="font-size:1.6rem;">${m.type==='ACH'?'🏦':m.type==='Visa'?'💳':'💳'}</div>
+            <div style="flex:1;">
+              <div style="font-size:0.85rem; font-weight:600;">${m.label}</div>
+              <div style="color:var(--text-muted); font-size:0.72rem;">${m.bank}${m.expires?' · exp '+m.expires:''}${m.default?' · Default':''}</div>
+            </div>
+          </div>`).join('')}
+        <button class="btn btn-ghost btn-sm" style="width:100%; margin-top:var(--space-sm);" onclick="window.showAlert('Opening Add Payment Method flow — Stripe hosted')">+ Add Method</button>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📈 YTD SUMMARY</div>
+        <div style="font-size:0.85rem; line-height:1.9;">
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Total paid (2026)</span><strong>$${paidYtd.toLocaleString()}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Refunds received</span><strong style="color:var(--status-green);">$480</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Autopay transactions</span><strong>5 of 5 ✓</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Late payments</span><strong>0</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerBillingInvoices() {
+  const status = state.custInvStatus || 'all';
+  const policy = state.custInvPolicy || 'all';
+  let invs = D.customerInvoices;
+  if (status !== 'all') invs = invs.filter(i => i.status === status);
+  if (policy !== 'all') invs = invs.filter(i => i.policy === policy);
+  const policies = [...new Set(D.customerInvoices.map(i => i.policy))];
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Invoices &amp; Statements</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${invs.length} invoice${invs.length===1?'':'s'} · filter by status, policy, or date</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Exporting invoices to CSV')">Export</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'cust-bill-pay'})">💳 Pay Now</button>
+    </div>
+  </div>
+
+  ${_custBillSubNav('cust-bill-invoices')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); flex-wrap:wrap;">
+      <select class="form-input" style="width:200px;" onchange="window.setState({custInvStatus:this.value})">
+        <option value="all">All Statuses</option>
+        ${D.customerInvoiceStatuses.map(s => `<option value="${s}" ${status===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <select class="form-input" style="width:260px;" onchange="window.setState({custInvPolicy:this.value})">
+        <option value="all">All Policies</option>
+        ${policies.map(p => `<option value="${p}" ${policy===p?'selected':''}>${p}</option>`).join('')}
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({custInvStatus:'all', custInvPolicy:'all'})">Reset</button>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Invoice #</th><th>Policy</th><th>Type</th><th>Carrier</th><th>Issued</th><th>Due</th><th>Amount</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        ${invs.map(i => `
+        <tr onclick="window.setState({screen:'cust-bill-invoice-detail', currentInvoiceId:'${i.id}'})" style="cursor:pointer;">
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong style="color:var(--mga-accent);">${i.id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${i.policy_type}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${i.policy}</div></td>
+          <td style="white-space:nowrap;">${i.billing_type}</td>
+          <td style="white-space:nowrap;">${i.carrier}${i.direct_bill ? '<div style="color:var(--text-muted); font-size:0.7rem;">Direct Bill</div>' : ''}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${i.issued}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${i.due}</td>
+          <td style="white-space:nowrap;"><strong>${i.amount<0?'-':''}$${Math.abs(i.amount).toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;"><strong style="color:${i.balance>0?'var(--status-amber)':'var(--status-green)'};">${i.balance<0?'-':''}$${Math.abs(i.balance).toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${badge(i.statusColor, i.status)}${i.autopay?' <span style="color:var(--status-green); font-size:0.7rem;">🔄</span>':''}</td>
+          <td style="display:flex; gap:4px;" onclick="event.stopPropagation();">
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Downloading ${i.id}.pdf')">⬇</button>
+            ${i.balance > 0 ? `<button class="btn btn-primary btn-sm" onclick="window.setState({screen:'cust-bill-pay', currentInvoiceId:'${i.id}'})">Pay</button>` : ''}
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+    ${invs.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding: var(--space-xl);">No invoices match this filter.</div>' : ''}
+  </div>`;
+}
+
+function renderCustomerBillingInvoiceDetail() {
+  const i = D.customerInvoices.find(x => x.id === state.currentInvoiceId) || D.customerInvoices[0];
+  const lines = i.id === D.customerInvoiceDetail.id ? D.customerInvoiceDetail.line_items : [
+    { k: `${i.policy_type} Premium`, v: i.base },
+    { k: 'Taxes',                    v: i.taxes },
+    { k: 'Fees',                     v: i.fees }
+  ].filter(l => l.v);
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-bill-invoices'})" style="padding:4px 8px; margin-left:-8px;">← Back to Invoices</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">${i.policy_type} Invoice</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; font-family:monospace; margin-top:2px;">${i.id} · ${i.policy} · ${i.carrier}</div>
+      <div style="margin-top:6px; display:flex; gap:8px; align-items:center; font-size:0.82rem;">
+        ${badge(i.statusColor, i.status)} <span style="color:var(--text-muted);">·</span> ${i.billing_type}
+      </div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm); flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="window.showAlert('Downloading ${i.id}.pdf')">⬇ PDF</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Emailing ${i.id} to you')">📧 Email Me</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'cust-bill-dispute', currentInvoiceId:'${i.id}'})">❓ Dispute Charge</button>
+      ${i.balance > 0 ? `<button class="btn btn-primary" onclick="window.setState({screen:'cust-bill-pay', currentInvoiceId:'${i.id}'})">💳 Pay $${i.balance.toLocaleString()}</button>` : ''}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">LINE ITEMS</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Description</th><th>Amount</th></tr></thead>
+        <tbody>
+          ${lines.map(l => `
+          <tr>
+            <td><strong>${l.k}</strong>${l.note ? `<div style="color:var(--text-muted); font-size:0.72rem;">${l.note}</div>` : ''}</td>
+            <td style="white-space:nowrap; text-align:right; font-family:monospace;">${l.v<0?'-':''}$${Math.abs(l.v).toLocaleString()}</td>
+          </tr>`).join('')}
+          <tr style="background:var(--bg-card); font-weight:700;">
+            <td>TOTAL DUE</td>
+            <td style="text-align:right; font-family:monospace; font-size:1.1rem;">$${i.amount.toLocaleString()}</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      ${i.note ? `<div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem;"><strong>Note:</strong> ${i.note}</div>` : ''}
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">BALANCE</div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+          <span style="color:var(--text-muted); font-size:0.82rem;">Outstanding</span>
+          <strong style="font-size:2rem; color:${i.balance>0?'var(--status-amber)':'var(--status-green)'};">$${i.balance.toLocaleString()}</strong>
+        </div>
+        <div style="font-size:0.82rem; line-height:1.9; margin-top: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Issued</span><span>${i.issued}</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Due Date</span><strong>${i.due}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Total amount</span><span>$${i.amount.toLocaleString()}</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Paid so far</span><span>$${i.paid.toLocaleString()}</span></div>
+          ${i.paid_date ? `<div style="display:flex; justify-content:space-between; color:var(--status-green);"><span>✓ Paid</span><strong>${i.paid_date}</strong></div>` : ''}
+          ${i.paid_method ? `<div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Method</span><span>${i.paid_method}</span></div>` : ''}
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">LINKED POLICY</div>
+        <div style="font-size:0.85rem; line-height:1.9;">
+          <div><strong>${i.policy_type}</strong></div>
+          <div style="color:var(--text-muted); font-family:monospace; font-size:0.72rem;">${i.policy}</div>
+          <div>${i.carrier}${i.direct_bill?' · Direct-billed by carrier':' · Agency-billed'}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="margin-top: var(--space-sm); width:100%;" onclick="window.setState({screen:'cust-policy-details', currentPolicyId:'${i.policy}'})">View Policy →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerBillingPayWizard() {
+  const step = state.custPayStep || 1;
+  const i = D.customerInvoices.find(x => x.id === state.currentInvoiceId) || D.customerInvoices.find(x => x.balance > 0) || D.customerInvoices[0];
+  const methods = D.customerPaymentMethods;
+  const selectedMethod = state.custPayMethod || methods.find(m => m.default)?.id;
+  const steps = ['Select Invoice', 'Payment Method', 'Review', 'Confirmation'];
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-billing', custPayStep:1})" style="padding:4px 8px; margin-left:-8px;">← Back to Billing</button>
+  </div>
+  <div style="margin-bottom: var(--space-lg);">
+    <h2 style="margin:0;">Make a Payment</h2>
+    <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Secure payment · PCI-DSS compliant · hosted via Stripe</div>
+  </div>
+
+  <div class="market-stepper" style="margin-bottom: var(--space-lg);">
+    ${steps.map((s,idx) => `
+      <div class="market-step${idx+1 === step ? ' active' : ''}${idx+1 < step ? ' done' : ''}">
+        <div class="market-step-num">${idx+1 < step ? '✓' : idx+1}</div>
+        <div class="market-step-label">${s}</div>
+      </div>
+      ${idx < steps.length - 1 ? '<div class="market-step-line"></div>' : ''}`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-xl); margin-bottom: var(--space-lg);">
+    ${step === 1 ? `
+      <h3 style="margin-top:0;">Step 1 — What are you paying?</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Select the invoice(s) you want to pay. You can pay multiple at once.</div>
+      ${D.customerInvoices.filter(x => x.balance > 0).map(x => `
+        <div class="cust-invoice-card" style="cursor:pointer; border-left: 4px solid ${x.id === i.id ? 'var(--mga-accent)' : 'var(--border-subtle)'};" onclick="window.setState({currentInvoiceId:'${x.id}'})">
+          <input type="radio" ${x.id === i.id ? 'checked' : ''} style="margin-right: var(--space-sm);"/>
+          <div style="flex:1;">
+            <strong>${x.policy_type} — ${x.id}</strong>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${x.billing_type} · Due ${x.due}</div>
+          </div>
+          <strong style="font-size:1.2rem;">$${x.balance.toLocaleString()}</strong>
+        </div>`).join('')}
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem;">
+        <label style="display:flex; gap:var(--space-sm); align-items:center; cursor:pointer;">
+          <input type="checkbox"/> Pay a custom amount instead
+        </label>
+      </div>
+    ` : step === 2 ? `
+      <h3 style="margin-top:0;">Step 2 — Payment method</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Saved methods, or add a new one.</div>
+      ${methods.map(m => `
+        <label class="cust-pay-method${selectedMethod === m.id ? ' selected' : ''}" onclick="window.setState({custPayMethod:'${m.id}'})">
+          <input type="radio" name="method" ${selectedMethod === m.id ? 'checked' : ''}/>
+          <div style="font-size:1.6rem;">${m.type==='ACH'?'🏦':'💳'}</div>
+          <div style="flex:1;">
+            <div style="font-weight:600;">${m.label}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${m.bank}${m.expires?' · exp '+m.expires:''}${m.default?' · Default':''}</div>
+          </div>
+        </label>`).join('')}
+      <button class="btn btn-secondary btn-sm" style="width:100%; margin-top:var(--space-sm);" onclick="window.showAlert('Add new method — Stripe hosted iframe')">+ Add New Payment Method</button>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem;">
+        <label style="display:flex; gap:var(--space-sm); align-items:center; cursor:pointer;">
+          <input type="checkbox"/> Enroll this policy in autopay using this method
+        </label>
+      </div>
+    ` : step === 3 ? `
+      <h3 style="margin-top:0;">Step 3 — Review &amp; confirm</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Confirm the details below before submitting payment.</div>
+      <div style="background:var(--bg-card); padding: var(--space-lg); border-radius:var(--radius-md);">
+        <div style="display:flex; justify-content:space-between; padding: 8px 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
+          <span style="color:var(--text-muted);">Invoice</span>
+          <strong>${i.id} — ${i.policy_type}</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding: 8px 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
+          <span style="color:var(--text-muted);">Amount</span>
+          <strong style="font-size:1.3rem;">$${i.balance.toLocaleString()}</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding: 8px 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
+          <span style="color:var(--text-muted);">Payment method</span>
+          <strong>${_custPaymentMethodLabel(selectedMethod)}</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding: 8px 0; font-size:0.9rem;">
+          <span style="color:var(--text-muted);">Effective</span>
+          <strong>Today · ${new Date().toISOString().slice(0,10)}</strong>
+        </div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background: rgba(108,92,231,0.08); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--text-muted);">
+        🔒 Payment processed securely via Stripe. Card data never touches Bridgepoint servers. PCI-DSS compliant.
+      </div>
+    ` : `
+      <div style="text-align:center; padding: var(--space-xl) 0;">
+        <div style="font-size:4rem; margin-bottom: var(--space-md);">✅</div>
+        <h3 style="margin:0;">Payment Successful</h3>
+        <div style="color:var(--text-muted); margin-top: var(--space-sm);">Confirmation: <strong style="font-family:monospace; color:var(--mga-accent);">PMT-88422</strong></div>
+        <div style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(0,230,118,0.1); border-radius:var(--radius-md); display:inline-block; font-size:0.88rem; text-align:left;">
+          Amount: <strong>$${i.balance.toLocaleString()}</strong><br/>
+          Method: ${_custPaymentMethodLabel(selectedMethod)}<br/>
+          Invoice: ${i.id}<br/>
+          📧 Receipt sent to your email
+        </div>
+      </div>
+    `}
+  </div>
+
+  ${step < 4 ? `
+    <div style="display:flex; justify-content:space-between;">
+      <button class="btn btn-secondary" ${step === 1 ? 'disabled' : ''} onclick="window.setState({custPayStep: ${Math.max(1, step-1)}})">← Back</button>
+      <button class="btn btn-primary" onclick="window.setState({custPayStep: ${step+1}})">${step === 3 ? '🔒 Pay $' + i.balance.toLocaleString() : 'Continue →'}</button>
+    </div>
+  ` : `
+    <div style="display:flex; gap:var(--space-sm); justify-content:center;">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'cust-billing', custPayStep:1})">Back to Billing</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Downloading receipt PMT-88422.pdf')">⬇ Download Receipt</button>
+    </div>
+  `}`;
+}
+
+function renderCustomerBillingHistory() {
+  const history = D.customerPaymentHistory;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Payment History &amp; Receipts</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Complete transaction log · downloadable receipts · refund tracking</div>
+    </div>
+    <button class="btn btn-secondary" onclick="window.showAlert('Exporting history to CSV')">Export</button>
+  </div>
+
+  ${_custBillSubNav('cust-bill-history')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Total Paid (2026)</div><div class="kpi-value">$${history.filter(h=>h.date.startsWith('2026')&&h.amount>0).reduce((s,x)=>s+x.amount,0).toLocaleString()}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Transactions (2026)</div><div class="kpi-value">${history.filter(h=>h.date.startsWith('2026')).length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Refunds Received</div><div class="kpi-value" style="color:var(--status-green);">$480</div></div>
+    <div class="kpi-card"><div class="kpi-label">Failed / Retried</div><div class="kpi-value">0</div></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">TRANSACTION LOG</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Receipt #</th><th>Date</th><th>Invoice</th><th>Amount</th><th>Method</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        ${history.map(h => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong style="color:var(--mga-accent);">${h.id}</strong></td>
+          <td style="white-space:nowrap;">${h.date}</td>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap; cursor:pointer;" onclick="window.setState({screen:'cust-bill-invoice-detail', currentInvoiceId:'${h.invoice}'})">${h.invoice}</td>
+          <td style="white-space:nowrap;"><strong style="color:${h.amount<0?'var(--status-green)':'var(--text-primary)'};">${h.amount<0?'-':''}$${Math.abs(h.amount).toLocaleString()}</strong></td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${h.method}</td>
+          <td style="white-space:nowrap;">${badge(h.statusColor, h.status)}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="window.showAlert('Downloading receipt ${h.id}.pdf')">⬇ Receipt</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderCustomerBillingAutopay() {
+  const plans = D.customerAutopayPlans;
+  const active = plans.filter(p => p.status === 'Active');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Autopay &amp; Payment Plans</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Enroll, modify, or pause autopay for each policy · view upcoming scheduled payments</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Enrolling all eligible policies in autopay')">🔄 Enable All</button>
+  </div>
+
+  ${_custBillSubNav('cust-bill-autopay')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Active Plans</div><div class="kpi-value">${active.length} of ${plans.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Annual on Autopay</div><div class="kpi-value">$${active.reduce((s,p)=>s+(p.frequency==='Monthly'?p.amount*12:p.frequency==='Quarterly'?p.amount*4:p.amount),0).toLocaleString()}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Next Payment</div><div class="kpi-value" style="font-size:1.2rem;">${active.sort((a,b) => a.next.localeCompare(b.next))[0]?.next || '—'}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Late Fees Saved</div><div class="kpi-value" style="color:var(--status-green);">$240</div></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">AUTOPAY SETUP BY POLICY</div>
+    ${plans.map(p => `
+      <div class="cust-autopay-row">
+        <div style="font-size:2rem;">${p.status==='Active'?'🔄':'⚪'}</div>
+        <div style="flex:1;">
+          <div style="display:flex; align-items:center; gap:var(--space-sm);">
+            <strong>${p.lob}</strong>
+            <span style="color:var(--text-muted); font-family:monospace; font-size:0.72rem;">${p.policy}</span>
+            ${badge(p.statusColor, p.status)}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${p.carrier} · ${p.frequency} · $${p.amount.toLocaleString()} per cycle</div>
+          ${p.method_id ? `<div style="color:var(--text-muted); font-size:0.78rem;">Method: ${_custPaymentMethodLabel(p.method_id)}${p.next !== '—' ? ` · Next: <strong>${p.next}</strong>` : ''}</div>` : '<div style="color:var(--text-muted); font-size:0.78rem;">No autopay method selected</div>'}
+        </div>
+        ${p.status === 'Active' ? `
+          <div style="display:flex; gap:4px;">
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Editing autopay for ${p.lob}')">✏ Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Pausing autopay for ${p.lob}')">⏸ Pause</button>
+          </div>
+        ` : `
+          <button class="btn btn-primary btn-sm" onclick="window.showAlert('Enrolling ${p.lob} in autopay')">Enable Autopay →</button>
+        `}
+      </div>`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">💡 WHY AUTOPAY?</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); font-size:0.85rem; line-height:1.6;">
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>✓ Never miss a payment</strong>
+        <p style="color:var(--text-muted); margin-top:6px;">Lapse-free coverage — autopay triggers 3 days before due date with failed-payment retry.</p>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>✓ Waived late fees</strong>
+        <p style="color:var(--text-muted); margin-top:6px;">Portal autopay policies get automatic late-fee waiver on on-time payments.</p>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>✓ Control & transparency</strong>
+        <p style="color:var(--text-muted); margin-top:6px;">Preview every scheduled payment 7 days early. Pause, edit, or cancel anytime.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerBillingPastDue() {
+  const overdue = D.customerInvoices.filter(i => i.status === 'Past Due' || i.status === 'Overdue');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Past Due Alert Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Avoid cancellation · pay past-due invoices to restore coverage</div>
+    </div>
+  </div>
+
+  ${_custBillSubNav('cust-bill-pastdue')}
+
+  ${overdue.length === 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-2xl); text-align:center;">
+      <div style="font-size:3rem; margin-bottom: var(--space-md);">✅</div>
+      <h3 style="margin:0;">No past-due invoices</h3>
+      <div style="color:var(--text-muted); margin-top: var(--space-sm);">All your payments are current. Nice work staying on top of it.</div>
+    </div>
+  ` : `
+    <div style="background: rgba(255,82,82,0.08); border:1px solid rgba(255,82,82,0.3); border-radius:var(--radius-lg); padding: var(--space-md); margin-bottom: var(--space-lg); display:flex; gap: var(--space-md); align-items:center;">
+      <div style="font-size:2rem;">⚠️</div>
+      <div style="flex:1;">
+        <strong>Action required — past-due balance: $${overdue.reduce((s,i)=>s+i.balance,0).toLocaleString()}</strong>
+        <div style="color:var(--text-secondary); font-size:0.85rem;">Pay now to avoid cancellation or policy lapse.</div>
+      </div>
+      <button class="btn btn-primary" onclick="window.setState({screen:'cust-bill-pay'})">Pay All Now →</button>
+    </div>
+
+    ${overdue.map(i => `
+      <div class="cust-invoice-card cust-invoice-card-urgent" style="margin-bottom: var(--space-md);">
+        <div style="flex:1;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <strong>${i.policy_type}</strong>
+            ${badge('red', i.status)}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px; font-family:monospace;">${i.id} · ${i.policy}</div>
+          <div style="color:var(--status-red); font-size:0.8rem; font-weight:600; margin-top:2px;">${i.aging} days overdue</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:1.4rem; font-weight:800; color:var(--status-red);">$${i.balance.toLocaleString()}</div>
+          <button class="btn btn-primary btn-sm" style="margin-top:6px;" onclick="window.setState({screen:'cust-bill-pay', currentInvoiceId:'${i.id}'})">Pay Now →</button>
+        </div>
+      </div>`).join('')}
+  `}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">💡 NEED MORE TIME?</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);">
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>📅 Payment Plan</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">Split your balance into 2–6 monthly payments at no added cost.</p>
+        <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Payment plan request — producer will reach out within 1 business day')">Request Plan →</button>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>📞 Talk to Producer</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">Discuss options with Sarah Chen — temporary holds, extensions, or finance partners.</p>
+        <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Producer notified — Sarah Chen will call you today')">Contact Now →</button>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>🏦 Premium Finance</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">Finance your premium through a trusted lender with low APR — same day approval.</p>
+        <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Applying to premium finance partner — BankDirect')">Apply →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerBillingDispute() {
+  const i = state.currentInvoiceId ? D.customerInvoices.find(x => x.id === state.currentInvoiceId) : null;
+  const disputes = D.customerBillingDisputes;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Dispute &amp; Support</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Questioning a charge? Submit here — your producer will respond within 1 business day.</div>
+    </div>
+  </div>
+
+  ${_custBillSubNav('cust-bill-dispute')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">SUBMIT A NEW DISPUTE</div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Which invoice?</label>
+        <select class="form-input">
+          <option value="">Select invoice…</option>
+          ${D.customerInvoices.map(x => `<option ${i?.id===x.id?'selected':''}>${x.id} — ${x.policy_type} · $${x.amount.toLocaleString()}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Reason</label>
+        <select class="form-input">
+          <option>Unknown charge or fee</option>
+          <option>Amount doesn't match what I expected</option>
+          <option>Duplicate charge</option>
+          <option>Service / coverage not received</option>
+          <option>Refund / credit not applied</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Please describe</label>
+        <textarea class="form-input" rows="5" placeholder="Explain what's wrong, what you expected, and any context that will help us resolve this fast."></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Attach documents (optional)</label>
+        <input class="form-input" type="file" multiple/>
+      </div>
+      <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem; color:var(--text-muted); margin-bottom: var(--space-md);">
+        ℹ Submitting a dispute does NOT pause autopay. If you need to stop an upcoming autopay, go to Autopay &amp; Plans and pause it first.
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="window.showAlert('✓ Dispute submitted · tracking #DIS-205 · Sarah Chen notified')">Submit Dispute →</button>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">💬 FAQ — COMMON BILLING QUESTIONS</div>
+      <div style="font-size:0.85rem; line-height:1.6;">
+        ${[
+          { q: 'Why is there a $25 fee?', a: 'Our agency charges a flat $25 admin fee on installment invoices. Autopay-enrolled installments waive this.' },
+          { q: 'What is an installment plan?', a: 'A payment plan that splits your annual premium into smaller monthly or quarterly payments at no added interest for autopay-enrolled clients.' },
+          { q: 'When will my refund arrive?', a: 'Refunds typically post to your original payment method within 5–7 business days.' },
+          { q: 'Can I change my due date?', a: 'Contact your producer — we can often adjust to align with payroll or revenue cycles.' }
+        ].map(f => `
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+            <strong>${f.q}</strong>
+            <p style="color:var(--text-muted); margin-top:4px; font-size:0.78rem;">${f.a}</p>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">YOUR PAST DISPUTES</div>
+    ${disputes.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No previous disputes.</div>' : `
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Dispute #</th><th>Invoice</th><th>Submitted</th><th>Reason</th><th>Status</th><th>Resolution</th></tr></thead>
+        <tbody>
+          ${disputes.map(d => `
+          <tr>
+            <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;">${d.id}</td>
+            <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;">${d.invoice}</td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${d.submitted}</td>
+            <td style="white-space:nowrap;">${d.reason}</td>
+            <td style="white-space:nowrap;">${badge(d.statusColor, d.status)}</td>
+            <td style="font-size:0.82rem;">${d.resolution}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    `}
+  </div>`;
+}
+
+// ─── Customer Claims Center Module ───
+function _custClaimSubNav(active) {
+  const tabs = [
+    { key: 'cust-claims',           label: 'Dashboard',     icon: '📊' },
+    { key: 'cust-claims-list',      label: 'My Claims',     icon: '📃' },
+    { key: 'cust-claim-fnol',       label: 'Report Claim',  icon: '🚨' },
+    { key: 'cust-claim-upload',     label: 'Upload Docs',   icon: '⬆' },
+    { key: 'cust-claim-settlement', label: 'Payments',      icon: '💰' },
+    { key: 'cust-claim-feedback',   label: 'Feedback',      icon: '💬' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _custClaimStagePill(c) {
+  const stages = D.customerClaimStatuses;
+  const active = c.stage_index;
+  return `
+  <div class="cust-claim-stages">
+    ${stages.slice(0, 6).map((s, i) => `
+      <div class="cust-claim-stage${i < active ? ' done' : ''}${i === active ? ' current' : ''}${i > active ? ' upcoming' : ''}">
+        <div class="cust-claim-stage-dot">${i < active ? '✓' : i + 1}</div>
+        <div class="cust-claim-stage-label">${s}</div>
+      </div>
+      ${i < 5 ? '<div class="cust-claim-stage-line"></div>' : ''}
+    `).join('')}
+  </div>`;
+}
+
+function renderCustomerClaimsDashboard() {
+  const p = D.customerProducer;
+  const open = D.customerClaims.filter(c => c.status !== 'Closed' && c.status !== 'Denied');
+  const needsAttention = open.filter(c => c.next_action_urgent);
+  const recent = [...D.customerClaims].sort((a,b) => b.reported.localeCompare(a.reported)).slice(0, 3);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Claims Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Report a new claim · track real-time status · upload evidence · message your adjuster</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('After-hours hotline: (800) 555-HELP · available 24/7')">🆘 After-Hours Hotline</button>
+      <button class="btn btn-primary cust-claim-cta" onclick="window.setState({screen:'cust-claim-fnol', custFnolStep:1, custFnolDraft:{}})">🚨 Report a New Claim</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.customerClaimsKPIs, 6)}
+
+  ${_custClaimSubNav('cust-claims')}
+
+  ${needsAttention.length > 0 ? `
+    <div class="cust-balance-banner" style="background: linear-gradient(135deg, rgba(255,82,82,0.12), rgba(255,82,82,0.04)); border-color: rgba(255,82,82,0.3); margin-bottom: var(--space-lg);">
+      <div style="font-size:2rem;">⚠️</div>
+      <div style="flex:1;">
+        <strong>${needsAttention.length} claim${needsAttention.length===1?'':'s'} awaiting your action</strong>
+        <div style="color:var(--text-secondary); font-size:0.85rem;">${needsAttention.map(c => c.id + ' — ' + c.next_action).join(' · ')}</div>
+      </div>
+      <button class="btn btn-primary" onclick="window.setState({screen:'cust-claim-details', currentClaimId:'${needsAttention[0].id}'})">View Claim →</button>
+    </div>
+  ` : ''}
+
+  <div style="background: linear-gradient(135deg, rgba(108,92,231,0.12), rgba(63,81,181,0.05)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg); display:flex; gap:var(--space-md); align-items:center;">
+    <div class="producer-avatar" style="background:${p.photo_color}; width:36px; height:36px; font-size:0.8rem;">${p.avatar}</div>
+    <div style="flex:1; font-size:0.88rem;">
+      <strong>${p.name}</strong> says: <span style="color:var(--text-secondary);">"Hi James — we've got your back. Reach out anytime if you need to talk through next steps on the new auto claim."</span>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="window.showAlert('Calling ${p.phone}')">📞 Call</button>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md);">
+        <div class="section-title" style="margin:0;">OPEN CLAIMS (${open.length})</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-claims-list'})">See all →</button>
+      </div>
+      ${open.length === 0 ? `
+        <div style="text-align:center; padding: var(--space-xl) 0;">
+          <div style="font-size:3rem; margin-bottom: var(--space-sm);">🎉</div>
+          <div style="color:var(--text-muted);">No open claims. Hope it stays that way.</div>
+        </div>
+      ` : open.map(c => `
+        <div class="cust-claim-card" onclick="window.setState({screen:'cust-claim-details', currentClaimId:'${c.id}'})">
+          <div class="cust-claim-icon">${c.icon}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <strong>${c.type}</strong>
+              ${badge(c.statusColor, c.status)}
+              ${c.next_action_urgent ? '<span class="cust-policy-tag" style="background:rgba(255,82,82,0.15); color:var(--status-red);">Action needed</span>' : ''}
+              ${c.messages_unread > 0 ? `<span class="cust-policy-tag" style="background:rgba(108,92,231,0.15); color:var(--mga-accent);">${c.messages_unread} new</span>` : ''}
+            </div>
+            <div style="font-size:0.82rem; margin-top:4px;">${c.loss_type}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px; font-family:monospace;">${c.id} · Loss ${c.loss_date} · ${c.carrier}</div>
+            ${c.next_action !== '—' ? `<div style="color:${c.next_action_urgent?'var(--status-amber)':'var(--text-muted)'}; font-size:0.78rem; margin-top:4px; font-weight:600;">→ ${c.next_action}</div>` : ''}
+          </div>
+          <div style="text-align:right; display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
+            <div style="color:var(--text-muted); font-size:0.72rem;">Day ${c.days_open}</div>
+            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.setState({screen:'cust-claim-details', currentClaimId:'${c.id}'})">View →</button>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🤖 CLAIMS AI ASSISTANT</div>
+        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:var(--space-sm);">Ask anything about claims, coverage, or next steps.</div>
+        <input class="form-input" style="width:100%; margin-bottom: var(--space-sm);" placeholder="e.g. What do I need for water damage?"/>
+        ${D.customerClaimsSuggestedQs.slice(0,3).map(q => `
+          <div class="doc-ai-prompt" onclick="window.showAlert('AI: ${q.replace(/'/g,'')}\\n\\nLet me help you with that...')">${q}</div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📜 RECENT CLAIMS</div>
+        ${recent.map(c => `
+          <div style="padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); cursor:pointer;" onclick="window.setState({screen:'cust-claim-details', currentClaimId:'${c.id}'})">
+            <div style="font-size:0.85rem; font-weight:600;">${c.type}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${c.id} · ${c.loss_date}</div>
+            ${badge(c.statusColor, c.status)}
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerClaimsList() {
+  const filter = state.custClaimFilter || 'all';
+  let claims = D.customerClaims;
+  if (filter === 'open') claims = claims.filter(c => c.status !== 'Closed' && c.status !== 'Denied');
+  if (filter === 'closed') claims = claims.filter(c => c.status === 'Closed' || c.status === 'Denied');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">My Claims</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${claims.length} claim${claims.length===1?'':'s'} · all statuses · searchable</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.setState({screen:'cust-claim-fnol', custFnolStep:1, custFnolDraft:{}})">🚨 Report a Claim</button>
+  </div>
+
+  ${_custClaimSubNav('cust-claims-list')}
+
+  <div style="display:flex; gap:var(--space-xs); margin-bottom: var(--space-lg);">
+    <div class="cust-pill${filter==='all'?' active':''}" onclick="window.setState({custClaimFilter:'all'})">All <span class="cust-pill-count">${D.customerClaims.length}</span></div>
+    <div class="cust-pill${filter==='open'?' active':''}" onclick="window.setState({custClaimFilter:'open'})">Open <span class="cust-pill-count">${D.customerClaims.filter(c => c.status !== 'Closed' && c.status !== 'Denied').length}</span></div>
+    <div class="cust-pill${filter==='closed'?' active':''}" onclick="window.setState({custClaimFilter:'closed'})">Closed <span class="cust-pill-count">${D.customerClaims.filter(c => c.status === 'Closed' || c.status === 'Denied').length}</span></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Claim #</th><th>Type</th><th>Loss Description</th><th>Policy</th><th>Carrier</th><th>Loss Date</th><th>Days Open</th><th>Status</th><th>Paid</th><th>Adjuster</th><th>Action</th></tr></thead>
+      <tbody>
+        ${claims.map(c => `
+        <tr onclick="window.setState({screen:'cust-claim-details', currentClaimId:'${c.id}'})" style="cursor:pointer;">
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong style="color:var(--mga-accent);">${c.id}</strong></td>
+          <td style="white-space:nowrap;">${c.icon} ${c.type}</td>
+          <td style="white-space:nowrap;">${c.loss_type}</td>
+          <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${c.policy}</td>
+          <td style="white-space:nowrap;">${c.carrier}</td>
+          <td style="white-space:nowrap;">${c.loss_date}</td>
+          <td style="white-space:nowrap;">${c.days_open}</td>
+          <td style="white-space:nowrap;">${badge(c.statusColor, c.status)}${c.messages_unread?` <span style="color:var(--mga-accent); font-size:0.7rem;">${c.messages_unread} msg</span>`:''}</td>
+          <td style="white-space:nowrap;"><strong>$${c.paid_to_date.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${c.adjuster.name}</td>
+          <td onclick="event.stopPropagation();"><button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'cust-claim-details', currentClaimId:'${c.id}'})">View</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+    ${claims.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding: var(--space-xl);">No claims in this filter.</div>' : ''}
+  </div>`;
+}
+
+function renderCustomerClaimDetails() {
+  const c = D.customerClaims.find(x => x.id === state.currentClaimId) || D.customerClaims[0];
+  const d = c.id === D.customerClaimDetail.id ? D.customerClaimDetail : { timeline: [], documents: [], messages: [], requested_docs: [] };
+  const tab = state.custClaimTab || 'timeline';
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-claims-list'})" style="padding:4px 8px; margin-left:-8px;">← Back to Claims</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-md); align-items:center;">
+      <div style="font-size:3rem;">${c.icon}</div>
+      <div>
+        <h2 style="margin:0;">${c.type} Claim</h2>
+        <div style="color:var(--text-muted); font-size:0.85rem; font-family:monospace; margin-top:2px;">${c.id} · ${c.policy} · ${c.carrier}</div>
+        <div style="margin-top:4px; font-size:0.82rem;">${c.loss_type}</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm); flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'cust-claim-upload', currentClaimId:'${c.id}'})">⬆ Upload</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Requesting status update from ${c.adjuster.name}')">🔔 Request Update</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Inspection scheduling form opened')">📅 Schedule Inspection</button>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    ${_custClaimStagePill(c)}
+    ${c.next_action && c.next_action !== '—' ? `
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:rgba(255,171,0,0.1); border-left: 3px solid var(--status-amber); border-radius:var(--radius-sm); font-size:0.85rem;">
+        <strong>Next step:</strong> ${c.next_action}
+      </div>
+    ` : ''}
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:flex; flex-direction:column; gap: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div style="display:flex; gap:var(--space-sm); border-bottom:1px solid var(--border-subtle); margin-bottom: var(--space-md); padding-bottom: var(--space-sm);">
+          ${[
+            { k:'timeline', l:'Timeline', i:'📜' },
+            { k:'messages', l:`Messages${d.messages?.filter(m => !m.read).length ? ` (${d.messages.filter(m => !m.read).length})` : ''}`, i:'💬' },
+            { k:'docs',     l:`Documents (${d.documents?.length || 0})`, i:'📄' },
+            { k:'requested',l:`Requested (${d.requested_docs?.filter(r => r.status === 'pending').length || 0})`, i:'📋' }
+          ].map(t => `
+            <div onclick="window.setState({custClaimTab:'${t.k}'})" style="padding: 4px 12px; cursor:pointer; border-radius: var(--radius-sm); ${tab===t.k ? 'background:var(--mga-accent); color:#fff;' : 'color:var(--text-muted);'} font-size:0.85rem;">
+              ${t.i} ${t.l}
+            </div>`).join('')}
+        </div>
+
+        ${tab === 'timeline' ? `
+          ${(d.timeline || []).map(t => `
+            <div style="display:flex; gap: var(--space-sm); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+              <div style="width:24px; height:24px; border-radius:50%; background:${t.urgent?'var(--status-amber)':t.system?'var(--bg-card)':'var(--status-green)'}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; flex-shrink:0;">${t.urgent?'!':t.system?'⚙':'✓'}</div>
+              <div style="flex:1;">
+                <div style="font-size:0.88rem; ${t.urgent?'font-weight:600;':''}">${t.event}</div>
+                <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${t.ts} · ${t.actor} · ${t.stage}</div>
+              </div>
+            </div>`).join('') || '<div style="color:var(--text-muted); font-size:0.85rem;">No timeline events yet.</div>'}
+        ` : tab === 'messages' ? `
+          <div style="max-height:440px; overflow-y:auto; padding-right:6px;">
+            ${[...(d.messages || [])].reverse().map(m => `
+              <div class="cust-chat-msg cust-chat-msg-${m.role.toLowerCase()}">
+                <div class="cust-chat-avatar" style="background:${m.avatar_color};">${m.initials}</div>
+                <div class="cust-chat-bubble">
+                  <div style="display:flex; gap:6px; font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;">
+                    <strong style="color:var(--text-primary);">${m.from}</strong>
+                    <span>·</span>
+                    <span>${m.role}</span>
+                    <span>·</span>
+                    <span>${m.ts}</span>
+                  </div>
+                  <div style="font-size:0.88rem; line-height:1.5;">${m.text}</div>
+                </div>
+              </div>`).join('')}
+          </div>
+          <div style="margin-top: var(--space-md); display:flex; gap:var(--space-sm);">
+            <input class="form-input" style="flex:1;" placeholder="Reply to ${c.adjuster.name}..."/>
+            <button class="btn btn-ghost" onclick="window.showAlert('File attached')">📎</button>
+            <button class="btn btn-primary" onclick="window.showAlert('Message sent securely')">Send →</button>
+          </div>
+        ` : tab === 'docs' ? `
+          <div class="cust-doc-list">
+            ${(d.documents || []).map(doc => `
+              <div class="cust-doc-card cust-doc-card-ok">
+                <div class="cust-doc-icon">${doc.type === 'Video' ? '🎥' : doc.type === 'Police Report' ? '🚔' : doc.type === 'Estimate' ? '💰' : '📄'}</div>
+                <div style="flex:1; min-width:0;">
+                  <strong style="font-size:0.88rem;">${doc.name}</strong>
+                  <div style="color:var(--text-muted); font-size:0.72rem;">${doc.type} · ${doc.size} · uploaded by ${doc.uploaded_by} on ${doc.uploaded}</div>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Downloading ${doc.name}')">⬇</button>
+              </div>`).join('')}
+            <button class="btn btn-secondary" style="margin-top: var(--space-sm);" onclick="window.setState({screen:'cust-claim-upload', currentClaimId:'${c.id}'})">⬆ Upload More</button>
+          </div>
+        ` : `
+          ${(d.requested_docs || []).map(r => `
+            <div class="cust-upload-item${r.required && r.status === 'pending' ? ' overdue' : ''}">
+              <div style="width:28px; height:28px; border-radius:50%; border:2px solid ${r.status==='complete'?'var(--status-green)':'var(--border-medium)'}; background:${r.status==='complete'?'var(--status-green)':'transparent'}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.8rem; flex-shrink:0;">${r.status==='complete'?'✓':''}</div>
+              <div style="flex:1;">
+                <strong style="font-size:0.9rem; ${r.status==='complete'?'color:var(--text-muted); text-decoration:line-through;':''}">${r.item}</strong>
+                <div style="font-size:0.72rem; color:var(--text-muted);">${r.required ? 'Required' : 'Optional'}</div>
+              </div>
+              ${r.status === 'pending' ? `<button class="btn btn-primary btn-sm" onclick="window.setState({screen:'cust-claim-upload', currentClaimId:'${c.id}'})">⬆ Upload</button>` : ''}
+            </div>`).join('') || '<div style="color:var(--text-muted); font-size:0.85rem;">Nothing requested — you\'re good!</div>'}
+        `}
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">👤 YOUR ADJUSTER</div>
+        <div style="display:flex; gap:var(--space-sm); align-items:center;">
+          <div class="producer-avatar" style="background:${c.adjuster.photo_color};">${c.adjuster.initials}</div>
+          <div style="flex:1;">
+            <div style="font-weight:700;">${c.adjuster.name}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${c.carrier} claims</div>
+          </div>
+        </div>
+        <div style="font-size:0.82rem; line-height:1.9; margin-top: var(--space-sm);">
+          <div>📞 ${c.adjuster.phone}</div>
+          <div>📧 ${c.adjuster.email}</div>
+        </div>
+        <button class="btn btn-primary btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.setState({custClaimTab:'messages'})">💬 Send a Message</button>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💰 FINANCIAL SNAPSHOT</div>
+        <div style="font-size:0.85rem; line-height:1.9;">
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Paid to date</span><strong>$${c.paid_to_date.toLocaleString()}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Reserve</span><strong>$${c.reserve.toLocaleString()}</strong></div>
+          ${c.final_settlement ? `<div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Final settlement</span><strong style="color:var(--status-green);">$${c.final_settlement.toLocaleString()}</strong></div>` : ''}
+        </div>
+        ${c.paid_to_date > 0 ? `<button class="btn btn-ghost btn-sm" style="width:100%; margin-top:var(--space-sm);" onclick="window.setState({screen:'cust-claim-settlement', currentClaimId:'${c.id}'})">View Payment Details →</button>` : ''}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📍 LOSS DETAILS</div>
+        <div style="font-size:0.82rem; line-height:1.9;">
+          <div><span style="color:var(--text-muted);">Loss date:</span> <strong>${c.loss_date}</strong></div>
+          <div><span style="color:var(--text-muted);">Reported:</span> ${c.reported}</div>
+          <div><span style="color:var(--text-muted);">Via:</span> ${c.reported_via}</div>
+          <div><span style="color:var(--text-muted);">Location:</span> ${c.location}</div>
+        </div>
+      </div>
+
+      ${c.status === 'Closed' ? `
+        <div style="background:rgba(0,230,118,0.08); border:1px solid rgba(0,230,118,0.3); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">🎉 CLAIM CLOSED</div>
+          <div style="font-size:0.85rem; margin-bottom: var(--space-sm);">Thanks for your patience. We'd love to hear how we did.</div>
+          <button class="btn btn-primary btn-sm" style="width:100%;" onclick="window.setState({screen:'cust-claim-feedback', currentClaimId:'${c.id}'})">Leave Feedback →</button>
+        </div>
+      ` : ''}
+    </div>
+  </div>`;
+}
+
+function renderCustomerClaimFnol() {
+  const step = state.custFnolStep || 1;
+  const draft = state.custFnolDraft || {};
+  const steps = ['Type', 'What Happened', 'Details', 'Documents', 'Review', 'Confirmation'];
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-claims', custFnolStep:1})" style="padding:4px 8px; margin-left:-8px;">← Back to Claims</button>
+  </div>
+  <div style="margin-bottom: var(--space-lg);">
+    <h2 style="margin:0;">Report a New Claim</h2>
+    <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">We're here to help. This guided wizard takes 3–5 minutes. You can save &amp; return anytime.</div>
+  </div>
+
+  <div class="market-stepper" style="margin-bottom: var(--space-lg);">
+    ${steps.map((s, idx) => `
+      <div class="market-step${idx+1 === step ? ' active' : ''}${idx+1 < step ? ' done' : ''}">
+        <div class="market-step-num">${idx+1 < step ? '✓' : idx+1}</div>
+        <div class="market-step-label">${s}</div>
+      </div>
+      ${idx < steps.length - 1 ? '<div class="market-step-line"></div>' : ''}`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-xl); margin-bottom: var(--space-lg);">
+    ${step === 1 ? `
+      <h3 style="margin-top:0;">What kind of loss is this?</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Pick the category that fits best — we'll guide you from there.</div>
+      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:var(--space-md);">
+        ${D.customerClaimTypes.map(t => `
+          <div class="cust-quick-tile${draft.type === t.key ? ' selected' : ''}" onclick="window.setState({custFnolDraft: Object.assign({}, window.state?.custFnolDraft || {}, {type:'${t.key}', type_label:'${t.name}'})})">
+            <span class="cust-quick-icon">${t.icon}</span>
+            <div><strong>${t.name}</strong><div style="color:var(--text-muted); font-size:0.75rem;">${t.desc}</div></div>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top:var(--space-md); padding:var(--space-sm); background: rgba(255,82,82,0.1); border-radius:var(--radius-sm); font-size:0.82rem;">
+        🆘 <strong>Emergency?</strong> Call the after-hours hotline: <strong>(800) 555-HELP</strong> · available 24/7. Portal reporting is best for non-emergencies.
+      </div>
+    ` : step === 2 ? `
+      <h3 style="margin-top:0;">Tell us what happened</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">A short description helps your adjuster respond faster. We'll pre-fill your policy info.</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md);">
+        <div class="form-group"><label class="form-label">Policy affected</label><select class="form-input">${D.customerPolicies.map(p => `<option value="${p.id}">${p.type} — ${p.id}</option>`).join('')}</select></div>
+        <div class="form-group"><label class="form-label">Date of loss</label><input class="form-input" type="date" value="2026-04-19"/></div>
+        <div class="form-group"><label class="form-label">Time (approx.)</label><input class="form-input" type="time" value="14:30"/></div>
+        <div class="form-group"><label class="form-label">Were there injuries?</label><select class="form-input"><option>No</option><option>Yes — minor</option><option>Yes — serious (called 911)</option></select></div>
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Where did it happen?</label><input class="form-input" placeholder="Street address, intersection, or business name"/></div>
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Describe what happened</label><textarea class="form-input" rows="4" placeholder="Briefly describe the incident — e.g. 'Rear-ended at stoplight by a red sedan.'"></textarea></div>
+      </div>
+    ` : step === 3 ? `
+      <h3 style="margin-top:0;">A few more details</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">These are optional but speed things up.</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md);">
+        <div class="form-group"><label class="form-label">Police / report number</label><input class="form-input" placeholder="e.g. CHP-2026-88421"/></div>
+        <div class="form-group"><label class="form-label">Were other parties involved?</label><select class="form-input"><option>No</option><option>Yes — 1 other party</option><option>Yes — multiple parties</option></select></div>
+        <div class="form-group"><label class="form-label">Other party name</label><input class="form-input" placeholder="Name (if known)"/></div>
+        <div class="form-group"><label class="form-label">Other party insurance</label><input class="form-input" placeholder="Carrier + policy #"/></div>
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Witnesses (name + phone)</label><textarea class="form-input" rows="2" placeholder="Leave blank if none"></textarea></div>
+      </div>
+    ` : step === 4 ? `
+      <h3 style="margin-top:0;">Add photos, videos, or documents</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Even rough photos help. You can add more later.</div>
+      <div class="doc-dropzone" onclick="window.showAlert('File picker opened — use camera for quick photos')">
+        <div style="font-size:3rem; margin-bottom: var(--space-sm);">📸</div>
+        <h3 style="margin:0;">Drop files or tap to add</h3>
+        <div style="color:var(--text-muted); margin-top:var(--space-sm);">Photos, videos, police reports, estimates · up to 50 MB each</div>
+        <div style="display:flex; gap:var(--space-sm); margin-top: var(--space-md); justify-content:center;">
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('Opening camera')">📱 Use Camera</button>
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('File picker')">📁 Browse</button>
+        </div>
+      </div>
+      <div style="margin-top: var(--space-md); font-size:0.85rem; color:var(--text-muted);">
+        <strong>Helpful to include:</strong>
+        <ul style="margin-top: 6px; padding-left: 20px;">
+          <li>Photos of damage from multiple angles</li>
+          <li>Photos of the scene (street signs, other vehicles)</li>
+          <li>Police report (if filed)</li>
+          <li>Repair shop estimate (if you have one)</li>
+          <li>Medical bills or receipts (if applicable)</li>
+        </ul>
+      </div>
+    ` : step === 5 ? `
+      <h3 style="margin-top:0;">Review &amp; submit</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Double-check the details. Once submitted, you'll get a claim number immediately.</div>
+      <div style="background:var(--bg-card); padding: var(--space-lg); border-radius:var(--radius-md);">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap: 8px 16px; font-size:0.88rem;">
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Type</div><strong>${draft.type_label || 'Auto / Fleet'}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Policy</div><strong>${D.customerPolicies[0].id}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Loss date</div><strong>2026-04-19</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Location</div><strong>Sacramento, CA</strong></div>
+          <div style="grid-column:1/-1;"><div style="color:var(--text-muted); font-size:0.72rem;">Description</div><strong>Rear-ended at intersection.</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Files attached</div><strong>4 photos + police report</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Injuries?</div><strong>No</strong></div>
+        </div>
+        <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle); font-size:0.82rem; color:var(--text-muted);">
+          ℹ By submitting, you authorize us to share this report with ${D.customerPolicies[0].carrier}. You'll get a confirmation email and your adjuster will reach out within 1 business day.
+        </div>
+      </div>
+    ` : `
+      <div style="text-align:center; padding: var(--space-xl) 0;">
+        <div style="font-size:5rem; margin-bottom: var(--space-md);">✅</div>
+        <h3 style="margin:0;">Claim Reported</h3>
+        <div style="color:var(--text-muted); margin-top: var(--space-sm);">Confirmation: <strong style="font-family:monospace; color:var(--mga-accent); font-size:1.1rem;">CLM-2026-0052</strong></div>
+        <div style="margin-top: var(--space-lg); padding: var(--space-lg); background: rgba(0,230,118,0.1); border-radius:var(--radius-md); display:inline-block; font-size:0.88rem; text-align:left; line-height:1.9;">
+          <strong>What happens next:</strong><br/>
+          1. Confirmation email + SMS sent to you now<br/>
+          2. Adjuster assigned within 4 business hours<br/>
+          3. They'll reach out to schedule next steps<br/>
+          4. You can track everything in your Claims dashboard
+        </div>
+      </div>
+    `}
+  </div>
+
+  ${step < 6 ? `
+    <div style="display:flex; justify-content:space-between;">
+      <button class="btn btn-secondary" ${step === 1 ? 'disabled' : ''} onclick="window.setState({custFnolStep:${Math.max(1, step-1)}})">← Back</button>
+      <button class="btn btn-primary" onclick="window.setState({custFnolStep:${step+1}})">${step === 5 ? '🚨 Submit Claim' : 'Continue →'}</button>
+    </div>
+  ` : `
+    <div style="display:flex; gap:var(--space-sm); justify-content:center;">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'cust-claims', custFnolStep:1, custFnolDraft:{}})">Back to Claims</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'cust-claim-details', currentClaimId:'CLM-2026-0051', custFnolStep:1, custFnolDraft:{}})">View My Claim →</button>
+    </div>
+  `}`;
+}
+
+function renderCustomerClaimUpload() {
+  const c = D.customerClaims.find(x => x.id === state.currentClaimId) || D.customerClaims[0];
+  const requested = c.id === D.customerClaimDetail.id ? D.customerClaimDetail.requested_docs : [];
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-claim-details', currentClaimId:'${c.id}', custClaimTab:'docs'})" style="padding:4px 8px; margin-left:-8px;">← Back to Claim</button>
+  </div>
+  <div style="margin-bottom: var(--space-lg);">
+    <h2 style="margin:0;">Upload Documents — ${c.type} Claim</h2>
+    <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px; font-family:monospace;">${c.id} · ${c.loss_type}</div>
+  </div>
+
+  ${_custClaimSubNav('cust-claim-upload')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="doc-dropzone" onclick="window.showAlert('File picker opened — photos, videos, PDFs accepted')">
+      <div style="font-size:3rem; margin-bottom: var(--space-sm);">📤</div>
+      <h3 style="margin:0;">Add files to this claim</h3>
+      <div style="color:var(--text-muted); margin-top:var(--space-sm);">Photos, videos, PDFs · up to 50 MB each · auto-linked to ${c.id}</div>
+      <div style="display:flex; gap:var(--space-sm); margin-top: var(--space-md); justify-content:center; flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('Opening camera')">📱 Use Camera</button>
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('File picker')">📁 Browse Files</button>
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.showAlert('Email documents to claim.2026-0051@claims.quantana.com')">📧 Email Upload</button>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📋 REQUESTED BY ADJUSTER</div>
+      ${requested.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">Nothing specifically requested.</div>' : requested.map(r => `
+        <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); align-items:center;">
+          <span style="width:18px; height:18px; border-radius:50%; background:${r.status==='complete'?'var(--status-green)':'var(--bg-card)'}; border:${r.status==='complete'?'none':'2px solid var(--border-medium)'}; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:0.68rem;">${r.status==='complete'?'✓':''}</span>
+          <div style="flex:1; font-size:0.82rem; ${r.status==='complete'?'color:var(--text-muted); text-decoration:line-through;':''}">${r.item}</div>
+          ${r.required ? '<span class="cust-policy-tag" style="background:rgba(255,82,82,0.15); color:var(--status-red);">Req</span>' : ''}
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">💡 WHAT TO INCLUDE (FOR ${c.type.toUpperCase()})</div>
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); font-size:0.82rem;">
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <div style="font-size:1.6rem;">📸</div>
+        <strong>Damage photos</strong>
+        <p style="color:var(--text-muted); margin-top:6px;">Multiple angles, close-ups, wide shots.</p>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <div style="font-size:1.6rem;">🚔</div>
+        <strong>Police report</strong>
+        <p style="color:var(--text-muted); margin-top:6px;">If filed — officer name + report number.</p>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <div style="font-size:1.6rem;">💰</div>
+        <strong>Repair estimate</strong>
+        <p style="color:var(--text-muted); margin-top:6px;">Written estimate from any shop.</p>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <div style="font-size:1.6rem;">🧾</div>
+        <strong>Receipts</strong>
+        <p style="color:var(--text-muted); margin-top:6px;">Any out-of-pocket expenses you paid.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerClaimSettlement() {
+  const c = D.customerClaims.find(x => x.id === state.currentClaimId) || D.customerClaims.find(x => x.paid_to_date > 0) || D.customerClaims[0];
+  const s = c.id === D.customerClaimSettlement.id ? D.customerClaimSettlement : null;
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-claim-details', currentClaimId:'${c.id}'})" style="padding:4px 8px; margin-left:-8px;">← Back to Claim</button>
+  </div>
+  <div style="margin-bottom: var(--space-lg);">
+    <h2 style="margin:0;">Payment &amp; Settlement</h2>
+    <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px; font-family:monospace;">${c.id} · ${c.type}</div>
+  </div>
+
+  ${_custClaimSubNav('cust-claim-settlement')}
+
+  ${!s ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-2xl); text-align:center;">
+      <div style="font-size:3rem; margin-bottom: var(--space-md);">⏳</div>
+      <h3 style="margin:0;">No settlement yet</h3>
+      <div style="color:var(--text-muted); margin-top: var(--space-sm);">Your adjuster is still working the claim. You'll get a notification the moment an estimate is issued.</div>
+      <div style="margin-top: var(--space-lg);">
+        ${badge(c.statusColor, 'Currently: ' + c.status)}
+      </div>
+    </div>
+  ` : `
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">REPAIR ESTIMATE</div>
+        <table class="data-table">
+          <thead><tr><th>Line Item</th><th style="text-align:right;">Amount</th></tr></thead>
+          <tbody>
+            ${s.estimate.line_items.map(l => `
+            <tr>
+              <td>${l.k}</td>
+              <td style="text-align:right; font-family:monospace;">$${l.v.toLocaleString()}</td>
+            </tr>`).join('')}
+            <tr>
+              <td><strong>Subtotal</strong></td>
+              <td style="text-align:right; font-family:monospace;"><strong>$${s.estimate.total.toLocaleString()}</strong></td>
+            </tr>
+            <tr style="color:var(--status-amber);">
+              <td>Less deductible</td>
+              <td style="text-align:right; font-family:monospace;">-$${s.estimate.less_deductible.toLocaleString()}</td>
+            </tr>
+            <tr style="background:var(--bg-card); font-weight:700;">
+              <td>PAYABLE TO YOU</td>
+              <td style="text-align:right; font-family:monospace; font-size:1.1rem; color:var(--status-green);">$${s.estimate.payable.toLocaleString()}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+        <div style="background:rgba(0,230,118,0.08); border:1px solid rgba(0,230,118,0.3); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title" style="color:var(--status-green);">✅ SETTLEMENT ACCEPTED</div>
+          <div style="font-size:0.85rem; line-height:1.9;">
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Total paid</span><strong style="color:var(--status-green); font-size:1.2rem;">$${c.paid_to_date.toLocaleString()}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">E-signed</span><strong>${s.closing_signed ? '✓ Yes' : 'No'}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Satisfaction</span><strong>${'⭐'.repeat(s.satisfaction)}</strong></div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">📊 NEXT STEPS</div>
+          <div style="font-size:0.82rem; line-height:1.7;">
+            <p>• Keep receipts for any additional repairs</p>
+            <p>• Contact us if new damage appears (we can re-open)</p>
+            <p>• Consider leaving feedback to help us improve</p>
+          </div>
+          <button class="btn btn-primary btn-sm" style="width:100%; margin-top:var(--space-sm);" onclick="window.setState({screen:'cust-claim-feedback', currentClaimId:'${c.id}'})">Leave Feedback →</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">💳 PAYMENT HISTORY</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Note</th><th>Status</th></tr></thead>
+        <tbody>
+          ${s.payments.map(p => `
+          <tr>
+            <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;">${p.ts}</td>
+            <td style="white-space:nowrap;"><strong>$${p.amount.toLocaleString()}</strong></td>
+            <td style="white-space:nowrap;">${p.method}</td>
+            <td>${p.note}</td>
+            <td style="white-space:nowrap;">${badge(p.statusColor, p.status)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  `}`;
+}
+
+function renderCustomerClaimFeedback() {
+  const c = D.customerClaims.find(x => x.id === state.currentClaimId) || D.customerClaims.find(x => x.status === 'Closed') || D.customerClaims[0];
+  const questions = D.customerClaimFeedback;
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-claim-details', currentClaimId:'${c.id}'})" style="padding:4px 8px; margin-left:-8px;">← Back to Claim</button>
+  </div>
+  <div style="margin-bottom: var(--space-lg);">
+    <h2 style="margin:0;">How did we do?</h2>
+    <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Your feedback helps us improve for every client · takes about 90 seconds</div>
+  </div>
+
+  ${_custClaimSubNav('cust-claim-feedback')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-xl); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-card); padding: var(--space-md); border-radius:var(--radius-md); margin-bottom: var(--space-lg); font-size:0.85rem;">
+      <strong>Claim:</strong> ${c.id} · ${c.type} · ${c.loss_type}<br/>
+      <strong>Adjuster:</strong> ${c.adjuster.name} · ${c.carrier}<br/>
+      <strong>Resolution:</strong> ${c.status} · ${c.days_open} days from report to close
+    </div>
+
+    ${questions.map((q, idx) => `
+      <div class="form-group" style="margin-bottom: var(--space-lg);">
+        <label class="form-label" style="font-size:0.95rem;">${idx + 1}. ${q.q}</label>
+        ${q.type === 'rating' ? `
+          <div style="display:flex; gap:var(--space-sm); margin-top: var(--space-sm);">
+            ${[1,2,3,4,5].map(n => `
+              <div class="cust-rating-star" onclick="this.parentElement.querySelectorAll('.cust-rating-star').forEach((s,i)=>s.classList.toggle('active',i<${n}))">⭐</div>`).join('')}
+            <div style="margin-left:var(--space-md); color:var(--text-muted); font-size:0.82rem; align-self:center;">Tap to rate</div>
+          </div>
+        ` : `
+          <textarea class="form-input" rows="3" placeholder="Tell us more..."></textarea>
+        `}
+      </div>`).join('')}
+
+    <div class="form-group" style="margin-bottom: var(--space-lg);">
+      <label class="form-label">Would you recommend us to a friend or colleague?</label>
+      <div style="display:flex; gap: var(--space-xs); margin-top: var(--space-sm); flex-wrap:wrap;">
+        ${[0,1,2,3,4,5,6,7,8,9,10].map(n => `
+          <div class="cust-nps-button" onclick="this.parentElement.querySelectorAll('.cust-nps-button').forEach(b => b.classList.remove('active')); this.classList.add('active')">${n}</div>`).join('')}
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-top:6px; color:var(--text-muted); font-size:0.72rem;">
+        <span>Not at all likely</span><span>Extremely likely</span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;" onclick="window.showAlert('🙏 Thanks for your feedback! Your producer has been notified.')">Submit Feedback →</button>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">💡 WHY WE ASK</div>
+    <div style="font-size:0.85rem; line-height:1.7;">
+      Every rating goes directly to your producer and our team. We use it to improve communication, speed up resolution, and make sure the next person who files a claim has an even better experience. Thank you for helping us be better. — The Bridgepoint Team
+    </div>
+  </div>`;
+}
+
+// ─── Customer Risk Management & Resources Module ───
+function _custRiskSubNav(active) {
+  const tabs = [
+    { key: 'cust-risk',             label: 'Dashboard',     icon: '🛡' },
+    { key: 'cust-risk-action-plan', label: 'Action Plan',   icon: '✅' },
+    { key: 'cust-risk-library',     label: 'Resources',     icon: '📚' },
+    { key: 'cust-risk-assessments', label: 'Assessments',   icon: '📝' },
+    { key: 'cust-risk-incentives',  label: 'Discounts',     icon: '🎁' },
+    { key: 'cust-risk-seasonal',    label: 'Seasonal',      icon: '🌦' },
+    { key: 'cust-risk-reports',     label: 'Reports',       icon: '📊' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderCustomerRiskDashboard() {
+  const p = D.customerProducer;
+  const r = D.customerRiskProfile;
+  const actions = D.customerRiskActions;
+  const pending = actions.filter(a => a.status !== 'complete');
+  const completed = actions.filter(a => a.status === 'complete');
+  const pct = Math.round((completed.length / actions.length) * 100);
+  const recommendedRes = D.customerRiskResources.filter(r => r.status === 'recommended' || r.status === 'new').slice(0,3);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Risk Management &amp; Resources</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Reduce your risk · unlock premium discounts · stay ahead of every peril</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'cust-risk-reports'})">📊 My Annual Report</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'cust-risk-assessments'})">📝 Take an Assessment</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.customerRiskKPIs, 6)}
+
+  ${_custRiskSubNav('cust-risk')}
+
+  <div style="background: linear-gradient(135deg, rgba(108,92,231,0.12), rgba(63,81,181,0.05)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg); display:flex; gap:var(--space-md); align-items:center;">
+    <div class="producer-avatar" style="background:${p.photo_color}; width:36px; height:36px; font-size:0.8rem;">${p.avatar}</div>
+    <div style="flex:1; font-size:0.88rem;">
+      <strong>${p.name}</strong> says: <span style="color:var(--text-secondary);">"Hi James — your risk score is up +8 points this quarter. Two quick cyber actions will unlock another $900/yr in credits."</span>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="window.showAlert('Message sent to ${p.name}')">💬 Ask</button>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 2fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); text-align:center;">
+      <div style="color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em;">YOUR RISK SCORE</div>
+      <div class="cust-risk-score-ring">
+        <svg width="200" height="200" viewBox="0 0 200 200">
+          <circle cx="100" cy="100" r="86" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="14"/>
+          <circle cx="100" cy="100" r="86" fill="none" stroke="url(#riskGrad)" stroke-width="14" stroke-linecap="round" stroke-dasharray="${(r.overall_score/100)*540} 540" transform="rotate(-90 100 100)"/>
+          <defs>
+            <linearGradient id="riskGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#6c5ce7"/>
+              <stop offset="100%" stop-color="#00e676"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="cust-risk-score-value">
+          <div style="font-size:3.2rem; font-weight:800;">${r.overall_score}</div>
+          <div style="color:var(--status-green); font-size:0.88rem; font-weight:600;">${r.change} from ${r.prior_score}</div>
+        </div>
+      </div>
+      <div style="margin-top: var(--space-sm);">${badge(r.tier_color, r.tier)}</div>
+      <div style="font-size:0.82rem; color:var(--text-muted); margin-top: var(--space-sm); line-height:1.5;">
+        Industry peer avg: <strong>${r.benchmark.peer_avg}</strong><br/>
+        Top quartile: <strong>${r.benchmark.top_quartile}</strong>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:rgba(0,230,118,0.1); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--status-green);">
+        🏆 Top 12% of ${r.benchmark.industry}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">TOP EXPOSURE AREAS</div>
+      ${r.top_exposures.map(e => `
+        <div class="cust-risk-exposure">
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom: 4px;">
+              <strong>${e.name}</strong>
+              <span style="color:var(--text-muted); font-size:0.72rem;">· Weight ${e.weight}%</span>
+              <span style="font-size:0.72rem; color:${e.trend==='up'?'var(--status-green)':e.trend==='flat'?'var(--text-muted)':'var(--status-red)'};">${e.trend==='up'?'↗ improving':e.trend==='flat'?'→ stable':'↘ declining'}</span>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.78rem; margin-bottom:6px;">${e.note}</div>
+            <div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden;"><div style="height:100%; width:${e.score}%; background:${e.score>=80?'var(--status-green)':e.score>=65?'var(--mga-accent)':'var(--status-amber)'};"></div></div>
+          </div>
+          <div style="text-align:right; min-width:60px;">
+            <div style="font-size:1.4rem; font-weight:800; color:${e.score>=80?'var(--status-green)':e.score>=65?'var(--mga-accent)':'var(--status-amber)'};">${e.score}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md);">
+        <div class="section-title" style="margin:0;">🎯 RECOMMENDED ACTIONS (${pending.length})</div>
+        <div style="color:var(--text-muted); font-size:0.82rem;">$${D.customerRiskProfile.premium_savings_available} available</div>
+      </div>
+      ${pending.slice(0,4).map(a => `
+        <div class="cust-risk-action-item${a.status==='in_progress'?' in-progress':''}">
+          <div class="cust-risk-action-check">${a.status==='in_progress'?'◐':'○'}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <strong style="font-size:0.88rem;">${a.title}</strong>
+              <span class="cust-policy-tag" style="background:rgba(108,92,231,0.15); color:var(--mga-accent);">${a.category}</span>
+              <span class="cust-policy-tag" style="background:${a.impact==='High'?'rgba(0,230,118,0.15)':a.impact==='Medium'?'rgba(108,92,231,0.15)':'var(--bg-card)'}; color:${a.impact==='High'?'var(--status-green)':a.impact==='Medium'?'var(--mga-accent)':'var(--text-muted)'};">${a.impact} impact</span>
+              ${a.est_savings > 0 ? `<span class="cust-policy-tag" style="background:rgba(255,171,0,0.15); color:var(--status-amber);">🎁 Save $${a.est_savings}/yr</span>` : ''}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">Due ${a.due} · Effort: ${a.effort}</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="window.setState({screen:'cust-risk-action-plan'})">Start →</button>
+        </div>`).join('')}
+      <button class="btn btn-ghost btn-sm" style="margin-top: var(--space-sm); width:100%;" onclick="window.setState({screen:'cust-risk-action-plan'})">View all ${actions.length} actions →</button>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📈 YOUR PROGRESS</div>
+        <div style="text-align:center; padding: var(--space-sm) 0;">
+          <div style="font-size:3rem; font-weight:800; color:var(--mga-accent);">${pct}%</div>
+          <div style="color:var(--text-muted); font-size:0.82rem;">${completed.length} of ${actions.length} actions complete</div>
+        </div>
+        <div style="background:var(--bg-card); height:10px; border-radius:5px; overflow:hidden;"><div style="height:100%; width:${pct}%; background:linear-gradient(90deg, var(--mga-accent), var(--status-green));"></div></div>
+        <div style="margin-top:var(--space-md); padding:var(--space-sm); background:rgba(0,230,118,0.1); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--status-green);">
+          🏆 ${completed.length >= 8 ? 'Safety Champion badge earned' : `${8 - completed.length} more for Safety Champion`}
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💡 RECOMMENDED FOR YOU</div>
+        ${recommendedRes.map(res => `
+          <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); cursor:pointer;" onclick="window.setState({screen:'cust-risk-library', custRiskCategory:'${res.category}'})">
+            <div style="font-size:1.8rem;">${res.thumbnail}</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:0.85rem; font-weight:600; line-height:1.3;">${res.title}</div>
+              <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${res.type} · ${res.duration}${res.discount_eligible?' · 🎁':''}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerRiskActionPlan() {
+  const filter = state.custRiskActionFilter || 'all';
+  let actions = D.customerRiskActions;
+  if (filter === 'pending') actions = actions.filter(a => a.status !== 'complete');
+  if (filter === 'complete') actions = actions.filter(a => a.status === 'complete');
+  const totalSavings = D.customerRiskActions.filter(a => a.status === 'complete').reduce((s,a) => s + a.est_savings, 0);
+  const availableSavings = D.customerRiskActions.filter(a => a.status !== 'complete').reduce((s,a) => s + a.est_savings, 0);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Action Plan &amp; Progress Tracker</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${D.customerRiskActions.length} total actions · ${D.customerRiskActions.filter(a => a.status === 'complete').length} complete · auto-syncs to your producer for discount verification</div>
+    </div>
+  </div>
+
+  ${_custRiskSubNav('cust-risk-action-plan')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Completed</div><div class="kpi-value" style="color:var(--status-green);">${D.customerRiskActions.filter(a => a.status === 'complete').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">In Progress</div><div class="kpi-value">${D.customerRiskActions.filter(a => a.status === 'in_progress').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Savings Earned</div><div class="kpi-value" style="color:var(--status-green);">$${totalSavings.toLocaleString()}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Available to Unlock</div><div class="kpi-value" style="color:var(--status-amber);">$${availableSavings.toLocaleString()}</div></div>
+  </div>
+
+  <div style="display:flex; gap:var(--space-xs); margin-bottom: var(--space-lg);">
+    <div class="cust-pill${filter==='all'?' active':''}" onclick="window.setState({custRiskActionFilter:'all'})">All <span class="cust-pill-count">${D.customerRiskActions.length}</span></div>
+    <div class="cust-pill${filter==='pending'?' active':''}" onclick="window.setState({custRiskActionFilter:'pending'})">Pending <span class="cust-pill-count">${D.customerRiskActions.filter(a => a.status !== 'complete').length}</span></div>
+    <div class="cust-pill${filter==='complete'?' active':''}" onclick="window.setState({custRiskActionFilter:'complete'})">Complete <span class="cust-pill-count">${D.customerRiskActions.filter(a => a.status === 'complete').length}</span></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    ${actions.map(a => `
+      <div class="cust-risk-action-item${a.status==='in_progress'?' in-progress':''}${a.status==='complete'?' complete':''}">
+        <div class="cust-risk-action-check" style="${a.status==='complete'?'background:var(--status-green); border-color:var(--status-green); color:#fff;':''}">${a.status==='complete'?'✓':a.status==='in_progress'?'◐':'○'}</div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <strong style="font-size:0.9rem; ${a.status==='complete'?'color:var(--text-muted); text-decoration:line-through;':''}">${a.title}</strong>
+            <span class="cust-policy-tag" style="background:rgba(108,92,231,0.15); color:var(--mga-accent);">${a.category}</span>
+            <span class="cust-policy-tag" style="background:${a.impact==='High'?'rgba(0,230,118,0.15)':a.impact==='Medium'?'rgba(108,92,231,0.15)':'var(--bg-card)'}; color:${a.impact==='High'?'var(--status-green)':a.impact==='Medium'?'var(--mga-accent)':'var(--text-muted)'};">${a.impact}</span>
+            <span class="cust-policy-tag">${a.effort} effort</span>
+            ${a.est_savings > 0 ? `<span class="cust-policy-tag" style="background:rgba(255,171,0,0.15); color:var(--status-amber);">🎁 $${a.est_savings}/yr</span>` : ''}
+            ${a.verified ? `<span class="cust-policy-tag" style="background:rgba(0,230,118,0.15); color:var(--status-green);">✓ Verified</span>` : ''}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">
+            ${a.status === 'complete' ? `Completed ${a.completed}` : `Due ${a.due}`}
+            ${a.required_docs ? ` · Needs: ${a.required_docs}` : ''}
+          </div>
+        </div>
+        <div style="display:flex; gap:4px; flex-shrink:0;">
+          ${a.status === 'complete' ? `
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Download certificate')">📄</button>
+          ` : a.status === 'in_progress' ? `
+            <button class="btn btn-primary btn-sm" onclick="window.showAlert('Mark ${a.title} complete · upload verification')">Complete →</button>
+          ` : `
+            <button class="btn btn-secondary btn-sm" onclick="window.showAlert('Started: ${a.title}')">Start</button>
+          `}
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderCustomerRiskLibrary() {
+  const cat = state.custRiskCategory || 'all';
+  const q = (state.custRiskQuery || '').toLowerCase();
+  let resources = D.customerRiskResources;
+  if (cat !== 'all') resources = resources.filter(r => r.category === cat);
+  if (q) resources = resources.filter(r => (r.title + ' ' + r.description + ' ' + r.type).toLowerCase().includes(q));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Resource Library</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${resources.length} resources · videos, articles, guides, webinars · personalized for your policies</div>
+    </div>
+    <button class="btn btn-secondary" onclick="window.showAlert('Requesting custom content from your producer')">📝 Request a Topic</button>
+  </div>
+
+  ${_custRiskSubNav('cust-risk-library')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom:var(--space-md);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search videos, guides, checklists..." value="${state.custRiskQuery || ''}" oninput="window.setState({custRiskQuery:this.value})"/>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({custRiskCategory:'all', custRiskQuery:''})">Reset</button>
+    </div>
+    <div style="display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+      ${D.customerRiskResourceCategories.map(c => `
+        <div class="cust-pill${cat===c.key?' active':''}" onclick="window.setState({custRiskCategory:'${c.key}'})">${c.icon} ${c.name} <span class="cust-pill-count">${c.count}</span></div>`).join('')}
+    </div>
+  </div>
+
+  ${resources.length === 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-2xl); text-align:center;">
+      <div style="font-size:3rem; margin-bottom: var(--space-md);">🔍</div>
+      <h3 style="margin:0;">No resources match</h3>
+      <div style="color:var(--text-muted); margin-top: var(--space-sm);">Try a different category or search term.</div>
+    </div>
+  ` : `
+    <div class="cust-resource-grid">
+      ${resources.map(r => `
+        <div class="cust-resource-card" onclick="window.showAlert('Opening: ${r.title}')">
+          <div class="cust-resource-thumb">
+            <div style="font-size:3rem;">${r.thumbnail}</div>
+            ${r.status==='new'?'<span class="cust-resource-badge" style="background:var(--mga-accent);">NEW</span>':''}
+            ${r.status==='recommended'?'<span class="cust-resource-badge" style="background:var(--status-green);">RECOMMENDED</span>':''}
+            ${r.status==='completed'?'<span class="cust-resource-badge" style="background:var(--text-muted);">✓ VIEWED</span>':''}
+            ${r.discount_eligible?'<span class="cust-resource-gold">🎁 DISCOUNT</span>':''}
+          </div>
+          <div style="padding: var(--space-md); display:flex; flex-direction:column; flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:var(--text-muted); margin-bottom:6px;">
+              <span>${r.type} · ${r.duration}</span>
+              <span>Relevance ${r.relevance}%</span>
+            </div>
+            <div style="font-size:0.92rem; font-weight:700; line-height:1.3; margin-bottom:6px;">${r.title}</div>
+            <div style="color:var(--text-muted); font-size:0.78rem; line-height:1.4; flex:1;">${r.description}</div>
+            <div style="display:flex; gap:6px; margin-top: var(--space-sm);">
+              <button class="btn btn-primary btn-sm" style="flex:1;" onclick="event.stopPropagation(); window.showAlert('Playing: ${r.title}')">${r.type==='Video'||r.type==='Webinar'?'▶ Play':r.type==='Assessment'?'Start →':'Read →'}</button>
+              <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); window.showAlert('Saved to My Resources')">🔖</button>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>
+  `}`;
+}
+
+function renderCustomerRiskAssessments() {
+  const assessments = D.customerRiskAssessments;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Risk Assessments &amp; Quizzes</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Self-guided assessments · instant action plan · unlock premium credits</div>
+    </div>
+  </div>
+
+  ${_custRiskSubNav('cust-risk-assessments')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Completed</div><div class="kpi-value" style="color:var(--status-green);">${assessments.filter(a => a.status === 'completed').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Recommended</div><div class="kpi-value warning">${assessments.filter(a => a.status === 'recommended').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Credits Unlocked</div><div class="kpi-value" style="color:var(--status-green);">$${assessments.filter(a => a.status === 'completed').reduce((s,a) => s + parseInt(a.discount.replace(/\\D/g,'') || '0'), 0)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Available</div><div class="kpi-value" style="color:var(--status-amber);">$${assessments.filter(a => a.status !== 'completed').reduce((s,a) => s + parseInt(a.discount.replace(/\\D/g,'') || '0'), 0)}</div></div>
+  </div>
+
+  <div class="cust-resource-grid">
+    ${assessments.map(a => `
+      <div class="cust-resource-card" style="border:${a.status==='recommended'?'2px solid var(--mga-accent)':'1px solid var(--border-subtle)'};">
+        <div class="cust-resource-thumb" style="background: linear-gradient(135deg, ${a.status==='completed'?'rgba(0,230,118,0.15), rgba(0,230,118,0.05)':a.status==='recommended'?'rgba(108,92,231,0.15), rgba(63,81,181,0.05)':'rgba(255,171,0,0.12), rgba(255,171,0,0.04)'});">
+          <div style="font-size:3rem;">${a.lob==='Cyber'?'🔒':a.lob==='Auto'?'🚚':a.lob==='WC'?'👷':a.lob==='Property'?'🏢':'⚖️'}</div>
+          ${a.status==='recommended'?'<span class="cust-resource-badge" style="background:var(--mga-accent);">RECOMMENDED</span>':''}
+          ${a.status==='completed'?`<span class="cust-resource-badge" style="background:var(--status-green);">✓ ${a.last_score}/100</span>`:''}
+          <span class="cust-resource-gold">🎁 ${a.discount}</span>
+        </div>
+        <div style="padding: var(--space-md);">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:var(--text-muted); margin-bottom:6px;">
+            <span>${a.lob} · ${a.questions} questions</span>
+            <span>${a.duration}</span>
+          </div>
+          <div style="font-size:0.95rem; font-weight:700; line-height:1.3; margin-bottom:8px;">${a.title}</div>
+          <div style="color:var(--text-muted); font-size:0.78rem; line-height:1.4;">${a.description}</div>
+          <button class="btn ${a.status==='recommended'?'btn-primary':'btn-secondary'} btn-sm" style="width:100%; margin-top: var(--space-md);" onclick="window.showAlert('${a.status==='completed'?'Opening your results — score: '+a.last_score+'/100':'Starting: '+a.title}')">
+            ${a.status==='completed'?'View Results':a.status==='recommended'?'▶ Take Now · Unlock Credit':'▶ Start'}
+          </button>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderCustomerRiskIncentives() {
+  const discounts = D.customerRiskDiscounts;
+  const active = discounts.filter(d => d.status === 'Active');
+  const available = discounts.filter(d => d.status !== 'Active');
+  const activeSavings = active.reduce((s,d) => s + d.savings, 0);
+  const availableSavings = available.reduce((s,d) => s + d.savings, 0);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Safety Incentive Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">All your premium credits, rebates, and safety incentives in one place</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="color:var(--text-muted); font-size:0.72rem;">TOTAL UNLOCKED</div>
+      <div style="font-size:1.8rem; font-weight:800; color:var(--status-green);">$${activeSavings.toLocaleString()} <span style="font-size:0.72rem; color:var(--text-muted); font-weight:400;">/ year</span></div>
+    </div>
+  </div>
+
+  ${_custRiskSubNav('cust-risk-incentives')}
+
+  <div class="cust-balance-banner" style="background: linear-gradient(135deg, rgba(255,171,0,0.12), rgba(255,171,0,0.04)); border-color: rgba(255,171,0,0.3); margin-bottom: var(--space-lg);">
+    <div style="font-size:3rem;">💰</div>
+    <div style="flex:1;">
+      <strong>$${availableSavings.toLocaleString()}/yr still available — unlock now</strong>
+      <div style="color:var(--text-secondary); font-size:0.85rem;">${available.length} incentive${available.length===1?'':'s'} within reach · most require a quick quiz or proof upload</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.setState({screen:'cust-risk-action-plan'})">View Actions →</button>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">✅ ACTIVE DISCOUNTS (${active.length})</div>
+      ${active.map(d => `
+        <div class="cust-autopay-row">
+          <div style="font-size:2rem;">🎁</div>
+          <div style="flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
+              <strong>${d.name}</strong>
+              ${badge(d.statusColor, d.status)}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${d.policy} · ${d.program}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${d.source}</div>
+            ${d.expiry !== '—' ? `<div style="color:var(--text-muted); font-size:0.72rem;">Renews ${d.expiry}</div>` : ''}
+          </div>
+          <div style="text-align:right; flex-shrink:0;">
+            <div style="color:var(--status-green); font-weight:700; font-size:1.1rem;">$${d.savings}</div>
+            <div style="color:var(--text-muted); font-size:0.7rem;">/ year</div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔓 AVAILABLE TO UNLOCK (${available.length})</div>
+      ${available.map(d => `
+        <div class="cust-autopay-row">
+          <div style="font-size:2rem;">🔓</div>
+          <div style="flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
+              <strong>${d.name}</strong>
+              ${badge(d.statusColor, d.status)}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${d.program}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">To unlock: ${d.source}</div>
+          </div>
+          <div style="text-align:right; flex-shrink:0;">
+            <div style="color:var(--status-amber); font-weight:700; font-size:1.1rem;">+$${d.savings}</div>
+            <div style="color:var(--text-muted); font-size:0.7rem;">/ year</div>
+            <button class="btn btn-primary btn-sm" style="margin-top:4px;" onclick="window.setState({screen:'cust-risk-assessments'})">${d.action || 'Start'}</button>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">🏆 YOUR SAFETY BADGES</div>
+    <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-md);">
+      ${[
+        { name: 'Safety Champion',    icon: '🏆', earned: true,  req: '8+ completed actions' },
+        { name: 'Cyber Ready',        icon: '🔒', earned: false, req: 'Complete Cyber Quiz' },
+        { name: 'Fleet Pro',          icon: '🚚', earned: true,  req: 'DriverScore 80+' },
+        { name: 'Zero Claims',         icon: '🛡', earned: true,  req: '12mo claim-free' },
+        { name: 'Top 25%',             icon: '⭐', earned: true,  req: 'Industry top quartile' },
+        { name: 'Continuity Planner', icon: '📊', earned: false, req: 'Complete Continuity Quiz' }
+      ].map(b => `
+        <div class="cust-risk-badge${b.earned?' earned':''}">
+          <div style="font-size:2.4rem; ${b.earned?'':'opacity:0.3; filter:grayscale(100%);'}">${b.icon}</div>
+          <div style="font-size:0.78rem; font-weight:700; margin-top:4px;">${b.name}</div>
+          <div style="color:var(--text-muted); font-size:0.68rem; margin-top:2px;">${b.req}</div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderCustomerRiskSeasonal() {
+  const alerts = D.customerSeasonalAlerts;
+  const active = alerts.filter(a => a.status === 'Active');
+  const upcoming = alerts.filter(a => a.status === 'Upcoming');
+  const dormant = alerts.filter(a => a.status === 'Dormant');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Seasonal &amp; Emergency Preparedness</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Weather-aware alerts · local content · offline-downloadable emergency cards</div>
+    </div>
+    <button class="btn btn-secondary" onclick="window.showAlert('Downloading Emergency Card PDF for offline use')">⬇ Emergency Card</button>
+  </div>
+
+  ${_custRiskSubNav('cust-risk-seasonal')}
+
+  ${active.length > 0 ? `
+    <div class="cust-balance-banner" style="background: linear-gradient(135deg, rgba(255,82,82,0.12), rgba(255,82,82,0.04)); border-color: rgba(255,82,82,0.3); margin-bottom: var(--space-lg);">
+      <div style="font-size:2.4rem;">${active[0].icon}</div>
+      <div style="flex:1;">
+        <strong>${active[0].title} — action window is open now</strong>
+        <div style="color:var(--text-secondary); font-size:0.85rem;">${active[0].description}</div>
+      </div>
+    </div>
+  ` : ''}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">🔴 ACTIVE NOW</div>
+    ${active.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No active seasonal alerts.</div>' : active.map(a => _custRenderSeasonalCard(a)).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">🟡 UPCOMING</div>
+    ${upcoming.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">Nothing upcoming.</div>' : upcoming.map(a => _custRenderSeasonalCard(a)).join('')}
+  </div>
+
+  ${dormant.length > 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">⚪ OFF-SEASON</div>
+      ${dormant.map(a => _custRenderSeasonalCard(a)).join('')}
+    </div>
+  ` : ''}`;
+}
+
+function _custRenderSeasonalCard(a) {
+  return `
+    <div class="cust-seasonal-card">
+      <div style="display:flex; gap:var(--space-md); align-items:flex-start;">
+        <div style="font-size:2.4rem;">${a.icon}</div>
+        <div style="flex:1;">
+          <div style="display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap;">
+            <strong style="font-size:1rem;">${a.title}</strong>
+            <span class="cust-policy-tag">${a.season}</span>
+            ${badge(a.severity==='High'?'red':a.severity==='Medium'?'amber':'blue', a.severity + ' Severity')}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.85rem; margin-top:6px;">${a.description}</div>
+          <div style="margin-top:var(--space-sm); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);">
+            <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:600; margin-bottom:6px;">Checklist</div>
+            ${a.checklist.map(c => `<div style="font-size:0.82rem; padding:4px 0; display:flex; gap:6px; align-items:center;"><span style="width:14px; height:14px; border:2px solid var(--border-medium); border-radius:50%;"></span>${c}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:6px; margin-top:var(--space-sm); justify-content:flex-end;">
+        ${a.link ? `<button class="btn btn-secondary btn-sm" onclick="window.showAlert('Opening related resource')">📚 Full Guide</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Downloading printable checklist')">⬇ Print</button>
+      </div>
+    </div>`;
+}
+
+function renderCustomerRiskReports() {
+  const reports = D.customerRiskReports;
+  const latest = reports[0];
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Risk Reports &amp; Downloads</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Annual risk review · historical reports · custom export</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Generating custom risk report — we will email when ready')">📊 Generate Custom Report</button>
+  </div>
+
+  ${_custRiskSubNav('cust-risk-reports')}
+
+  <div style="background: linear-gradient(135deg, rgba(108,92,231,0.12), rgba(63,81,181,0.05)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-md);">
+      <div style="flex:1;">
+        <div style="color:var(--mga-accent); font-size:0.72rem; text-transform:uppercase; font-weight:700; letter-spacing:0.08em;">Latest</div>
+        <h3 style="margin: 4px 0 8px 0;">${latest.type} — ${latest.year}</h3>
+        <div style="color:var(--text-muted); font-size:0.82rem;">Generated ${latest.generated} · ${latest.pages} pages · prepared by ${latest.producer}</div>
+        <div style="margin-top: var(--space-md);">
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:6px;">HIGHLIGHTS</div>
+          ${latest.highlights.map(h => `<div style="font-size:0.88rem; padding:3px 0; display:flex; gap:6px;"><span style="color:var(--status-green);">✓</span>${h}</div>`).join('')}
+        </div>
+      </div>
+      <div style="font-size:5rem; opacity:0.3;">📊</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm); margin-top: var(--space-md);">
+      <button class="btn btn-primary" onclick="window.showAlert('Downloading ${latest.id}.pdf')">⬇ Download PDF</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Emailing to your address on file')">📧 Email Me</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Scheduling annual review call with ${D.customerProducer.name}')">📞 Schedule Review</button>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">ALL REPORTS (${reports.length})</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Report #</th><th>Type</th><th>Year</th><th>Generated</th><th>Prepared By</th><th>Pages</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        ${reports.map(r => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong>${r.id}</strong></td>
+          <td style="white-space:nowrap;">${r.type}</td>
+          <td style="white-space:nowrap;">${r.year}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.generated}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.producer}</td>
+          <td>${r.pages}</td>
+          <td style="white-space:nowrap;">${badge(r.statusColor, r.status)}</td>
+          <td style="display:flex; gap:4px;">
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Downloading ${r.id}.pdf')">⬇ PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Opening ${r.id} preview')">👁 View</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">📋 CUSTOM EXPORT OPTIONS</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);">
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <div style="font-size:1.8rem;">📊</div>
+        <strong>Risk Score Summary</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">One-page snapshot with score, exposures, and trend. Great for board meetings.</p>
+        <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Generating summary')">Download →</button>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <div style="font-size:1.8rem;">📋</div>
+        <strong>Compliance Bundle</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">Safety program docs, OSHA logs, training certs — audit-ready PDF bundle.</p>
+        <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Generating compliance bundle')">Download →</button>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <div style="font-size:1.8rem;">📈</div>
+        <strong>Loss Run &amp; Claims Summary</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">Multi-year claims summary with trends — useful for remarketing and renewals.</p>
+        <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Generating loss run')">Download →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── Customer Messages & Support Module ───
+function _custMsgSubNav(active) {
+  const tabs = [
+    { key: 'cust-messages',    label: 'Dashboard',      icon: '💬' },
+    { key: 'cust-msg-list',    label: 'Conversations',  icon: '📥' },
+    { key: 'cust-msg-new',     label: 'New Message',    icon: '✏️' },
+    { key: 'cust-msg-chat',    label: 'Live Chat',      icon: '⚡' },
+    { key: 'cust-msg-tickets', label: 'Support Tickets',icon: '🎫' },
+    { key: 'cust-msg-kb',      label: 'Knowledge Base', icon: '📚' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _custMsgRoleColor(role) {
+  const m = { 'Producer':'#ff8a65', 'CSR':'#81c784', 'Adjuster':'#4fc3f7', 'Support':'#78909c', 'Client':'#6c5ce7', 'Billing':'#ba68c8' };
+  return m[role] || '#9aa0a6';
+}
+
+function renderCustomerMessagesDashboard() {
+  const p = D.customerProducer;
+  const convs = D.customerConversations;
+  const unread = convs.filter(c => c.unread > 0);
+  const awaiting = convs.filter(c => c.status === 'Awaiting Your Reply');
+  const openTickets = D.customerSupportTickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Messages &amp; Support</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Secure messaging with your producer, CSR, and claims team · 24/7 AI assistant · live chat during business hours</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'cust-msg-chat'})">⚡ Live Chat</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'cust-msg-new'})">✏ New Message</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.customerMessagesKPIs, 6)}
+
+  ${_custMsgSubNav('cust-messages')}
+
+  <div style="background: linear-gradient(135deg, rgba(108,92,231,0.12), rgba(63,81,181,0.05)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg); display:flex; gap:var(--space-md); align-items:center;">
+    <div class="producer-avatar" style="background:${p.photo_color}; width:44px; height:44px;">${p.avatar}</div>
+    <div style="flex:1;">
+      <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em;">How can we help, James?</div>
+      <div style="font-size:0.95rem; margin-top:2px;"><strong>${p.name}</strong> typically replies within <strong>2 hours</strong> during business hours.</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary btn-sm" onclick="window.showAlert('Calling ${p.phone}')">📞 Call</button>
+      <button class="btn btn-primary btn-sm" onclick="window.setState({screen:'cust-msg-new'})">💬 Message</button>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top: var(--space-lg);">QUICK ACTIONS</div>
+  <div class="cust-quick-actions">
+    <div class="cust-quick-tile" onclick="window.setState({screen:'cust-msg-new'})">
+      <span class="cust-quick-icon">✏️</span>
+      <div><strong>Start a conversation</strong><div style="color:var(--text-muted); font-size:0.75rem;">Send your producer a message</div></div>
+    </div>
+    <div class="cust-quick-tile" onclick="window.setState({screen:'cust-msg-chat'})">
+      <span class="cust-quick-icon">⚡</span>
+      <div><strong>Live chat now</strong><div style="color:var(--text-muted); font-size:0.75rem;">AI + human support</div></div>
+    </div>
+    <div class="cust-quick-tile" onclick="window.showAlert('Callback scheduled for tomorrow at 10:30 AM')">
+      <span class="cust-quick-icon">📅</span>
+      <div><strong>Schedule callback</strong><div style="color:var(--text-muted); font-size:0.75rem;">Pick a time that works</div></div>
+    </div>
+    <div class="cust-quick-tile" onclick="window.setState({screen:'cust-msg-kb'})">
+      <span class="cust-quick-icon">📚</span>
+      <div><strong>Browse FAQs</strong><div style="color:var(--text-muted); font-size:0.75rem;">Instant answers · 58 articles</div></div>
+    </div>
+    <div class="cust-quick-tile" onclick="window.showAlert('After-hours emergency: (800) 555-HELP')">
+      <span class="cust-quick-icon">🆘</span>
+      <div><strong>Emergency help</strong><div style="color:var(--text-muted); font-size:0.75rem;">After-hours hotline</div></div>
+    </div>
+    <div class="cust-quick-tile" onclick="window.setState({screen:'cust-msg-tickets'})">
+      <span class="cust-quick-icon">🎫</span>
+      <div><strong>My tickets</strong><div style="color:var(--text-muted); font-size:0.75rem;">${openTickets.length} open</div></div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-top: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md);">
+        <div class="section-title" style="margin:0;">📥 INBOX ${unread.length > 0 ? `<span style="background:var(--status-red); color:#fff; padding:2px 8px; border-radius:999px; font-size:0.7rem;">${unread.length} unread</span>` : ''}</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-msg-list'})">See all →</button>
+      </div>
+      ${convs.slice(0,4).map(c => `
+        <div class="cust-msg-row${c.unread > 0 ? ' unread' : ''}" onclick="window.setState({screen:'cust-msg-thread', currentConversationId:'${c.id}'})">
+          <div class="cust-msg-row-avatar" style="background:${_custMsgRoleColor(c.participants.find(p => p.name !== 'You')?.role)};">${c.participants.find(p => p.name !== 'You')?.initials || '?'}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm);">
+              <strong style="font-size:0.9rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.subject}</strong>
+              <span style="color:var(--text-muted); font-size:0.72rem; flex-shrink:0;">${c.last_message_at.split(' ')[0]}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
+              <span style="font-size:0.78rem; color:var(--text-muted);">${c.last_from}:</span>
+              <span style="font-size:0.78rem; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.preview}</span>
+            </div>
+            <div style="display:flex; gap:6px; margin-top:4px; align-items:center;">
+              ${badge(c.statusColor, c.status)}
+              ${c.linked ? `<span class="cust-policy-tag" style="background:rgba(108,92,231,0.15); color:var(--mga-accent);">📎 ${c.linked.type} ${c.linked.ref}</span>` : ''}
+              ${c.unread > 0 ? `<span style="background:var(--status-red); color:#fff; padding:1px 8px; border-radius:999px; font-size:0.68rem; font-weight:700;">${c.unread}</span>` : ''}
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">⏳ AWAITING YOUR REPLY</div>
+        ${awaiting.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">Nothing waiting on you.</div>' : awaiting.map(c => `
+          <div style="padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); cursor:pointer;" onclick="window.setState({screen:'cust-msg-thread', currentConversationId:'${c.id}'})">
+            <div style="font-size:0.85rem; font-weight:600;">${c.subject}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">From ${c.last_from} · ${c.last_message_at}</div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🎫 OPEN TICKETS (${openTickets.length})</div>
+        ${openTickets.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No open tickets.</div>' : openTickets.map(t => `
+          <div style="padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); cursor:pointer;" onclick="window.setState({screen:'cust-msg-tickets'})">
+            <div style="display:flex; justify-content:space-between;">
+              <strong style="font-size:0.85rem;">${t.id}</strong>
+              ${badge(t.priority === 'High' ? 'red' : 'blue', t.priority)}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${t.subject}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">SLA: ${t.sla_target}</div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🔔 NOTIFICATION PREFERENCES</div>
+        <div style="font-size:0.82rem;">
+          <label style="display:flex; gap:var(--space-sm); align-items:center; padding: 6px 0; cursor:pointer;"><input type="checkbox" checked/> 📧 Email</label>
+          <label style="display:flex; gap:var(--space-sm); align-items:center; padding: 6px 0; cursor:pointer;"><input type="checkbox" checked/> 📱 SMS</label>
+          <label style="display:flex; gap:var(--space-sm); align-items:center; padding: 6px 0; cursor:pointer;"><input type="checkbox"/> 🔔 Push</label>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerMessagesList() {
+  const statusFilter = state.custMsgStatus || 'all';
+  const catFilter = state.custMsgCategory || 'all';
+  const q = (state.custMsgQuery || '').toLowerCase();
+  let convs = D.customerConversations;
+  if (statusFilter !== 'all') convs = convs.filter(c => c.status === statusFilter);
+  if (catFilter !== 'all') convs = convs.filter(c => c.category === catFilter);
+  if (q) convs = convs.filter(c => (c.subject + ' ' + c.preview).toLowerCase().includes(q));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">All Conversations</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${convs.length} conversation${convs.length===1?'':'s'} · filter by status, category, or keyword</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.setState({screen:'cust-msg-new'})">✏ New Message</button>
+  </div>
+
+  ${_custMsgSubNav('cust-msg-list')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom:var(--space-sm);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search conversations..." value="${state.custMsgQuery || ''}" oninput="window.setState({custMsgQuery:this.value})"/>
+      <select class="form-input" style="width:180px;" onchange="window.setState({custMsgStatus:this.value})">
+        <option value="all">All Statuses</option>
+        ${D.customerMessageStatuses.map(s => `<option value="${s}" ${statusFilter===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({custMsgStatus:'all', custMsgCategory:'all', custMsgQuery:''})">Reset</button>
+    </div>
+    <div style="display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+      <div class="cust-pill${catFilter==='all'?' active':''}" onclick="window.setState({custMsgCategory:'all'})">All</div>
+      ${D.customerMessageCategories.map(c => `<div class="cust-pill${catFilter===c.key?' active':''}" onclick="window.setState({custMsgCategory:'${c.key}'})">${c.icon} ${c.name}</div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-sm);">
+    ${convs.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding:var(--space-xl);">No conversations match this filter.</div>' : convs.map(c => `
+      <div class="cust-msg-row${c.unread > 0 ? ' unread' : ''}" onclick="window.setState({screen:'cust-msg-thread', currentConversationId:'${c.id}'})">
+        <div class="cust-msg-row-avatar" style="background:${_custMsgRoleColor(c.participants.find(p => p.name !== 'You')?.role)};">${c.participants.find(p => p.name !== 'You')?.initials || '?'}</div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm);">
+            <strong style="font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.subject}</strong>
+            <span style="color:var(--text-muted); font-size:0.72rem; flex-shrink:0;">${c.last_message_at}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+            <span style="font-size:0.78rem; color:var(--text-muted);">${c.last_from}:</span>
+            <span style="font-size:0.82rem; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.preview}</span>
+          </div>
+          <div style="display:flex; gap:6px; margin-top:6px; align-items:center;">
+            ${badge(c.statusColor, c.status)}
+            ${c.linked ? `<span class="cust-policy-tag" style="background:rgba(108,92,231,0.15); color:var(--mga-accent);">📎 ${c.linked.type} ${c.linked.ref}</span>` : ''}
+            ${c.unread > 0 ? `<span style="background:var(--status-red); color:#fff; padding:1px 8px; border-radius:999px; font-size:0.68rem; font-weight:700;">${c.unread} new</span>` : ''}
+          </div>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderCustomerMessagesThread() {
+  const c = D.customerConversations.find(x => x.id === state.currentConversationId) || D.customerConversations[0];
+  const thread = c.id === D.customerConversationThread.id ? D.customerConversationThread : { messages: [], attachments_summary: 0 };
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-msg-list'})" style="padding:4px 8px; margin-left:-8px;">← Back to Conversations</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="flex:1; min-width:0;">
+      <h2 style="margin:0; overflow:hidden; text-overflow:ellipsis;">${c.subject}</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; font-family:monospace; margin-top:2px;">${c.id} · ${D.customerMessageCategories.find(x => x.key === c.category)?.name || c.category}</div>
+      <div style="margin-top: 6px; display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap;">
+        ${badge(c.statusColor, c.status)}
+        ${c.linked ? `<a style="color:var(--mga-accent); font-size:0.82rem; cursor:pointer;" onclick="window.setState({screen:'${c.linked.type==='Policy'?'cust-policy-details':c.linked.type==='Claim'?'cust-claim-details':'cust-bill-invoice-detail'}', ${c.linked.type==='Policy'?'currentPolicyId':c.linked.type==='Claim'?'currentClaimId':'currentInvoiceId'}:'${c.linked.ref}'})">📎 ${c.linked.type} ${c.linked.ref} →</a>` : ''}
+      </div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Marked as resolved · rate your support')">✓ Mark Resolved</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Muted · no notifications for this thread')">🔕 Mute</button>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 3fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); display:flex; flex-direction:column; min-height:520px;">
+      <div style="flex:1; overflow-y:auto; max-height:540px; padding-right:6px;">
+        ${[...(thread.messages || [])].reverse().map(m => `
+          <div class="cust-chat-msg cust-chat-msg-${m.role.toLowerCase()}">
+            <div class="cust-chat-avatar" style="background:${m.avatar_color};">${m.initials}</div>
+            <div class="cust-chat-bubble">
+              <div style="display:flex; gap:6px; font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;">
+                <strong style="color:var(--text-primary);">${m.from}</strong>
+                <span>·</span>
+                <span>${m.role}</span>
+                <span>·</span>
+                <span>${m.ts}</span>
+                ${!m.read && m.role !== 'Client' ? '<span style="background:var(--status-red); color:#fff; padding:1px 6px; border-radius:999px; font-size:0.62rem;">NEW</span>' : ''}
+              </div>
+              <div style="font-size:0.9rem; line-height:1.55;">${m.text}</div>
+              ${(m.attachments || []).length > 0 ? `
+                <div style="margin-top: var(--space-sm); display:flex; flex-direction:column; gap:4px;">
+                  ${m.attachments.map(a => `
+                    <div style="display:flex; gap:6px; padding: 6px 10px; background:rgba(255,255,255,0.05); border-radius:var(--radius-sm); font-size:0.78rem; align-items:center;">
+                      <span>📎</span>
+                      <span style="flex:1;">${a.name}</span>
+                      <span style="color:var(--text-muted); font-size:0.72rem;">${a.size}</span>
+                      <button class="btn btn-ghost btn-sm" style="padding: 2px 8px;" onclick="window.showAlert('Downloading ${a.name}')">⬇</button>
+                    </div>`).join('')}
+                </div>
+              ` : ''}
+            </div>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top: var(--space-md); display:flex; gap:var(--space-sm);">
+        <input class="form-input" style="flex:1;" placeholder="Type your reply..."/>
+        <button class="btn btn-ghost" onclick="window.showAlert('File attached')">📎</button>
+        <button class="btn btn-primary" onclick="window.showAlert('Message sent securely · end-to-end encrypted')">Send →</button>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">PARTICIPANTS (${c.participants.length})</div>
+        ${c.participants.map(pt => `
+          <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; align-items:center; border-bottom: 1px solid var(--border-subtle);">
+            <div class="producer-avatar" style="background:${pt.avatar_color}; width:36px; height:36px; font-size:0.78rem;">${pt.initials}</div>
+            <div style="flex:1;">
+              <div style="font-weight:600; font-size:0.88rem;">${pt.name}</div>
+              <div style="color:var(--text-muted); font-size:0.72rem;">${pt.role}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+
+      ${thread.attachments_summary > 0 ? `
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">📎 ATTACHMENTS</div>
+          <div style="font-size:0.82rem; color:var(--text-muted);">${thread.attachments_summary} file${thread.attachments_summary===1?'':'s'} shared in this thread</div>
+        </div>
+      ` : ''}
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🔒 SECURITY</div>
+        <div style="font-size:0.78rem; line-height:1.7;">
+          <div>✓ End-to-end encrypted</div>
+          <div>✓ Audit logged</div>
+          <div>✓ 7-year retention</div>
+          <div>✓ GLBA compliant</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerMessagesNew() {
+  const preCategory = state.custMsgNewCategory || 'general';
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-messages'})" style="padding:4px 8px; margin-left:-8px;">← Back to Messages</button>
+  </div>
+  <div style="margin-bottom: var(--space-lg);">
+    <h2 style="margin:0;">New Message</h2>
+    <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">We'll auto-route your message to the right person · most replies come within 2 hours</div>
+  </div>
+
+  ${_custMsgSubNav('cust-msg-new')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-xl);">
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">What's it about?</label>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm); margin-top: var(--space-sm);">
+          ${D.customerMessageCategories.map(c => `
+            <div class="cust-quick-tile${preCategory === c.key ? ' selected' : ''}" style="padding:var(--space-sm);" onclick="window.setState({custMsgNewCategory:'${c.key}'})">
+              <span class="cust-quick-icon" style="font-size:1.2rem; width:32px; height:32px;">${c.icon}</span>
+              <div style="font-size:0.82rem;"><strong>${c.name}</strong><div style="color:var(--text-muted); font-size:0.68rem;">SLA ${c.sla}</div></div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Link to (optional)</label>
+        <select class="form-input">
+          <option value="">— None —</option>
+          <optgroup label="Policies">
+            ${D.customerPolicies.map(p => `<option>Policy · ${p.type} — ${p.id}</option>`).join('')}
+          </optgroup>
+          <optgroup label="Claims">
+            ${D.customerClaims.map(c => `<option>Claim · ${c.type} — ${c.id}</option>`).join('')}
+          </optgroup>
+          <optgroup label="Invoices">
+            ${D.customerInvoices.slice(0,3).map(i => `<option>Invoice · ${i.policy_type} — ${i.id}</option>`).join('')}
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Subject</label>
+        <input class="form-input" placeholder="Short, specific subject helps us route faster"/>
+      </div>
+
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Your message</label>
+        <textarea class="form-input" rows="8" placeholder="Tell us what's on your mind..."></textarea>
+      </div>
+
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Priority</label>
+        <div class="radio-group">
+          <span class="radio-pill active">Normal</span>
+          <span class="radio-pill">High</span>
+          <span class="radio-pill">Urgent</span>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Attach documents (optional)</label>
+        <input class="form-input" type="file" multiple/>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;" onclick="window.showAlert('✓ Message sent · Ticket #TKT-8843 created · Sarah Chen notified')">Send Message →</button>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background: linear-gradient(135deg, rgba(108,92,231,0.12), rgba(63,81,181,0.05)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">MESSAGING ${D.customerProducer.name.toUpperCase()}</div>
+        <div style="display:flex; gap:var(--space-sm); align-items:center;">
+          <div class="producer-avatar" style="background:${D.customerProducer.photo_color};">${D.customerProducer.avatar}</div>
+          <div style="flex:1;">
+            <strong>${D.customerProducer.name}</strong>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${D.customerProducer.title}</div>
+            <div style="color:var(--status-green); font-size:0.72rem; margin-top:4px;">● Online · typical reply in 2h</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💡 TIPS FOR FASTER ANSWERS</div>
+        <div style="font-size:0.82rem; line-height:1.7;">
+          <p>• <strong>Link the policy or claim</strong> — saves us hunting</p>
+          <p>• <strong>Be specific</strong> — "renewal deductible question" beats "quick question"</p>
+          <p>• <strong>Attach docs</strong> — photos, forms, screenshots help</p>
+          <p>• <strong>Use Live Chat</strong> for simple answers right now</p>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerMessagesLiveChat() {
+  const transcript = D.customerLiveChatTranscript;
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-messages'})" style="padding:4px 8px; margin-left:-8px;">← Back to Messages</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Live Chat</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">24/7 AI assistant · live agents during business hours · secure &amp; end-to-end encrypted</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm); align-items:center;">
+      <span style="color:var(--status-green); font-size:0.82rem;">● Agent online</span>
+    </div>
+  </div>
+
+  ${_custMsgSubNav('cust-msg-chat')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); display:flex; flex-direction:column; min-height:560px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border-subtle); margin-bottom: var(--space-md);">
+        <div style="display:flex; gap:var(--space-sm); align-items:center;">
+          <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg, var(--mga-accent), #a67dff); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800;">🤖</div>
+          <div>
+            <strong>AI Assistant + Sarah Chen</strong>
+            <div style="color:var(--status-green); font-size:0.72rem;">● Live · typical reply < 2 min</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Transcript saved to email')">📧 Email transcript</button>
+      </div>
+      <div style="flex:1; overflow-y:auto; padding-right:6px;">
+        ${transcript.map(m => `
+          <div class="cust-chat-msg cust-chat-msg-${m.role === 'client' ? 'client' : m.role === 'ai' ? 'system' : 'adjuster'}">
+            <div class="cust-chat-avatar" style="background:${m.role === 'client' ? '#6c5ce7' : m.role === 'ai' ? 'linear-gradient(135deg, var(--mga-accent), #a67dff)' : '#ff8a65'};">${m.role === 'client' ? 'JR' : m.role === 'ai' ? '🤖' : 'SC'}</div>
+            <div class="cust-chat-bubble">
+              <div style="display:flex; gap:6px; font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;">
+                <strong style="color:var(--text-primary);">${m.from}</strong>
+                <span>·</span>
+                <span>${m.ts}</span>
+              </div>
+              <div style="font-size:0.9rem; line-height:1.55;">${m.text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top: var(--space-md); display:flex; gap:var(--space-sm);">
+        <input class="form-input" style="flex:1;" placeholder="Type a message..."/>
+        <button class="btn btn-ghost" onclick="window.showAlert('File attached')">📎</button>
+        <button class="btn btn-primary" onclick="window.showAlert('Message sent')">Send →</button>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📅 SCHEDULE A CALLBACK</div>
+        <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom: var(--space-sm);">Prefer a phone call? Pick a time and Sarah will call you.</div>
+        ${D.customerCallbackSlots.map(day => `
+          <div style="margin-bottom: var(--space-sm);">
+            <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">${day.day} · ${day.date}</div>
+            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+              ${day.slots.map(s => `
+                <button class="btn btn-ghost btn-sm" style="padding: 4px 10px; font-size:0.78rem;" onclick="window.showAlert('✓ Callback scheduled for ${day.date} at ${s} · calendar invite sent')">${s}</button>`).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💡 QUICK QUESTIONS</div>
+        ${['When is my next payment due?','How do I get a COI?','What\'s my fleet discount?','File a claim'].map(q => `
+          <div class="doc-ai-prompt" onclick="window.showAlert('Quick answer sent to chat')">${q}</div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerMessagesKnowledgeBase() {
+  const q = (state.custKbQuery || '').toLowerCase();
+  const cat = state.custKbCategory || 'all';
+  let articles = D.customerKnowledgeBase;
+  if (cat !== 'all') articles = articles.filter(a => a.category === cat);
+  if (q) articles = articles.filter(a => (a.title + ' ' + a.preview).toLowerCase().includes(q));
+  const popular = [...D.customerKnowledgeBase].sort((a,b) => b.views - a.views).slice(0,3);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Knowledge Base</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${D.customerKnowledgeBase.length} articles · instant answers · AI search</div>
+    </div>
+    <button class="btn btn-secondary" onclick="window.showAlert('Can\'t find it? We\'ll create an article for you.')">📝 Request Article</button>
+  </div>
+
+  ${_custMsgSubNav('cust-msg-kb')}
+
+  <div style="background: linear-gradient(135deg, rgba(108,92,231,0.12), rgba(63,81,181,0.05)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm);">
+      <input type="text" class="form-input" style="flex:1; font-size:1rem;" placeholder="🔍 Ask a question or search articles..." value="${state.custKbQuery || ''}" oninput="window.setState({custKbQuery:this.value})"/>
+      <button class="btn btn-primary" onclick="window.showAlert('AI is searching...')">🤖 Ask AI</button>
+    </div>
+    <div style="margin-top: var(--space-sm); font-size:0.78rem; color:var(--text-muted);">
+      Try: <span style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({custKbQuery:'file a claim'})">file a claim</span> · <span style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({custKbQuery:'COI'})">COI</span> · <span style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({custKbQuery:'autopay'})">autopay</span> · <span style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({custKbQuery:'premium'})">premium</span>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:var(--space-xs); margin-bottom: var(--space-lg); flex-wrap:wrap;">
+    <div class="cust-pill${cat==='all'?' active':''}" onclick="window.setState({custKbCategory:'all'})">All <span class="cust-pill-count">${D.customerKnowledgeBase.length}</span></div>
+    ${D.customerMessageCategories.map(c => { const count = D.customerKnowledgeBase.filter(a => a.category === c.key).length; return count > 0 ? `<div class="cust-pill${cat===c.key?' active':''}" onclick="window.setState({custKbCategory:'${c.key}'})">${c.icon} ${c.name} <span class="cust-pill-count">${count}</span></div>` : '';}).join('')}
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">${q || cat !== 'all' ? `RESULTS (${articles.length})` : 'ALL ARTICLES'}</div>
+      ${articles.length === 0 ? '<div style="color:var(--text-muted); text-align:center; padding: var(--space-xl);">No articles match. Try different keywords or ask AI.</div>' : articles.map(a => `
+        <div class="cust-kb-article" onclick="window.showAlert('Opening: ${a.title}')">
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:0.92rem; font-weight:700;">${a.title}</div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-top:4px; line-height:1.5;">${a.preview}</div>
+            <div style="display:flex; gap:var(--space-sm); margin-top:6px; font-size:0.72rem; color:var(--text-muted);">
+              <span>${D.customerMessageCategories.find(c => c.key === a.category)?.icon || ''} ${D.customerMessageCategories.find(c => c.key === a.category)?.name || a.category}</span>
+              <span>·</span>
+              <span>👁 ${a.views.toLocaleString()} views</span>
+              <span>·</span>
+              <span>⭐ ${a.rating}</span>
+              <span>·</span>
+              <span>Updated ${a.updated}</span>
+            </div>
+          </div>
+          <div style="color:var(--mga-accent); font-size:1.2rem; flex-shrink:0;">→</div>
+        </div>`).join('')}
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🔥 POPULAR RIGHT NOW</div>
+        ${popular.map((a,i) => `
+          <div style="padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); cursor:pointer;" onclick="window.showAlert('Opening: ${a.title}')">
+            <div style="display:flex; gap:6px; align-items:flex-start;">
+              <div style="color:var(--mga-accent); font-weight:700; font-size:0.85rem;">${i+1}.</div>
+              <div style="flex:1;">
+                <div style="font-size:0.85rem; font-weight:600;">${a.title}</div>
+                <div style="color:var(--text-muted); font-size:0.72rem;">👁 ${a.views.toLocaleString()} · ⭐ ${a.rating}</div>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💬 STILL STUCK?</div>
+        <div style="font-size:0.82rem; line-height:1.7; margin-bottom: var(--space-sm);">Didn't find what you need? Our team is one click away.</div>
+        <button class="btn btn-primary btn-sm" style="width:100%; margin-bottom: 4px;" onclick="window.setState({screen:'cust-msg-new'})">✏ Send a Message</button>
+        <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="window.setState({screen:'cust-msg-chat'})">⚡ Live Chat</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerMessagesTickets() {
+  const filter = state.custTktFilter || 'all';
+  let tickets = D.customerSupportTickets;
+  if (filter === 'open') tickets = tickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed');
+  if (filter === 'resolved') tickets = tickets.filter(t => t.status === 'Resolved' || t.status === 'Closed');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Support Tickets</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Every conversation you've had with us · with SLA tracking and resolution details</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.setState({screen:'cust-msg-new'})">✏ New Ticket</button>
+  </div>
+
+  ${_custMsgSubNav('cust-msg-tickets')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Total Tickets</div><div class="kpi-value">${D.customerSupportTickets.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Open</div><div class="kpi-value warning">${D.customerSupportTickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Resolution</div><div class="kpi-value" style="font-size:1.2rem;">6.2 hrs</div></div>
+    <div class="kpi-card"><div class="kpi-label">SLA Met</div><div class="kpi-value" style="color:var(--status-green);">100%</div></div>
+  </div>
+
+  <div style="display:flex; gap:var(--space-xs); margin-bottom: var(--space-lg);">
+    <div class="cust-pill${filter==='all'?' active':''}" onclick="window.setState({custTktFilter:'all'})">All <span class="cust-pill-count">${D.customerSupportTickets.length}</span></div>
+    <div class="cust-pill${filter==='open'?' active':''}" onclick="window.setState({custTktFilter:'open'})">Open <span class="cust-pill-count">${D.customerSupportTickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed').length}</span></div>
+    <div class="cust-pill${filter==='resolved'?' active':''}" onclick="window.setState({custTktFilter:'resolved'})">Resolved <span class="cust-pill-count">${D.customerSupportTickets.filter(t => t.status === 'Resolved' || t.status === 'Closed').length}</span></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Ticket #</th><th>Subject</th><th>Category</th><th>Priority</th><th>Status</th><th>Created</th><th>Assigned To</th><th>${filter==='resolved'?'Resolved':'SLA Target'}</th><th>Action</th></tr></thead>
+      <tbody>
+        ${tickets.map(t => `
+        <tr style="cursor:pointer;" onclick="${t.linked_conv ? `window.setState({screen:'cust-msg-thread', currentConversationId:'${t.linked_conv}'})` : "window.showAlert('Ticket detail')"}">
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong style="color:var(--mga-accent);">${t.id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${t.subject}</strong></td>
+          <td style="white-space:nowrap;">${D.customerMessageCategories.find(c => c.key === t.category)?.icon || ''} ${D.customerMessageCategories.find(c => c.key === t.category)?.name || t.category}</td>
+          <td style="white-space:nowrap;">${badge(t.priority === 'High' ? 'red' : t.priority === 'Normal' ? 'blue' : 'gray', t.priority)}</td>
+          <td style="white-space:nowrap;">${badge(t.statusColor, t.status)}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${t.created}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${t.assigned}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${t.resolved || t.sla_target || '—'}</td>
+          <td onclick="event.stopPropagation();">
+            ${t.linked_conv ? `<button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'cust-msg-thread', currentConversationId:'${t.linked_conv}'})">View Thread</button>` : '<button class="btn btn-ghost btn-sm">View</button>'}
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+    ${tickets.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding:var(--space-xl);">No tickets match this filter.</div>' : ''}
+  </div>`;
+}
+
+// ─── Customer Profile & Account Settings Module ───
+function _custProfileSubNav(active) {
+  const tabs = [
+    { key: 'cust-profile',          label: 'Overview',      icon: '👤' },
+    { key: 'cust-profile-personal', label: 'Personal Info', icon: '📝' },
+    { key: 'cust-profile-security', label: 'Security',      icon: '🔒' },
+    { key: 'cust-profile-notifs',   label: 'Notifications', icon: '🔔' },
+    { key: 'cust-profile-payment',  label: 'Payment',       icon: '💳' },
+    { key: 'cust-profile-linked',   label: 'Linked &amp; AI', icon: '🔗' },
+    { key: 'cust-profile-privacy',  label: 'Privacy',       icon: '🛡' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _custVerifiedPill(verified) {
+  return verified
+    ? '<span style="display:inline-flex; gap:4px; align-items:center; color:var(--status-green); font-size:0.72rem; font-weight:600;">✓ Verified</span>'
+    : '<span style="display:inline-flex; gap:4px; align-items:center; color:var(--status-amber); font-size:0.72rem; font-weight:600;">⚠ Unverified</span>';
+}
+
+function renderCustomerProfileDashboard() {
+  const u = D.USERS.customer;
+  const p = D.customerProducer;
+  const personal = D.customerProfilePersonal;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Profile &amp; Account Settings</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Manage your information, security, and preferences · changes sync to all your policies in real time</div>
+    </div>
+    <button class="btn btn-secondary" onclick="window.showAlert('Opening message composer to ${p.name}')">💬 Contact My Producer</button>
+  </div>
+
+  ${kpiCards(D.customerProfileKPIs, 6)}
+
+  ${_custProfileSubNav('cust-profile')}
+
+  <div style="background: linear-gradient(135deg, rgba(108,92,231,0.12), rgba(63,81,181,0.05)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg); display:flex; gap:var(--space-md); align-items:center;">
+    <div class="producer-avatar" style="width:72px; height:72px; font-size:1.4rem; background:linear-gradient(135deg, var(--customer-primary), var(--customer-accent));">${u.avatar}</div>
+    <div style="flex:1;">
+      <div style="font-size:1.3rem; font-weight:800;">${personal.legal_name}</div>
+      <div style="color:var(--text-muted); font-size:0.85rem;">${personal.title} · ${personal.company}</div>
+      <div style="color:var(--text-muted); font-size:0.78rem; margin-top:4px;">Client since Jun 2019 · James-grade verified</div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="window.showAlert('Photo upload opened')">📸 Change Photo</button>
+  </div>
+
+  <div class="cust-profile-grid">
+    <div class="cust-profile-card" onclick="window.setState({screen:'cust-profile-personal'})">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div style="font-size:2rem;">📝</div>
+        ${_custVerifiedPill(true)}
+      </div>
+      <h3>Personal &amp; Contact</h3>
+      <p style="color:var(--text-muted); font-size:0.82rem;">Name, email, phone, addresses, risk locations</p>
+      <div style="margin-top: var(--space-sm); font-size:0.78rem; color:var(--text-muted);">
+        <div>📧 ${personal.primary_email}</div>
+        <div>📱 ${personal.primary_phone}</div>
+        <div>📍 ${personal.mailing_address.city}, ${personal.mailing_address.state}</div>
+      </div>
+      <div style="color:var(--mga-accent); font-size:0.82rem; margin-top: var(--space-sm);">Edit →</div>
+    </div>
+
+    <div class="cust-profile-card" onclick="window.setState({screen:'cust-profile-security'})">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div style="font-size:2rem;">🔒</div>
+        <span style="background:rgba(0,230,118,0.15); color:var(--status-green); padding:2px 8px; border-radius:999px; font-size:0.68rem; font-weight:700;">2FA ON</span>
+      </div>
+      <h3>Security</h3>
+      <p style="color:var(--text-muted); font-size:0.82rem;">Password, 2FA, active devices, login history</p>
+      <div style="margin-top: var(--space-sm); font-size:0.78rem; color:var(--text-muted);">
+        <div>🔑 Password: Strong · changed ${D.customerProfileSecurity.password_last_changed}</div>
+        <div>📱 3 active sessions</div>
+        <div>🔓 Face ID passkey enabled</div>
+      </div>
+      <div style="color:var(--mga-accent); font-size:0.82rem; margin-top: var(--space-sm);">Manage →</div>
+    </div>
+
+    <div class="cust-profile-card" onclick="window.setState({screen:'cust-profile-notifs'})">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div style="font-size:2rem;">🔔</div>
+        <span style="background:rgba(108,92,231,0.15); color:var(--mga-accent); padding:2px 8px; border-radius:999px; font-size:0.68rem; font-weight:700;">6 CATEGORIES</span>
+      </div>
+      <h3>Notifications</h3>
+      <p style="color:var(--text-muted); font-size:0.82rem;">Email, SMS, push preferences by category</p>
+      <div style="margin-top: var(--space-sm); font-size:0.78rem; color:var(--text-muted);">
+        <div>📧 Email: ${D.customerProfileNotifPrefs.categories.filter(c => c.email).length} of ${D.customerProfileNotifPrefs.categories.length}</div>
+        <div>💬 SMS: ${D.customerProfileNotifPrefs.categories.filter(c => c.sms).length} of ${D.customerProfileNotifPrefs.categories.length}</div>
+        <div>🌙 Quiet hours: 9 PM – 7 AM</div>
+      </div>
+      <div style="color:var(--mga-accent); font-size:0.82rem; margin-top: var(--space-sm);">Customize →</div>
+    </div>
+
+    <div class="cust-profile-card" onclick="window.setState({screen:'cust-profile-payment'})">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div style="font-size:2rem;">💳</div>
+        <span style="background:rgba(0,230,118,0.15); color:var(--status-green); padding:2px 8px; border-radius:999px; font-size:0.68rem; font-weight:700;">${D.customerPaymentMethods.length} METHODS</span>
+      </div>
+      <h3>Payment Methods</h3>
+      <p style="color:var(--text-muted); font-size:0.82rem;">Saved cards, bank accounts, autopay defaults</p>
+      <div style="margin-top: var(--space-sm); font-size:0.78rem; color:var(--text-muted);">
+        ${D.customerPaymentMethods.slice(0,2).map(m => `<div>${m.type === 'ACH' ? '🏦' : '💳'} ${m.label}${m.default ? ' · Default' : ''}</div>`).join('')}
+        <div>🔄 ${D.customerAutopayPlans.filter(a => a.status === 'Active').length} policies on autopay</div>
+      </div>
+      <div style="color:var(--mga-accent); font-size:0.82rem; margin-top: var(--space-sm);">Manage →</div>
+    </div>
+
+    <div class="cust-profile-card" onclick="window.setState({screen:'cust-profile-linked'})">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div style="font-size:2rem;">🔗</div>
+        <span style="background:rgba(108,92,231,0.15); color:var(--mga-accent); padding:2px 8px; border-radius:999px; font-size:0.68rem; font-weight:700;">${D.customerProfileDependents.length + D.customerProfileAdditionalInsureds.length} LINKED</span>
+      </div>
+      <h3>Linked Policies &amp; Parties</h3>
+      <p style="color:var(--text-muted); font-size:0.82rem;">Dependents, authorized users, additional insureds</p>
+      <div style="margin-top: var(--space-sm); font-size:0.78rem; color:var(--text-muted);">
+        <div>👥 ${D.customerProfileDependents.length} authorized contacts</div>
+        <div>🏢 ${D.customerProfileAdditionalInsureds.length} additional insureds</div>
+        <div>📋 ${D.customerPolicies.length} active policies</div>
+      </div>
+      <div style="color:var(--mga-accent); font-size:0.82rem; margin-top: var(--space-sm);">View →</div>
+    </div>
+
+    <div class="cust-profile-card" onclick="window.setState({screen:'cust-profile-privacy'})">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div style="font-size:2rem;">🛡</div>
+        <span style="background:rgba(0,230,118,0.15); color:var(--status-green); padding:2px 8px; border-radius:999px; font-size:0.68rem; font-weight:700;">GLBA COMPLIANT</span>
+      </div>
+      <h3>Privacy &amp; Data</h3>
+      <p style="color:var(--text-muted); font-size:0.82rem;">What we share, with whom, and why · full data export</p>
+      <div style="margin-top: var(--space-sm); font-size:0.78rem; color:var(--text-muted);">
+        <div>📤 Data shared with ${D.customerProfilePrivacy.data_shared_with.length} parties</div>
+        <div>📦 ${D.customerProfilePrivacy.export_requests.length} export request${D.customerProfilePrivacy.export_requests.length===1?'':'s'}</div>
+        <div>✓ Consent log up to date</div>
+      </div>
+      <div style="color:var(--mga-accent); font-size:0.82rem; margin-top: var(--space-sm);">Review →</div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-top: var(--space-lg);">
+    <div class="section-title">📊 PROFILE COMPLETENESS</div>
+    <div style="display:flex; gap:var(--space-md); align-items:center;">
+      <div style="flex:1;">
+        <div style="background:var(--bg-card); height:14px; border-radius:7px; overflow:hidden;"><div style="height:100%; width:94%; background:linear-gradient(90deg, var(--mga-accent), var(--status-green));"></div></div>
+        <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:0.78rem; color:var(--text-muted);">
+          <span>12 of 14 key fields verified</span>
+          <strong style="color:var(--status-green);">94%</strong>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="window.setState({screen:'cust-profile-personal'})">Complete →</button>
+    </div>
+    <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem;">
+      <strong>Missing:</strong> Secondary business phone verification · W-9 annual refresh (due 2026-12-31)
+    </div>
+  </div>`;
+}
+
+function renderCustomerProfilePersonal() {
+  const p = D.customerProfilePersonal;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Personal &amp; Contact Information</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Edit your name, contact details, and business locations · changes sync to every policy instantly</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('✓ Profile saved · changes applied to all 4 policies')">💾 Save Changes</button>
+  </div>
+
+  ${_custProfileSubNav('cust-profile-personal')}
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">BASIC INFO</div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Legal Name</label>
+        <input class="form-input" value="${p.legal_name}"/>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Preferred Name (what we'll call you)</label>
+        <input class="form-input" value="${p.preferred_name}"/>
+      </div>
+      <div class="form-row" style="margin-bottom: var(--space-md);">
+        <div class="form-group"><label class="form-label">Company</label><input class="form-input" value="${p.company}"/></div>
+        <div class="form-group"><label class="form-label">Title</label><input class="form-input" value="${p.title}"/></div>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Date of Birth</label>
+        <input class="form-input" type="date" value="${p.dob}"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">FEIN (masked) <span style="color:var(--text-muted); font-size:0.72rem;">🔒 high-risk</span></label>
+          <input class="form-input" value="${p.fein_masked}" disabled style="font-family:monospace;"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">SSN (masked) <span style="color:var(--text-muted); font-size:0.72rem;">🔒 high-risk</span></label>
+          <input class="form-input" value="${p.ssn_masked}" disabled style="font-family:monospace;"/>
+        </div>
+      </div>
+      <div style="margin-top: var(--space-sm); font-size:0.75rem; color:var(--text-muted);">
+        💡 Changes to FEIN or SSN require verification. <a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'cust-msg-new', custMsgNewCategory:'technical'})">Contact your producer →</a>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">CONTACT</div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Primary Email ${_custVerifiedPill(p.primary_email_verified)}</label>
+        <input class="form-input" type="email" value="${p.primary_email}"/>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Secondary Email ${_custVerifiedPill(p.secondary_email_verified)}</label>
+        <input class="form-input" type="email" value="${p.secondary_email}"/>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Business Phone ${_custVerifiedPill(p.primary_phone_verified)}</label>
+        <input class="form-input" type="tel" value="${p.primary_phone}"/>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Mobile Phone ${_custVerifiedPill(p.mobile_phone_verified)}</label>
+        <input class="form-input" type="tel" value="${p.mobile_phone}"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Preferred Language</label><select class="form-input"><option>English</option><option>Spanish</option><option>Chinese</option><option>Vietnamese</option></select></div>
+        <div class="form-group"><label class="form-label">Contact Method</label><select class="form-input"><option>Email</option><option>Phone</option><option>Text</option></select></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">📍 MAILING ADDRESS ${_custVerifiedPill(p.mailing_address.verified)}</div>
+      <button class="btn btn-secondary btn-sm" onclick="window.showAlert('✓ Address updated on all 4 policies')">🔁 Update All Policies</button>
+    </div>
+    <div class="form-row" style="margin-bottom: var(--space-md);">
+      <div class="form-group" style="flex:2;"><label class="form-label">Street</label><input class="form-input" value="${p.mailing_address.street}"/></div>
+      <div class="form-group"><label class="form-label">Suite / Unit</label><input class="form-input" value="${p.mailing_address.street2}"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:2;"><label class="form-label">City</label><input class="form-input" value="${p.mailing_address.city}"/></div>
+      <div class="form-group"><label class="form-label">State</label><input class="form-input" value="${p.mailing_address.state}"/></div>
+      <div class="form-group"><label class="form-label">ZIP</label><input class="form-input" value="${p.mailing_address.zip}"/></div>
+    </div>
+    <div style="margin-top: var(--space-sm); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--text-muted);">
+      💡 Address verified via USPS. Changes instantly sync to underwriting, billing, and certificates on every policy.
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">📍 RISK / BUSINESS LOCATIONS (${p.risk_locations.length})</div>
+      <button class="btn btn-secondary btn-sm" onclick="window.showAlert('+ Add new location — triggers underwriting review')">+ Add Location</button>
+    </div>
+    ${p.risk_locations.map(loc => `
+      <div class="cust-autopay-row">
+        <div style="font-size:2rem;">${loc.primary ? '🏢' : '📍'}</div>
+        <div style="flex:1;">
+          <div style="display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap;">
+            <strong>${loc.label}</strong>
+            ${loc.primary ? '<span class="cust-policy-tag" style="background:rgba(108,92,231,0.15); color:var(--mga-accent);">Primary</span>' : ''}
+            ${_custVerifiedPill(loc.verified)}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.82rem; margin-top:2px;">${loc.address}</div>
+        </div>
+        <div style="display:flex; gap:4px;">
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Editing ${loc.label}')">Edit</button>
+          ${!loc.primary ? `<button class="btn btn-ghost btn-sm" onclick="window.showAlert('Remove ${loc.label} — UW review required')">Remove</button>` : ''}
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderCustomerProfileSecurity() {
+  const s = D.customerProfileSecurity;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Security Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Password, two-factor authentication, active devices, and security activity</div>
+    </div>
+  </div>
+
+  ${_custProfileSubNav('cust-profile-security')}
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔑 PASSWORD</div>
+      <div style="font-size:0.85rem; line-height:1.9; margin-bottom: var(--space-md);">
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Strength</span><strong style="color:var(--status-green);">${s.password_strength}</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Last changed</span><span>${s.password_last_changed}</span></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="window.showAlert('Password change flow opened')">Change Password →</button>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div class="section-title">🔐 TWO-FACTOR AUTHENTICATION</div>
+        <span style="background:rgba(0,230,118,0.15); color:var(--status-green); padding:3px 10px; border-radius:999px; font-size:0.72rem; font-weight:700;">ON</span>
+      </div>
+      ${s.two_factor.methods.map(m => `
+        <div class="cust-autopay-row" style="padding: var(--space-sm); margin-bottom: 6px;">
+          <div style="font-size:1.6rem;">${m.icon}</div>
+          <div style="flex:1;">
+            <div style="display:flex; gap:6px; align-items:center;">
+              <strong style="font-size:0.85rem;">${m.label}</strong>
+              ${m.primary ? '<span class="cust-policy-tag" style="background:rgba(108,92,231,0.15); color:var(--mga-accent);">Primary</span>' : ''}
+              ${m.enabled ? '<span style="color:var(--status-green); font-size:0.72rem;">✓ Enabled</span>' : '<span style="color:var(--text-muted); font-size:0.72rem;">Off</span>'}
+            </div>
+          </div>
+          <label class="cust-toggle">
+            <input type="checkbox" ${m.enabled ? 'checked' : ''}/>
+            <span class="cust-toggle-slider"></span>
+          </label>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">📱 ACTIVE DEVICES (${s.sessions.length})</div>
+      <button class="btn btn-secondary btn-sm" onclick="window.showAlert('All other sessions ended — you will be logged out everywhere except this device')">🚪 Log out all other devices</button>
+    </div>
+    ${s.sessions.map(sess => `
+      <div class="cust-autopay-row">
+        <div style="font-size:1.8rem;">${sess.device.includes('iPhone') || sess.device.includes('iPad') ? '📱' : sess.device.includes('Mac') ? '💻' : '🖥'}</div>
+        <div style="flex:1;">
+          <div style="display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap;">
+            <strong>${sess.device}</strong>
+            ${sess.this_device ? '<span class="cust-policy-tag" style="background:rgba(0,230,118,0.15); color:var(--status-green);">This device</span>' : ''}
+            ${sess.trusted ? '<span class="cust-policy-tag" style="background:rgba(108,92,231,0.15); color:var(--mga-accent);">Trusted</span>' : '<span class="cust-policy-tag" style="background:rgba(255,171,0,0.15); color:var(--status-amber);">Not trusted</span>'}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${sess.location} · IP ${sess.ip} · Last active ${sess.last_active}</div>
+        </div>
+        ${!sess.this_device ? `<button class="btn btn-ghost btn-sm" onclick="window.showAlert('Ended session ${sess.id}')">🚪 Log out</button>` : '<span style="color:var(--status-green); font-size:0.72rem;">● Current</span>'}
+      </div>`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">📜 RECENT SECURITY ACTIVITY</div>
+    ${s.security_events.map(e => `
+      <div style="display:flex; gap: var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); align-items:flex-start;">
+        <div style="width:24px; height:24px; border-radius:50%; background:${e.type === 'warning' ? 'var(--status-amber)' : 'var(--status-green)'}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; flex-shrink:0;">${e.type === 'warning' ? '!' : '✓'}</div>
+        <div style="flex:1;">
+          <div style="font-size:0.88rem;">${e.event}</div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${e.ts}</div>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderCustomerProfileNotifs() {
+  const prefs = D.customerProfileNotifPrefs;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Notification Preferences</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Granular control over when, how, and about what we notify you</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('✓ Preferences saved')">💾 Save</button>
+  </div>
+
+  ${_custProfileSubNav('cust-profile-notifs')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">BY CATEGORY</div>
+    <div class="cust-notif-table">
+      <div class="cust-notif-header">
+        <div>Category</div>
+        <div style="text-align:center;">📧 Email</div>
+        <div style="text-align:center;">💬 SMS</div>
+        <div style="text-align:center;">🔔 Push</div>
+        <div style="text-align:center;">📱 In-App</div>
+      </div>
+      ${prefs.categories.map(c => `
+        <div class="cust-notif-row">
+          <div>
+            <strong style="font-size:0.88rem;">${c.label}</strong>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${c.desc}</div>
+          </div>
+          ${['email','sms','push','in_app'].map(ch => `
+            <div style="text-align:center;">
+              <label class="cust-toggle">
+                <input type="checkbox" ${c[ch] ? 'checked' : ''}/>
+                <span class="cust-toggle-slider"></span>
+              </label>
+            </div>`).join('')}
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🌙 QUIET HOURS</div>
+      <div style="display:flex; gap:var(--space-sm); align-items:center; margin-bottom: var(--space-md);">
+        <label class="cust-toggle"><input type="checkbox" ${prefs.quiet_hours.enabled ? 'checked' : ''}/><span class="cust-toggle-slider"></span></label>
+        <span style="font-size:0.88rem;">Enable quiet hours (no push/SMS during this time)</span>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Start</label><input class="form-input" type="time" value="${prefs.quiet_hours.start}"/></div>
+        <div class="form-group"><label class="form-label">End</label><input class="form-input" type="time" value="${prefs.quiet_hours.end}"/></div>
+      </div>
+      <div style="margin-top: var(--space-sm); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--text-muted);">
+        💡 Urgent claims and fraud alerts bypass quiet hours.
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">PREFERRED CHANNELS</div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Default contact channel</label>
+        <select class="form-input">
+          <option ${prefs.preferred_channel==='email'?'selected':''}>Email</option>
+          <option ${prefs.preferred_channel==='sms'?'selected':''}>SMS / Text</option>
+          <option ${prefs.preferred_channel==='push'?'selected':''}>Push notification</option>
+          <option ${prefs.preferred_channel==='phone'?'selected':''}>Phone call</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Preferred language</label>
+        <select class="form-input">
+          <option>English</option><option>Spanish</option><option>Chinese</option><option>Vietnamese</option>
+        </select>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--text-muted);">
+        ✉️ All notifications go to <strong>${D.customerProfilePersonal.primary_email}</strong>. Update email in Personal Info.
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerProfilePayment() {
+  const methods = D.customerPaymentMethods;
+  const autopay = D.customerAutopayPlans;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Payment Methods &amp; Autopay</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Manage saved cards, bank accounts, and autopay for each policy · PCI-DSS secure</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Add payment method — Stripe hosted secure form')">+ Add Method</button>
+  </div>
+
+  ${_custProfileSubNav('cust-profile-payment')}
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">💳 SAVED PAYMENT METHODS (${methods.length})</div>
+      ${methods.map(m => `
+        <div class="cust-autopay-row">
+          <div style="font-size:2rem;">${m.type==='ACH'?'🏦':m.type==='Visa'?'💳':'💳'}</div>
+          <div style="flex:1;">
+            <div style="display:flex; gap:var(--space-sm); align-items:center;">
+              <strong>${m.label}</strong>
+              ${m.default ? '<span class="cust-policy-tag" style="background:rgba(0,230,118,0.15); color:var(--status-green);">Default</span>' : ''}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${m.bank}${m.expires?' · expires '+m.expires:''} · added ${m.added}</div>
+            ${m.autopay.length > 0 ? `<div style="color:var(--status-green); font-size:0.72rem; margin-top:2px;">🔄 Autopay for ${m.autopay.length} polic${m.autopay.length===1?'y':'ies'}</div>` : ''}
+          </div>
+          <div style="display:flex; gap:4px;">
+            ${!m.default ? `<button class="btn btn-ghost btn-sm" onclick="window.showAlert('Making ${m.label} default')">Set Default</button>` : ''}
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Editing ${m.label}')">Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Removing ${m.label}')">Remove</button>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔄 AUTOPAY BY POLICY</div>
+      ${autopay.map(a => `
+        <div class="cust-autopay-row">
+          <div style="font-size:1.8rem;">${a.status==='Active'?'🔄':'⚪'}</div>
+          <div style="flex:1;">
+            <div style="display:flex; gap:var(--space-sm); align-items:center;">
+              <strong style="font-size:0.88rem;">${a.lob}</strong>
+              ${badge(a.statusColor, a.status)}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${a.frequency} · $${a.amount.toLocaleString()}/cycle</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-bill-autopay'})">${a.status==='Active'?'Manage':'Enable'}</button>
+        </div>`).join('')}
+      <button class="btn btn-secondary btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.setState({screen:'cust-bill-autopay'})">Open Autopay Manager →</button>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">🔒 PAYMENT SECURITY</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); font-size:0.85rem;">
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>PCI-DSS Certified</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.78rem;">Card data never touches Bridgepoint servers. Stored by Stripe, PCI Level 1.</p>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>Tokenized</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.78rem;">We see only last-4 and expiration. Even we can't decrypt your card data.</p>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>Fraud Protection</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.78rem;">Suspicious activity triggers immediate alerts and pauses autopay until verified.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerProfileLinked() {
+  const deps = D.customerProfileDependents;
+  const ais = D.customerProfileAdditionalInsureds;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Linked Policies, People &amp; AIs</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Authorized users, additional insureds, and your full policy portfolio</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('+ Add authorized user — triggers verification')">+ Add Person</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'cust-servicing', custServicingType:'ai', custServicingStep:2})">+ Add Additional Insured</button>
+    </div>
+  </div>
+
+  ${_custProfileSubNav('cust-profile-linked')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">👥 AUTHORIZED PEOPLE (${deps.length})</div>
+    <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom: var(--space-md);">People who can access your account and act on your behalf. Manage their permissions below.</div>
+    ${deps.map(d => `
+      <div class="cust-autopay-row">
+        <div class="producer-avatar" style="background:linear-gradient(135deg, #81c784, #66bb6a); width:44px; height:44px; font-size:0.88rem;">${d.name.split(' ').map(n=>n[0]).join('')}</div>
+        <div style="flex:1;">
+          <div style="display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap;">
+            <strong>${d.name}</strong>
+            <span class="cust-policy-tag">${d.access}</span>
+          </div>
+          <div style="color:var(--text-muted); font-size:0.78rem;">${d.role} · ${d.email} · ${d.phone}</div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">Linked to ${d.linked_policies.length} policies · added ${d.added}</div>
+        </div>
+        <div style="display:flex; gap:4px;">
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Editing access for ${d.name}')">Edit Access</button>
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Removing ${d.name}')">Remove</button>
+        </div>
+      </div>`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">🏢 ADDITIONAL INSUREDS &amp; LIENHOLDERS (${ais.length})</div>
+    <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom: var(--space-md);">Third parties named as additional insureds or lienholders on your policies.</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Relationship</th><th>Policy</th><th>Since</th><th>Expires</th><th>Action</th></tr></thead>
+      <tbody>
+        ${ais.map(ai => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${ai.name}</strong></td>
+          <td style="white-space:nowrap;">${ai.relationship}</td>
+          <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${ai.policy}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${ai.since}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${ai.expires}</td>
+          <td style="display:flex; gap:4px;">
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Viewing COI for ${ai.name}')">📄 COI</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Removing ${ai.name} — endorsement request')">Remove</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">📋 YOUR POLICIES (${D.customerPolicies.length})</div>
+    ${D.customerPolicies.map(p => `
+      <div class="cust-autopay-row" style="cursor:pointer;" onclick="window.setState({screen:'cust-policy-details', currentPolicyId:'${p.id}'})">
+        <div style="font-size:2rem;">${p.icon}</div>
+        <div style="flex:1;">
+          <div style="display:flex; gap:var(--space-sm); align-items:center;">
+            <strong>${p.type}</strong>
+            ${badge(p.statusColor, p.status)}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.78rem;">${p.carrier} · ${p.id}</div>
+          <div style="color:var(--text-muted); font-size:0.72rem;">${p.premium_display} · Expires ${p.expiry}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm">View →</button>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderCustomerProfilePrivacy() {
+  const priv = D.customerProfilePrivacy;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Privacy &amp; Data Management</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">See exactly what data is shared, with whom, and why · export or delete your data anytime · GLBA + CCPA compliant</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('✓ Data export queued · we will email a secure download link within 72 hours')">📦 Export My Data</button>
+  </div>
+
+  ${_custProfileSubNav('cust-profile-privacy')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">🔍 DATA SHARED WITH THIRD PARTIES (${priv.data_shared_with.length})</div>
+    <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom: var(--space-md);">Every party that receives any of your data, what they receive, and why. Revoke optional consents anytime.</div>
+    ${priv.data_shared_with.map(d => `
+      <div class="cust-autopay-row">
+        <div style="font-size:2rem;">${d.party.includes('Liberty')||d.party.includes('SEMC')||d.party.includes('CNA')||d.party.includes('Travelers')?'🏢':d.party.includes('ZoomInfo')?'🏛':d.party.includes('Samsara')?'📡':'🔗'}</div>
+        <div style="flex:1;">
+          <div style="display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap;">
+            <strong>${d.party}</strong>
+            ${d.revocable ? '<span class="cust-policy-tag" style="background:rgba(108,92,231,0.15); color:var(--mga-accent);">Optional</span>' : '<span class="cust-policy-tag" style="background:rgba(255,171,0,0.15); color:var(--status-amber);">Required</span>'}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${d.purpose}</div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">Fields shared: ${d.fields.join(', ')}</div>
+          <div style="color:var(--text-muted); font-size:0.72rem;">Consent given: ${d.consent}</div>
+          <div style="color:var(--text-muted); font-size:0.72rem; font-style:italic;">${d.note}</div>
+        </div>
+        ${d.revocable ? `<button class="btn btn-ghost btn-sm" onclick="window.showAlert('Revoking consent for ${d.party}')">Revoke</button>` : '<span style="color:var(--text-muted); font-size:0.72rem;">🔒 Required</span>'}
+      </div>`).join('')}
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📦 DATA EXPORT REQUESTS</div>
+      ${priv.export_requests.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No exports yet.</div>' : priv.export_requests.map(e => `
+        <div class="cust-autopay-row">
+          <div style="font-size:2rem;">📦</div>
+          <div style="flex:1;">
+            <strong style="font-size:0.88rem;">${e.type}</strong>
+            <div style="color:var(--text-muted); font-size:0.72rem;">Requested ${e.requested} · Completed ${e.completed} · ${e.size} · ${e.format}</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Downloading data export')">⬇ Download</button>
+        </div>`).join('')}
+      <button class="btn btn-primary btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.showAlert('✓ New export queued · emailed within 72h')">+ Request Full Export</button>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📜 CONSENT LOG</div>
+      ${priv.consent_log.map(c => `
+        <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); align-items:center;">
+          <div style="width:20px; height:20px; border-radius:50%; background:var(--status-green); color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.6rem;">✓</div>
+          <div style="flex:1;">
+            <div style="font-size:0.82rem;">${c.action}</div>
+            <div style="color:var(--text-muted); font-size:0.7rem;">${c.ts}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:rgba(255,82,82,0.05); border:1px solid rgba(255,82,82,0.2); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title" style="color:var(--status-red);">⚠ DANGER ZONE</div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>Delete specific data</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.78rem;">Request deletion of non-essential data (marketing prefs, activity logs). Policy and claim records are retained per state law.</p>
+        <button class="btn btn-secondary btn-sm" style="margin-top: var(--space-sm);" onclick="window.showAlert('Data deletion request opened')">Request Deletion</button>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <strong>Close account</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.78rem;">Close your portal access. Your active policies stay in force — contact your producer to cancel coverage separately.</p>
+        <button class="btn btn-secondary btn-sm" style="margin-top: var(--space-sm);" onclick="window.showAlert('Account closure flow — please confirm with your producer first')">Close Account</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── Customer Resources / Learn More Module ───
+function _custLearnSubNav(active) {
+  const tabs = [
+    { key: 'cust-resources',     label: 'Hub',          icon: '🏠' },
+    { key: 'cust-learn-search',  label: 'Browse',       icon: '📚' },
+    { key: 'cust-learn-glossary',label: 'Glossary A–Z', icon: '🔤' },
+    { key: 'cust-learn-faq',     label: 'FAQ',          icon: '❓' },
+    { key: 'cust-learn-saved',   label: 'Saved',        icon: '🔖' },
+    { key: 'cust-learn-suggest', label: 'Suggest',      icon: '💡' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _custLearnCard(a, compact) {
+  const statusBadge = {
+    'new':         { text: 'NEW',         color: 'var(--mga-accent)' },
+    'popular':     { text: '🔥 POPULAR',   color: '#ff6b6b' },
+    'recommended': { text: 'RECOMMENDED', color: 'var(--status-green)' },
+    'updated':     { text: 'UPDATED',     color: 'var(--status-blue)' }
+  }[a.status];
+  const typeIcon = a.type === 'Video' ? '▶' : a.type === 'Download' ? '⬇' : '📖';
+  return `
+    <div class="cust-learn-card${compact?' compact':''}" onclick="window.setState({screen:'cust-learn-article', currentLearnId:'${a.id}'})">
+      <div class="cust-learn-thumb">
+        <div style="font-size:${compact?'2.2rem':'3rem'};">${a.thumbnail}</div>
+        ${statusBadge ? `<span class="cust-learn-pill" style="background:${statusBadge.color};">${statusBadge.text}</span>` : ''}
+        ${a.type === 'Video' ? '<div class="cust-learn-play">▶</div>' : ''}
+      </div>
+      <div style="padding: var(--space-md); display:flex; flex-direction:column; flex:1;">
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.7rem; color:var(--text-muted); margin-bottom:6px;">
+          <span>${typeIcon} ${a.type} · ${a.read_time}</span>
+          <span>${a.level}</span>
+        </div>
+        <div style="font-size:${compact?'0.88rem':'0.95rem'}; font-weight:700; line-height:1.3; margin-bottom:6px;">${a.title}</div>
+        ${!compact ? `<div style="color:var(--text-muted); font-size:0.78rem; line-height:1.5; flex:1;">${a.excerpt}</div>` : ''}
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top: var(--space-sm); color:var(--text-muted); font-size:0.72rem;">
+          <span>👁 ${a.views.toLocaleString()}</span>
+          <span>👍 ${a.helpful}</span>
+          ${a.saved ? '<span style="color:var(--mga-accent);">🔖 Saved</span>' : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderCustomerLearnHub() {
+  const featured = D.customerLearnArticles.find(a => a.status === 'recommended') || D.customerLearnArticles[0];
+  const popular = D.customerLearnArticles.filter(a => a.status === 'popular').slice(0, 4);
+  const recent = D.customerLearnArticles.filter(a => a.status === 'new').slice(0, 3);
+  const videos = D.customerLearnArticles.filter(a => a.type === 'Video').slice(0, 3);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Learn More</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Plain-English insurance articles, videos, and guides · bite-sized and evergreen</div>
+    </div>
+    <button class="btn btn-secondary" onclick="window.setState({screen:'cust-risk'})">🎯 Personalized Risk Tools →</button>
+  </div>
+
+  ${_custLearnSubNav('cust-resources')}
+
+  <div style="background: linear-gradient(135deg, rgba(108,92,231,0.12), rgba(63,81,181,0.05)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); max-width: 720px; margin: 0 auto;">
+      <input type="text" class="form-input" style="flex:1; font-size:1rem;" placeholder="🔍 Ask anything — try 'deductible' or 'how to file a claim'" value="${state.custLearnQuery || ''}" oninput="window.setState({custLearnQuery:this.value, screen:'cust-learn-search'})"/>
+    </div>
+    <div style="margin-top: var(--space-sm); text-align:center; font-size:0.78rem; color:var(--text-muted);">
+      Try: <span style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'cust-learn-search', custLearnQuery:'deductible'})">deductible</span> · <span style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'cust-learn-search', custLearnQuery:'claim'})">claim</span> · <span style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'cust-learn-search', custLearnQuery:'COI'})">COI</span> · <span style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'cust-learn-search', custLearnQuery:'renewal'})">renewal</span>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    ${D.customerLearnCategories.filter(c => c.key !== 'all').map(c => `
+      <div class="cust-learn-category" onclick="window.setState({screen:'cust-learn-search', custLearnCategory:'${c.key}'})">
+        <div style="font-size:2rem;">${c.icon}</div>
+        <div style="font-size:0.82rem; font-weight:600; margin-top:6px;">${c.name}</div>
+      </div>`).join('')}
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">⭐ FEATURED THIS WEEK</div>
+      <div class="cust-learn-featured" onclick="window.setState({screen:'cust-learn-article', currentLearnId:'${featured.id}'})">
+        <div style="font-size:4.5rem;">${featured.thumbnail}</div>
+        <div style="flex:1;">
+          <div style="display:flex; gap:var(--space-sm); align-items:center; margin-bottom:6px;">
+            <span class="cust-learn-pill" style="background:var(--status-green); position:static;">RECOMMENDED</span>
+            <span style="color:var(--text-muted); font-size:0.72rem;">${featured.type} · ${featured.read_time}</span>
+          </div>
+          <h3 style="margin:0; font-size:1.3rem;">${featured.title}</h3>
+          <div style="color:var(--text-muted); font-size:0.85rem; margin-top:6px;">${featured.excerpt}</div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:var(--space-sm);">By ${featured.author} · ${featured.published}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔖 YOUR SAVED (${D.customerLearnBookmarks.length})</div>
+      ${D.customerLearnBookmarks.map(id => {
+        const a = D.customerLearnArticles.find(x => x.id === id);
+        if (!a) return '';
+        return `
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;" onclick="window.setState({screen:'cust-learn-article', currentLearnId:'${a.id}'})">
+            <div style="font-size:0.88rem; font-weight:600;">${a.title}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${a.type} · ${a.read_time}</div>
+          </div>`;
+      }).join('')}
+      <button class="btn btn-ghost btn-sm" style="margin-top: var(--space-sm); width:100%;" onclick="window.setState({screen:'cust-learn-saved'})">See all saved →</button>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">🔥 POPULAR RIGHT NOW</div>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-learn-search'})">Browse all →</button>
+    </div>
+    <div class="cust-learn-grid">
+      ${popular.map(a => _custLearnCard(a, false)).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🎥 QUICK VIDEOS</div>
+      ${videos.map(v => `
+        <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); cursor:pointer; align-items:center;" onclick="window.setState({screen:'cust-learn-article', currentLearnId:'${v.id}'})">
+          <div style="position:relative; width:72px; height:54px; background:linear-gradient(135deg, rgba(108,92,231,0.2), rgba(63,81,181,0.1)); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:1.8rem;">
+            ${v.thumbnail}
+            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.3); color:#fff; border-radius:var(--radius-sm);">▶</div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:0.85rem; font-weight:600;">${v.title}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${v.read_time} · 👁 ${v.views.toLocaleString()}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🆕 FRESH CONTENT</div>
+      ${recent.map(r => `
+        <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;" onclick="window.setState({screen:'cust-learn-article', currentLearnId:'${r.id}'})">
+          <div style="display:flex; gap:var(--space-sm); align-items:flex-start;">
+            <div style="font-size:1.6rem;">${r.thumbnail}</div>
+            <div style="flex:1;">
+              <div style="font-size:0.85rem; font-weight:600;">${r.title}</div>
+              <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${r.type} · ${r.read_time} · ${r.published}</div>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(108,92,231,0.02)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-lg); margin-top:var(--space-lg); text-align:center;">
+    <div style="font-size:2rem;">🎯</div>
+    <h3 style="margin: var(--space-sm) 0 4px;">Looking for personalized tools?</h3>
+    <div style="color:var(--text-muted); font-size:0.88rem; margin-bottom: var(--space-md);">Head over to Risk Management for your personal risk score, action plan, and assessments tailored to your policies.</div>
+    <button class="btn btn-primary" onclick="window.setState({screen:'cust-risk'})">Go to Risk Management →</button>
+  </div>`;
+}
+
+function renderCustomerLearnSearch() {
+  const cat = state.custLearnCategory || 'all';
+  const q = (state.custLearnQuery || '').toLowerCase();
+  let arts = D.customerLearnArticles;
+  if (cat !== 'all') {
+    if (cat === 'videos') arts = arts.filter(a => a.type === 'Video');
+    else if (cat === 'downloads') arts = arts.filter(a => a.type === 'Download');
+    else arts = arts.filter(a => a.category === cat);
+  }
+  if (q) arts = arts.filter(a => (a.title + ' ' + a.excerpt + ' ' + a.tags.join(' ')).toLowerCase().includes(q));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Browse Articles &amp; Videos</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${arts.length} result${arts.length===1?'':'s'} · filter by category or search</div>
+    </div>
+  </div>
+
+  ${_custLearnSubNav('cust-learn-search')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-sm);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search articles, videos, and downloads..." value="${state.custLearnQuery || ''}" oninput="window.setState({custLearnQuery:this.value})"/>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({custLearnCategory:'all', custLearnQuery:''})">Reset</button>
+    </div>
+    <div style="display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+      ${D.customerLearnCategories.map(c => `<div class="cust-pill${cat===c.key?' active':''}" onclick="window.setState({custLearnCategory:'${c.key}'})">${c.icon} ${c.name}</div>`).join('')}
+    </div>
+  </div>
+
+  ${arts.length === 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-2xl); text-align:center;">
+      <div style="font-size:3rem; margin-bottom: var(--space-md);">🔍</div>
+      <h3 style="margin:0;">No results found</h3>
+      <div style="color:var(--text-muted); margin-top: var(--space-sm);">Try different keywords or browse a category — or suggest a topic you'd like us to cover.</div>
+      <button class="btn btn-primary btn-sm" style="margin-top: var(--space-md);" onclick="window.setState({screen:'cust-learn-suggest'})">💡 Suggest a Topic</button>
+    </div>
+  ` : `
+    <div class="cust-learn-grid">
+      ${arts.map(a => _custLearnCard(a, false)).join('')}
+    </div>
+  `}`;
+}
+
+function renderCustomerLearnArticle() {
+  const a = D.customerLearnArticles.find(x => x.id === state.currentLearnId) || D.customerLearnArticles[0];
+  const related = D.customerLearnArticles.filter(x => x.category === a.category && x.id !== a.id).slice(0, 3);
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'cust-learn-search'})" style="padding:4px 8px; margin-left:-8px;">← Back to Browse</button>
+  </div>
+
+  ${_custLearnSubNav('cust-learn-article')}
+
+  <div style="display:grid; grid-template-columns: 3fr 1fr; gap: var(--space-lg);">
+    <article class="cust-learn-article">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); margin-bottom: var(--space-md); flex-wrap:wrap;">
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <span class="cust-policy-tag" style="background:rgba(108,92,231,0.15); color:var(--mga-accent);">${D.customerLearnCategories.find(c => c.key === a.category)?.icon || '📚'} ${D.customerLearnCategories.find(c => c.key === a.category)?.name || a.category}</span>
+          ${a.tags.map(t => `<span class="cust-policy-tag">${t}</span>`).join('')}
+          <span class="cust-policy-tag">${a.level}</span>
+        </div>
+        <div style="display:flex; gap:4px;">
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('${a.saved?'Removed from':'Saved to'} bookmarks')">${a.saved ? '🔖 Saved' : '🔖 Save'}</button>
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Share link copied')">🔗 Share</button>
+          ${a.type === 'Download' ? `<button class="btn btn-primary btn-sm" onclick="window.showAlert('Downloading ${a.title}')">⬇ Download</button>` : ''}
+        </div>
+      </div>
+
+      <h1 style="font-size:2rem; line-height:1.15; margin-bottom: var(--space-sm);">${a.title}</h1>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">
+        By <strong style="color:var(--text-primary);">${a.author}</strong> · ${a.type === 'Video' ? '🎥 ' + a.read_time : a.type === 'Download' ? '📥 ' + a.read_time : '📖 ' + a.read_time + ' read'} · Published ${a.published}${a.updated !== a.published ? ' · Updated ' + a.updated : ''}
+      </div>
+
+      ${a.type === 'Video' ? `
+        <div class="cust-learn-video-player">
+          <div style="font-size:5rem;">${a.thumbnail}</div>
+          <div class="cust-learn-video-overlay">
+            <button class="cust-learn-video-play" onclick="window.showAlert('Playing video · transcript available')">▶</button>
+            <div style="color:#fff; font-size:0.82rem; margin-top: var(--space-md);">${a.read_time} · Transcript available</div>
+          </div>
+        </div>
+      ` : `
+        <div class="cust-learn-hero">
+          <div style="font-size:6rem;">${a.thumbnail}</div>
+        </div>
+      `}
+
+      <div class="cust-learn-body">
+        <p style="font-size:1.08rem; color:var(--text-secondary); line-height:1.7;"><em>${a.excerpt}</em></p>
+
+        <h2>The short answer</h2>
+        <p>If you're pressed for time, here it is: insurance concepts don't have to be confusing. Most of what looks complicated is just jargon. Let's break this down using plain language, a real example, and the two or three things that actually matter for you and your business.</p>
+
+        <h2>What this actually means</h2>
+        <p>Every policy has three big levers: what's covered, how much gets paid when something happens, and what you pay for the whole deal. The article topic above plays a role in all three — so getting it right can save you thousands over the life of a single policy.</p>
+        <p>There are typically two or three common approaches. Each has tradeoffs, and the "best" choice depends on your risk tolerance, cash flow, and the specific situation. We'll walk through each.</p>
+
+        <h2>A quick example</h2>
+        <p>Imagine a loss happens tomorrow. Your carrier looks at the policy, applies the relevant provisions, and decides what gets paid. The difference between "great" and "not great" outcomes often comes down to choices you made <em>at purchase time</em> — not at claim time.</p>
+
+        <h2>What to do next</h2>
+        <ul>
+          <li>Review your current policy for this specific topic — check your declarations page.</li>
+          <li>Compare against your exposure (what could go wrong) and your comfort level.</li>
+          <li>Ask your producer for a side-by-side of alternatives if you're unsure.</li>
+          <li>Make a note to revisit this at your next renewal.</li>
+        </ul>
+
+        <div class="cust-learn-callout">
+          <strong>💡 Pro tip</strong>
+          <p>Most of these decisions don't need to be made alone. Your producer, Sarah Chen, can walk you through tradeoffs in a 10-minute call. <a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'cust-msg-new'})">Send her a message →</a></p>
+        </div>
+      </div>
+
+      <div class="cust-learn-feedback">
+        <div style="font-weight:700; margin-bottom: var(--space-sm);">Was this helpful?</div>
+        <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-md);">
+          <button class="btn btn-secondary" onclick="window.showAlert('🙏 Thanks for the feedback!')">👍 Yes (${a.helpful})</button>
+          <button class="btn btn-secondary" onclick="window.showAlert('Thanks — what could we have done better?')">👎 Not really</button>
+        </div>
+        <div style="color:var(--text-muted); font-size:0.82rem;">Still stuck? <a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'cust-msg-new'})">Message your producer</a> or <a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'cust-learn-suggest'})">suggest a topic</a>.</div>
+      </div>
+    </article>
+
+    <aside style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">RELATED</div>
+        ${related.map(r => `
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;" onclick="window.setState({screen:'cust-learn-article', currentLearnId:'${r.id}'})">
+            <div style="display:flex; gap:var(--space-sm); align-items:flex-start;">
+              <div style="font-size:1.6rem;">${r.thumbnail}</div>
+              <div>
+                <div style="font-size:0.85rem; font-weight:600; line-height:1.3;">${r.title}</div>
+                <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${r.type} · ${r.read_time}</div>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(108,92,231,0.02)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🎯 WANT IT PERSONALIZED?</div>
+        <div style="font-size:0.82rem; line-height:1.5; margin-bottom: var(--space-sm);">Risk Management has assessments and a personal action plan based on your specific policies.</div>
+        <button class="btn btn-primary btn-sm" style="width:100%;" onclick="window.setState({screen:'cust-risk'})">Open Risk Management →</button>
+      </div>
+    </aside>
+  </div>`;
+}
+
+function renderCustomerLearnGlossary() {
+  const q = (state.custLearnGlossaryQuery || '').toLowerCase();
+  let terms = D.customerLearnGlossary;
+  if (q) terms = terms.filter(t => (t.term + ' ' + t.definition).toLowerCase().includes(q));
+  const byLetter = terms.reduce((acc, t) => { (acc[t.letter] = acc[t.letter] || []).push(t); return acc; }, {});
+  const letters = Object.keys(byLetter).sort();
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Glossary A–Z</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Plain-English definitions for ${D.customerLearnGlossary.length} insurance terms</div>
+    </div>
+  </div>
+
+  ${_custLearnSubNav('cust-learn-glossary')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <input type="text" class="form-input" style="width:100%;" placeholder="🔍 Search definitions..." value="${state.custLearnGlossaryQuery || ''}" oninput="window.setState({custLearnGlossaryQuery:this.value})"/>
+  </div>
+
+  <div class="cust-learn-alphabet">
+    ${'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(l => `<a class="cust-learn-letter${byLetter[l] ? ' active' : ' disabled'}" href="#glossary-${l}">${l}</a>`).join('')}
+  </div>
+
+  ${terms.length === 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-2xl); text-align:center;">
+      <div style="font-size:3rem; margin-bottom: var(--space-md);">🔍</div>
+      <h3 style="margin:0;">No matching terms</h3>
+      <div style="color:var(--text-muted); margin-top: var(--space-sm);">Try a different search or suggest a term we should add.</div>
+    </div>
+  ` : letters.map(l => `
+    <div id="glossary-${l}" style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div style="display:flex; gap:var(--space-md); align-items:baseline; margin-bottom:var(--space-md); border-bottom:1px solid var(--border-subtle); padding-bottom:var(--space-sm);">
+        <div style="font-size:2.4rem; font-weight:800; color:var(--mga-accent); line-height:1;">${l}</div>
+        <div style="color:var(--text-muted); font-size:0.82rem;">${byLetter[l].length} term${byLetter[l].length===1?'':'s'}</div>
+      </div>
+      ${byLetter[l].map(t => `
+        <div class="cust-learn-term">
+          <div style="font-weight:700; font-size:1rem; margin-bottom:4px;">${t.term}</div>
+          <div style="color:var(--text-secondary); font-size:0.88rem; line-height:1.6;">${t.definition}</div>
+        </div>`).join('')}
+    </div>
+  `).join('')}`;
+}
+
+function renderCustomerLearnFAQ() {
+  const q = (state.custLearnFaqQuery || '').toLowerCase();
+  const cat = state.custLearnFaqCategory || 'all';
+  let faqs = D.customerLearnFAQs;
+  if (cat !== 'all') faqs = faqs.filter(f => f.category === cat);
+  if (q) faqs = faqs.filter(f => (f.q + ' ' + f.answer).toLowerCase().includes(q));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Frequently Asked Questions</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${D.customerLearnFAQs.length} common questions · searchable · short answers</div>
+    </div>
+  </div>
+
+  ${_custLearnSubNav('cust-learn-faq')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-sm);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Ask a question..." value="${state.custLearnFaqQuery || ''}" oninput="window.setState({custLearnFaqQuery:this.value})"/>
+    </div>
+    <div style="display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+      <div class="cust-pill${cat==='all'?' active':''}" onclick="window.setState({custLearnFaqCategory:'all'})">All</div>
+      ${D.customerLearnCategories.filter(c => !['all','videos','downloads'].includes(c.key)).map(c => `<div class="cust-pill${cat===c.key?' active':''}" onclick="window.setState({custLearnFaqCategory:'${c.key}'})">${c.icon} ${c.name}</div>`).join('')}
+    </div>
+  </div>
+
+  ${faqs.length === 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-2xl); text-align:center;">
+      <div style="font-size:3rem; margin-bottom: var(--space-md);">❓</div>
+      <h3 style="margin:0;">We couldn't find an answer</h3>
+      <div style="color:var(--text-muted); margin-top: var(--space-sm);">Try different wording, ask your producer, or suggest a topic.</div>
+      <div style="display:flex; gap:var(--space-sm); justify-content:center; margin-top: var(--space-md);">
+        <button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'cust-msg-new'})">💬 Message Producer</button>
+        <button class="btn btn-primary btn-sm" onclick="window.setState({screen:'cust-learn-suggest'})">💡 Suggest Topic</button>
+      </div>
+    </div>
+  ` : `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      ${faqs.map(f => `
+        <details class="cust-learn-faq-item">
+          <summary>
+            <span style="flex:1;"><strong>${f.q}</strong></span>
+            <span style="color:var(--text-muted); font-size:0.72rem; flex-shrink:0;">👁 ${f.views.toLocaleString()}</span>
+            <span class="cust-learn-faq-chevron">▼</span>
+          </summary>
+          <div style="padding: var(--space-sm) 0 var(--space-md); color:var(--text-secondary); font-size:0.9rem; line-height:1.6;">${f.answer}</div>
+          <div style="display:flex; gap:var(--space-sm); padding-top: var(--space-sm); border-top:1px solid var(--border-subtle); font-size:0.78rem;">
+            <span style="color:var(--text-muted);">Helpful?</span>
+            <a style="color:var(--mga-accent); cursor:pointer;" onclick="window.showAlert('🙏 Thanks!')">👍 Yes</a>
+            <a style="color:var(--mga-accent); cursor:pointer;" onclick="window.showAlert('What did we miss?')">👎 Not really</a>
+          </div>
+        </details>`).join('')}
+    </div>
+  `}
+
+  <div style="background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(108,92,231,0.02)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-lg); margin-top:var(--space-lg); text-align:center;">
+    <div style="font-size:2rem;">💬</div>
+    <h3 style="margin: var(--space-sm) 0 4px;">Still didn't find your answer?</h3>
+    <div style="color:var(--text-muted); font-size:0.88rem; margin-bottom: var(--space-md);">Message your producer directly — most replies come within 2 hours.</div>
+    <button class="btn btn-primary" onclick="window.setState({screen:'cust-msg-new'})">💬 Ask Your Producer</button>
+  </div>`;
+}
+
+function renderCustomerLearnSaved() {
+  const saved = D.customerLearnBookmarks.map(id => D.customerLearnArticles.find(a => a.id === id)).filter(Boolean);
+  const recent = D.customerLearnRecentlyViewed.map(id => D.customerLearnArticles.find(a => a.id === id)).filter(Boolean);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Saved &amp; Recently Viewed</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Your reading list — bookmarked articles and recent history</div>
+    </div>
+  </div>
+
+  ${_custLearnSubNav('cust-learn-saved')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">🔖 SAVED FOR LATER (${saved.length})</div>
+    ${saved.length === 0 ? `
+      <div style="text-align:center; padding: var(--space-xl) 0; color:var(--text-muted);">
+        <div style="font-size:3rem; margin-bottom: var(--space-sm);">🔖</div>
+        <div>No bookmarks yet. Tap the 🔖 icon on any article to save it here.</div>
+      </div>
+    ` : `
+      <div class="cust-learn-grid">
+        ${saved.map(a => _custLearnCard(a, false)).join('')}
+      </div>
+    `}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">🕐 RECENTLY VIEWED</div>
+    <div class="cust-learn-grid">
+      ${recent.map(a => _custLearnCard(a, true)).join('')}
+    </div>
+  </div>`;
+}
+
+function renderCustomerLearnSuggest() {
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Suggest a Topic</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Help us build better content · your suggestion goes directly to our marketing team</div>
+    </div>
+  </div>
+
+  ${_custLearnSubNav('cust-learn-suggest')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-xl);">
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">What topic would you like us to cover?</label>
+        <input class="form-input" placeholder="e.g. 'How much umbrella do I actually need?'"/>
+      </div>
+
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">What format works best?</label>
+        <div class="radio-group">
+          <span class="radio-pill active">📖 Article</span>
+          <span class="radio-pill">🎥 Short video</span>
+          <span class="radio-pill">📥 Download / checklist</span>
+          <span class="radio-pill">❓ Quick FAQ</span>
+          <span class="radio-pill">No preference</span>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Which category?</label>
+        <select class="form-input">
+          ${D.customerLearnCategories.filter(c => c.key !== 'all').map(c => `<option>${c.icon} ${c.name}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Tell us more (optional)</label>
+        <textarea class="form-input" rows="5" placeholder="What made you think of this topic? What would make it most useful for you?"></textarea>
+      </div>
+
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Who is the audience?</label>
+        <select class="form-input">
+          <option>Me specifically</option>
+          <option>General small-business owners</option>
+          <option>My team / employees</option>
+          <option>Not sure</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;" onclick="window.showAlert('🙏 Thanks! Topic suggestion received — we review suggestions weekly and notify you if we publish it.')">Submit Suggestion →</button>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background: linear-gradient(135deg, rgba(108,92,231,0.12), rgba(63,81,181,0.05)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div style="font-size:2rem;">💡</div>
+        <h3 style="margin: var(--space-sm) 0 4px;">What happens next?</h3>
+        <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.6;">
+          <p>1. Our marketing team reviews every suggestion weekly.</p>
+          <p>2. If your topic has broad interest, we'll write/film it (usually within 4–6 weeks).</p>
+          <p>3. You'll get a direct notification when it's published.</p>
+          <p>4. Looking for something personal? <a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'cust-msg-new'})">Message your producer</a> for a direct answer.</p>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">RECENT REQUESTS FROM CLIENTS</div>
+        <div style="font-size:0.82rem; line-height:1.8;">
+          ${[
+            'How to handle a contractor injury on-site',
+            'Comparing EPLI coverage across carriers',
+            'Cyber breach — first 72 hours playbook',
+            'When does a ride-along employee need WC?'
+          ].map(t => `<div style="padding: 6px 0; border-bottom:1px solid var(--border-subtle);">"${t}"</div>`).join('')}
+        </div>
+        <div style="margin-top: var(--space-sm); color:var(--text-muted); font-size:0.72rem; font-style:italic;">Topics in production from real client suggestions.</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCustomerComingSoon() {
+  const titles = {
+    'cust-documents': { icon: '📄', title: 'Documents Vault',      desc: 'Centralized, searchable document library for all your policies' },
+    'cust-billing':   { icon: '💳', title: 'Billing & Payments',   desc: 'View invoices, make payments, and manage billing preferences' },
+    'cust-claims':    { icon: '🛡️', title: 'Claims Center',        desc: 'File a claim, track existing claims, and view loss history' },
+    'cust-risk':      { icon: '⚠️', title: 'Risk Management & Safety', desc: 'Safety programs, loss control resources, and risk score' },
+    'cust-messages':  { icon: '💬', title: 'Messages & Support',   desc: 'Direct messaging with your producer and support team' },
+    'cust-profile':   { icon: '👤', title: 'Profile & Settings',   desc: 'Contact info, notification preferences, authorized users' },
+    'cust-resources': { icon: '📚', title: 'Resources / Learn More', desc: 'Insurance guides, FAQs, and educational content' }
+  };
+  const t = titles[state.screen] || { icon: '🚧', title: 'Coming Soon', desc: '' };
+  return `
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-2xl); text-align:center;">
+    <div style="font-size:4rem; margin-bottom: var(--space-md);">${t.icon}</div>
+    <h2 style="margin:0;">${t.title}</h2>
+    <div style="color:var(--text-muted); margin-top: var(--space-sm); max-width:520px; margin-left:auto; margin-right:auto;">${t.desc}</div>
+    <div style="margin-top: var(--space-lg); padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); display:inline-block;">
+      <strong>Coming soon</strong> — this module is scheduled for our next release.
+    </div>
   </div>`;
 }
 
 function renderCustomerEndorsement() {
-  return `
-  <div style="margin-bottom: var(--space-lg);">
-    <button class="btn btn-ghost" id="btn-back-dash">← Back to Dashboard</button>
-  </div>
-  <div class="data-table-wrapper" style="padding: var(--space-xl);">
-    <h2 style="margin-bottom: var(--space-lg);">Endorsement Request</h2>
-    <div style="background: var(--bg-card); padding: var(--space-md); border-radius: var(--radius-sm); margin-bottom: var(--space-lg); border: 1px solid var(--border-subtle);">
-      Policy: <strong>WC-2025-48821</strong>  ·  Workers Comp  ·  Liberty Mutual
-    </div>
-    <div class="form-group">
-      <div class="form-label">Endorsement Type</div>
-      <div class="radio-group">
-        <span class="radio-pill active">Add Location</span>
-        <span class="radio-pill">Add Person</span>
-        <span class="radio-pill">Remove Location</span>
-        <span class="radio-pill">Change Limits</span>
-        <span class="radio-pill">Add Vehicle</span>
-        <span class="radio-pill">Other</span>
-      </div>
-    </div>
-    <div class="form-group">
-      <div class="form-label">Description of Change</div>
-      <textarea class="form-input" placeholder="Adding new warehouse at 1400 Industrial Blvd, Sacramento CA 95811">Adding new warehouse at 1400 Industrial Blvd, Sacramento CA 95811</textarea>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <div class="form-label">Effective Date</div>
-        <input class="form-input" type="date" value="2026-04-25" />
-      </div>
-      <div class="form-group">
-        <div class="form-label">Attach Document</div>
-        <input class="form-input" type="file" />
-      </div>
-    </div>
-    <div class="form-group">
-      <div class="form-label">Submission Status</div>
-      <div class="status-tracker">
-        <div class="status-step active"><div class="status-step-dot"></div> Submitted</div>
-        <div class="status-step-line"></div>
-        <div class="status-step"><div class="status-step-dot"></div> Under Review</div>
-        <div class="status-step-line"></div>
-        <div class="status-step"><div class="status-step-dot"></div> Approved</div>
-        <div class="status-step-line"></div>
-        <div class="status-step"><div class="status-step-dot"></div> Applied</div>
-      </div>
-    </div>
-    <div class="form-footer">
-      <button class="btn btn-secondary" id="btn-back-dash2">Cancel</button>
-      <button class="btn btn-primary">Submit Endorsement →</button>
-    </div>
-  </div>`;
+  // Legacy route — redirect to new servicing wizard
+  return renderCustomerServicingWizard();
 }
 
 function bindCustomer() {
   const logout = $('#btn-logout');
   if (logout) logout.addEventListener('click', () => setState({ portal: null, screen: 'dashboard' }));
-  const endorse = $('#btn-endorsement');
-  if (endorse) endorse.addEventListener('click', () => setState({ screen: 'endorsement' }));
-  const newReq = $('#btn-new-request');
-  if (newReq) newReq.addEventListener('click', () => setState({ screen: 'endorsement' }));
-  const back = $('#btn-back-dash');
-  if (back) back.addEventListener('click', () => setState({ screen: 'dashboard' }));
-  const back2 = $('#btn-back-dash2');
-  if (back2) back2.addEventListener('click', () => setState({ screen: 'dashboard' }));
-  // Radio pills
+
+  // Side nav
+  $$('.side-nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      setState({ screen: item.dataset.screen, custPolicyFilter: 'all', custServicingType: null, custServicingStep: 1 });
+    });
+  });
+
+  const newReq = $('#btn-cust-new-request');
+  if (newReq) newReq.addEventListener('click', () => setState({ screen: 'cust-servicing', currentPolicyId: D.customerPolicies[0].id, custServicingType: null, custServicingStep: 1 }));
+
+  // Radio pills (legacy endorsement form)
   $$('.radio-pill').forEach(pill => {
     pill.addEventListener('click', () => {
       $$('.radio-pill').forEach(p => p.classList.remove('active'));

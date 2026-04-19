@@ -10,17 +10,1062 @@ export const USERS = {
 };
 
 // ─── Customer Portal Data ───
-export const customerPolicies = [
-  { id: 'WC-2025-48821', type: 'Workers Comp', carrier: 'SEMC / Liberty Mutual', expiry: 'Jun 2026', expiring: false },
-  { id: 'GL-2025-33102', type: 'General Liability', carrier: 'CNA', expiry: 'Apr 2026', expiring: true },
-  { id: 'CY-2025-11044', type: 'Cyber Liability', carrier: 'Hartford', expiry: 'Dec 2026', expiring: false }
-];
+export const customerProducer = {
+  name: 'Sarah Chen', title: 'Your Producer', phone: '(916) 555-0182', email: 'sarah@bridgepoint.com', avatar: 'SC', photo_color: 'linear-gradient(135deg, #6c5ce7, #a67dff)'
+};
 
 export const customerKPIs = [
-  { label: 'Active Policies', value: '4' },
+  { label: 'Active Policies',      value: '4' },
+  { label: 'Total Annual Premium', value: '$318k' },
+  { label: 'Next Renewal',         value: '43 days' },
+  { label: 'Open Claims',          value: '1', warning: true },
+  { label: 'Pending Requests',     value: '2' },
+  { label: 'Balance Due',          value: '$15,392' }
+];
+
+export const customerPolicyStatuses = ['Active', 'Renewing', 'Endorsement Pending', 'Cancelled', 'Expired'];
+
+export const customerPolicies = [
+  {
+    id: 'SEMC-WC-2025-48821',
+    carrier_policy_no: 'WC-00088921-X',
+    type: 'Workers Comp',
+    lob_group: 'Commercial',
+    icon: '👷',
+    carrier: 'SEMC / Liberty Mutual',
+    carrier_rating: 'A (AM Best)',
+    effective: '2025-06-01',
+    expiry: '2026-06-01',
+    days_to_expiry: 43,
+    status: 'Active',
+    statusColor: 'green',
+    premium: 184700,
+    premium_display: '$184,700 / yr',
+    billing: 'Agency Bill · Quarterly',
+    next_payment: '2026-07-01',
+    next_payment_amount: 46175,
+    balance_due: 0,
+    named_insured: 'Magnolia Construction LLC',
+    additional_insureds: ['Kroger Real Estate', 'Prologis Trust'],
+    lienholders: [],
+    primary_location: '1201 Industrial Blvd, Sacramento, CA 95814',
+    coverage_summary: [
+      { k: 'Employers Liability — Bodily Injury by Accident', v: '$1,000,000 / accident' },
+      { k: 'Employers Liability — Bodily Injury by Disease',  v: '$1,000,000 / employee, $1,000,000 / aggregate' },
+      { k: 'Workers Compensation — Statutory',                v: 'CA Statutory' }
+    ],
+    deductible: '$0',
+    exposures: [
+      { k: 'Annual Payroll',   v: '$2.4M' },
+      { k: 'Employee Count',   v: '38' },
+      { k: 'Locations',        v: '3 (CA)' },
+      { k: 'Class Code',       v: '5403 Carpentry' },
+      { k: 'Experience Mod',   v: '0.92' }
+    ],
+    safety_score: 88,
+    claim_count_3yr: 0,
+    tags: ['Multi-location', 'Top-quartile loss ratio'],
+    has_renewal: false,
+    id_card_available: true
+  },
+  {
+    id: 'CNA-GL-2025-33102',
+    carrier_policy_no: 'GL-33102-A',
+    type: 'General Liability',
+    lob_group: 'Commercial',
+    icon: '🛡️',
+    carrier: 'CNA',
+    carrier_rating: 'A (AM Best)',
+    effective: '2025-04-12',
+    expiry: '2026-04-12',
+    days_to_expiry: -6,
+    status: 'Renewing',
+    statusColor: 'amber',
+    premium: 52000,
+    premium_display: '$52,000 / yr',
+    billing: 'Direct Bill · Annual',
+    next_payment: '2026-04-12',
+    next_payment_amount: 54600,
+    balance_due: 54600,
+    named_insured: 'Magnolia Construction LLC',
+    additional_insureds: ['General Contractor (Kroger)'],
+    lienholders: [],
+    primary_location: '1201 Industrial Blvd, Sacramento, CA 95814',
+    coverage_summary: [
+      { k: 'Each Occurrence',                    v: '$1,000,000' },
+      { k: 'General Aggregate',                  v: '$2,000,000' },
+      { k: 'Products-Completed Ops Aggregate',   v: '$2,000,000' },
+      { k: 'Personal & Advertising Injury',      v: '$1,000,000' },
+      { k: 'Damage to Rented Premises',          v: '$100,000' },
+      { k: 'Medical Expense (any one person)',   v: '$5,000' }
+    ],
+    deductible: '$2,500',
+    exposures: [
+      { k: 'Annual Gross Sales', v: '$42M' },
+      { k: 'Operations',         v: 'Commercial construction' },
+      { k: 'Subcontracted Work', v: '$8M' }
+    ],
+    safety_score: 82,
+    claim_count_3yr: 1,
+    tags: ['Renewing in 6 days', 'Rate change +5%'],
+    has_renewal: true,
+    id_card_available: false
+  },
+  {
+    id: 'LIB-UMB-2025-88103',
+    carrier_policy_no: 'UMB-88103-X',
+    type: 'Umbrella',
+    lob_group: 'Commercial',
+    icon: '☂️',
+    carrier: 'Liberty Mutual',
+    carrier_rating: 'A (AM Best)',
+    effective: '2025-06-01',
+    expiry: '2026-06-01',
+    days_to_expiry: 43,
+    status: 'Active',
+    statusColor: 'green',
+    premium: 18200,
+    premium_display: '$18,200 / yr',
+    billing: 'Agency Bill · Annual',
+    next_payment: '2026-06-01',
+    next_payment_amount: 18200,
+    balance_due: 0,
+    named_insured: 'Magnolia Construction LLC',
+    additional_insureds: [],
+    lienholders: [],
+    primary_location: '1201 Industrial Blvd, Sacramento, CA 95814',
+    coverage_summary: [
+      { k: 'Each Occurrence',   v: '$5,000,000' },
+      { k: 'Aggregate',         v: '$5,000,000' },
+      { k: 'Self-Insured Retention', v: '$10,000' },
+      { k: 'Underlying Policies', v: 'GL + WC + Auto' }
+    ],
+    deductible: '$10,000 SIR',
+    exposures: [
+      { k: 'Follow-form',  v: 'Yes — over GL/WC/Auto' }
+    ],
+    safety_score: 88,
+    claim_count_3yr: 0,
+    tags: ['Follow-form'],
+    has_renewal: false,
+    id_card_available: false
+  },
+  {
+    id: 'TRV-AUTO-2026-11223',
+    carrier_policy_no: 'CA-11223-B',
+    type: 'Commercial Auto',
+    lob_group: 'Commercial',
+    icon: '🚚',
+    carrier: 'Travelers',
+    carrier_rating: 'A++ (AM Best)',
+    effective: '2025-08-05',
+    expiry: '2026-08-05',
+    days_to_expiry: 108,
+    status: 'Endorsement Pending',
+    statusColor: 'blue',
+    premium: 62700,
+    premium_display: '$62,700 / yr',
+    billing: 'Agency Bill · Monthly',
+    next_payment: '2026-05-05',
+    next_payment_amount: 5225,
+    balance_due: 5225,
+    named_insured: 'Magnolia Construction LLC',
+    additional_insureds: ['Amazon Freight'],
+    lienholders: ['Ally Financial (Truck #8, #12)'],
+    primary_location: 'Fleet — garaged at 1201 Industrial Blvd, Sacramento CA',
+    coverage_summary: [
+      { k: 'Combined Single Limit',              v: '$1,000,000' },
+      { k: 'Uninsured Motorists',                v: '$1,000,000' },
+      { k: 'Medical Payments',                   v: '$5,000' },
+      { k: 'Physical Damage — Comp / Collision', v: 'ACV · $1,000 deductible ea.' }
+    ],
+    deductible: '$1,000',
+    exposures: [
+      { k: 'Fleet Size',       v: '12 vehicles' },
+      { k: 'Annual Miles',     v: '480,000' },
+      { k: 'Radius',           v: 'Intra-state' },
+      { k: 'Hazmat',           v: 'No' }
+    ],
+    safety_score: 76,
+    claim_count_3yr: 1,
+    tags: ['Endorsement pending — Add Vehicle #13', 'Fleet telematics enabled'],
+    has_renewal: false,
+    id_card_available: true
+  }
+];
+
+export const customerPolicyDetail = {
+  id: 'SEMC-WC-2025-48821',
+  timeline: [
+    { ts: '2026-04-17 14:08', event: 'COI issued to Kroger Real Estate', actor: 'System' },
+    { ts: '2026-04-15 09:22', event: 'Premium payment Q2 received',      actor: 'System' },
+    { ts: '2026-04-10 11:40', event: 'Safety audit completed (score 88)',actor: 'Carrier Inspector' },
+    { ts: '2026-03-20 15:00', event: 'Endorsement issued — added Prologis as additional insured', actor: 'Sarah Chen' },
+    { ts: '2026-02-14 10:15', event: 'Policy renewed — 12-month term',   actor: 'Sarah Chen' },
+    { ts: '2025-06-01 08:00', event: 'Policy issued — coverage effective',actor: 'Carrier Underwriter' }
+  ],
+  photos: [
+    { label: 'Yard — North side',    emoji: '🏗' },
+    { label: 'Main shop floor',      emoji: '🔧' },
+    { label: 'Crew vehicle lineup',  emoji: '🚛' },
+    { label: 'Safety signage',       emoji: '⚠️' }
+  ],
+  docs: [
+    { name: 'Declarations Page.pdf',   size: '420 KB', type: 'Dec Page',    uploaded: '2025-06-01' },
+    { name: 'Policy Form.pdf',         size: '2.1 MB', type: 'Policy',      uploaded: '2025-06-01' },
+    { name: 'Endorsement 1.pdf',       size: '180 KB', type: 'Endorsement', uploaded: '2026-03-20' },
+    { name: 'COI — Kroger.pdf',        size: '240 KB', type: 'COI',         uploaded: '2026-04-17' },
+    { name: 'ID Card.pdf',             size: '80 KB',  type: 'ID Card',     uploaded: '2025-06-01' }
+  ]
+};
+
+export const customerServicingRequests = [
+  { id: 'SR-20284', type: 'Add Vehicle',        policy: 'TRV-AUTO-2026-11223', submitted: '2026-04-14', status: 'In Progress', statusColor: 'blue',  eta: '2026-04-19', description: 'Add 2025 Ford F-250 (VIN 1FTEX1EP...) to fleet' },
+  { id: 'SR-20283', type: 'COI Request',        policy: 'SEMC-WC-2025-48821', submitted: '2026-04-17', status: 'Completed',   statusColor: 'green', eta: '—',          description: 'COI for Kroger Real Estate — delivered to landlord' },
+  { id: 'SR-20282', type: 'Address Change',     policy: 'CNA-GL-2025-33102',  submitted: '2026-04-12', status: 'Completed',   statusColor: 'green', eta: '—',          description: 'Updated HQ address to 1201 Industrial Blvd' },
+  { id: 'SR-20281', type: 'Accept Renewal',     policy: 'CNA-GL-2025-33102',  submitted: '2026-04-10', status: 'Pending Signature', statusColor: 'amber', eta: '2026-04-18', description: 'Renewal offer for 2026-04-12 term — awaiting e-signature' }
+];
+
+export const customerServicingTypes = [
+  { key: 'address',     icon: '🏠', name: 'Change Address',           desc: 'Business or mailing address' },
+  { key: 'driver',      icon: '👤', name: 'Add / Remove Driver',      desc: 'Add or remove a driver from auto policy' },
+  { key: 'vehicle',     icon: '🚗', name: 'Add / Remove Vehicle',     desc: 'Add, remove, or replace a vehicle' },
+  { key: 'location',    icon: '📍', name: 'Add / Remove Location',    desc: 'Add or close a business location' },
+  { key: 'ai',          icon: '👥', name: 'Additional Insured',       desc: 'Add a landlord, lender, or vendor' },
+  { key: 'limits',      icon: '📊', name: 'Change Limits / Coverage', desc: 'Increase or decrease coverage limits' },
+  { key: 'cancel',      icon: '🚫', name: 'Cancel Policy',            desc: 'Request mid-term or at-expiry cancellation' },
+  { key: 'other',       icon: '📝', name: 'Other Change',             desc: 'Any change not listed above' }
+];
+
+export const customerRenewalCompare = {
+  policy: 'CNA-GL-2025-33102',
+  carrier: 'CNA',
+  effective_new: '2026-04-12',
+  expiry_new: '2027-04-12',
+  current: { premium: 52000, deductible: 2500, aggregate: 2000000, occurrence: 1000000 },
+  renewal: { premium: 54600, deductible: 2500, aggregate: 2000000, occurrence: 1000000 },
+  rate_change: 5.0,
+  rationale: [
+    'Industry-wide hard market pricing (+4–7% average in CA General Liability)',
+    'Clean loss history preserved 0.92 ExperienceMod — avoided +12% market hit',
+    'No coverage reductions — limits, deductible, endorsements identical',
+    'Additional Insured schedule carried over (1 holder)'
+  ],
+  changes: [
+    { field: 'Annual Premium',   before: '$52,000',   after: '$54,600',   note: '+5.0% (below +7.4% market)' },
+    { field: 'General Aggregate',before: '$2,000,000',after: '$2,000,000',note: 'Unchanged' },
+    { field: 'Deductible',       before: '$2,500',    after: '$2,500',    note: 'Unchanged' },
+    { field: 'Endorsements',     before: '2 active',  after: '2 active',  note: 'Kroger AI + Waiver of Subro carried' }
+  ]
+};
+
+export const customerCOIs = [
+  { id: 'COI-8842', policy: 'SEMC-WC-2025-48821', holder: 'Kroger Real Estate',    issued: '2026-04-17', expires: '2027-04-17', status: 'Active',  statusColor: 'green' },
+  { id: 'COI-8841', policy: 'SEMC-WC-2025-48821', holder: 'Prologis Trust',        issued: '2026-03-22', expires: '2027-03-22', status: 'Active',  statusColor: 'green' },
+  { id: 'COI-8840', policy: 'LIB-UMB-2025-88103', holder: 'General Contractor',    issued: '2026-04-10', expires: '2027-04-10', status: 'Active',  statusColor: 'green' },
+  { id: 'COI-8839', policy: 'CNA-GL-2025-33102',  holder: 'Commerce Title Co.',    issued: '2025-11-12', expires: '2026-05-12', status: 'Expiring', statusColor: 'amber' },
+  { id: 'COI-8838', policy: 'TRV-AUTO-2026-11223',holder: 'Amazon Freight',        issued: '2026-02-05', expires: '2027-02-05', status: 'Active',   statusColor: 'green' }
+];
+
+// ─── Customer Resources / Learn More ───
+export const customerLearnCategories = [
+  { key: 'all',      icon: '📚', name: 'All' },
+  { key: 'basics',   icon: '💡', name: 'Insurance 101' },
+  { key: 'claims',   icon: '🛡', name: 'Claims' },
+  { key: 'coverage', icon: '📋', name: 'Coverage Explained' },
+  { key: 'videos',   icon: '🎥', name: 'Videos' },
+  { key: 'downloads',icon: '📥', name: 'Downloads' }
+];
+
+export const customerLearnArticles = [
+  { id: 'LA-001', title: 'What Is a Deductible (and How Do You Pick the Right One)?',   category: 'basics',   type: 'Article',   read_time: '4 min', published: '2026-03-15', updated: '2026-03-15', tags: ['Auto','Home','Commercial'], level: 'Beginner', status: 'popular', thumbnail: '💰', views: 8420, helpful: 412, saved: false, excerpt: 'The higher your deductible, the lower your premium — but what does that actually mean for your wallet when something happens? Here is the plain-English breakdown.', author: 'Sarah Chen, Producer' },
+  { id: 'LA-002', title: 'How to Read Your Declarations Page',                           category: 'coverage', type: 'Article',   read_time: '6 min', published: '2026-02-28', updated: '2026-03-01', tags: ['Commercial','Coverage'], level: 'Beginner', status: 'popular',       thumbnail: '📄', views: 6280, helpful: 348, saved: true,  excerpt: 'Your dec page is the cheat sheet for your whole policy — premium, limits, deductibles, and what is actually covered. Here is what each section means.', author: 'Agency Marketing' },
+  { id: 'LA-003', title: 'Top 5 Claim Mistakes to Avoid',                                 category: 'claims',   type: 'Article',   read_time: '5 min', published: '2026-04-05', updated: '2026-04-05', tags: ['Claims'], level: 'Beginner', status: 'recommended', thumbnail: '⚠️', views: 4120, helpful: 278, saved: false, excerpt: 'Most claims get delayed or reduced because of five avoidable mistakes. Know them before you ever need to file.', author: 'Jane Rodriguez, Claims' },
+  { id: 'LA-004', title: 'Understanding Additional Insureds (The One-Page Guide)',        category: 'coverage', type: 'Article',   read_time: '3 min', published: '2026-03-22', updated: '2026-03-22', tags: ['Commercial','Coverage'], level: 'Intermediate', status: 'new',       thumbnail: '🤝', views: 2840, helpful: 184, saved: false, excerpt: 'Your landlord wants to be named as an additional insured. What does that actually do, and should you worry?', author: 'Sarah Chen, Producer' },
+  { id: 'LA-005', title: 'Why Premiums Go Up (Even When You Have No Claims)',              category: 'basics',   type: 'Article',   read_time: '7 min', published: '2026-04-12', updated: '2026-04-12', tags: ['Billing','Renewals'], level: 'Intermediate', status: 'new',       thumbnail: '📈', views: 3620, helpful: 214, saved: true,  excerpt: 'Rate changes are one of the most confusing parts of insurance. Here is what actually drives your renewal pricing — and what to do about it.', author: 'Agency Marketing' },
+  { id: 'LA-006', title: 'Insurance 101 — How Insurance Actually Works',                   category: 'basics',   type: 'Video',     read_time: '2 min', published: '2026-01-15', updated: '2026-01-15', tags: ['Foundations'], level: 'Beginner', status: 'popular',   thumbnail: '🎬', views: 12400, helpful: 682, saved: false, excerpt: 'A 2-minute visual explanation of how premiums, pooling, and claims work together. Perfect for sharing with your team.', author: 'Bridgepoint Studios' },
+  { id: 'LA-007', title: 'How to File a Claim (Step-by-Step Video)',                       category: 'claims',   type: 'Video',     read_time: '3 min', published: '2026-03-30', updated: '2026-03-30', tags: ['Claims','How-To'], level: 'Beginner', status: 'popular', thumbnail: '🎥', views: 9420, helpful: 512, saved: false, excerpt: 'Walk through the full FNOL process from first call to settlement — what to say, what to send, what to expect.', author: 'Jane Rodriguez, Claims' },
+  { id: 'LA-008', title: 'Commercial Auto vs Personal Auto — What Is the Difference?',      category: 'coverage', type: 'Article',   read_time: '5 min', published: '2026-02-10', updated: '2026-02-10', tags: ['Auto','Commercial'], level: 'Beginner', status: 'updated',       thumbnail: '🚚', views: 3240, helpful: 198, saved: false, excerpt: 'Using your truck for business? Your personal auto policy may not cover you. Here is the full breakdown.', author: 'Sarah Chen, Producer' },
+  { id: 'LA-009', title: 'Cyber Insurance for Small Business — The Basics',                 category: 'coverage', type: 'Article',   read_time: '8 min', published: '2026-04-08', updated: '2026-04-08', tags: ['Cyber','Commercial'], level: 'Intermediate', status: 'new',     thumbnail: '🔒', views: 1840, helpful: 124, saved: true,  excerpt: 'A ransomware attack costs small businesses $120K on average. Here is what cyber insurance covers and why you may need it.', author: 'Mike Torres, CSR' },
+  { id: 'LA-010', title: 'Annual Business Insurance Review Checklist',                      category: 'basics',   type: 'Download',  read_time: '1 page',published: '2026-01-05', updated: '2026-04-01', tags: ['Commercial','Checklist'], level: 'Beginner', status: 'popular', thumbnail: '📋', views: 5420, helpful: 298, saved: false, excerpt: 'Print-ready 1-page checklist for your annual policy review. Takes 10 minutes; catches gaps before they cost you.', author: 'Agency Marketing' },
+  { id: 'LA-011', title: 'What "Replacement Cost" vs "Actual Cash Value" Actually Means',    category: 'coverage', type: 'Article',   read_time: '4 min', published: '2026-02-20', updated: '2026-02-20', tags: ['Property','Coverage'], level: 'Intermediate', status: 'popular', thumbnail: '🏢', views: 4120, helpful: 258, saved: false, excerpt: 'Two very different ways a claim gets paid. The wrong one could leave you $10K+ short after a loss.', author: 'Agency Marketing' },
+  { id: 'LA-012', title: 'Subrogation — What Happens After Someone Else Causes Your Loss',   category: 'claims',   type: 'Article',   read_time: '5 min', published: '2026-03-10', updated: '2026-03-10', tags: ['Claims','Liability'], level: 'Advanced', status: 'updated', thumbnail: '⚖️', views: 1280, helpful: 92,  saved: false, excerpt: 'When your carrier pays your claim, they may go after the other guy. Here is what that means for you.', author: 'Jane Rodriguez, Claims' },
+  { id: 'LA-013', title: 'Business Continuity — A 15-Minute Starter Plan',                   category: 'basics',   type: 'Download',  read_time: '6 pages',published: '2026-03-25', updated: '2026-03-25', tags: ['Commercial','Planning'], level: 'Intermediate', status: 'new',    thumbnail: '📥', views: 2120, helpful: 148, saved: false, excerpt: 'A short, practical template for getting your business back up after a major loss. Fill in 6 blanks, print, keep handy.', author: 'Risk Control Team' },
+  { id: 'LA-014', title: 'Hard Market vs Soft Market — Why Prices Swing Every Few Years',    category: 'basics',   type: 'Video',     read_time: '3 min', published: '2026-04-02', updated: '2026-04-02', tags: ['Industry','Trends'], level: 'Intermediate', status: 'new',     thumbnail: '📊', views: 1680, helpful: 104, saved: false, excerpt: 'Industry pricing cycles explained in 3 minutes. Know what drives your renewal so you can plan ahead.', author: 'Bridgepoint Studios' }
+];
+
+export const customerLearnGlossary = [
+  { term: 'Actual Cash Value (ACV)',    letter: 'A', definition: 'Replacement cost minus depreciation. If your 5-year-old laptop is destroyed, ACV pays what it was worth the day of the loss — not what a new one costs.' },
+  { term: 'Additional Insured',         letter: 'A', definition: 'A person or business (like your landlord or client) named on your policy so they are also protected by your coverage for specific situations.' },
+  { term: 'Aggregate Limit',            letter: 'A', definition: 'The maximum your policy pays for all claims combined during the policy term, no matter how many losses you have.' },
+  { term: 'Binder',                     letter: 'B', definition: 'A short-term document proving you have coverage before the full policy is issued. Usually valid 30–60 days.' },
+  { term: 'Certificate of Insurance (COI)', letter: 'C', definition: 'A one-page summary proving you carry insurance. Landlords, clients, and vendors often require one before doing business with you.' },
+  { term: 'Claim',                      letter: 'C', definition: 'A formal request to your insurance company to pay for a loss covered by your policy.' },
+  { term: 'Coinsurance',                letter: 'C', definition: 'On property policies, a requirement that you insure your building/contents to at least a specified percentage of value (typically 80%) or face a penalty at claim time.' },
+  { term: 'Declarations Page',          letter: 'D', definition: 'The front page of your policy listing who is covered, for how much, for what, and what it costs. Your one-page cheat sheet.' },
+  { term: 'Deductible',                 letter: 'D', definition: 'The amount you pay out-of-pocket on a claim before insurance kicks in. Higher deductible = lower premium.' },
+  { term: 'Endorsement',                letter: 'E', definition: 'A written change to your policy mid-term — add a vehicle, change a limit, remove a location.' },
+  { term: 'Experience Modifier (ExMod)', letter: 'E', definition: 'A multiplier applied to your Workers Comp premium based on your claim history vs. peers. Below 1.0 = better than average.' },
+  { term: 'Exclusion',                  letter: 'E', definition: 'Something specifically NOT covered by your policy. Always read these.' },
+  { term: 'First Notice of Loss (FNOL)', letter: 'F', definition: 'The initial report you file when a loss happens. Starts the claim process.' },
+  { term: 'Liability',                  letter: 'L', definition: 'Legal responsibility for causing harm to someone else. Liability insurance pays for damage you cause others.' },
+  { term: 'Occurrence',                 letter: 'O', definition: 'A single incident or continuous exposure that causes a loss. Many policies have per-occurrence limits.' },
+  { term: 'Premium',                    letter: 'P', definition: 'What you pay for insurance coverage. Usually stated annually but may be billed monthly, quarterly, or at renewal.' },
+  { term: 'Replacement Cost',           letter: 'R', definition: 'Coverage that pays what it costs today to replace a damaged item, no depreciation. More expensive than ACV but better at claim time.' },
+  { term: 'Reserve',                    letter: 'R', definition: 'Money your insurance company sets aside to pay a claim. Not a cap — the final payment may be more or less.' },
+  { term: 'Rider',                      letter: 'R', definition: 'Optional add-on coverage that modifies your base policy (often used interchangeably with "endorsement").' },
+  { term: 'Subrogation',                letter: 'S', definition: 'Your insurance company\'s right to collect from the at-fault party after paying your claim. May affect your deductible recovery.' },
+  { term: 'Umbrella Policy',            letter: 'U', definition: 'Extra liability coverage on top of your auto, property, and/or commercial policies. Kicks in when underlying limits are exhausted.' },
+  { term: 'Underwriting',               letter: 'U', definition: 'The process where a carrier decides whether to insure you, on what terms, and at what price.' },
+  { term: 'Waiver of Subrogation',      letter: 'W', definition: 'You give up your carrier\'s right to go after another party who causes your loss. Often required by contracts.' }
+];
+
+export const customerLearnFAQs = [
+  { id: 'LFAQ-01', q: 'How is my premium calculated?',                                  category: 'basics',   answer: 'Premiums are based on three things: your risk profile (industry, size, losses), the coverage you buy (limits, deductibles), and broad market conditions (reinsurance costs, inflation). Your specific factors matter most.', views: 1284 },
+  { id: 'LFAQ-02', q: 'What should I do in the first 24 hours after a loss?',           category: 'claims',   answer: 'Make sure everyone is safe. Call 911 if needed. Document everything with photos/video. Prevent further damage if you can safely. Then call us or file via the portal — ideally within 24 hours.', views: 982 },
+  { id: 'LFAQ-03', q: 'Does my business insurance cover my home office?',                category: 'coverage', answer: 'Usually partially. Business equipment at home is typically limited to $2,500–$10,000 unless scheduled. Check your policy or ask about a small-business endorsement.', views: 742 },
+  { id: 'LFAQ-04', q: 'Why do I need umbrella insurance if I already have GL?',          category: 'coverage', answer: 'Your GL caps at $1M–$2M per occurrence. A serious claim can blow through that fast. Umbrella adds $1M–$10M+ of extra cushion at a fraction of the cost of raising underlying limits.', views: 620 },
+  { id: 'LFAQ-05', q: 'Can I cancel my policy mid-term?',                                 category: 'basics',   answer: 'Yes, but you may get a pro-rated refund with a small short-rate penalty. Auto-financed policies may have minimum earned premiums. Talk to us before cancelling to avoid coverage gaps.', views: 524 },
+  { id: 'LFAQ-06', q: 'What happens if I miss a premium payment?',                        category: 'basics',   answer: 'Most carriers have a 10–20 day grace period. After that, coverage can lapse. Autopay prevents this entirely. If you need more time, ask us about payment plans or premium finance.', views: 482 },
+  { id: 'LFAQ-07', q: 'Does my policy cover rideshare driving?',                           category: 'coverage', answer: 'Personal auto policies usually EXCLUDE rideshare. You need either a commercial auto policy or a rideshare endorsement. Do not drive for Uber/Lyft without checking first.', views: 362 },
+  { id: 'LFAQ-08', q: 'How long do claims stay on my record?',                              category: 'claims',   answer: 'Most commercial carriers look at 3–5 years of loss history for underwriting. A single claim rarely affects your premium dramatically; a pattern of claims will.', views: 324 },
+  { id: 'LFAQ-09', q: 'What is the difference between "Claims-Made" and "Occurrence" coverage?', category: 'coverage', answer: '"Occurrence" covers losses that HAPPEN during the policy term, even if you report later. "Claims-Made" covers losses REPORTED during the term (regardless of when they happened). Common for professional liability.', views: 284 },
+  { id: 'LFAQ-10', q: 'Should I file every small claim?',                                    category: 'claims',   answer: 'Not always. If your loss is near or below your deductible, consider paying out of pocket. A pattern of small claims can affect future pricing. We can help you decide.', views: 248 }
+];
+
+export const customerLearnBookmarks = ['LA-002', 'LA-005', 'LA-009'];
+
+export const customerLearnRecentlyViewed = ['LA-003', 'LA-007', 'LA-011', 'LA-001', 'LA-004'];
+
+// ─── Customer Profile & Account Settings ───
+export const customerProfileKPIs = [
+  { label: 'Profile Completeness', value: '94%' },
+  { label: '2FA Status',          value: 'On' },
+  { label: 'Active Devices',      value: '3' },
+  { label: 'Last Login',          value: 'Today 9:22 AM' },
+  { label: 'Data Export Requests',value: '0' },
+  { label: 'Verified Fields',     value: '12 of 14' }
+];
+
+export const customerProfilePersonal = {
+  legal_name: 'James Reynolds',
+  preferred_name: 'James',
+  company: 'Magnolia Construction LLC',
+  title: 'Owner / CEO',
+  dob: '1978-03-14',
+  fein_masked: '88-XXXX492',
+  ssn_masked: 'XXX-XX-4421',
+  primary_email: 'james@magnoliaconstruction.com',
+  primary_email_verified: true,
+  secondary_email: 'james.reynolds.personal@gmail.com',
+  secondary_email_verified: true,
+  primary_phone: '(916) 555-0184',
+  primary_phone_verified: true,
+  mobile_phone: '(916) 555-0199',
+  mobile_phone_verified: true,
+  mailing_address: {
+    street: '1201 Industrial Blvd',
+    street2: 'Suite 200',
+    city: 'Sacramento',
+    state: 'CA',
+    zip: '95814',
+    verified: true
+  },
+  risk_locations: [
+    { id: 'LOC-01', label: 'HQ / Main Office',       address: '1201 Industrial Blvd, Sacramento CA 95814', primary: true,  verified: true },
+    { id: 'LOC-02', label: 'Yard / Equipment Storage',address: '1250 Industrial Blvd, Sacramento CA 95814',primary: false, verified: true },
+    { id: 'LOC-03', label: 'Satellite Shop — Folsom', address: '892 East Bidwell St, Folsom CA 95630',      primary: false, verified: true }
+  ],
+  preferred_language: 'English',
+  preferred_contact_method: 'Email'
+};
+
+export const customerProfileSecurity = {
+  password_strength: 'Strong',
+  password_last_changed: '2026-01-22',
+  two_factor: {
+    enabled: true,
+    methods: [
+      { key: 'authenticator', label: 'Authenticator app (Google Authenticator)', primary: true,  icon: '📱', enabled: true  },
+      { key: 'sms',           label: 'SMS to (916) 555-0199',                     primary: false, icon: '💬', enabled: true  },
+      { key: 'email',         label: 'Email to james@magnoliaconstruction.com',   primary: false, icon: '📧', enabled: false },
+      { key: 'passkey',       label: 'Passkey / biometric (Face ID)',             primary: false, icon: '🔑', enabled: true  }
+    ]
+  },
+  sessions: [
+    { id: 'SES-01', device: 'MacBook Pro — Safari',      location: 'Sacramento, CA', ip: '72.14.188.4',   last_active: '2026-04-19 09:22', this_device: true,  trusted: true },
+    { id: 'SES-02', device: 'iPhone 16 — Safari / App',  location: 'Sacramento, CA', ip: '98.42.113.22',  last_active: '2026-04-18 18:02', this_device: false, trusted: true },
+    { id: 'SES-03', device: 'Chrome — Windows',          location: 'Folsom, CA',     ip: '47.222.184.11', last_active: '2026-04-17 16:44', this_device: false, trusted: false },
+    { id: 'SES-04', device: 'Safari — iPad Air',         location: 'Sacramento, CA', ip: '98.42.113.22',  last_active: '2026-04-10 11:22', this_device: false, trusted: true }
+  ],
+  security_events: [
+    { ts: '2026-04-17 16:44', event: 'New device logged in (Chrome, Windows — Folsom CA)',  type: 'warning' },
+    { ts: '2026-04-15 09:02', event: 'Password changed successfully',                         type: 'info' },
+    { ts: '2026-04-10 11:22', event: '2FA verification via authenticator app',                type: 'info' },
+    { ts: '2026-01-22 14:00', event: '2FA enabled via Face ID passkey',                       type: 'info' }
+  ]
+};
+
+export const customerProfileNotifPrefs = {
+  categories: [
+    { key: 'policies', label: 'Policies & Renewals',     desc: 'Upcoming renewals, endorsements, ID cards',        email: true,  sms: true,  push: true,  in_app: true  },
+    { key: 'billing',  label: 'Billing & Payments',      desc: 'Invoices, due dates, autopay, refunds',             email: true,  sms: true,  push: true,  in_app: true  },
+    { key: 'claims',   label: 'Claims Updates',           desc: 'Status changes, document requests, settlements',    email: true,  sms: true,  push: true,  in_app: true  },
+    { key: 'messages', label: 'Messages & Support',       desc: 'New replies, ticket updates',                        email: true,  sms: false, push: true,  in_app: true  },
+    { key: 'docs',     label: 'Documents & e-Sig',        desc: 'New documents, signatures required, expiring docs', email: true,  sms: true,  push: false, in_app: true  },
+    { key: 'risk',     label: 'Risk Tips & Discounts',    desc: 'Safety tips, seasonal alerts, discount unlocks',    email: true,  sms: false, push: false, in_app: true  },
+    { key: 'marketing',label: 'Marketing & Promotions',   desc: 'Agency news, webinars, educational content',         email: false, sms: false, push: false, in_app: false }
+  ],
+  quiet_hours: { enabled: true, start: '21:00', end: '07:00' },
+  preferred_channel: 'email',
+  preferred_language: 'English'
+};
+
+export const customerProfileDependents = [
+  { id: 'DEP-01', name: 'Sarah Reynolds',    role: 'Spouse / Authorized contact',  access: 'View + edit', linked_policies: ['SEMC-WC-2025-48821','TRV-AUTO-2026-11223'], email: 's.reynolds@magnoliaconstruction.com', phone: '(916) 555-0177', added: '2019-06-01' },
+  { id: 'DEP-02', name: 'Tom Chen',          role: 'CFO / Financial authority',    access: 'Billing only', linked_policies: ['SEMC-WC-2025-48821','CNA-GL-2025-33102','LIB-UMB-2025-88103','TRV-AUTO-2026-11223'], email: 'tom.chen@magnoliaconstruction.com', phone: '(916) 555-0188', added: '2020-03-15' }
+];
+
+export const customerProfileAdditionalInsureds = [
+  { id: 'AI-01', name: 'Kroger Real Estate',    relationship: 'Landlord',         policy: 'SEMC-WC-2025-48821', since: '2026-04-15', expires: '2027-04-15' },
+  { id: 'AI-02', name: 'Prologis Trust',        relationship: 'Landlord',         policy: 'SEMC-WC-2025-48821', since: '2026-03-22', expires: '2027-03-22' },
+  { id: 'AI-03', name: 'Amazon Freight',        relationship: 'Client / Vendor',  policy: 'TRV-AUTO-2026-11223', since: '2026-02-05', expires: '2027-02-05' },
+  { id: 'AI-04', name: 'Ally Financial',        relationship: 'Lienholder',       policy: 'TRV-AUTO-2026-11223', since: '2025-08-05', expires: '2026-08-05' }
+];
+
+export const customerProfilePrivacy = {
+  data_shared_with: [
+    { party: 'SEMC / Liberty Mutual',   purpose: 'Workers Comp underwriting, claims',    fields: ['Name','FEIN','Payroll','Claims history'],       consent: '2025-05-18', revocable: false, note: 'Required to maintain coverage' },
+    { party: 'CNA',                      purpose: 'General Liability underwriting',       fields: ['Name','Revenue','Locations','Loss runs'],         consent: '2025-04-08', revocable: false, note: 'Required to maintain coverage' },
+    { party: 'Travelers',                purpose: 'Commercial Auto underwriting, claims', fields: ['Name','FEIN','Fleet data','Driver records'],     consent: '2025-08-01', revocable: false, note: 'Required to maintain coverage' },
+    { party: 'Liberty Mutual (Umbrella)', purpose: 'Umbrella underwriting',                fields: ['Name','Underlying policies','Exposures'],          consent: '2025-05-18', revocable: false, note: 'Required to maintain coverage' },
+    { party: 'ZoomInfo',                 purpose: 'Company enrichment (optional)',         fields: ['Company name','Industry','Revenue'],             consent: '2024-03-01', revocable: true,  note: 'You can opt out without affecting coverage' },
+    { party: 'Samsara Telematics',       purpose: 'Fleet safety discount verification',   fields: ['Vehicle activity','Driver scores'],                consent: '2025-08-05', revocable: true,  note: 'Revoking will end the 12% fleet discount' }
+  ],
+  export_requests: [
+    { id: 'EXP-04', type: 'Full data package', requested: '2025-11-02', completed: '2025-11-03', format: 'ZIP (PDF + JSON)',  size: '84 MB', downloaded: true  }
+  ],
+  consent_log: [
+    { ts: '2025-01-15', action: 'Accepted Terms of Service v3.2' },
+    { ts: '2025-01-15', action: 'Accepted Privacy Notice v2.8' },
+    { ts: '2025-01-15', action: 'Signed GLBA Disclosure' },
+    { ts: '2026-01-10', action: 'Re-accepted updated Privacy Notice v3.0' }
+  ]
+};
+
+// ─── Customer Messages & Support ───
+export const customerMessagesKPIs = [
+  { label: 'Unread Messages',    value: '2', warning: true },
+  { label: 'Open Tickets',       value: '1' },
+  { label: 'Avg Response Time',  value: '2.4h' },
+  { label: 'Resolution Rate',    value: '96%' },
+  { label: 'Your CSAT',          value: '4.8 / 5' },
+  { label: 'Conversations (YTD)',value: '18' }
+];
+
+export const customerMessageCategories = [
+  { key: 'general',   icon: '💬', name: 'General Inquiry',            desc: 'Coverage questions, policy concepts', sla: '24h' },
+  { key: 'policy',    icon: '📋', name: 'Policy & Endorsements',      desc: 'Changes, additions, cancellations',   sla: '1 business day' },
+  { key: 'billing',   icon: '💳', name: 'Billing & Payments',         desc: 'Invoices, refunds, payment plans',    sla: '1 business day' },
+  { key: 'claims',    icon: '🛡', name: 'Claims Support',              desc: 'Status updates, documents needed',    sla: '4h' },
+  { key: 'risk',      icon: '⚠️', name: 'Risk & Safety',               desc: 'Discounts, assessments, resources',   sla: '2 business days' },
+  { key: 'technical', icon: '🛠', name: 'Portal / Technical',          desc: 'Login, uploads, app issues',          sla: '4h' },
+  { key: 'feedback',  icon: '⭐', name: 'Feedback & Complaints',       desc: 'Service issues or suggestions',       sla: '1 business day' }
+];
+
+export const customerMessageStatuses = ['New', 'In Progress', 'Awaiting Your Reply', 'Resolved', 'Closed'];
+
+export const customerConversations = [
+  {
+    id: 'MSG-5042',
+    subject: 'GL renewal — question about deductible option',
+    category: 'policy',
+    linked: { type: 'Policy', ref: 'CNA-GL-2025-33102' },
+    last_message_at: '2026-04-19 09:12',
+    last_from: 'Sarah Chen',
+    preview: 'The $5K deductible option you asked about would save ~$840/yr. Should I run the numbers and send a formal offer?',
+    unread: 2,
+    status: 'Awaiting Your Reply',
+    statusColor: 'amber',
+    priority: 'normal',
+    participants: [
+      { name: 'You',          role: 'Client',   avatar_color: '#6c5ce7', initials: 'JR' },
+      { name: 'Sarah Chen',   role: 'Producer', avatar_color: '#ff8a65', initials: 'SC' }
+    ]
+  },
+  {
+    id: 'MSG-5041',
+    subject: 'Auto claim — photos uploaded',
+    category: 'claims',
+    linked: { type: 'Claim', ref: 'CLM-2026-0051' },
+    last_message_at: '2026-04-18 10:24',
+    last_from: 'Jane Rodriguez',
+    preview: 'Got the photos — thanks! I will send the estimate by EOD tomorrow.',
+    unread: 0,
+    status: 'In Progress',
+    statusColor: 'blue',
+    priority: 'normal',
+    participants: [
+      { name: 'You',             role: 'Client',   avatar_color: '#6c5ce7', initials: 'JR' },
+      { name: 'Jane Rodriguez',  role: 'Adjuster', avatar_color: '#ff8a65', initials: 'JR2' },
+      { name: 'Sarah Chen',      role: 'Producer', avatar_color: '#ff8a65', initials: 'SC' }
+    ]
+  },
+  {
+    id: 'MSG-5040',
+    subject: 'Q1 payment confirmation — thanks!',
+    category: 'billing',
+    linked: { type: 'Invoice', ref: 'INV-20441' },
+    last_message_at: '2026-04-15 14:02',
+    last_from: 'You',
+    preview: 'Thanks Sarah, received the confirmation. All good on my end.',
+    unread: 0,
+    status: 'Resolved',
+    statusColor: 'green',
+    priority: 'normal',
+    participants: [
+      { name: 'You',          role: 'Client',   avatar_color: '#6c5ce7', initials: 'JR' },
+      { name: 'Sarah Chen',   role: 'Producer', avatar_color: '#ff8a65', initials: 'SC' }
+    ]
+  },
+  {
+    id: 'MSG-5039',
+    subject: 'Fleet telematics discount question',
+    category: 'risk',
+    linked: { type: 'Policy', ref: 'TRV-AUTO-2026-11223' },
+    last_message_at: '2026-04-12 16:44',
+    last_from: 'Mike Torres',
+    preview: 'Confirmed — Samsara integration is active and the 12% credit was applied at your last renewal. You saved $680 this year.',
+    unread: 0,
+    status: 'Resolved',
+    statusColor: 'green',
+    priority: 'normal',
+    participants: [
+      { name: 'You',         role: 'Client', avatar_color: '#6c5ce7', initials: 'JR' },
+      { name: 'Mike Torres', role: 'CSR',    avatar_color: '#81c784', initials: 'MT' }
+    ]
+  },
+  {
+    id: 'MSG-5038',
+    subject: 'Can\'t log in from mobile app',
+    category: 'technical',
+    linked: null,
+    last_message_at: '2026-04-08 11:15',
+    last_from: 'Support Team',
+    preview: 'Resolved — mobile app was cached with old token. Cleared on our side, please try again and let us know.',
+    unread: 0,
+    status: 'Closed',
+    statusColor: 'gray',
+    priority: 'normal',
+    participants: [
+      { name: 'You',           role: 'Client',  avatar_color: '#6c5ce7', initials: 'JR' },
+      { name: 'Support Team',  role: 'Support', avatar_color: '#78909c', initials: 'ST' }
+    ]
+  }
+];
+
+export const customerConversationThread = {
+  id: 'MSG-5042',
+  messages: [
+    { ts: '2026-04-19 09:12', from: 'Sarah Chen',   role: 'Producer', avatar_color: '#ff8a65', initials: 'SC', text: 'The $5K deductible option you asked about would save ~$840/yr. Should I run the numbers and send a formal offer?', read: false, attachments: [] },
+    { ts: '2026-04-18 15:40', from: 'You',          role: 'Client',   avatar_color: '#6c5ce7', initials: 'JR', text: 'Quick question on GL renewal — what would the premium look like if I took a $5K deductible instead of $2,500?', read: true, attachments: [] },
+    { ts: '2026-04-18 15:35', from: 'Sarah Chen',   role: 'Producer', avatar_color: '#ff8a65', initials: 'SC', text: 'Happy to help! Go ahead and send the question, or we can jump on a quick call.', read: true, attachments: [] },
+    { ts: '2026-04-18 15:32', from: 'You',          role: 'Client',   avatar_color: '#6c5ce7', initials: 'JR', text: 'Hi Sarah, got a quick question on my GL renewal — do you have 2 minutes?', read: true, attachments: [{ name: 'CNA_GL_Renewal_Offer.pdf', type: 'pdf', size: '380 KB' }] }
+  ],
+  attachments_summary: 1
+};
+
+export const customerSupportTickets = [
+  { id: 'TKT-8842', subject: 'Renewal deductible comparison', category: 'policy',    priority: 'Normal', status: 'In Progress',         statusColor: 'blue',  created: '2026-04-18', assigned: 'Sarah Chen',  sla_target: '2026-04-19 18:00', linked_conv: 'MSG-5042' },
+  { id: 'TKT-8841', subject: 'Auto claim — photo submission', category: 'claims',    priority: 'High',   status: 'In Progress',         statusColor: 'amber', created: '2026-04-17', assigned: 'Jane Rodriguez', sla_target: '2026-04-18 12:00', linked_conv: 'MSG-5041' },
+  { id: 'TKT-8840', subject: 'Q1 payment confirmation',        category: 'billing',   priority: 'Low',    status: 'Resolved',            statusColor: 'green', created: '2026-04-15', assigned: 'Sarah Chen',  resolved: '2026-04-15', linked_conv: 'MSG-5040' },
+  { id: 'TKT-8839', subject: 'Telematics discount verification',category: 'risk',     priority: 'Normal', status: 'Resolved',            statusColor: 'green', created: '2026-04-12', assigned: 'Mike Torres', resolved: '2026-04-12', linked_conv: 'MSG-5039' },
+  { id: 'TKT-8838', subject: 'Mobile app login issue',          category: 'technical', priority: 'High',   status: 'Closed',              statusColor: 'gray',  created: '2026-04-08', assigned: 'Support Team',resolved: '2026-04-08', linked_conv: 'MSG-5038' }
+];
+
+export const customerLiveChatTranscript = [
+  { ts: '11:22 AM', from: 'AI Assistant', role: 'ai',     text: 'Hi James! I\'m your agency\'s AI assistant. How can I help you today?' },
+  { ts: '11:23 AM', from: 'You',          role: 'client', text: 'When is my next premium payment due?' },
+  { ts: '11:23 AM', from: 'AI Assistant', role: 'ai',     text: 'Your next payment is **$15,392** for General Liability, due **2026-04-12** (past due 7 days ago — please pay ASAP to avoid cancellation). Want me to open the payment flow?' },
+  { ts: '11:24 AM', from: 'You',          role: 'client', text: 'Actually I want to talk to Sarah about a deductible change' },
+  { ts: '11:24 AM', from: 'AI Assistant', role: 'ai',     text: 'Got it — I\'m handing you off to Sarah Chen now. She typically replies within 2 hours. Meanwhile, here is a helpful article on deductible options.' },
+  { ts: '11:25 AM', from: 'Sarah Chen',   role: 'human',  text: 'Hi James! I saw your question come in. Happy to walk through deductible options — do you have 2 minutes now or would you prefer I send a formal comparison?' }
+];
+
+export const customerCallbackSlots = [
+  { date: '2026-04-19', day: 'Today',      slots: ['2:00 PM', '3:30 PM', '4:45 PM'] },
+  { date: '2026-04-20', day: 'Monday',     slots: ['9:00 AM', '10:30 AM', '1:00 PM', '3:15 PM'] },
+  { date: '2026-04-21', day: 'Tuesday',    slots: ['9:30 AM', '11:00 AM', '2:00 PM'] },
+  { date: '2026-04-22', day: 'Wednesday',  slots: ['10:00 AM', '1:45 PM', '4:00 PM'] }
+];
+
+export const customerKnowledgeBase = [
+  { id: 'KB-101', title: 'How do I file a claim on the portal?',                category: 'claims',    views: 1284, rating: 4.8, updated: '2026-04-10', preview: 'Step-by-step guide to filing your first claim through the portal — takes about 5 minutes.' },
+  { id: 'KB-102', title: 'What is a certificate of insurance (COI)?',            category: 'policy',    views: 982,  rating: 4.9, updated: '2026-03-22', preview: 'A COI is a one-page document that proves you carry insurance. Your landlord, customers, and vendors may require one.' },
+  { id: 'KB-103', title: 'Why is my premium going up at renewal?',               category: 'billing',   views: 876,  rating: 4.6, updated: '2026-04-05', preview: 'Premiums change at renewal based on loss history, coverage, industry trends, and inflation. Here is how we determine your rate.' },
+  { id: 'KB-104', title: 'How do I enroll in autopay?',                          category: 'billing',   views: 742,  rating: 4.9, updated: '2026-03-15', preview: 'Autopay takes 60 seconds to set up and waives all installment fees. Here is how.' },
+  { id: 'KB-105', title: 'What do I do immediately after a loss?',               category: 'claims',    views: 684,  rating: 5.0, updated: '2026-04-15', preview: 'First 24 hours after a loss — safety, documentation, notification. The quick checklist.' },
+  { id: 'KB-106', title: 'How to get a premium discount with telematics',        category: 'risk',      views: 612,  rating: 4.7, updated: '2026-04-02', preview: 'Telematics devices or mobile apps can save 10–22% on commercial auto — here is how the programs work.' },
+  { id: 'KB-107', title: 'Can I add a new vehicle mid-term?',                    category: 'policy',    views: 524,  rating: 4.8, updated: '2026-02-28', preview: 'Yes — endorsements can be added at any time. Most are effective within 24 hours. Here is the process.' },
+  { id: 'KB-108', title: 'Two-factor authentication setup',                      category: 'technical', views: 428,  rating: 4.9, updated: '2026-03-01', preview: 'Protect your account with 2FA in 90 seconds — authenticator app or SMS.' },
+  { id: 'KB-109', title: 'What happens if my claim is denied?',                  category: 'claims',    views: 394,  rating: 4.5, updated: '2026-03-20', preview: 'Understand why claims get denied, how to appeal, and what other options you have.' },
+  { id: 'KB-110', title: 'How do I request a payment plan?',                     category: 'billing',   views: 362,  rating: 4.8, updated: '2026-04-08', preview: 'If you need to split a large premium, we offer 2–6 month plans at no cost for autopay clients.' }
+];
+
+// ─── Customer Risk Management & Resources ───
+export const customerRiskKPIs = [
+  { label: 'Your Risk Score',        value: '82 / 100' },
+  { label: 'Claim-Free Streak',      value: '14 mo' },
+  { label: 'Active Safety Programs', value: '4' },
+  { label: 'Unlocked Discounts',     value: '$2,840 / yr' },
+  { label: 'Actions Completed',      value: '8 of 12' },
+  { label: 'Peer Ranking',           value: 'Top 12%' }
+];
+
+export const customerRiskProfile = {
+  overall_score: 82,
+  prior_score: 74,
+  change: '+8',
+  tier: 'Strong',
+  tier_color: 'green',
+  benchmark: { industry: 'Construction', peer_avg: 68, top_quartile: 80 },
+  top_exposures: [
+    { name: 'Fleet Safety',      score: 76, weight: 30, trend: 'up',   note: 'Telematics enabled · DriverScore 88 · 0 at-fault 24mo' },
+    { name: 'Workplace Safety',  score: 88, weight: 25, trend: 'up',   note: 'OSHA-compliant · DART rate below industry avg · safety audit 88' },
+    { name: 'Cyber Exposure',    score: 58, weight: 20, trend: 'flat', note: 'MFA on email only · no endpoint protection · attention needed' },
+    { name: 'Property / Premises',score: 82, weight: 15, trend: 'up',   note: 'Sprinklered · monitored alarm · deadbolts · fire extinguishers current' },
+    { name: 'Liability Exposure',score: 86, weight: 10, trend: 'flat', note: 'Strong contracts · waiver-of-subro active · additional insureds on file' }
+  ],
+  claim_frequency_delta: -42,
+  premium_savings_unlocked: 2840,
+  premium_savings_available: 1620
+};
+
+export const customerRiskActions = [
+  { id: 'RA-01', title: 'Enable multi-factor authentication on all business accounts', category: 'Cyber',      impact: 'High',   effort: 'Low',    est_savings: 420, status: 'in_progress', due: '2026-04-30', required_docs: 'Screenshot showing MFA enforcement' },
+  { id: 'RA-02', title: 'Install endpoint protection (anti-malware) on all fleet laptops', category: 'Cyber', impact: 'High',   effort: 'Medium', est_savings: 480, status: 'pending',     due: '2026-05-15', required_docs: 'Proof of install or vendor agreement' },
+  { id: 'RA-03', title: 'Complete employee phishing training (annual)',               category: 'Cyber',      impact: 'Medium', effort: 'Low',    est_savings: 240, status: 'pending',     due: '2026-06-01', required_docs: 'Completion certificate' },
+  { id: 'RA-04', title: 'Quarterly driver safety refresher (all fleet drivers)',      category: 'Fleet',      impact: 'High',   effort: 'Medium', est_savings: 680, status: 'complete',    completed: '2026-03-22', verified: true },
+  { id: 'RA-05', title: 'Dashcam install — remaining 3 vehicles',                     category: 'Fleet',      impact: 'Medium', effort: 'Medium', est_savings: 320, status: 'in_progress', due: '2026-05-01', required_docs: 'Install invoice' },
+  { id: 'RA-06', title: 'Fire extinguisher annual inspection',                        category: 'Property',   impact: 'Medium', effort: 'Low',    est_savings: 180, status: 'complete',    completed: '2026-02-10', verified: true },
+  { id: 'RA-07', title: 'Update OSHA 300 log (annual posting)',                       category: 'Workplace',  impact: 'Low',    effort: 'Low',    est_savings: 0,   status: 'complete',    completed: '2026-02-01', verified: true },
+  { id: 'RA-08', title: 'Slip/fall signage in shop floor wet areas',                  category: 'Liability',  impact: 'Medium', effort: 'Low',    est_savings: 150, status: 'complete',    completed: '2026-01-15', verified: true },
+  { id: 'RA-09', title: 'Add hazmat spill kit (per OSHA 1910.120)',                   category: 'Workplace',  impact: 'Low',    effort: 'Low',    est_savings: 100, status: 'pending',     due: '2026-06-30', required_docs: 'Photo of kit in place' },
+  { id: 'RA-10', title: 'Roof inspection post-winter storms',                         category: 'Property',   impact: 'Medium', effort: 'Medium', est_savings: 220, status: 'complete',    completed: '2026-03-05', verified: true },
+  { id: 'RA-11', title: 'Security camera installation at yard entrance',              category: 'Property',   impact: 'High',   effort: 'High',   est_savings: 380, status: 'complete',    completed: '2026-02-28', verified: true },
+  { id: 'RA-12', title: 'Client contract review — liability caps',                    category: 'Liability',  impact: 'Medium', effort: 'High',   est_savings: 200, status: 'complete',    completed: '2026-01-22', verified: true }
+];
+
+export const customerRiskResourceCategories = [
+  { key: 'all',        icon: '🗂', name: 'All Resources',      count: 58 },
+  { key: 'fleet',      icon: '🚚', name: 'Fleet & Auto',       count: 14 },
+  { key: 'workplace',  icon: '👷', name: 'Workplace Safety',   count: 12 },
+  { key: 'cyber',      icon: '🔒', name: 'Cyber Security',      count: 10 },
+  { key: 'property',   icon: '🏢', name: 'Property & Premises', count: 8  },
+  { key: 'claims',     icon: '🛡', name: 'Claim Prevention',    count: 9  },
+  { key: 'seasonal',   icon: '🌦', name: 'Seasonal / Weather',  count: 5  }
+];
+
+export const customerRiskResources = [
+  { id: 'RR-201', title: 'How to Prevent Water-Damage Claims in Commercial Properties', category: 'property', type: 'Video',         duration: '4 min',  relevance: 94, status: 'new',         updated: '2026-04-10', thumbnail: '💧', discount_eligible: true,  description: '5 easy checks that stop 80% of water claims — from shut-off valves to drain maintenance.' },
+  { id: 'RR-202', title: 'Fleet Telematics 101 — What Your Data Can Do for You',        category: 'fleet',    type: 'Article',       duration: '6 min',  relevance: 92, status: 'recommended', updated: '2026-03-28', thumbnail: '📡', discount_eligible: true,  description: 'Use telematics to reduce at-fault accidents, coach drivers, and qualify for premium credits.' },
+  { id: 'RR-203', title: 'Cyber Readiness Quiz — Is Your Business Protected?',          category: 'cyber',    type: 'Assessment',    duration: '8 min',  relevance: 98, status: 'recommended', updated: '2026-04-05', thumbnail: '🔒', discount_eligible: true,  description: 'Get a personalized cyber score + specific next steps for your size and industry.' },
+  { id: 'RR-204', title: 'OSHA 300 Log — Why It Matters and How to Post It',             category: 'workplace',type: 'PDF Guide',     duration: '12 pages',relevance: 78, status: 'completed',   updated: '2026-01-15', thumbnail: '📋', discount_eligible: false, description: 'Required annual posting · step-by-step walkthrough with sample entries.' },
+  { id: 'RR-205', title: 'Winter Weather Prep for California Businesses',                category: 'seasonal', type: 'Checklist',     duration: '5 min',  relevance: 72, status: 'new',         updated: '2026-04-01', thumbnail: '❄️', discount_eligible: false, description: 'Atmospheric river season is here — 14-point checklist to protect your property and fleet.' },
+  { id: 'RR-206', title: 'Driver Safety Webinar — Defensive Driving Essentials',         category: 'fleet',    type: 'Webinar',       duration: '45 min', relevance: 88, status: 'in_progress', updated: '2026-02-14', thumbnail: '🎥', discount_eligible: true,  description: 'Live monthly webinar · counts toward annual driver training requirement · discount-eligible.' },
+  { id: 'RR-207', title: 'Slip, Trip & Fall Prevention for Construction Sites',          category: 'workplace',type: 'Infographic',   duration: '2 min',  relevance: 86, status: 'completed',   updated: '2026-01-10', thumbnail: '⚠️', discount_eligible: false, description: 'Top 10 causes and simple prevention actions · print for the shop floor.' },
+  { id: 'RR-208', title: 'Phishing & Social Engineering — 6 Red Flags',                  category: 'cyber',    type: 'Video',         duration: '3 min',  relevance: 94, status: 'recommended', updated: '2026-04-12', thumbnail: '🎣', discount_eligible: true,  description: 'Share with your team · passes as employee training for cyber credit.' },
+  { id: 'RR-209', title: 'Post-Claim Playbook — Preventing Repeat Water Damage',         category: 'claims',   type: 'PDF Guide',     duration: '8 pages',relevance: 90, status: 'recommended', updated: '2026-04-15', thumbnail: '🔁', discount_eligible: false, description: 'After your 2025 burst-pipe claim, here are the 7 specific upgrades that stop recurrence.' },
+  { id: 'RR-210', title: 'Additional Insured Essentials — What to Require from Vendors', category: 'property', type: 'Article',       duration: '7 min',  relevance: 74, status: 'new',         updated: '2026-04-08', thumbnail: '📝', discount_eligible: false, description: 'Protect yourself from vendor exposure with the right contract language.' }
+];
+
+export const customerRiskAssessments = [
+  { id: 'AS-01', title: 'Cyber Readiness Assessment',          lob: 'Cyber',     questions: 12, duration: '8 min',  status: 'recommended', last_score: null, discount: '$420 / yr',  description: 'Benchmark your controls vs. carrier requirements. Unlocks cyber premium credit.' },
+  { id: 'AS-02', title: 'Fleet Safety & Driver Scorecard',     lob: 'Auto',      questions: 18, duration: '12 min', status: 'completed',   last_score: 88,   discount: '$680 / yr',  description: 'Your fleet scored 88/100 — top quartile. Discount applied on next renewal.' },
+  { id: 'AS-03', title: 'Workplace Safety Self-Audit',         lob: 'WC',        questions: 25, duration: '15 min', status: 'completed',   last_score: 92,   discount: '$520 / yr',  description: 'OSHA-aligned checklist · exceeded carrier threshold for preferred WC rate.' },
+  { id: 'AS-04', title: 'Business Continuity Readiness',        lob: 'Property',  questions: 14, duration: '10 min', status: 'not_started', last_score: null, discount: '$180 / yr',  description: 'How prepared are you for an event that shuts you down for 72+ hours?' },
+  { id: 'AS-05', title: 'Contract Liability Review',            lob: 'GL',        questions: 8,  duration: '5 min',  status: 'not_started', last_score: null, discount: '$0',         description: 'Identify gaps in your vendor/customer contracts that could expose you.' }
+];
+
+export const customerRiskDiscounts = [
+  { id: 'DI-01', name: 'Fleet Telematics Credit',           savings: 680,  status: 'Active',     statusColor: 'green', policy: 'TRV-AUTO-2026-11223', source: 'Verified by carrier · Samsara feed', program: 'Safe Fleet Program', expiry: '2026-08-05' },
+  { id: 'DI-02', name: 'WC Safety Program Discount',         savings: 520,  status: 'Active',     statusColor: 'green', policy: 'SEMC-WC-2025-48821', source: 'Verified annual audit (88/100)',      program: 'Schedule Credit',    expiry: '2026-06-01' },
+  { id: 'DI-03', name: 'Security Camera Credit',             savings: 380,  status: 'Active',     statusColor: 'green', policy: 'CNA-GL-2025-33102',  source: 'Receipt + photo verified',           program: 'Premises Credit',    expiry: '2026-04-12' },
+  { id: 'DI-04', name: 'Driver Safety Training',              savings: 420,  status: 'Active',     statusColor: 'green', policy: 'TRV-AUTO-2026-11223', source: 'Quarterly completion on file',       program: 'Safe Fleet Program', expiry: '2026-07-01' },
+  { id: 'DI-05', name: 'Sprinkler / Alarm Credit',            savings: 240,  status: 'Active',     statusColor: 'green', policy: 'CNA-GL-2025-33102',  source: 'Certificate verified',               program: 'Protection Credit',  expiry: '2026-04-12' },
+  { id: 'DI-06', name: 'Cyber Training Program',             savings: 420,  status: 'Available',  statusColor: 'amber', policy: '—',                   source: 'Complete Cyber Readiness Quiz',      program: 'Cyber Credit',       expiry: '—',        action: 'Complete assessment' },
+  { id: 'DI-07', name: 'Endpoint Protection Credit',         savings: 480,  status: 'Available',  statusColor: 'amber', policy: '—',                   source: 'Upload vendor agreement',            program: 'Cyber Credit',       expiry: '—',        action: 'Upload proof' },
+  { id: 'DI-08', name: 'Remote Worker Safety Program',       savings: 380,  status: 'Available',  statusColor: 'amber', policy: '—',                   source: 'Attest to remote-work policy',       program: 'WC Credit',          expiry: '—',        action: 'Submit attestation' },
+  { id: 'DI-09', name: 'Continuity Plan Credit',              savings: 340,  status: 'Available',  statusColor: 'amber', policy: '—',                   source: 'Complete Business Continuity Quiz',  program: 'Property Credit',    expiry: '—',        action: 'Take quiz' }
+];
+
+export const customerSeasonalAlerts = [
+  { id: 'SE-01', title: 'Atmospheric River Season — CA',          season: 'Apr–Jun',  severity: 'High',   status: 'Active',     icon: '🌧️', description: 'Heavy rainfall expected through early May. Atmospheric rivers caused $2.1B in claims last year.', checklist: ['Inspect roof drains', 'Clear gutters', 'Test sump pumps', 'Seal windows', 'Move inventory off ground floor'], link: 'RR-205' },
+  { id: 'SE-02', title: 'Wildfire Season Prep — California',      season: 'Jun–Oct',  severity: 'High',   status: 'Upcoming',   icon: '🔥', description: 'Defensible space and ember preparation reduce wildfire claims by 78%. Begin prep by June.',         checklist: ['Clear 100-ft defensible space', 'Install ember-resistant vents', 'Photo inventory for claims', 'Update emergency contact list'], link: null },
+  { id: 'SE-03', title: 'Heat Stress & OSHA Compliance',          season: 'Jun–Sep',  severity: 'Medium', status: 'Upcoming',   icon: '🌡', description: 'Outdoor workers require heat-illness prevention per CA Title 8 §3395. Violations = WC claims.',    checklist: ['Heat-illness plan current', 'Water supply on site', 'Shaded rest area', 'Acclimatization schedule', 'Emergency response plan'], link: null },
+  { id: 'SE-04', title: 'Year-End Tax Documentation',             season: 'Nov–Dec',  severity: 'Low',    status: 'Dormant',    icon: '📊', description: 'Insurance documents for tax prep (dec pages, premium tax statements).',                          checklist: ['Download all declarations', 'Export premium summary', 'Claim settlement docs', 'Paid invoices for deductibility'], link: null }
+];
+
+export const customerRiskReports = [
+  { id: 'RPT-2026', year: 2026, generated: '2026-04-01', type: 'Annual Risk Review', producer: 'Sarah Chen', status: 'Available', statusColor: 'green', pages: 14, highlights: ['Risk score +8 (74 → 82)', '$2,840/yr in credits unlocked', '0 claims vs. peer avg of 1.2', 'Top quartile industry benchmark'] },
+  { id: 'RPT-2025', year: 2025, generated: '2025-04-02', type: 'Annual Risk Review', producer: 'Sarah Chen', status: 'Archived',  statusColor: 'gray',  pages: 12, highlights: ['Initial baseline score: 74', '$1,420/yr credits unlocked', '1 claim (water damage)', 'Median peer benchmark'] },
+  { id: 'RPT-2024', year: 2024, generated: '2024-04-05', type: 'Annual Risk Review', producer: 'Sarah Chen', status: 'Archived',  statusColor: 'gray',  pages: 10, highlights: ['Initial baseline score: 66', '$820/yr credits unlocked', '2 claims', 'Below peer benchmark'] }
+];
+
+// ─── Customer Claims Center ───
+export const customerClaimsKPIs = [
+  { label: 'Open Claims',         value: '1', warning: true },
+  { label: 'Awaiting Your Action', value: '1', warning: true },
+  { label: 'Paid to Date',        value: '$0' },
+  { label: 'Closed (12 mo)',      value: '2' },
+  { label: 'Avg Resolution',      value: '18 days' },
+  { label: 'Your Satisfaction',   value: '4.6 / 5' }
+];
+
+export const customerClaimTypes = [
+  { key: 'auto',     icon: '🚗',  name: 'Auto / Fleet',           desc: 'Collision, comprehensive, liability' },
+  { key: 'property', icon: '🏢',  name: 'Property / Commercial',  desc: 'Fire, wind, theft, water damage' },
+  { key: 'liability',icon: '⚖️',  name: 'Liability / General',    desc: 'Slip-and-fall, product, professional' },
+  { key: 'wc',       icon: '👷',  name: 'Workers Comp',           desc: 'Employee injury or illness' },
+  { key: 'cyber',    icon: '💻',  name: 'Cyber / Specialty',      desc: 'Data breach, ransomware, fraud' },
+  { key: 'other',    icon: '📝',  name: 'Other',                  desc: 'Not sure? Our team will route it' }
+];
+
+export const customerClaimStatuses = ['FNOL Filed', 'Adjuster Assigned', 'Under Investigation', 'Estimate Issued', 'Payment Issued', 'Closed', 'Denied'];
+
+export const customerClaims = [
+  {
+    id: 'CLM-2026-0051',
+    type: 'Auto / Fleet',
+    icon: '🚗',
+    policy: 'TRV-AUTO-2026-11223',
+    carrier: 'Travelers',
+    loss_date: '2026-04-12',
+    loss_type: 'Collision — rear-ended at intersection',
+    location: 'Folsom Blvd & 65th St, Sacramento CA',
+    status: 'Under Investigation',
+    statusColor: 'amber',
+    stage_index: 2,
+    reported: '2026-04-12 16:40',
+    reported_via: 'Portal · FNOL Wizard',
+    adjuster: { name: 'Jane Rodriguez', phone: '(800) 238-6225 ext. 4472', email: 'j.rodriguez@travelers.com', photo_color: 'linear-gradient(135deg,#ff8a65,#ffab40)', initials: 'JR' },
+    paid_to_date: 0,
+    reserve: 8500,
+    final_settlement: null,
+    next_action: 'Photos of damage requested',
+    next_action_urgent: true,
+    days_open: 7,
+    docs_count: 5,
+    messages_unread: 2,
+    has_open_task: true
+  },
+  {
+    id: 'CLM-2026-0042',
+    type: 'Auto / Fleet',
+    icon: '🚗',
+    policy: 'TRV-AUTO-2026-11223',
+    carrier: 'Travelers',
+    loss_date: '2026-03-15',
+    loss_type: 'Fender-bender — parking lot',
+    location: 'Costco parking lot, West Sacramento CA',
+    status: 'Closed',
+    statusColor: 'green',
+    stage_index: 5,
+    reported: '2026-03-15 14:22',
+    reported_via: 'Phone · After-hours hotline',
+    adjuster: { name: 'Mark Chen', phone: '(800) 238-6225 ext. 3118', email: 'm.chen@travelers.com', photo_color: 'linear-gradient(135deg,#4fc3f7,#29b6f6)', initials: 'MC' },
+    paid_to_date: 3240,
+    reserve: 0,
+    final_settlement: 3240,
+    next_action: '—',
+    next_action_urgent: false,
+    days_open: 21,
+    docs_count: 8,
+    messages_unread: 0,
+    has_open_task: false
+  },
+  {
+    id: 'CLM-2025-1188',
+    type: 'Property / Commercial',
+    icon: '🏢',
+    policy: 'CNA-GL-2025-33102',
+    carrier: 'CNA',
+    loss_date: '2025-11-20',
+    loss_type: 'Water damage — burst pipe',
+    location: '1201 Industrial Blvd, Sacramento CA',
+    status: 'Closed',
+    statusColor: 'green',
+    stage_index: 5,
+    reported: '2025-11-20 08:30',
+    reported_via: 'Portal · FNOL Wizard',
+    adjuster: { name: 'Linda Park', phone: '(800) 262-2000 ext. 8804', email: 'linda.park@cna.com', photo_color: 'linear-gradient(135deg,#81c784,#66bb6a)', initials: 'LP' },
+    paid_to_date: 12800,
+    reserve: 0,
+    final_settlement: 12800,
+    next_action: '—',
+    next_action_urgent: false,
+    days_open: 32,
+    docs_count: 12,
+    messages_unread: 0,
+    has_open_task: false
+  }
+];
+
+export const customerClaimDetail = {
+  id: 'CLM-2026-0051',
+  timeline: [
+    { ts: '2026-04-18 10:22', stage: 'Under Investigation', event: 'Photos of damage requested',              actor: 'Jane Rodriguez',  system: false, urgent: true  },
+    { ts: '2026-04-17 14:15', stage: 'Under Investigation', event: 'Police report uploaded · CHP #2026-88421',actor: 'You',             system: false, urgent: false },
+    { ts: '2026-04-14 09:30', stage: 'Under Investigation', event: 'Adjuster inspection scheduled for 4/22',  actor: 'Jane Rodriguez',  system: false, urgent: false },
+    { ts: '2026-04-13 11:05', stage: 'Adjuster Assigned',   event: 'Jane Rodriguez assigned as your adjuster', actor: 'System',          system: true,  urgent: false },
+    { ts: '2026-04-12 16:40', stage: 'FNOL Filed',          event: 'Claim filed via portal · confirmation #CLM-2026-0051', actor: 'You', system: false, urgent: false }
+  ],
+  documents: [
+    { id: 'CDOC-C051-1', name: 'Dashcam clip — collision.mp4',      type: 'Video',          size: '12 MB',  uploaded: '2026-04-12 16:42', uploaded_by: 'You' },
+    { id: 'CDOC-C051-2', name: 'Police report — CHP #2026-88421.pdf', type: 'Police Report',size: '820 KB', uploaded: '2026-04-17 14:15', uploaded_by: 'You' },
+    { id: 'CDOC-C051-3', name: 'Other driver insurance info.pdf',   type: 'Third Party',    size: '120 KB', uploaded: '2026-04-12 16:50', uploaded_by: 'You' },
+    { id: 'CDOC-C051-4', name: 'Repair estimate — Firestone.pdf',   type: 'Estimate',       size: '480 KB', uploaded: '2026-04-18 09:04', uploaded_by: 'You' },
+    { id: 'CDOC-C051-5', name: 'FNOL Confirmation.pdf',              type: 'FNOL',           size: '180 KB', uploaded: '2026-04-12 16:41', uploaded_by: 'System' }
+  ],
+  messages: [
+    { ts: '2026-04-18 10:22', from: 'Jane Rodriguez', role: 'Adjuster', avatar_color: '#ff8a65', initials: 'JR', read: false, text: 'Hi James — good news, the police report gives us a clear picture. To finalize the estimate I need 3 more photos: a wide shot of the rear bumper, a close-up of the tail-light damage, and the driver-side quarter panel. Upload when convenient.' },
+    { ts: '2026-04-17 14:20', from: 'Jane Rodriguez', role: 'Adjuster', avatar_color: '#ff8a65', initials: 'JR', read: false, text: 'Got the police report — thanks for the fast turnaround. I will circle back tomorrow with next steps.' },
+    { ts: '2026-04-17 14:15', from: 'You',            role: 'Client',   avatar_color: '#6c5ce7', initials: 'JR', read: true,  text: 'Uploaded the police report. Should have all details there.' },
+    { ts: '2026-04-14 09:30', from: 'Jane Rodriguez', role: 'Adjuster', avatar_color: '#ff8a65', initials: 'JR', read: true,  text: "Welcome — I'm Jane, your adjuster. I'd like to schedule an inspection for next Tuesday. Does 4/22 at 10am work?" },
+    { ts: '2026-04-13 11:05', from: 'System',         role: 'System',   avatar_color: '#78909c', initials: 'SY', read: true,  text: 'Your claim has been assigned to Jane Rodriguez (Travelers · License CA-AD-48829). She will reach out within 24 hours.' }
+  ],
+  requested_docs: [
+    { item: '3 photos of rear bumper damage', required: true,  status: 'pending'  },
+    { item: 'Repair shop written estimate',    required: true,  status: 'complete' },
+    { item: 'Police report or incident #',     required: true,  status: 'complete' },
+    { item: 'Medical bills (if any)',          required: false, status: 'pending'  }
+  ]
+};
+
+export const customerClaimSettlement = {
+  id: 'CLM-2026-0042',
+  estimate: {
+    total: 3240,
+    line_items: [
+      { k: 'Labor (4.5 hrs @ $120)',              v: 540 },
+      { k: 'Parts — front bumper + tail light',    v: 1880 },
+      { k: 'Paint and refinish',                  v: 620 },
+      { k: 'Shop supplies / disposal',            v: 200 }
+    ],
+    less_deductible: 1000,
+    payable: 2240
+  },
+  payments: [
+    { ts: '2026-04-05 08:00', amount: 2240, method: 'ACH direct-deposit ••4421',  status: 'Settled', statusColor: 'green', note: 'Final settlement' }
+  ],
+  closing_signed: true,
+  satisfaction: 5
+};
+
+export const customerClaimFeedback = [
+  { q: 'Overall, how satisfied are you with the claim experience?',     type: 'rating'   },
+  { q: 'How clear and timely were the updates you received?',            type: 'rating'   },
+  { q: 'How easy was it to use the portal to manage this claim?',        type: 'rating'   },
+  { q: 'What could we have done better?',                                type: 'text'     },
+  { q: 'Anything else you would like your producer to know?',            type: 'text'     }
+];
+
+export const customerClaimsSuggestedQs = [
+  'What documents do I need for a water damage claim?',
+  'How long does an auto claim usually take?',
+  'How do you calculate my deductible?',
+  'Can I use my own repair shop?',
+  'What if I disagree with the estimate?'
+];
+
+// ─── Customer Billing & Payments ───
+export const customerBillingKPIs = [
+  { label: 'Total Balance',   value: '$15,392', warning: true },
+  { label: 'Next Payment Due', value: '2026-04-12' },
+  { label: 'Past Due',        value: '$0' },
+  { label: 'Paid YTD',        value: '$98,450' },
+  { label: 'Autopay Active',  value: '2 of 4' },
+  { label: 'Saved Methods',   value: '3' }
+];
+
+export const customerInvoiceStatuses = ['Due', 'Paid', 'Partially Paid', 'Past Due', 'Overdue', 'Refund Issued', 'Cancelled'];
+
+export const customerInvoices = [
+  { id: 'INV-20446', policy: 'CNA-GL-2025-33102',  policy_type: 'General Liability', carrier: 'CNA',             billing_type: 'Renewal',              issued: '2026-04-10', due: '2026-04-12', amount: 15392, base: 14800, taxes: 0,   fees: 592,  paid: 0,     balance: 15392, status: 'Due',           statusColor: 'amber', direct_bill: false, autopay: false, aging: 2,  urgent: true  },
+  { id: 'INV-20445', policy: 'TRV-AUTO-2026-11223',policy_type: 'Commercial Auto',  carrier: 'Travelers',        billing_type: 'Installment',           issued: '2026-04-05', due: '2026-05-05', amount: 5225,  base: 5225,  taxes: 0,   fees: 0,    paid: 0,     balance: 5225,  status: 'Due',           statusColor: 'blue',  direct_bill: false, autopay: true,  aging: 0,  urgent: false },
+  { id: 'INV-20444', policy: 'SEMC-WC-2025-48821', policy_type: 'Workers Comp',    carrier: 'SEMC / Liberty',   billing_type: 'Installment',           issued: '2026-04-01', due: '2026-04-15', amount: 46175, base: 46175, taxes: 0,   fees: 0,    paid: 46175, balance: 0,    status: 'Paid',          statusColor: 'green', direct_bill: false, autopay: true,  paid_date: '2026-04-15', paid_method: 'ACH · Business Checking ••4421' },
+  { id: 'INV-20443', policy: 'LIB-UMB-2025-88103', policy_type: 'Umbrella',         carrier: 'Liberty Mutual',   billing_type: 'New Business',          issued: '2025-06-01', due: '2025-06-15', amount: 18200, base: 18200, taxes: 0,   fees: 0,    paid: 18200, balance: 0,    status: 'Paid',          statusColor: 'green', direct_bill: false, autopay: false, paid_date: '2025-06-14', paid_method: 'Card · Visa ••1181' },
+  { id: 'INV-20442', policy: 'TRV-AUTO-2026-11223',policy_type: 'Commercial Auto',  carrier: 'Travelers',        billing_type: 'Endorsement',           issued: '2026-03-22', due: '2026-04-05', amount: 860,   base: 825,   taxes: 0,   fees: 35,   paid: 860,   balance: 0,    status: 'Paid',          statusColor: 'green', direct_bill: false, autopay: true,  paid_date: '2026-04-05', paid_method: 'Autopay · ACH ••4421', note: 'Added Truck #12 mid-term' },
+  { id: 'INV-20441', policy: 'SEMC-WC-2025-48821', policy_type: 'Workers Comp',    carrier: 'SEMC / Liberty',   billing_type: 'Installment',           issued: '2026-01-01', due: '2026-01-15', amount: 46175, base: 46175, taxes: 0,   fees: 0,    paid: 46175, balance: 0,    status: 'Paid',          statusColor: 'green', direct_bill: false, autopay: true,  paid_date: '2026-01-15', paid_method: 'Autopay · ACH ••4421' },
+  { id: 'INV-20440', policy: 'CNA-GL-2025-33102',  policy_type: 'General Liability', carrier: 'CNA',             billing_type: 'Refund / Return Premium',issued: '2026-03-10', due: '2026-03-10', amount: -480,  base: -480,  taxes: 0,   fees: 0,    paid: -480,  balance: 0,    status: 'Refund Issued', statusColor: 'blue',  direct_bill: true,  autopay: false, paid_date: '2026-03-12', paid_method: 'ACH credit to ••4421', note: 'Mid-term credit — reduced exposure' }
+];
+
+export const customerInvoiceDetail = {
+  id: 'INV-20446',
+  policy: 'CNA-GL-2025-33102',
+  carrier: 'CNA',
+  line_items: [
+    { k: 'General Liability Premium (annual)', v: 14800, note: 'Renewal 2026-04-12 to 2027-04-12' },
+    { k: 'Policy Fee',                          v: 50 },
+    { k: 'State Surplus Lines Tax',             v: 0 },
+    { k: 'Agency Admin Fee',                    v: 42 },
+    { k: 'Installment Fee (waived — autopay)',  v: 0 },
+    { k: 'Prior Credit Applied',                v: -500 }
+  ]
+};
+
+export const customerPaymentMethods = [
+  { id: 'PM-01', type: 'ACH',  label: 'Business Checking ••4421',  bank: 'Bank of America',  default: true,  autopay: ['SEMC-WC-2025-48821','TRV-AUTO-2026-11223'], added: '2023-06-14' },
+  { id: 'PM-02', type: 'Visa', label: 'Visa ••1181',                bank: 'Corporate Card',    default: false, autopay: [],                            added: '2024-08-02', expires: '08/27' },
+  { id: 'PM-03', type: 'AmEx', label: 'AmEx ••2006',                bank: 'Corporate Card',    default: false, autopay: [],                            added: '2025-02-12', expires: '02/28' }
+];
+
+export const customerAutopayPlans = [
+  { policy: 'SEMC-WC-2025-48821', lob: 'Workers Comp',     carrier: 'SEMC / Liberty', frequency: 'Quarterly',    amount: 46175, method_id: 'PM-01', next: '2026-07-01', status: 'Active',  statusColor: 'green' },
+  { policy: 'TRV-AUTO-2026-11223',lob: 'Commercial Auto',  carrier: 'Travelers',      frequency: 'Monthly',      amount: 5225,  method_id: 'PM-01', next: '2026-05-05', status: 'Active',  statusColor: 'green' },
+  { policy: 'CNA-GL-2025-33102',  lob: 'General Liability',carrier: 'CNA',            frequency: 'Annual',       amount: 15392, method_id: null,    next: '—',          status: 'Not Enrolled', statusColor: 'gray'  },
+  { policy: 'LIB-UMB-2025-88103', lob: 'Umbrella',          carrier: 'Liberty Mutual', frequency: 'Annual',       amount: 18200, method_id: null,    next: '—',          status: 'Not Enrolled', statusColor: 'gray'  }
+];
+
+export const customerPaymentHistory = [
+  { id: 'PMT-88421', invoice: 'INV-20444', date: '2026-04-15 09:22', amount: 46175, method: 'Autopay · ACH ••4421', status: 'Settled', statusColor: 'green' },
+  { id: 'PMT-88420', invoice: 'INV-20442', date: '2026-04-05 00:02', amount: 860,   method: 'Autopay · ACH ••4421', status: 'Settled', statusColor: 'green' },
+  { id: 'PMT-88419', invoice: 'INV-20441', date: '2026-01-15 09:22', amount: 46175, method: 'Autopay · ACH ••4421', status: 'Settled', statusColor: 'green' },
+  { id: 'PMT-88418', invoice: 'INV-20438', date: '2025-10-15 09:22', amount: 46175, method: 'Autopay · ACH ••4421', status: 'Settled', statusColor: 'green' },
+  { id: 'PMT-88417', invoice: 'INV-20435', date: '2025-07-15 09:22', amount: 46175, method: 'Autopay · ACH ••4421', status: 'Settled', statusColor: 'green' },
+  { id: 'PMT-88416', invoice: 'INV-20443', date: '2025-06-14 16:05', amount: 18200, method: 'Visa ••1181',           status: 'Settled', statusColor: 'green' },
+  { id: 'PMT-88415', invoice: 'INV-20440', date: '2026-03-12 08:00', amount: -480,  method: 'Refund to ACH ••4421',  status: 'Refunded',statusColor: 'blue'  }
+];
+
+export const customerBillingDisputes = [
+  { id: 'DIS-204', invoice: 'INV-20442', submitted: '2026-04-06', status: 'Resolved', statusColor: 'green', reason: 'Fee questioned', resolution: 'Confirmed — $35 fee is for mid-term endorsement. Waived on your next invoice as a courtesy.' }
+];
+
+// ─── Customer Documents Vault ───
+export const customerVaultKPIs = [
+  { label: 'Total Documents', value: '42' },
+  { label: 'Pending Signature', value: '2', warning: true },
   { label: 'Expiring Soon', value: '1', warning: true },
-  { label: 'Open Claims', value: '2' },
-  { label: 'Pending Endorsements', value: '1' }
+  { label: 'Recently Added (7d)', value: '5' },
+  { label: 'Active Shares', value: '3' },
+  { label: 'Storage Used', value: '24 MB' }
+];
+
+export const customerVaultCategories = [
+  { key: 'policy',     icon: '📋', name: 'Policy Documents',       desc: 'Declarations, policy forms, endorsements, ID cards', count: 18 },
+  { key: 'coi',        icon: '📄', name: 'Certificates (COI)',     desc: 'Certificates of insurance · ACORD 25',               count: 5  },
+  { key: 'billing',    icon: '💳', name: 'Billing & Financial',    desc: 'Invoices, receipts, premium finance agreements',     count: 9  },
+  { key: 'claims',     icon: '🛡️', name: 'Claims Documents',       desc: 'FNOL, adjuster reports, settlement letters',         count: 4  },
+  { key: 'onboarding', icon: '📝', name: 'Onboarding & Compliance',desc: 'Signed applications, disclosures, W-9',              count: 4  },
+  { key: 'risk',       icon: '⚠️', name: 'Risk Management',        desc: 'Safety reports, loss control, inspection photos',    count: 2  }
+];
+
+export const customerVaultStatuses = ['Current','Expiring Soon','Expired','Pending Signature','Approved','Uploaded by You'];
+
+export const customerDocuments = [
+  // Policy docs
+  { id: 'CDOC-3042', name: 'WC Declarations Page 2025-26.pdf',          category: 'policy',     type: 'Dec Page',      policy: 'SEMC-WC-2025-48821', carrier: 'SEMC / Liberty', effective: '2025-06-01', expires: '2026-06-01', uploaded: '2025-06-01', size: '420 KB', status: 'Current',           statusColor: 'green', new: false, esigned: true,  signer: 'James Reynolds', signed_date: '2025-05-28', tags: ['Ready for Tax'] },
+  { id: 'CDOC-3041', name: 'WC Policy Form 2025-26.pdf',                category: 'policy',     type: 'Policy',        policy: 'SEMC-WC-2025-48821', carrier: 'SEMC / Liberty', effective: '2025-06-01', expires: '2026-06-01', uploaded: '2025-06-01', size: '2.1 MB', status: 'Current',           statusColor: 'green', new: false, esigned: false, tags: [] },
+  { id: 'CDOC-3040', name: 'WC ID Card.pdf',                            category: 'policy',     type: 'ID Card',       policy: 'SEMC-WC-2025-48821', carrier: 'SEMC / Liberty', effective: '2025-06-01', expires: '2026-06-01', uploaded: '2025-06-01', size: '82 KB',  status: 'Current',           statusColor: 'green', new: false, esigned: false, tags: ['Ready for Tax'] },
+  { id: 'CDOC-3039', name: 'WC Endorsement — Added Prologis AI.pdf',    category: 'policy',     type: 'Endorsement',   policy: 'SEMC-WC-2025-48821', carrier: 'SEMC / Liberty', effective: '2026-03-20', expires: '2026-06-01', uploaded: '2026-03-20', size: '180 KB', status: 'Current',           statusColor: 'green', new: false, esigned: true,  signer: 'James Reynolds', signed_date: '2026-03-18', tags: [] },
+  { id: 'CDOC-3038', name: 'GL Declarations Page 2025-26.pdf',          category: 'policy',     type: 'Dec Page',      policy: 'CNA-GL-2025-33102',  carrier: 'CNA',            effective: '2025-04-12', expires: '2026-04-12', uploaded: '2025-04-12', size: '380 KB', status: 'Expiring Soon',     statusColor: 'amber', new: false, esigned: true,  signer: 'James Reynolds', signed_date: '2025-04-08', tags: ['Expires in 6 days'] },
+  { id: 'CDOC-3037', name: 'Umbrella Declarations Page 2025-26.pdf',    category: 'policy',     type: 'Dec Page',      policy: 'LIB-UMB-2025-88103', carrier: 'Liberty Mutual', effective: '2025-06-01', expires: '2026-06-01', uploaded: '2025-06-01', size: '284 KB', status: 'Current',           statusColor: 'green', new: false, esigned: true,  signer: 'James Reynolds', signed_date: '2025-05-28', tags: [] },
+  { id: 'CDOC-3036', name: 'Auto Declarations Page 2025-26.pdf',        category: 'policy',     type: 'Dec Page',      policy: 'TRV-AUTO-2026-11223',carrier: 'Travelers',      effective: '2025-08-05', expires: '2026-08-05', uploaded: '2025-08-05', size: '340 KB', status: 'Current',           statusColor: 'green', new: false, esigned: true,  signer: 'James Reynolds', signed_date: '2025-08-02', tags: [] },
+  { id: 'CDOC-3035', name: 'Auto ID Cards (12 vehicles).pdf',           category: 'policy',     type: 'ID Card',       policy: 'TRV-AUTO-2026-11223',carrier: 'Travelers',      effective: '2025-08-05', expires: '2026-08-05', uploaded: '2025-08-05', size: '120 KB', status: 'Current',           statusColor: 'green', new: false, esigned: false, tags: ['Ready for DMV'] },
+
+  // COIs
+  { id: 'CDOC-3034', name: 'COI — Kroger Real Estate.pdf',              category: 'coi',        type: 'COI',           policy: 'SEMC-WC-2025-48821', carrier: 'SEMC / Liberty', effective: '2026-04-17', expires: '2027-04-17', uploaded: '2026-04-17', size: '240 KB', status: 'Current',           statusColor: 'green', new: true,  esigned: false, tags: [] },
+  { id: 'CDOC-3033', name: 'COI — Prologis Trust.pdf',                  category: 'coi',        type: 'COI',           policy: 'SEMC-WC-2025-48821', carrier: 'SEMC / Liberty', effective: '2026-03-22', expires: '2027-03-22', uploaded: '2026-03-22', size: '236 KB', status: 'Current',           statusColor: 'green', new: false, esigned: false, tags: [] },
+  { id: 'CDOC-3032', name: 'COI — General Contractor.pdf',              category: 'coi',        type: 'COI',           policy: 'LIB-UMB-2025-88103', carrier: 'Liberty Mutual', effective: '2026-04-10', expires: '2027-04-10', uploaded: '2026-04-10', size: '210 KB', status: 'Current',           statusColor: 'green', new: false, esigned: false, tags: [] },
+  { id: 'CDOC-3031', name: 'COI — Commerce Title.pdf',                  category: 'coi',        type: 'COI',           policy: 'CNA-GL-2025-33102',  carrier: 'CNA',            effective: '2025-11-12', expires: '2026-05-12', uploaded: '2025-11-12', size: '220 KB', status: 'Expiring Soon',     statusColor: 'amber', new: false, esigned: false, tags: ['Expires in 24 days'] },
+  { id: 'CDOC-3030', name: 'COI — Amazon Freight.pdf',                  category: 'coi',        type: 'COI',           policy: 'TRV-AUTO-2026-11223',carrier: 'Travelers',      effective: '2026-02-05', expires: '2027-02-05', uploaded: '2026-02-05', size: '260 KB', status: 'Current',           statusColor: 'green', new: false, esigned: false, tags: [] },
+
+  // Billing
+  { id: 'CDOC-3029', name: 'Invoice — WC Q2 2026.pdf',                  category: 'billing',    type: 'Invoice',       policy: 'SEMC-WC-2025-48821', carrier: 'SEMC / Liberty', effective: '2026-04-01', expires: '—',          uploaded: '2026-04-01', size: '124 KB', status: 'Current',           statusColor: 'green', new: false, esigned: false, tags: ['Paid'] },
+  { id: 'CDOC-3028', name: 'Payment Receipt — WC Q2.pdf',               category: 'billing',    type: 'Receipt',       policy: 'SEMC-WC-2025-48821', carrier: 'SEMC / Liberty', effective: '2026-04-15', expires: '—',          uploaded: '2026-04-15', size: '84 KB',  status: 'Current',           statusColor: 'green', new: true,  esigned: false, tags: [] },
+  { id: 'CDOC-3027', name: 'Invoice — GL Renewal 2026.pdf',             category: 'billing',    type: 'Invoice',       policy: 'CNA-GL-2025-33102',  carrier: 'CNA',            effective: '2026-04-12', expires: '—',          uploaded: '2026-04-10', size: '132 KB', status: 'Current',           statusColor: 'amber', new: true,  esigned: false, tags: ['Due 2026-04-12'] },
+  { id: 'CDOC-3026', name: 'Premium Finance Agreement.pdf',             category: 'billing',    type: 'Finance Agmt',  policy: 'TRV-AUTO-2026-11223',carrier: 'Travelers',      effective: '2025-08-05', expires: '2026-08-05', uploaded: '2025-08-05', size: '420 KB', status: 'Current',           statusColor: 'green', new: false, esigned: true,  signer: 'James Reynolds', signed_date: '2025-08-01', tags: [] },
+
+  // Claims
+  { id: 'CDOC-3025', name: 'FNOL Confirmation — Auto Claim #CLM-2026-0042.pdf', category: 'claims', type: 'FNOL',     policy: 'TRV-AUTO-2026-11223',carrier: 'Travelers',      effective: '2026-03-15', expires: '—',          uploaded: '2026-03-15', size: '180 KB', status: 'Current',           statusColor: 'green', new: false, esigned: false, tags: [] },
+  { id: 'CDOC-3024', name: 'Adjuster Report — Vehicle Inspection.pdf',  category: 'claims',     type: 'Adjuster Rpt',  policy: 'TRV-AUTO-2026-11223',carrier: 'Travelers',      effective: '2026-03-22', expires: '—',          uploaded: '2026-03-22', size: '1.4 MB', status: 'Current',           statusColor: 'green', new: false, esigned: false, tags: [] },
+  { id: 'CDOC-3023', name: 'Settlement Letter — CLM-2026-0042.pdf',     category: 'claims',     type: 'Settlement',    policy: 'TRV-AUTO-2026-11223',carrier: 'Travelers',      effective: '2026-04-05', expires: '—',          uploaded: '2026-04-05', size: '220 KB', status: 'Current',           statusColor: 'green', new: true,  esigned: true,  signer: 'James Reynolds', signed_date: '2026-04-03', tags: ['Settled'] },
+
+  // Onboarding / Compliance
+  { id: 'CDOC-3022', name: 'Signed Application — WC 2025.pdf',          category: 'onboarding', type: 'Application',   policy: 'SEMC-WC-2025-48821', carrier: 'SEMC / Liberty', effective: '2025-05-18', expires: '—',          uploaded: '2025-05-18', size: '320 KB', status: 'Current',           statusColor: 'green', new: false, esigned: true,  signer: 'James Reynolds', signed_date: '2025-05-18', tags: [] },
+  { id: 'CDOC-3021', name: 'Privacy Notice & GLBA Disclosure.pdf',      category: 'onboarding', type: 'Disclosure',    policy: '—',                  carrier: 'Bridgepoint',    effective: '2025-01-15', expires: '—',          uploaded: '2025-01-15', size: '96 KB',  status: 'Current',           statusColor: 'green', new: false, esigned: true,  signer: 'James Reynolds', signed_date: '2025-01-15', tags: [] },
+  { id: 'CDOC-3020', name: 'W-9 Form — Magnolia Construction.pdf',      category: 'onboarding', type: 'W-9',           policy: '—',                  carrier: 'Bridgepoint',    effective: '2025-01-15', expires: '—',          uploaded: '2025-01-15', size: '42 KB',  status: 'Current',           statusColor: 'green', new: false, esigned: true,  signer: 'James Reynolds', signed_date: '2025-01-15', tags: ['Ready for Tax'] },
+
+  // Risk
+  { id: 'CDOC-3019', name: 'Safety Audit Report 2026.pdf',              category: 'risk',       type: 'Safety Audit',  policy: 'SEMC-WC-2025-48821', carrier: 'SEMC / Liberty', effective: '2026-04-10', expires: '—',          uploaded: '2026-04-10', size: '1.1 MB', status: 'Current',           statusColor: 'green', new: true,  esigned: false, tags: ['Score: 88/100'] },
+  { id: 'CDOC-3018', name: 'Loss Prevention Guide — Construction.pdf',  category: 'risk',       type: 'LP Guide',      policy: '—',                  carrier: 'Bridgepoint',    effective: '2026-01-10', expires: '—',          uploaded: '2026-01-10', size: '2.8 MB', status: 'Current',           statusColor: 'green', new: false, esigned: false, tags: [] }
+];
+
+export const customerDocumentDetail = {
+  id: 'CDOC-3042',
+  name: 'WC Declarations Page 2025-26.pdf',
+  type: 'Declarations Page',
+  category: 'policy',
+  policy: 'SEMC-WC-2025-48821',
+  carrier: 'SEMC / Liberty',
+  pages: 4,
+  size: '420 KB',
+  uploaded: '2025-06-01 08:12',
+  uploaded_by: 'Carrier (auto-sync)',
+  effective: '2025-06-01',
+  expires: '2026-06-01',
+  esigned: true,
+  signer: 'James Reynolds',
+  signed_date: '2025-05-28',
+  signed_ip: '72.14.188.4',
+  encryption: 'AES-256 at rest · TLS 1.3',
+  access_log: [
+    { ts: '2026-04-17 14:22', actor: 'You',              action: 'Viewed',      ip: '72.14.188.4' },
+    { ts: '2026-04-15 09:45', actor: 'Sarah Chen',       action: 'Shared w/ Kroger', ip: '192.168.10.22' },
+    { ts: '2026-03-20 10:18', actor: 'You',              action: 'Downloaded',  ip: '72.14.188.4' },
+    { ts: '2025-06-01 08:12', actor: 'System',           action: 'Uploaded',    ip: '—' }
+  ],
+  metadata: [
+    { k: 'Policy Number',   v: 'SEMC-WC-2025-48821' },
+    { k: 'Carrier',         v: 'SEMC / Liberty Mutual' },
+    { k: 'LOB',             v: 'Workers Comp' },
+    { k: 'Effective',       v: '2025-06-01' },
+    { k: 'Expiration',      v: '2026-06-01' },
+    { k: 'Premium',         v: '$184,700' },
+    { k: 'State',           v: 'CA' }
+  ]
+};
+
+export const customerEsignInbox = [
+  { id: 'ENV-CUS-842', doc: 'Renewal Offer — GL 2026-27.pdf',            policy: 'CNA-GL-2025-33102',  carrier: 'CNA',         sent: '2026-04-10 09:04', deadline: '2026-04-24', pages: 6, status: 'Awaiting Signature',  statusColor: 'amber', sender: 'Sarah Chen',  preview: 'Your renewal offer for General Liability effective 2026-04-12 is ready. Please review and e-sign.' },
+  { id: 'ENV-CUS-841', doc: 'Endorsement Acknowledgement — Add Vehicle.pdf', policy: 'TRV-AUTO-2026-11223', carrier: 'Travelers', sent: '2026-04-14 11:22', deadline: '2026-04-21', pages: 2, status: 'Awaiting Signature',  statusColor: 'amber', sender: 'Sarah Chen',  preview: 'Please sign to confirm addition of 2025 Ford F-250 (VIN 1FTEX1EP...) to your commercial auto policy.' },
+  { id: 'ENV-CUS-840', doc: 'Settlement Letter — Auto Claim CLM-2026-0042.pdf', policy: 'TRV-AUTO-2026-11223', carrier: 'Travelers', sent: '2026-04-03 14:20', deadline: '—',         pages: 3, status: 'Signed',              statusColor: 'green', sender: 'Travelers UW',signed: '2026-04-03 15:12', preview: 'Final settlement for fender-bender claim filed 2026-03-15.' },
+  { id: 'ENV-CUS-839', doc: 'WC Endorsement — Added Prologis AI.pdf',     policy: 'SEMC-WC-2025-48821', carrier: 'SEMC',        sent: '2026-03-18 10:00', deadline: '—',         pages: 2, status: 'Signed',              statusColor: 'green', sender: 'Sarah Chen',  signed: '2026-03-18 11:42', preview: 'Confirm Prologis Trust added as additional insured per lease.' }
+];
+
+export const customerUploadChecklist = [
+  { id: 'UPL-101', title: 'Driver license for new driver',            policy: 'TRV-AUTO-2026-11223', requested_by: 'Sarah Chen', requested: '2026-04-14', required: true,  accepts: 'PDF, JPG, PNG', note: 'For added vehicle endorsement · primary driver Oscar Lopez' },
+  { id: 'UPL-102', title: 'Vehicle registration (Truck #13)',          policy: 'TRV-AUTO-2026-11223', requested_by: 'Sarah Chen', requested: '2026-04-14', required: true,  accepts: 'PDF, JPG, PNG', note: 'CA DMV registration for 2025 Ford F-250' },
+  { id: 'UPL-103', title: 'Updated safety program PDF',                policy: 'SEMC-WC-2025-48821', requested_by: 'Sarah Chen', requested: '2026-04-01', required: false, accepts: 'PDF',             note: 'For WC schedule credit renewal review' },
+  { id: 'UPL-104', title: 'Loss run from prior GL carrier (3 years)',  policy: 'CNA-GL-2025-33102',  requested_by: 'Sarah Chen', requested: '2026-03-28', required: true,  accepts: 'PDF',             note: 'Requested by CNA for renewal underwriting · upload before 2026-04-11', overdue: true }
+];
+
+export const customerSharedLinks = [
+  { id: 'SHR-20284', doc: 'COI — Kroger Real Estate.pdf',     recipient: 'leasing@kroger.com',      created: '2026-04-17', expires: '2026-04-24', views: 1, status: 'Active',  statusColor: 'green', link: 'https://cust.quantana.com/s/a8f2...' },
+  { id: 'SHR-20283', doc: 'Auto ID Card (Truck #8).pdf',       recipient: 'dmv-audit@ca.gov',        created: '2026-04-12', expires: '2026-04-19', views: 2, status: 'Active',  statusColor: 'green', link: 'https://cust.quantana.com/s/9d11...' },
+  { id: 'SHR-20282', doc: 'WC Declarations Page 2025-26.pdf',  recipient: 'compliance@contractor.co',created: '2026-04-08', expires: '2026-04-15', views: 1, status: 'Expired', statusColor: 'gray',  link: 'https://cust.quantana.com/s/3c72...' },
+  { id: 'SHR-20281', doc: 'COI — Prologis Trust.pdf',          recipient: 'legal@prologis.com',      created: '2026-03-22', expires: '2026-03-29', views: 3, status: 'Expired', statusColor: 'gray',  link: 'https://cust.quantana.com/s/5e41...' }
+];
+
+export const customerPolicyHistory = [
+  { policy: 'SEMC-WC-2025-48821', action: 'COI Issued',         entity: 'Kroger Real Estate',    ts: '2026-04-17 14:08', actor: 'Portal self-service' },
+  { policy: 'TRV-AUTO-2026-11223',action: 'Endorsement Req',     entity: 'Add Vehicle',           ts: '2026-04-14 10:22', actor: 'Portal self-service' },
+  { policy: 'CNA-GL-2025-33102',  action: 'Renewal Offer Received',entity: 'CNA',                ts: '2026-04-10 09:04', actor: 'Carrier' },
+  { policy: 'SEMC-WC-2025-48821', action: 'Premium Paid',        entity: 'Q2 2026 — $46,175',     ts: '2026-04-15 09:22', actor: 'ACH — Business Checking' },
+  { policy: 'SEMC-WC-2025-48821', action: 'Safety Audit Done',   entity: 'Score: 88',             ts: '2026-04-10 11:40', actor: 'Carrier Inspector' },
+  { policy: 'CNA-GL-2025-33102',  action: 'Address Change',      entity: 'HQ → Industrial Blvd',  ts: '2026-04-12 16:50', actor: 'Portal self-service' },
+  { policy: 'SEMC-WC-2025-48821', action: 'Endorsement Applied', entity: 'Added Prologis AI',     ts: '2026-03-20 15:00', actor: 'Sarah Chen' },
+  { policy: 'TRV-AUTO-2026-11223',action: 'Policy Issued',       entity: '12-month term',         ts: '2025-08-05 08:00', actor: 'Carrier UW' }
 ];
 
 // ─── Broker Portal Data ───
