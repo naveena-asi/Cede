@@ -16804,13 +16804,18 @@ function mgaNav() {
   const items = [
     { icon: '📊', label: 'Dashboard', screen: 'dashboard' },
     { icon: '🏢', label: 'Carriers', screen: 'carriers' },
-    { icon: '👥', label: 'Brokers', screen: 'brokers' },
+    { icon: '👥', label: 'Agents & Brokers', screen: 'mga-agents' },
+    { icon: '📝', label: 'Submissions & UW', screen: 'mga-submissions' },
+    { icon: '🧩', label: 'Products & Rating', screen: 'mga-products' },
+    { icon: '🔒', label: 'Bindings & Issuance', screen: 'mga-bindings' },
+    { icon: '🎯', label: 'Risk & Appetite', screen: 'mga-appetite' },
+    { icon: '🛡', label: 'Claims (Delegated)', screen: 'mga-claims' },
     { icon: '📋', label: 'Policies', screen: 'policies' },
-    { icon: '📄', label: 'Documents', screen: 'dashboard' },
+    { icon: '📄', label: 'Documents', screen: 'mga-docs' },
     { icon: '💰', label: 'Commissions', screen: 'commissions' },
-    { icon: '⚖️', label: 'Compliance', screen: 'compliance' },
-    { icon: '📊', label: 'Reports', screen: 'dashboard' },
-    { icon: '🔧', label: 'Settings', screen: 'dashboard' },
+    { icon: '⚖️', label: 'Compliance', screen: 'mga-compliance' },
+    { icon: '📊', label: 'Reports', screen: 'mga-reports' },
+    { icon: '🔧', label: 'Settings', screen: 'mga-settings' },
   ];
   return `
   <nav class="side-nav">
@@ -16821,15 +16826,15 @@ function mgaNav() {
         <span>${i.label}</span>
       </div>
     `).join('')}
-    <div class="side-nav-section">Finance & Legal</div>
-    ${items.slice(5,7).map(i => `
+    <div class="side-nav-section">Operations</div>
+    ${items.slice(5,8).map(i => `
       <div class="side-nav-item${state.screen === i.screen ? ' active' : ''}" data-screen="${i.screen}">
         <span class="side-nav-item-icon">${i.icon}</span>
         <span>${i.label}</span>
       </div>
     `).join('')}
     <div class="side-nav-section">System</div>
-    ${items.slice(7).map(i => `
+    ${items.slice(8).map(i => `
       <div class="side-nav-item${state.screen === i.screen ? ' active' : ''}" data-screen="${i.screen}">
         <span class="side-nav-item-icon">${i.icon}</span>
         <span>${i.label}</span>
@@ -16845,11 +16850,115 @@ function renderMGAPortal() {
   const u = D.USERS.mga;
   const screens = {
     dashboard: renderMGADashboard,
-    carriers: renderMGACarriers,
-    brokers: renderMGABrokers,
-    policies: renderMGAPolicies,
-    commissions: renderMGACommissions,
-    compliance: renderMGACompliance,
+    carriers: renderMgaCarriersDashboard,
+    'mga-carriers':           renderMgaCarriersDashboard,
+    'mga-carrier-directory':  renderMgaCarrierDirectory,
+    'mga-carrier-profile':    renderMgaCarrierProfile,
+    'mga-carrier-scorecard':  renderMgaCarrierScorecard,
+    'mga-carrier-bordereau-report': renderMgaCarrierBordereauReport,
+    'mga-carrier-authority':  renderMgaCarrierAuthority,
+    'mga-carrier-analytics':  renderMgaCarrierAnalytics,
+    brokers: renderMgaAgentsDashboard,
+    policies:                  renderMgaPoliciesDashboard,
+    'mga-policies':            renderMgaPoliciesDashboard,
+    'mga-policies-list':       renderMgaPoliciesList,
+    'mga-policy-profile':      renderMgaPolicyProfile,
+    'mga-policy-endorsements': renderMgaPolicyEndorsements,
+    'mga-policy-coi':          renderMgaPolicyCoi,
+    'mga-policy-docs':         renderMgaPolicyDocs,
+    'mga-policy-servicing':    renderMgaPolicyServicing,
+    // Settings & Administration
+    'mga-settings':            renderMgaSettingsDashboard,
+    'mga-settings-workflows':  renderMgaSettingsWorkflows,
+    'mga-settings-integrations': renderMgaSettingsIntegrations,
+    'mga-settings-global':     renderMgaSettingsGlobal,
+    'mga-settings-security':   renderMgaSettingsSecurity,
+    'mga-settings-logs':       renderMgaSettingsLogs,
+    'mga-settings-maintenance':renderMgaSettingsMaintenance,
+    commissions:                      renderMgaCommissionsDashboard,
+    'mga-commissions':                renderMgaCommissionsDashboard,
+    'mga-commissions-agents':         renderMgaCommissionsAgents,
+    'mga-commissions-statements':     renderMgaCommissionsStatements,
+    'mga-commissions-payouts':        renderMgaCommissionsPayouts,
+    'mga-commissions-reconciliation': renderMgaCommissionsReconciliation,
+    'mga-commissions-rules':          renderMgaCommissionsRules,
+    'mga-commissions-tax':            renderMgaCommissionsTax,
+    compliance: renderMgaComplianceDashboard,
+    // Agents & Brokers Management module
+    'mga-agents':             renderMgaAgentsDashboard,
+    'mga-agents-directory':   renderMgaAgentsDirectory,
+    'mga-agent-profile':      renderMgaAgentProfile,
+    'mga-agent-onboarding':   renderMgaAgentOnboarding,
+    'mga-agent-scorecards':   renderMgaAgentScorecards,
+    'mga-agent-commissions':  renderMgaAgentCommissions,
+    'mga-agent-access':       renderMgaAgentAccess,
+    'mga-agent-broadcast':    renderMgaAgentBroadcast,
+    'mga-agent-templates':    renderMgaAgentTemplates,
+    'mga-agent-analytics':    renderMgaAgentAnalytics,
+    // Submissions & Underwriting
+    'mga-submissions':        renderMgaSubmissionsDashboard,
+    'mga-sub-inbox':          renderMgaSubmissionsInbox,
+    'mga-sub-details':        renderMgaSubmissionDetail,
+    'mga-sub-worksheet':      renderMgaSubmissionWorksheet,
+    'mga-sub-agent-history':  renderMgaSubmissionAgentHistory,
+    'mga-sub-guidelines':     renderMgaSubmissionGuidelines,
+    'mga-sub-referrals':      renderMgaSubmissionReferrals,
+    // Products & Rating
+    'mga-products':           renderMgaProductsDashboard,
+    'mga-product-catalog':    renderMgaProductCatalog,
+    'mga-product-builder':    renderMgaProductBuilder,
+    'mga-product-rating':     renderMgaProductRating,
+    'mga-product-simulator':  renderMgaProductSimulator,
+    'mga-product-launch':     renderMgaProductLaunch,
+    'mga-product-analytics':  renderMgaProductAnalytics,
+    // Bindings & Issuance
+    'mga-bindings':           renderMgaBindingsDashboard,
+    'mga-bind-quick':         renderMgaBindingsQuickBind,
+    'mga-bind-wizard':        renderMgaBindingsIssuanceWizard,
+    'mga-bind-docs':          renderMgaBindingsDocPackage,
+    'mga-bind-policy':        renderMgaBindingsPolicy360,
+    'mga-bind-bulk-certs':    renderMgaBindingsBulkCerts,
+    'mga-bind-audit':         renderMgaBindingsAuditLog,
+    // Risk & Appetite Management
+    'mga-appetite':           renderMgaAppetiteDashboard,
+    'mga-appetite-matrix':    renderMgaAppetiteMatrix,
+    'mga-appetite-exposure':  renderMgaAppetiteExposure,
+    'mga-appetite-cat':       renderMgaAppetiteCat,
+    'mga-appetite-scoring':   renderMgaAppetiteScoring,
+    'mga-appetite-rules':     renderMgaAppetiteRules,
+    'mga-appetite-approvals': renderMgaAppetiteApprovals,
+    // Delegated Claims Management
+    'mga-claims':             renderMgaClaimsDashboard,
+    'mga-claim-intake':       renderMgaClaimIntake,
+    'mga-claim-details':      renderMgaClaimDetail,
+    'mga-claim-queue':        renderMgaClaimQueue,
+    'mga-claim-approvals':    renderMgaClaimApprovals,
+    'mga-claim-bordereau':    renderMgaClaimBordereau,
+    'mga-claim-analytics':    renderMgaClaimAnalytics,
+    // Compliance & Administration
+    'mga-compliance':         renderMgaComplianceDashboard,
+    'mga-compliance-users':   renderMgaComplianceUsers,
+    'mga-compliance-audit':   renderMgaComplianceAudit,
+    'mga-compliance-calendar':renderMgaComplianceCalendar,
+    'mga-compliance-contracts':renderMgaComplianceContracts,
+    'mga-compliance-filings': renderMgaComplianceFilings,
+    'mga-compliance-settings':renderMgaComplianceSettings,
+    // Reports & Analytics
+    'mga-reports':            renderMgaReportsExec,
+    'mga-reports-ops':        renderMgaReportsOps,
+    'mga-reports-library':    renderMgaReportsLibrary,
+    'mga-reports-builder':    renderMgaReportsBuilder,
+    'mga-reports-kpis':       renderMgaReportsKpis,
+    'mga-reports-heatmap':    renderMgaReportsHeatmap,
+    'mga-reports-schedule':   renderMgaReportsSchedule,
+    // Documents Management
+    'mga-docs':               renderMgaDocsDashboard,
+    'mga-docs-explorer':      renderMgaDocsExplorer,
+    'mga-docs-vault':         renderMgaDocsVault,
+    'mga-docs-upload':        renderMgaDocsUpload,
+    'mga-docs-viewer':        renderMgaDocsViewer,
+    'mga-docs-versions':      renderMgaDocsVersions,
+    'mga-docs-bulk':          renderMgaDocsBulk
   };
   const content = (screens[state.screen] || renderMGADashboard)();
 
@@ -16877,80 +16986,1168 @@ function renderMGAPortal() {
 }
 
 function renderMGADashboard() {
+  const role = state.dashboardRole || 'executive';
+  const hero = D.mgaDashboardHeroKPIs;
+  const alerts = D.mgaAlerts;
+  const red = alerts.filter(a => a.type === 'red');
+  const amber = alerts.filter(a => a.type === 'amber');
+  const blue = alerts.filter(a => a.type === 'blue');
+  const topAgents = D.mgaAgentLeaderboard.top_performers.slice(0, 5);
+  const bottomAgents = D.mgaAgentLeaderboard.bottom_performers;
+  const carriers = D.mgaCarriersEnhanced;
+  const stats = D.mgaDashboardQuickStats;
+  const lobMix = D.mgaPoliciesAnalytics.inforce_by_lob;
+  const totalLobPrem = lobMix.reduce((s, l) => s + l.premium, 0);
+  const trend = D.mgaExecMetrics.monthly_trend;
+  const maxTrend = Math.max(...trend.map(m => m.premium));
+  const geo = D.mgaDashboardGeoMix;
+  const maxGeo = Math.max(...geo.map(g => g.premium));
+  const funnel = D.mgaSubmissionFunnel;
+  const highSevAI = D.mgaAIInsights.filter(i => i.severity === 'High' && i.status !== 'Actioned');
+  const activity = D.mgaDashboardActivityFeed;
+  const tasks = D.mgaDashboardMyTasks;
+  const capacityCarriers = carriers.filter(c => c.capacity_treaty > 0);
+  const highCap = capacityCarriers.filter(c => c.capacity_pct >= 75);
+
+  const alertLink = (a) => a.link ? `onclick="window.setState({screen:'${a.link}'${a.param ? `, ${a.link === 'mga-claim-details' ? 'claimId' : a.link === 'mga-policy-profile' ? 'policyId' : a.link === 'mga-carrier-profile' ? 'carrierId' : 'id'}:'${a.param}'` : ''}})" style="cursor:pointer;"` : '';
+
   return `
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
-    <h2>Command Center</h2>
-    <span style="color:var(--text-muted); font-size:0.85rem;">Apr 17, 2026</span>
-  </div>
-  ${kpiCards(D.mgaKPIs, 5)}
-
-  <div class="section-title">⚠️ URGENT ALERTS</div>
-  ${D.mgaAlerts.map(a => `
-    <div class="alert-banner alert-${a.type}">
-      ${a.type === 'red' ? '🔴' : a.type === 'amber' ? '🟡' : '🔵'} ${a.text}
+    <div>
+      <h2 style="margin:0;">⚡ Command Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${stats.submissions_today} submissions today · ${stats.policies_issued_today} policies issued · ${stats.open_claims} open claims · ${red.length} red alerts · 2026-04-18 14:30 PT · refreshes every 60s</div>
     </div>
-  `).join('')}
-
-  <div class="section-title" style="margin-top: var(--space-xl);">RENEWAL PIPELINE (Next 90 Days)</div>
-  <div class="data-table-wrapper" style="padding: var(--space-lg);">
-    ${D.renewalPipeline.map(r => `
-      <div class="progress-bar-container">
-        <div class="progress-bar-label">
-          <span style="color:var(--text-secondary)">${r.range}</span>
-          <span style="color:var(--text-primary); font-weight:600;">${r.count} policies</span>
-        </div>
-        <div class="progress-bar-track">
-          <div class="progress-bar-fill blue" style="width:${r.pct}%"></div>
-        </div>
+    <div style="display:flex; gap: var(--space-sm); align-items:center;">
+      <div style="display:inline-flex; background:var(--bg-card); border-radius:var(--radius-md); padding:3px;">
+        ${D.mgaDashboardRoles.map(r => `<button onclick="window.setState({dashboardRole:'${r.key}'})" style="padding:6px 12px; border:none; background:${role === r.key ? 'var(--mga-accent)' : 'transparent'}; color:${role === r.key ? 'white' : 'var(--text-primary)'}; border-radius:var(--radius-sm); cursor:pointer; font-weight:600; font-size:0.78rem;">${r.icon} ${r.label}</button>`).join('')}
       </div>
-    `).join('')}
+      <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Customize dashboard · drag widgets · save layout · per-role defaults')">⚙ Customize</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Export dashboard as PDF · email to leadership')">📥 Export</button>
+    </div>
+  </div>
+
+  <!-- HERO KPI ROW -->
+  <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    ${hero.map(k => {
+      const dColor = k.deltaColor === 'green' ? 'var(--status-green)' : k.deltaColor === 'amber' ? 'var(--status-amber)' : k.deltaColor === 'red' ? 'var(--status-red)' : 'var(--text-muted)';
+      return `
+      <div style="padding: var(--space-md); background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); border-top: 3px solid var(--mga-accent);">
+        <div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">${k.label}</div>
+        <div style="font-size:1.6rem; font-weight:800; margin-top:4px;">${k.value}</div>
+        <div style="color:${dColor}; font-size:0.78rem; font-weight:600; margin-top:2px;">${k.delta}</div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-sm); margin-bottom: var(--space-lg);">
+    <button class="btn btn-primary" onclick="window.setState({screen:'mga-submissions'})" style="padding: var(--space-md); flex-direction:column; gap:4px;"><span style="font-size:1.4rem;">📝</span><span>New Submission</span></button>
+    <button class="btn btn-secondary" onclick="window.setState({screen:'mga-bind-quick'})" style="padding: var(--space-md); flex-direction:column; gap:4px;"><span style="font-size:1.4rem;">🔒</span><span>Quick Bind</span></button>
+    <button class="btn btn-secondary" onclick="window.setState({screen:'mga-claim-intake', fnolStep:1})" style="padding: var(--space-md); flex-direction:column; gap:4px;"><span style="font-size:1.4rem;">🛡</span><span>File Claim (FNOL)</span></button>
+    <button class="btn btn-secondary" onclick="window.setState({screen:'mga-policy-coi'})" style="padding: var(--space-md); flex-direction:column; gap:4px;"><span style="font-size:1.4rem;">📄</span><span>Generate COI</span></button>
+    <button class="btn btn-secondary" onclick="window.setState({screen:'mga-reports-builder', builderStep:1})" style="padding: var(--space-md); flex-direction:column; gap:4px;"><span style="font-size:1.4rem;">📊</span><span>Create Report</span></button>
+    <button class="btn btn-secondary" onclick="window.setState({screen:'mga-commissions-payouts'})" style="padding: var(--space-md); flex-direction:column; gap:4px;"><span style="font-size:1.4rem;">💵</span><span>Approve Payouts</span></button>
+  </div>
+
+  <!-- ALERTS + AI INSIGHTS -->
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">⚠ REAL-TIME ALERTS (${red.length + amber.length + blue.length})</div>
+      ${red.length > 0 ? `
+        <div style="color:var(--status-red); font-weight:700; font-size:0.78rem; margin: var(--space-sm) 0 4px;">🔴 CRITICAL (${red.length})</div>
+        ${red.map(a => `
+          <div ${alertLink(a)} style="padding: var(--space-sm); background: rgba(255,82,82,0.08); border-left: 3px solid var(--status-red); border-radius: var(--radius-sm); margin-bottom: 6px;${a.link ? ' cursor:pointer;' : ''}">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+              <strong style="font-size:0.85rem;">${a.text}</strong>
+              ${badge('red', a.category)}
+            </div>
+          </div>`).join('')}
+      ` : ''}
+      ${amber.length > 0 ? `
+        <div style="color:var(--status-amber); font-weight:700; font-size:0.78rem; margin: var(--space-sm) 0 4px;">🟡 IMPORTANT (${amber.length})</div>
+        ${amber.map(a => `
+          <div ${alertLink(a)} style="padding: var(--space-sm); background: rgba(255,171,0,0.08); border-left: 3px solid var(--status-amber); border-radius: var(--radius-sm); margin-bottom: 6px;${a.link ? ' cursor:pointer;' : ''}">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+              <strong style="font-size:0.85rem;">${a.text}</strong>
+              ${badge('amber', a.category)}
+            </div>
+          </div>`).join('')}
+      ` : ''}
+      ${blue.length > 0 ? `
+        <div style="color:var(--mga-accent); font-weight:700; font-size:0.78rem; margin: var(--space-sm) 0 4px;">🔵 INFO (${blue.length})</div>
+        ${blue.map(a => `
+          <div ${alertLink(a)} style="padding: var(--space-sm); background: rgba(108,92,231,0.08); border-left: 3px solid var(--mga-accent); border-radius: var(--radius-sm); margin-bottom: 6px;${a.link ? ' cursor:pointer;' : ''}">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+              <strong style="font-size:0.85rem;">${a.text}</strong>
+              ${badge('blue', a.category)}
+            </div>
+          </div>`).join('')}
+      ` : ''}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--mga-accent); border-left: 4px solid var(--mga-accent); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title" style="color:var(--mga-accent);">🤖 AI INSIGHTS (${highSevAI.length})</div>
+      ${highSevAI.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No open high-severity insights.</div>' : highSevAI.map(i => `
+        <div onclick="window.setState({screen:'mga-reports-kpis'})" style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); margin-bottom: var(--space-sm); cursor:pointer;">
+          <strong style="font-size:0.85rem;">${i.insight}</strong>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">Impact: <strong style="color:var(--status-green);">${i.impact}</strong> · ${i.confidence}% confidence</div>
+        </div>`).join('')}
+      <button class="btn btn-ghost btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.setState({screen:'mga-reports-kpis'})">All insights →</button>
+    </div>
+  </div>
+
+  <!-- OPERATIONAL WIDGETS -->
+  <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📝 SUBMISSIONS</div>
+      <div style="font-size:2rem; font-weight:800;">${stats.submissions_today}</div>
+      <div style="color:var(--text-muted); font-size:0.78rem;">Today · ${stats.submissions_week} this week</div>
+      <div style="margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border-subtle); font-size:0.82rem;">
+        <div style="display:flex; justify-content:space-between; padding: 3px 0;"><span style="color:var(--text-muted);">Bind Ratio (24h)</span><strong style="color:var(--status-green);">${stats.bind_ratio_24h}%</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 3px 0;"><span style="color:var(--text-muted);">Avg UW TAT</span><strong>${stats.avg_uw_hrs}h</strong></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.setState({screen:'mga-submissions'})">Open →</button>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📋 POLICIES</div>
+      <div style="font-size:2rem; font-weight:800;">${stats.policies_issued_today}</div>
+      <div style="color:var(--text-muted); font-size:0.78rem;">Issued today · ${stats.policies_issued_month} this month</div>
+      <div style="margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border-subtle); font-size:0.82rem;">
+        <div style="display:flex; justify-content:space-between; padding: 3px 0;"><span style="color:var(--text-muted);">In-Force</span><strong>4,946</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 3px 0;"><span style="color:var(--text-muted);">Inforce Premium</span><strong>$58.5M</strong></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.setState({screen:'mga-policies'})">Open →</button>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🛡 CLAIMS</div>
+      <div style="font-size:2rem; font-weight:800;">${stats.open_claims}</div>
+      <div style="color:var(--text-muted); font-size:0.78rem;">Open · $4.24M reserves</div>
+      <div style="margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border-subtle); font-size:0.82rem;">
+        <div style="display:flex; justify-content:space-between; padding: 3px 0;"><span style="color:var(--text-muted);">Avg Cycle</span><strong>${stats.claims_cycle_days}d</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 3px 0;"><span style="color:var(--text-muted);">Current LR</span><strong style="color:var(--status-green);">38%</strong></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.setState({screen:'mga-claims'})">Open →</button>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔁 RENEWALS</div>
+      <div style="font-size:2rem; font-weight:800;">$${(stats.renewal_30d_value/1e6).toFixed(1)}M</div>
+      <div style="color:var(--text-muted); font-size:0.78rem;">Due in 30d · ${stats.projected_retention}% projected retention</div>
+      <div style="margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border-subtle); font-size:0.82rem;">
+        <div style="display:flex; justify-content:space-between; padding: 3px 0;"><span style="color:var(--text-muted);">60d</span><strong>$${(stats.renewal_60d_value/1e6).toFixed(1)}M</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 3px 0;"><span style="color:var(--text-muted);">90d</span><strong>$${(stats.renewal_90d_value/1e6).toFixed(1)}M</strong></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.setState({screen:'mga-policy-servicing'})">Open →</button>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">📈 PREMIUM TREND (6 months · LR overlay)</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-reports'})">Full analytics →</button>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap: var(--space-sm); height: 220px; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); position:relative;">
+        ${trend.map(m => `
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap: 4px;">
+            <div style="width:100%; background:linear-gradient(180deg, var(--mga-accent), #a67dff); height:${(m.premium/maxTrend)*100}%; border-radius: 4px 4px 0 0; min-height: 4px; position:relative;">
+              <div style="position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:0.7rem; color:var(--status-amber); font-weight:700;">${m.loss_ratio}%</div>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${m.month}</div>
+            <div style="font-size:0.78rem; font-weight:700;">$${(m.premium/1e6).toFixed(1)}M</div>
+          </div>`).join('')}
+      </div>
+      <div style="text-align:center; color:var(--text-muted); font-size:0.72rem; margin-top:4px;">Target LR: 45% (dashed) · Values above each bar show monthly loss ratio</div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🧩 PRODUCT MIX (inforce premium)</div>
+      ${lobMix.map((l, i) => {
+        const pct = (l.premium / totalLobPrem) * 100;
+        const colors = ['#6c5ce7','#a67dff','#4fc3f7','#66bb6a','#ffab40','#ff8a65','#f06292','#ba68c8'];
+        return `
+          <div style="margin-bottom: 6px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.76rem;">
+              <span>${l.lob}</span>
+              <span><strong>${pct.toFixed(1)}%</strong> · $${(l.premium/1e6).toFixed(1)}M</span>
+            </div>
+            <div style="background:var(--bg-card); height:6px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${pct}%; background:${colors[i % colors.length]};"></div></div>
+          </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  <!-- AGENT + CARRIER ROW -->
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">🏆 TOP 5 AGENTS (YTD)</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-reports-ops'})">Full leaderboard →</button>
+      </div>
+      ${topAgents.map(a => `
+        <div style="display:flex; align-items:center; gap: var(--space-sm); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+          <div style="width:28px; height:28px; border-radius:50%; background:${a.rank === 1 ? 'linear-gradient(135deg,#ffd700,#ffab40)' : a.rank === 2 ? 'linear-gradient(135deg,#c0c0c0,#90a4ae)' : a.rank === 3 ? 'linear-gradient(135deg,#cd7f32,#8d6e63)' : 'var(--bg-card)'}; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.82rem; color:${a.rank <= 3 ? 'white' : 'var(--text-primary)'};">${a.rank}</div>
+          <div style="flex:1;">
+            <strong style="font-size:0.85rem;">${a.agent}</strong>
+            <div style="color:var(--text-muted); font-size:0.72rem;">$${(a.premium_ytd/1e6).toFixed(1)}M · Bind ${a.bind_ratio}% · LR ${a.loss_ratio}% · Score ${a.score}</div>
+          </div>
+        </div>`).join('')}
+
+      ${bottomAgents.length > 0 ? `
+        <div class="section-title" style="margin-top: var(--space-md); color:var(--status-amber);">⚠ PIP CANDIDATES (${bottomAgents.length})</div>
+        ${bottomAgents.map(a => `
+          <div style="padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.82rem;">
+            <strong>${a.agent}</strong> · <span style="color:var(--status-red);">Score ${a.score}</span>
+            <div style="color:var(--text-muted); font-size:0.7rem;">${a.issue.slice(0, 80)}${a.issue.length > 80 ? '...' : ''}</div>
+          </div>`).join('')}
+      ` : ''}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">🎯 CAPACITY UTILIZATION (by carrier)</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-carrier-authority'})">Authority mgr →</button>
+      </div>
+      ${capacityCarriers.map(c => `
+        <div style="margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px;">
+            <strong>${c.name}</strong>
+            <span>${c.capacity_pct}% · $${(c.capacity_used/1e6).toFixed(1)}M / $${(c.capacity_treaty/1e6).toFixed(0)}M</span>
+          </div>
+          <div style="background:var(--bg-card); height:6px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${c.capacity_pct}%; background:${c.capacity_pct >= 80 ? 'var(--status-red)' : c.capacity_pct >= 65 ? 'var(--status-amber)' : 'var(--status-green)'};"></div></div>
+        </div>`).join('')}
+      ${highCap.length > 0 ? `
+        <div style="margin-top: var(--space-md); padding: var(--space-sm); background: rgba(255,171,0,0.08); border-left: 3px solid var(--status-amber); border-radius: var(--radius-sm); font-size:0.82rem;">
+          <strong>⚠ Watch:</strong> ${highCap.length} carrier${highCap.length > 1 ? 's' : ''} above 75% capacity. Proactive capacity amendment recommended.
+        </div>
+      ` : ''}
+    </div>
+  </div>
+
+  <!-- GEO + SUBMISSION FUNNEL -->
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🗺 PREMIUM BY STATE</div>
+      ${geo.map(g => `
+        <div style="margin-bottom: 6px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:3px;">
+            <strong>${g.state}</strong> <span style="color:var(--text-muted);">· ${g.policies} policies</span>
+            <span><strong>$${(g.premium/1e6).toFixed(1)}M</strong> · LR <strong style="color:${g.lr <= 40 ? 'var(--status-green)' : g.lr <= 50 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${g.lr}%</strong></span>
+          </div>
+          <div style="background:var(--bg-card); height:5px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${(g.premium/maxGeo)*100}%; background:var(--mga-accent);"></div></div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📊 SUBMISSION FUNNEL (YTD)</div>
+      ${funnel.stages.map((s, i) => `
+        <div style="display:flex; align-items:center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+          <div style="width:140px; font-weight:700; font-size:0.8rem;">${s.stage}</div>
+          <div style="flex:1; position:relative; background:var(--bg-card); border-radius:4px; overflow:hidden; height:24px;">
+            <div style="position:absolute; inset:0; width:${s.pct}%; background:linear-gradient(90deg, var(--mga-accent), #a67dff); display:flex; align-items:center; padding-left: var(--space-sm);"><strong style="color:white; font-size:0.78rem;">${s.count.toLocaleString()}</strong></div>
+          </div>
+          <div style="width:40px; text-align:right; font-weight:700; font-size:0.82rem;">${s.pct}%</div>
+        </div>`).join('')}
+      <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle); display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm); text-align:center;">
+        <div><div style="color:var(--text-muted); font-size:0.7rem;">Bind Ratio</div><strong style="color:var(--status-green);">${funnel.overall_bind_ratio}%</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.7rem;">Quote TAT</div><strong>${funnel.avg_days_to_quote}d</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.7rem;">Bind TAT</div><strong>${funnel.avg_days_to_bind}d</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY + MY TASKS -->
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">🕑 RECENT ACTIVITY</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-compliance-audit'})">Audit trail →</button>
+      </div>
+      ${activity.map(a => `
+        <div ${a.link ? `onclick="window.setState({screen:'${a.link}'${a.param ? `, ${a.link === 'mga-claim-details' ? 'claimId' : a.link === 'mga-policy-profile' ? 'policyId' : 'id'}:'${a.param}'` : ''}})" style="cursor:pointer; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"` : 'style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"'}>
+          <div style="display:flex; gap: var(--space-sm); align-items:flex-start;">
+            <span style="font-size:1rem;">${a.icon}</span>
+            <div style="flex:1;">
+              <div style="font-size:0.85rem;">${a.text}</div>
+              <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${a.actor} · ${a.ts}</div>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">✅ MY TASKS (${tasks.length})</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('View all assigned tasks across modules')">All tasks →</button>
+      </div>
+      ${tasks.map(t => `
+        <div ${t.link ? `onclick="window.setState({screen:'${t.link}'${t.param ? `, policyId:'${t.param}'` : ''}})" style="cursor:pointer; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"` : 'style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"'}>
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+            <strong style="font-size:0.85rem;">${t.title}</strong>
+            ${badge(t.priority === 'High' ? 'red' : 'amber', t.priority)}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${t.module} · Due ${t.due} · ${t.status}</div>
+        </div>`).join('')}
+    </div>
   </div>`;
 }
 
-function renderMGACarriers() {
+// ─── MGA · Principal Carriers Management ───
+function _mgaCarrierSubNav(active) {
+  const tabs = [
+    { key: 'mga-carriers',                 label: 'Dashboard',       icon: '📊' },
+    { key: 'mga-carrier-directory',        label: 'Directory',       icon: '🏢' },
+    { key: 'mga-carrier-scorecard',        label: 'Scorecard & QBR', icon: '⭐' },
+    { key: 'mga-carrier-bordereau-report', label: 'Bordereau',       icon: '📤' },
+    { key: 'mga-carrier-authority',        label: 'Authority & Capacity', icon: '🎯' },
+    { key: 'mga-carrier-analytics',        label: 'Analytics',       icon: '📈' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _mgaCarrierTierPill(tier) {
+  const map = { 'Core': { bg: 'rgba(108,92,231,0.15)', color: 'var(--mga-accent)' }, 'Growth': { bg: 'rgba(0,230,118,0.12)', color: 'var(--status-green)' }, 'Specialty': { bg: 'rgba(255,171,0,0.12)', color: 'var(--status-amber)' }, 'Onboarding': { bg: 'rgba(79,195,247,0.12)', color: '#4fc3f7' } };
+  const m = map[tier] || map['Core'];
+  return `<span style="display:inline-block; padding:3px 10px; border-radius:999px; font-size:0.7rem; font-weight:700; background:${m.bg}; color:${m.color}; border:1px solid ${m.color}44;">${tier}</span>`;
+}
+
+function _mgaCarrierHealthBadge(h) {
+  const map = { 'Healthy': 'green', 'Watch': 'amber', 'Low-Util': 'gray', 'Onboarding': 'blue', 'At Risk': 'red' };
+  return badge(map[h] || 'gray', h);
+}
+
+function _mgaCarrierLogo(c, size = 48) {
+  return `<div style="width:${size}px; height:${size}px; border-radius:8px; background:${c.logo_color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:${size*0.38}px; flex-shrink:0;">${c.logo_initials}</div>`;
+}
+
+function renderMgaCarriersDashboard() {
+  const carriers = D.mgaCarriersEnhanced;
+  const active = carriers.filter(c => c.relationship_status === 'Active' || c.relationship_status === 'Renewing');
+  const onboarding = carriers.filter(c => c.relationship_status === 'Onboarding');
+  const expiringContracts = carriers.filter(c => {
+    const days = Math.round((new Date(c.contract_expiry) - new Date('2026-04-18')) / (1000 * 60 * 60 * 24));
+    return days <= 90 && days > 0;
+  });
+  const watchList = carriers.filter(c => c.health === 'Watch' || c.health === 'At Risk');
+  const upcomingQBRs = D.mgaCarrierQBRs.filter(q => q.status === 'Scheduled' || q.status === 'Today').slice(0, 6);
+  const totalCapacity = carriers.reduce((s, c) => s + c.capacity_treaty, 0);
+  const totalUsed = carriers.reduce((s, c) => s + c.capacity_used, 0);
+  const totalPremium = carriers.reduce((s, c) => s + c.premium_ytd, 0);
+  const weightedLR = carriers.filter(c => c.premium_ytd > 0).reduce((s, c) => s + (c.loss_ratio_ytd * c.premium_ytd), 0) / carriers.filter(c => c.premium_ytd > 0).reduce((s, c) => s + c.premium_ytd, 0);
+
   return `
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
-    <h2>Carrier Management</h2>
-    <button class="btn btn-primary">+ Add Carrier</button>
-  </div>
-  <div class="filter-bar">
-    <input class="form-input" placeholder="Search carriers…" />
-    <select class="form-input"><option>All Lines</option></select>
-    <select class="form-input"><option>All Methods</option></select>
-  </div>
-  <div class="data-table-wrapper">
-    <table class="data-table">
-      <thead><tr><th>Carrier</th><th>AM Best</th><th>Lines</th><th>Method</th><th>Status</th></tr></thead>
-      <tbody>
-        ${D.mgaCarriers.map(c => {
-          const methodBadge = c.method === 'SEMC' ? '<span class="conn-badge conn-semc">🔵 SEMC</span>' : c.method === 'Direct' ? '<span class="conn-badge conn-direct">🟢 Direct</span>' : '<span class="conn-badge conn-file">🟡 File</span>';
-          const statusBadge = c.status === 'Live' ? badge('green', '✅ Live') : badge('amber', '🔧 Setup');
-          return `<tr><td>${c.name}</td><td>${c.rating}</td><td>${c.lines}</td><td>${methodBadge}</td><td>${statusBadge}</td></tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-  </div>
-  <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom: var(--space-lg);">
-    <span class="conn-badge conn-semc" style="margin-right:8px">🔵 SEMC Aggregator</span>
-    <span class="conn-badge conn-direct" style="margin-right:8px">🟢 Direct API</span>
-    <span class="conn-badge conn-file">🟡 File-Based (Nexus digitized)</span>
+    <div>
+      <h2 style="margin:0;">🏢 Principal Carriers</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${active.length} active · ${onboarding.length} onboarding · $${(totalPremium/1e6).toFixed(1)}M written YTD · $${(totalCapacity/1e6).toFixed(0)}M total capacity · ${weightedLR.toFixed(0)}% weighted LR</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-carrier-scorecard'})">⭐ Scorecards</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Open new carrier onboarding wizard · due diligence · contract drafting · system configuration')">+ Add Carrier</button>
+    </div>
   </div>
 
-  <div class="section-title">CARRIER DETAIL — Chubb (Expanded)</div>
-  <div class="detail-panel">
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
-      <div><span style="color:var(--text-muted); font-size:0.78rem;">Connection Type:</span> <span class="conn-badge conn-file">🟡 File-Based</span></div>
-      <div><span style="color:var(--text-muted); font-size:0.78rem;">Last updated:</span> Mar 2026</div>
-      <div><span style="color:var(--text-muted); font-size:0.78rem;">Lines:</span> Umbrella | Management Lines</div>
-      <div><span style="color:var(--text-muted); font-size:0.78rem;">Commission %:</span> Umbrella 8% | Mgmt Lines 11%</div>
-      <div><span style="color:var(--text-muted); font-size:0.78rem;">States Licensed:</span> All 50</div>
-      <div><span style="color:var(--text-muted); font-size:0.78rem;">Status:</span> ${badge('amber', '🔧 In Setup')}</div>
+  ${kpiCards(D.mgaCarriersKPIs, 6)}
+
+  ${_mgaCarrierSubNav('mga-carriers')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">🏢 PRINCIPAL CARRIERS — HEALTH SNAPSHOT</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-carrier-directory'})">Full directory →</button>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Carrier</th><th>Tier</th><th>Premium YTD</th><th>Growth</th><th>LR</th><th>Capacity Used</th><th>Score</th><th>Health</th></tr></thead>
+        <tbody>
+          ${carriers.map(c => `
+          <tr onclick="window.setState({screen:'mga-carrier-profile', carrierId:'${c.id}'})" style="cursor:pointer;">
+            <td style="white-space:nowrap;"><div style="display:flex; align-items:center; gap:var(--space-sm);">${_mgaCarrierLogo(c, 32)}<div><strong>${c.name}</strong><div style="color:var(--text-muted); font-size:0.72rem;">NAIC ${c.naic} · ${c.am_best}</div></div></div></td>
+            <td style="white-space:nowrap;">${_mgaCarrierTierPill(c.tier)}</td>
+            <td style="white-space:nowrap;"><strong>$${(c.premium_ytd/1e6).toFixed(2)}M</strong></td>
+            <td style="white-space:nowrap;"><strong style="color:${c.growth_pct >= 15 ? 'var(--status-green)' : c.growth_pct >= 0 ? 'var(--text-primary)' : 'var(--status-amber)'};">${c.growth_pct > 0 ? '+' : ''}${c.growth_pct}%</strong></td>
+            <td style="white-space:nowrap;">${c.premium_ytd === 0 ? '<span style="color:var(--text-muted);">—</span>' : `<strong style="color:${c.loss_ratio_ytd <= 40 ? 'var(--status-green)' : c.loss_ratio_ytd <= 55 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${c.loss_ratio_ytd}%</strong>`}</td>
+            <td style="white-space:nowrap;"><div style="display:flex; align-items:center; gap:var(--space-sm);"><div class="market-fit-bar" style="width:80px;"><div class="market-fit-fill" style="width:${c.capacity_pct}%; background:${c.capacity_pct >= 80 ? 'var(--status-red)' : c.capacity_pct >= 65 ? 'var(--status-amber)' : 'var(--status-green)'};"></div></div><strong style="font-size:0.82rem;">${c.capacity_pct}%</strong></div></td>
+            <td style="white-space:nowrap;">${c.performance_score === null ? '<span style="color:var(--text-muted);">—</span>' : `<strong style="color:${c.performance_score >= 90 ? 'var(--status-green)' : c.performance_score >= 80 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${c.performance_score}</strong>`}</td>
+            <td style="white-space:nowrap;">${_mgaCarrierHealthBadge(c.health)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
     </div>
-    <div style="margin-top: var(--space-lg); display: flex; gap: var(--space-sm);">
-      <button class="btn btn-primary btn-sm" onclick="window.showAlert('Opening Rating Engine Configuration...')">Upload Rating Rules</button>
-      <button class="btn btn-success btn-sm" onclick="window.showAlert('Carrier connection activated! SEMC syncing is live.')">Activate Carrier</button>
-      <button class="btn btn-secondary btn-sm" onclick="window.showAlert('Entry edit mode enabled.')">Edit</button>
-      <button class="btn btn-danger btn-sm" onclick="window.showAlert('Confirm carrier deactivation? This will pause all quoting.')">Deactivate</button>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📅 UPCOMING QBRs (${upcomingQBRs.length})</div>
+        ${upcomingQBRs.map(q => `
+          <div onclick="window.setState({screen:'mga-carrier-scorecard'})" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+              <strong style="font-size:0.85rem;">${q.carrier}</strong>
+              ${q.status === 'Today' ? badge('red','🔴 TODAY') : badge('blue', q.scheduled.slice(5))}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${q.scheduled} · ${q.duration_min}min · ${q.action_items_open} open actions</div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">⚠ WATCH LIST (${watchList.length})</div>
+        ${watchList.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No carriers on watch.</div>' : watchList.map(c => `
+          <div onclick="window.setState({screen:'mga-carrier-profile', carrierId:'${c.id}'})" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+              <strong style="font-size:0.85rem;">${c.name}</strong>
+              ${_mgaCarrierHealthBadge(c.health)}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${c.capacity_pct >= 80 ? `Capacity ${c.capacity_pct}% · at cap` : c.relationship_status === 'Renewing' ? `Contract expires ${c.contract_expiry}` : `LR ${c.loss_ratio_ytd}% · monitor`}</div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📜 CONTRACTS EXPIRING (90d)</div>
+        ${expiringContracts.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">All healthy.</div>' : expiringContracts.map(c => {
+          const days = Math.round((new Date(c.contract_expiry) - new Date('2026-04-18')) / (1000 * 60 * 60 * 24));
+          return `
+          <div onclick="window.setState({screen:'mga-carrier-profile', carrierId:'${c.id}'})" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+              <strong style="font-size:0.85rem;">${c.name}</strong>
+              ${badge(days <= 30 ? 'red' : 'amber', days + 'd')}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">Exp ${c.contract_expiry} · ${c.contract_version}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📊 CAPACITY ALLOCATION</div>
+      <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom: var(--space-sm);">
+        <strong style="font-size:1.6rem;">$${(totalUsed/1e6).toFixed(1)}M</strong>
+        <span style="color:var(--text-muted); font-size:0.82rem;">of $${(totalCapacity/1e6).toFixed(0)}M · ${Math.round(totalUsed/totalCapacity*100)}% used</span>
+      </div>
+      ${carriers.filter(c => c.capacity_treaty > 0).map(c => `
+        <div style="margin-bottom: 6px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.76rem;">
+            <span>${c.name}</span><span>${c.capacity_pct}%</span>
+          </div>
+          <div style="background:var(--bg-card); height:4px; border-radius:2px; overflow:hidden;"><div style="height:100%; width:${c.capacity_pct}%; background:${c.capacity_pct >= 80 ? 'var(--status-red)' : c.capacity_pct >= 65 ? 'var(--status-amber)' : 'var(--mga-accent)'};"></div></div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">💰 PROFIT SHARE (YTD earned)</div>
+      ${carriers.filter(c => c.profit_share_earned_ytd > 0).sort((a,b) => b.profit_share_earned_ytd - a.profit_share_earned_ytd).map(c => `
+        <div style="display:flex; justify-content:space-between; padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.82rem;">
+          <span>${c.name}</span><strong style="color:var(--status-green);">$${(c.profit_share_earned_ytd/1000).toFixed(0)}k</strong>
+        </div>`).join('')}
+      <div style="margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 2px solid var(--border-subtle); display:flex; justify-content:space-between; font-size:0.85rem;">
+        <strong>Total YTD</strong>
+        <strong style="color:var(--status-green);">$${(carriers.reduce((s,c) => s + c.profit_share_earned_ytd, 0)/1000).toFixed(0)}k</strong>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔌 INTEGRATION METHODS</div>
+      ${['SEMC API','Direct API','File (SFTP)','Pending (API planned)'].map(m => {
+        const n = carriers.filter(c => c.integration_method === m).length;
+        return n > 0 ? `
+          <div style="display:flex; justify-content:space-between; padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.82rem;">
+            <span>${m}</span><strong>${n}</strong>
+          </div>` : '';
+      }).join('')}
+      <div style="padding: var(--space-sm); background:rgba(108,92,231,0.08); border-radius:var(--radius-sm); font-size:0.78rem; margin-top: var(--space-sm);">
+        <strong>💡 AI Insight:</strong> 2 carriers on File/SFTP could migrate to API to cut bordereau reconciliation time ~40%.
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaCarrierDirectory() {
+  const tierF = state.carrierTierFilter || 'all';
+  const healthF = state.carrierHealthFilter || 'all';
+  const q = (state.carrierQuery || '').toLowerCase();
+  let rows = D.mgaCarriersEnhanced;
+  if (tierF !== 'all') rows = rows.filter(c => c.tier === tierF);
+  if (healthF !== 'all') rows = rows.filter(c => c.health === healthF);
+  if (q) rows = rows.filter(c => c.name.toLowerCase().includes(q) || c.naic.includes(q) || c.products.join(' ').toLowerCase().includes(q));
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🏢 Carrier Directory</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${rows.length} principal carriers · searchable by name, NAIC, products, states</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Open new carrier onboarding wizard · 5-step · due diligence → negotiation → contract → config → go-live')">+ Onboard Carrier</button>
+  </div>
+
+  ${_mgaCarrierSubNav('mga-carrier-directory')}
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <input class="form-input" placeholder="🔍 Search name, NAIC, products..." value="${state.carrierQuery || ''}" oninput="window.setState({carrierQuery:this.value})"/>
+    <select class="form-input" onchange="window.setState({carrierTierFilter:this.value})">
+      <option value="all"${tierF==='all'?' selected':''}>All Tiers</option>
+      <option value="Core"${tierF==='Core'?' selected':''}>Core</option>
+      <option value="Growth"${tierF==='Growth'?' selected':''}>Growth</option>
+      <option value="Specialty"${tierF==='Specialty'?' selected':''}>Specialty</option>
+      <option value="Onboarding"${tierF==='Onboarding'?' selected':''}>Onboarding</option>
+    </select>
+    <select class="form-input" onchange="window.setState({carrierHealthFilter:this.value})">
+      <option value="all"${healthF==='all'?' selected':''}>All Health</option>
+      <option value="Healthy"${healthF==='Healthy'?' selected':''}>Healthy</option>
+      <option value="Watch"${healthF==='Watch'?' selected':''}>Watch</option>
+      <option value="Low-Util"${healthF==='Low-Util'?' selected':''}>Low Utilization</option>
+      <option value="Onboarding"${healthF==='Onboarding'?' selected':''}>Onboarding</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({carrierTierFilter:'all', carrierHealthFilter:'all', carrierQuery:''})">Clear</button>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Carrier</th><th>NAIC</th><th>AM Best</th><th>Tier</th><th>Status</th><th>Since</th><th>Contract Exp</th><th>Products</th><th>States</th><th>Premium YTD</th><th>LR</th><th>Capacity</th><th>Score</th><th>Integration</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(c => `
+        <tr>
+          <td style="white-space:nowrap;"><div style="display:flex; align-items:center; gap:var(--space-sm);">${_mgaCarrierLogo(c, 36)}<div><strong>${c.name}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${c.id}</div></div></div></td>
+          <td style="white-space:nowrap; font-family:monospace;">${c.naic}</td>
+          <td style="white-space:nowrap;">${c.am_best} / ${c.sp_rating}</td>
+          <td style="white-space:nowrap;">${_mgaCarrierTierPill(c.tier)}</td>
+          <td style="white-space:nowrap;">${badge(c.relationship_status === 'Active' ? 'green' : c.relationship_status === 'Renewing' ? 'amber' : c.relationship_status === 'Onboarding' ? 'blue' : 'gray', c.relationship_status)}</td>
+          <td style="white-space:nowrap;">${c.since}</td>
+          <td style="white-space:nowrap;"><strong>${c.contract_expiry}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${c.contract_version}</div></td>
+          <td style="white-space:nowrap;">${c.products.length} · <span style="color:var(--text-muted); font-size:0.78rem;">${c.products.slice(0,2).join(', ')}${c.products.length > 2 ? '...' : ''}</span></td>
+          <td style="white-space:nowrap;">${c.states.length} states</td>
+          <td style="white-space:nowrap;"><strong>$${(c.premium_ytd/1e6).toFixed(2)}M</strong></td>
+          <td style="white-space:nowrap;">${c.premium_ytd === 0 ? '—' : `<strong style="color:${c.loss_ratio_ytd <= 40 ? 'var(--status-green)' : c.loss_ratio_ytd <= 55 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${c.loss_ratio_ytd}%</strong>`}</td>
+          <td style="white-space:nowrap;"><strong>${c.capacity_pct}%</strong><div style="color:var(--text-muted); font-size:0.72rem;">$${(c.capacity_used/1e6).toFixed(1)}M/$${(c.capacity_treaty/1e6).toFixed(0)}M</div></td>
+          <td style="white-space:nowrap;">${c.performance_score === null ? '—' : `<strong>${c.performance_score}</strong>`}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${c.integration_method}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-primary btn-sm" onclick="window.setState({screen:'mga-carrier-profile', carrierId:'${c.id}'})">360°</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaCarrierProfile() {
+  const carrierId = state.carrierId || 'CAR-01';
+  const c = D.mgaCarriersEnhanced.find(x => x.id === carrierId) || D.mgaCarriersEnhanced[0];
+  const isCanonical = c.id === 'CAR-01';
+  const profile = isCanonical ? D.mgaCarrierProfileCanonical : {
+    carrier_id: c.id,
+    overview: { strategic_importance: `${c.tier} tier partner since ${c.since} · ${c.products.join(', ')}`, relationship_health: c.health, concerns: c.health !== 'Healthy' ? [c.health + ' status — monitor performance'] : [], opportunities: [`Current growth ${c.growth_pct}% · explore expanding ${c.products[0]} to additional states`] },
+    agreement_terms: { contract_id: c.contract_id, version: c.contract_version, effective: c.contract_effective, expiry: c.contract_expiry, auto_renew: true, termination_notice_days: 120, addendums: [{ number: 1, date: c.contract_effective, description: 'Original contract executed' }], side_letters: [] },
+    contacts: [
+      { role: 'VP Underwriting', name: c.key_contact_uw, email: c.key_contact_uw.toLowerCase().replace(/\s+/g,'.') + '@' + c.name.toLowerCase().replace(/[^a-z]/g,'') + '.com', phone: '—', ext: '—' },
+      { role: 'Claims Operations', name: c.key_contact_claims, email: c.key_contact_claims.toLowerCase().replace(/\s+/g,'.') + '@' + c.name.toLowerCase().replace(/[^a-z]/g,'') + '.com', phone: '—', ext: '—' },
+      { role: 'MGA Audit', name: c.key_contact_audit, email: '—', phone: '—', ext: '—' }
+    ],
+    products_and_states: c.products.map(p => ({ product: p, states: c.states, rate_filed: true, form_filed: true, deployed: true, written_ytd: Math.round(c.premium_ytd / c.products.length), policies: Math.round(c.policies_inforce / c.products.length) })),
+    authority: { binding_limit: c.binding_authority, claims_limit: c.claims_authority, new_products_authority: 'Senior UW or higher', subjectivity_req_above: c.subjectivity_required_above, class_exclusions: [], loss_ratio_trigger: 65, authority_last_reviewed: c.last_qbr || c.since },
+    commission_and_profit_share: {
+      schedule: c.products.map(p => ({ product: p, rate: c.commission_rate, new_business_bonus: 1, renewal_rate: c.commission_rate })),
+      profit_share: { threshold_lr: c.profit_share_threshold_lr, pct: c.profit_share_pct, min_premium: 1000000, measurement_period: 'Calendar Year', ytd_earned: c.profit_share_earned_ytd, full_year_projected: c.contingent_commission_projected, prior_year_actual: Math.round(c.profit_share_earned_ytd * 1.1) },
+      contingent_commission: { ytd_earned: c.profit_share_earned_ytd, projected_full_year: c.contingent_commission_projected, paid_last: '2026-02-15', next_payment: '2027-02-15' }
+    },
+    documents: [
+      { name: c.name + ' MGA Agreement ' + c.contract_version + '.pdf', type: 'Contract', size: '2.1 MB', date: c.contract_effective },
+      { name: c.name + ' Commission Schedule.xlsx', type: 'Commission', size: '80 KB', date: c.contract_effective },
+      { name: c.name + ' Bordereau Template.xlsx', type: 'Template', size: '42 KB', date: c.contract_effective }
+    ]
+  };
+
+  const tab = state.carrierProfileTab || 'overview';
+  const tabs = [
+    { key: 'overview',   label: 'Overview',       icon: '📋' },
+    { key: 'agreement',  label: 'Agreement',      icon: '📜' },
+    { key: 'contacts',   label: 'Contacts',       icon: '👥' },
+    { key: 'products',   label: 'Products & States', icon: '🧩' },
+    { key: 'authority',  label: 'Authority',      icon: '🎯' },
+    { key: 'commission', label: 'Commission',     icon: '💰' },
+    { key: 'documents',  label: 'Documents',      icon: '📎' }
+  ];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div style="display:flex; align-items:center; gap:var(--space-md);">
+      ${_mgaCarrierLogo(c, 64)}
+      <div>
+        <div style="color:var(--text-muted); font-size:0.78rem; margin-bottom:4px;"><a style="cursor:pointer; color:var(--mga-accent);" onclick="window.setState({screen:'mga-carrier-directory'})">← All Carriers</a></div>
+        <h2 style="margin:0;">${c.name}</h2>
+        <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">NAIC ${c.naic} · ${c.am_best} AM Best · ${c.tier} tier · Partner since ${c.since}</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-ghost" onclick="window.showAlert &amp;&amp; window.showAlert('Export 360° profile PDF for ' + '${c.name}')">📄 Export</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-carrier-scorecard', carrierId:'${c.id}'})">⭐ Scorecard</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Open secure message thread with ${c.key_contact_uw}')">💬 Message</button>
+    </div>
+  </div>
+
+  ${_mgaCarrierSubNav('')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-md);">
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Status</div><div style="margin-top:6px;">${badge(c.relationship_status === 'Active' ? 'green' : c.relationship_status === 'Renewing' ? 'amber' : 'blue', c.relationship_status)}</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Premium YTD</div><strong style="font-size:1.3rem;">$${(c.premium_ytd/1e6).toFixed(2)}M</strong><div style="color:${c.growth_pct >= 0 ? 'var(--status-green)' : 'var(--status-amber)'}; font-size:0.72rem;">${c.growth_pct > 0 ? '+' : ''}${c.growth_pct}% YoY</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Loss Ratio YTD</div><strong style="font-size:1.3rem; color:${c.loss_ratio_ytd <= 40 ? 'var(--status-green)' : c.loss_ratio_ytd <= 55 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${c.premium_ytd === 0 ? '—' : c.loss_ratio_ytd + '%'}</strong><div style="color:var(--text-muted); font-size:0.72rem;">Combined ${c.combined_ratio_ytd}%</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Capacity</div><strong style="font-size:1.3rem;">${c.capacity_pct}%</strong><div style="color:var(--text-muted); font-size:0.72rem;">$${(c.capacity_used/1e6).toFixed(1)}M/$${(c.capacity_treaty/1e6).toFixed(0)}M</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Performance Score</div><strong style="font-size:1.3rem; color:${c.performance_score >= 90 ? 'var(--status-green)' : 'var(--mga-accent)'};">${c.performance_score || '—'}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${c.partnership_rating || '—'} ★ partnership</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Contract Expiry</div><strong style="font-size:1.1rem;">${c.contract_expiry}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${c.contract_version}</div></div>
+    </div>
+  </div>
+
+  <div style="display:flex; gap: var(--space-xs); border-bottom: 1px solid var(--border-subtle); margin-bottom: var(--space-lg); flex-wrap:wrap;">
+    ${tabs.map(t => `
+      <div onclick="window.setState({carrierProfileTab:'${t.key}'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === t.key ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === t.key ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === t.key ? '700' : '500'}; font-size:0.88rem;">
+        ${t.icon} ${t.label}
+      </div>`).join('')}
+  </div>
+
+  ${tab === 'overview' ? `
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🎯 STRATEGIC SUMMARY</div>
+        <div style="font-size:0.9rem; line-height:1.6;">${profile.overview.strategic_importance}</div>
+        ${profile.overview.opportunities.length > 0 ? `
+          <div style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(0,230,118,0.08); border-left: 3px solid var(--status-green); border-radius: var(--radius-md);">
+            <strong>🚀 Opportunities</strong>
+            <ul style="margin: 6px 0 0 16px; padding:0; font-size:0.85rem;">
+              ${profile.overview.opportunities.map(o => `<li>${o}</li>`).join('')}
+            </ul>
+          </div>` : ''}
+        ${profile.overview.concerns.length > 0 ? `
+          <div style="margin-top: var(--space-sm); padding: var(--space-md); background: rgba(255,171,0,0.08); border-left: 3px solid var(--status-amber); border-radius: var(--radius-md);">
+            <strong>⚠ Concerns</strong>
+            <ul style="margin: 6px 0 0 16px; padding:0; font-size:0.85rem;">
+              ${profile.overview.concerns.map(o => `<li>${o}</li>`).join('')}
+            </ul>
+          </div>` : ''}
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">📅 QBR SCHEDULE</div>
+          <div style="font-size:0.85rem;">
+            <div><span style="color:var(--text-muted);">Last QBR:</span> <strong>${c.last_qbr || '—'}</strong></div>
+            <div style="margin-top:4px;"><span style="color:var(--text-muted);">Next QBR:</span> <strong>${c.next_qbr || 'TBD'}</strong></div>
+            <button class="btn btn-primary btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.setState({screen:'mga-carrier-scorecard'})">Open QBR Center</button>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">🔌 INTEGRATION</div>
+          <div style="font-size:0.85rem;">
+            <div><span style="color:var(--text-muted);">Method:</span> <strong>${c.integration_method}</strong></div>
+            <div style="margin-top:4px;"><span style="color:var(--text-muted);">Data Feeds:</span> <strong>${(c.data_feeds || []).join(' · ') || 'None yet'}</strong></div>
+            <div style="margin-top:4px;"><span style="color:var(--text-muted);">Open Referrals:</span> <strong>${c.open_referrals}</strong></div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">💰 PROFIT SHARE</div>
+          <div style="font-size:0.85rem;">
+            <div><span style="color:var(--text-muted);">YTD Earned:</span> <strong style="color:var(--status-green);">$${(c.profit_share_earned_ytd/1000).toFixed(0)}k</strong></div>
+            <div style="margin-top:4px;"><span style="color:var(--text-muted);">Projected FY:</span> <strong>$${(c.contingent_commission_projected/1000).toFixed(0)}k</strong></div>
+            <div style="margin-top:4px;"><span style="color:var(--text-muted);">Threshold:</span> <strong>${c.profit_share_threshold_lr}% LR</strong> · <strong>${c.profit_share_pct}% share</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  ` : tab === 'agreement' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">📜 AGREEMENT TERMS</div>
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md);">
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">Contract #</div><strong style="font-family:monospace;">${profile.agreement_terms.contract_id}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">Version</div><strong>${profile.agreement_terms.version}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">Effective</div><strong>${profile.agreement_terms.effective}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">Expiry</div><strong>${profile.agreement_terms.expiry}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">Auto-Renew</div><strong>${profile.agreement_terms.auto_renew ? 'Yes' : 'No'}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">Termination Notice</div><strong>${profile.agreement_terms.termination_notice_days} days</strong></div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">📝 ADDENDUMS (${profile.agreement_terms.addendums.length})</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>#</th><th>Date</th><th>Description</th><th></th></tr></thead>
+        <tbody>
+          ${profile.agreement_terms.addendums.map(a => `
+            <tr><td style="white-space:nowrap;">Amendment ${a.number}</td><td style="white-space:nowrap;">${a.date}</td><td>${a.description}</td><td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('View amendment ${a.number}')">View</button></td></tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    ${profile.agreement_terms.side_letters && profile.agreement_terms.side_letters.length > 0 ? `
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📄 SIDE LETTERS (${profile.agreement_terms.side_letters.length})</div>
+        ${profile.agreement_terms.side_letters.map(s => `
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.85rem;">
+            <strong>${s.date}</strong> — ${s.description}
+          </div>`).join('')}
+      </div>
+    ` : ''}
+  ` : tab === 'contacts' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">👥 CARRIER CONTACTS (${profile.contacts.length})</div>
+        <button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Add new contact for ${c.name}')">+ Add Contact</button>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Role</th><th>Name</th><th>Email</th><th>Phone</th><th>Ext</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${profile.contacts.map(p => `
+            <tr>
+              <td style="white-space:nowrap;"><strong>${p.role}</strong></td>
+              <td style="white-space:nowrap;">${p.name}</td>
+              <td style="white-space:nowrap;"><a style="color:var(--mga-accent);">${p.email}</a></td>
+              <td style="white-space:nowrap;">${p.phone}</td>
+              <td style="white-space:nowrap;">${p.ext}</td>
+              <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Open message thread with ${p.name}')">💬 Message</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  ` : tab === 'products' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🧩 PRODUCTS &amp; STATE DEPLOYMENT</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Product</th><th>States Deployed</th><th>Rate Filed</th><th>Form Filed</th><th>Status</th><th>Written YTD</th><th>Policies</th></tr></thead>
+        <tbody>
+          ${profile.products_and_states.map(p => `
+            <tr>
+              <td style="white-space:nowrap;"><strong>${p.product}</strong></td>
+              <td style="font-size:0.82rem;">${p.states.join(', ')}</td>
+              <td style="white-space:nowrap;">${p.rate_filed ? badge('green','✓ Filed') : badge('amber','Pending')}</td>
+              <td style="white-space:nowrap;">${p.form_filed ? badge('green','✓ Filed') : badge('amber','Pending')}</td>
+              <td style="white-space:nowrap;">${p.deployed ? badge('green','Live') : badge('gray','Draft')}</td>
+              <td style="white-space:nowrap;"><strong>$${(p.written_ytd/1e6).toFixed(2)}M</strong></td>
+              <td style="white-space:nowrap;">${p.policies}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  ` : tab === 'authority' ? `
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🎯 DELEGATED AUTHORITY</div>
+        <div style="font-size:0.9rem;">
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Binding Limit:</span> <strong>$${profile.authority.binding_limit.toLocaleString()}</strong></div>
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Claims Limit:</span> <strong>$${profile.authority.claims_limit.toLocaleString()}</strong></div>
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Subjectivity Required Above:</span> <strong>$${profile.authority.subjectivity_req_above.toLocaleString()}</strong></div>
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">New Products:</span> <strong>${profile.authority.new_products_authority}</strong></div>
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">LR Trigger:</span> <strong>${profile.authority.loss_ratio_trigger}%</strong></div>
+          <div style="padding: var(--space-sm) 0;"><span style="color:var(--text-muted);">Last Reviewed:</span> <strong>${profile.authority.authority_last_reviewed}</strong></div>
+        </div>
+        <button class="btn btn-primary btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.setState({screen:'mga-carrier-authority'})">Request Authority Change</button>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🚫 CLASS EXCLUSIONS</div>
+        ${profile.authority.class_exclusions.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No class exclusions.</div>' : profile.authority.class_exclusions.map(e => `
+          <div style="padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.85rem;">🚫 ${e}</div>`).join('')}
+      </div>
+    </div>
+  ` : tab === 'commission' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">💰 COMMISSION SCHEDULE</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Product</th><th>Base Rate</th><th>New Business Bonus</th><th>Renewal Rate</th></tr></thead>
+        <tbody>
+          ${profile.commission_and_profit_share.schedule.map(s => `
+            <tr><td style="white-space:nowrap;"><strong>${s.product}</strong></td><td style="white-space:nowrap;"><strong>${s.rate}%</strong></td><td style="white-space:nowrap;">+${s.new_business_bonus}%</td><td style="white-space:nowrap;">${s.renewal_rate}%</td></tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💸 PROFIT SHARE TERMS</div>
+        <div style="font-size:0.85rem;">
+          <div style="padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Threshold LR:</span> <strong>${profile.commission_and_profit_share.profit_share.threshold_lr}%</strong></div>
+          <div style="padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Share %:</span> <strong>${profile.commission_and_profit_share.profit_share.pct}%</strong></div>
+          <div style="padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Min Premium:</span> <strong>$${(profile.commission_and_profit_share.profit_share.min_premium/1e6).toFixed(1)}M</strong></div>
+          <div style="padding: var(--space-xs) 0;"><span style="color:var(--text-muted);">Measurement:</span> <strong>${profile.commission_and_profit_share.profit_share.measurement_period}</strong></div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💵 CONTINGENT COMMISSION</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:var(--space-sm);">
+          <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">YTD Earned</div><strong style="font-size:1.2rem; color:var(--status-green);">$${(profile.commission_and_profit_share.contingent_commission.ytd_earned/1000).toFixed(0)}k</strong></div>
+          <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">FY Projected</div><strong style="font-size:1.2rem;">$${(profile.commission_and_profit_share.contingent_commission.projected_full_year/1000).toFixed(0)}k</strong></div>
+          <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">Last Paid</div><strong>${profile.commission_and_profit_share.contingent_commission.paid_last}</strong></div>
+          <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">Next Payment</div><strong>${profile.commission_and_profit_share.contingent_commission.next_payment}</strong></div>
+        </div>
+      </div>
+    </div>
+  ` : `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">📎 DOCUMENT VAULT (${profile.documents.length})</div>
+      <button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Upload document to ${c.name} vault')">📤 Upload</button>
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>File</th><th>Type</th><th>Size</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${profile.documents.map(d => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${d.name}</strong></td>
+            <td style="white-space:nowrap;">${badge('gray', d.type)}</td>
+            <td style="white-space:nowrap;">${d.size}</td>
+            <td style="white-space:nowrap;">${d.date}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Preview ${d.name}')">👁 View</button> <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Download ${d.name}')">⬇</button></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  `}`;
+}
+
+function renderMgaCarrierScorecard() {
+  const tab = state.scorecardTab || 'scorecards';
+  const periodF = state.scorecardPeriodFilter || '2026 Q1';
+  const periods = [...new Set(D.mgaCarrierScorecards.map(s => s.period))];
+  const scorecards = D.mgaCarrierScorecards.filter(s => s.period === periodF);
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">⭐ Carrier Scorecards &amp; QBR Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Quarterly performance scorecards · QBR scheduling + action tracking · joint business planning</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Export Q1 scorecard pack · PDF for all carriers · auto-distribute to VP Underwriting contacts')">📥 Export Pack</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Schedule new QBR · pick carrier + date + attendees')">+ Schedule QBR</button>
+    </div>
+  </div>
+
+  ${_mgaCarrierSubNav('mga-carrier-scorecard')}
+
+  <div style="display:flex; gap: var(--space-xs); border-bottom: 1px solid var(--border-subtle); margin-bottom: var(--space-lg);">
+    <div onclick="window.setState({scorecardTab:'scorecards'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'scorecards' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'scorecards' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'scorecards' ? '700' : '500'}; font-size:0.9rem;">
+      ⭐ Scorecards (${scorecards.length})
+    </div>
+    <div onclick="window.setState({scorecardTab:'qbrs'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'qbrs' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'qbrs' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'qbrs' ? '700' : '500'}; font-size:0.9rem;">
+      📅 QBRs (${D.mgaCarrierQBRs.length})
+    </div>
+  </div>
+
+  ${tab === 'scorecards' ? `
+    <div class="filter-bar" style="margin-bottom: var(--space-md);">
+      <select class="form-input" onchange="window.setState({scorecardPeriodFilter:this.value})" style="max-width:200px;">
+        ${periods.map(p => `<option value="${p}"${periodF===p?' selected':''}>${p}</option>`).join('')}
+      </select>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: var(--space-md);">
+      ${scorecards.map(s => `
+        <div onclick="window.setState({screen:'mga-carrier-profile', carrierId:'${s.carrier_id}'})" style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); cursor:pointer;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+            <div>
+              <strong style="font-size:1.1rem;">${s.carrier}</strong>
+              <div style="color:var(--text-muted); font-size:0.78rem;">${s.period}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:2rem; font-weight:800; color:${s.overall >= 90 ? 'var(--status-green)' : s.overall >= 80 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${s.overall}</div>
+              <div style="color:var(--text-muted); font-size:0.72rem;">${s.partnership} ★</div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); font-size:0.82rem;">
+            <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">Premium</div><strong>$${(s.premium/1e6).toFixed(2)}M</strong><div style="color:${s.growth >= 15 ? 'var(--status-green)' : 'var(--text-muted)'}; font-size:0.7rem;">${s.growth > 0 ? '+' : ''}${s.growth}%</div></div>
+            <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">Loss Ratio</div><strong style="color:${s.loss_ratio <= 40 ? 'var(--status-green)' : s.loss_ratio <= 55 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${s.loss_ratio}%</strong><div style="color:var(--text-muted); font-size:0.7rem;">Combined ${s.combined_ratio}%</div></div>
+            <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">Sub Quality</div><strong>${s.sub_quality}</strong></div>
+            <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">Claims Handling</div><strong>${s.claims_handling}</strong></div>
+            <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">Profit Share</div><strong style="color:var(--status-green);">$${(s.profit_share/1000).toFixed(0)}k</strong></div>
+            <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">Partnership</div><strong>${s.partnership} ★</strong></div>
+          </div>
+        </div>`).join('')}
+    </div>
+  ` : `
+    <div class="data-table-wrapper">
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>QBR #</th><th>Carrier</th><th>Scheduled</th><th>Duration</th><th>Status</th><th>Agenda Items</th><th>Open Actions</th><th>Stakeholders</th><th>Notes</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${D.mgaCarrierQBRs.map(q => `
+          <tr>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${q.id}</strong></td>
+            <td style="white-space:nowrap;"><strong>${q.carrier}</strong></td>
+            <td style="white-space:nowrap;"><strong>${q.scheduled}</strong></td>
+            <td style="white-space:nowrap;">${q.duration_min} min</td>
+            <td style="white-space:nowrap;">${badge(q.status === 'Today' ? 'red' : q.status === 'Completed' ? 'green' : 'blue', q.status)}</td>
+            <td style="white-space:nowrap;">${q.agenda_items}</td>
+            <td style="white-space:nowrap;"><strong style="color:${q.action_items_open > 4 ? 'var(--status-amber)' : 'var(--text-primary)'};">${q.action_items_open}</strong></td>
+            <td style="white-space:nowrap; font-size:0.78rem;">${q.stakeholders.slice(0,2).join(', ')}${q.stakeholders.length > 2 ? `, +${q.stakeholders.length - 2}` : ''}</td>
+            <td style="font-size:0.78rem;">${q.note || '—'}</td>
+            <td style="white-space:nowrap;">${q.status === 'Today' || q.status === 'Scheduled' ? `<button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Join ${q.id} meeting · link: ${q.meeting_link}')">Join</button>` : `<button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('View completed QBR notes + action items for ${q.id}')">Review</button>`}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  `}`;
+}
+
+function renderMgaCarrierBordereauReport() {
+  const rows = D.mgaCarrierPremiumBordereau;
+  const disputes = rows.filter(r => r.status === 'Dispute Open');
+  const pending = rows.filter(r => r.status === 'In Reconciliation');
+  const totalPremium = rows.reduce((s, r) => s + r.premium_written, 0);
+  const totalCommission = rows.reduce((s, r) => s + r.commission_due, 0);
+  const totalVariance = rows.reduce((s, r) => s + Math.abs(r.variance), 0);
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📤 Premium Bordereau &amp; Reconciliation</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Premium reporting + commission reconciliation · ${rows.length} bordereau in period · ${disputes.length} open dispute · ${pending.length} in reconciliation</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-claim-bordereau'})">📋 Claims Bordereau →</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Generate ad-hoc premium bordereau · pick carrier, period, detail level')">+ Generate</button>
+    </div>
+  </div>
+
+  ${_mgaCarrierSubNav('mga-carrier-bordereau-report')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Premium Reported</div><div class="kpi-value">$${(totalPremium/1e6).toFixed(2)}M</div></div>
+    <div class="kpi-card"><div class="kpi-label">Commission Due</div><div class="kpi-value">$${(totalCommission/1000).toFixed(0)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Reconciliation Variance</div><div class="kpi-value${totalVariance > 0 ? ' warning' : ''}">$${(totalVariance/1000).toFixed(1)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Open Disputes</div><div class="kpi-value${disputes.length > 0 ? ' warning' : ''}">${disputes.length}</div></div>
+  </div>
+
+  ${disputes.length > 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--status-red); border-left: 4px solid var(--status-red); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title" style="color:var(--status-red);">🚨 OPEN RECONCILIATION DISPUTES (${disputes.length})</div>
+      ${disputes.map(d => `
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius: var(--radius-md); margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center; margin-bottom: var(--space-sm);">
+            <div><strong>${d.carrier}</strong> · ${d.id} · ${d.period}</div>
+            <div style="display:flex; gap:var(--space-sm); align-items:center;"><strong style="color:var(--status-red);">$${Math.abs(d.variance).toLocaleString()} variance</strong><button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Open dispute resolution workflow for ${d.id} · meeting, ledger comparison, document share')">Resolve</button></div>
+          </div>
+          <div style="font-size:0.82rem; color:var(--text-secondary);">${d.note}</div>
+        </div>`).join('')}
+    </div>
+  ` : ''}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">📤 PREMIUM BORDEREAU (Current Period)</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Bordereau #</th><th>Carrier</th><th>Type</th><th>Period</th><th>Policies</th><th>Premium Written</th><th>Commission Due</th><th>Reserve Δ</th><th>Variance</th><th>Status</th><th>Ack ID</th><th>Submitted</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(r => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${r.id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${r.carrier}</strong></td>
+          <td style="white-space:nowrap;">${r.type}</td>
+          <td style="white-space:nowrap;">${r.period}</td>
+          <td style="white-space:nowrap;">${r.policies}</td>
+          <td style="white-space:nowrap;"><strong>$${r.premium_written.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;"><strong>$${r.commission_due.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">$${r.reserve_change.toLocaleString()}</td>
+          <td style="white-space:nowrap;"><strong style="color:${r.variance === 0 ? 'var(--text-muted)' : 'var(--status-red)'};">${r.variance === 0 ? '—' : (r.variance > 0 ? '+' : '') + '$' + r.variance.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${badge(r.statusColor, r.status)}</td>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;">${r.ack}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${r.submitted}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('View ${r.id} · policy-level detail · commission breakdown')">View</button> <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Download ${r.id} as CSV + XML')">⬇</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaCarrierAuthority() {
+  const tab = state.authorityTab || 'capacity';
+  const capRows = D.mgaCarrierCapacity;
+  const reqs = D.mgaCarrierAuthorityRequests;
+  const pendingReqs = reqs.filter(r => !['Approved','Declined'].includes(r.status));
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🎯 Authority &amp; Capacity Manager</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Capacity allocation per carrier · authority amendment requests · new product approvals · rate/form filing coordination</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Submit new authority request · pick carrier, type (capacity · binding · claims · new state · new product · profit share)')">+ New Request</button>
+  </div>
+
+  ${_mgaCarrierSubNav('mga-carrier-authority')}
+
+  <div style="display:flex; gap: var(--space-xs); border-bottom: 1px solid var(--border-subtle); margin-bottom: var(--space-lg);">
+    <div onclick="window.setState({authorityTab:'capacity'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'capacity' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'capacity' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'capacity' ? '700' : '500'}; font-size:0.9rem;">
+      📊 Capacity Allocation
+    </div>
+    <div onclick="window.setState({authorityTab:'requests'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'requests' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'requests' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'requests' ? '700' : '500'}; font-size:0.9rem;">
+      📋 Authority Requests (${reqs.length})${pendingReqs.length > 0 ? ` <span style="background:var(--status-amber); color:white; padding:2px 8px; border-radius:999px; font-size:0.68rem; font-weight:700;">${pendingReqs.length}</span>` : ''}
+    </div>
+  </div>
+
+  ${tab === 'capacity' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">📊 CAPACITY ALLOCATION PER CARRIER</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Carrier</th><th>Treaty Capacity</th><th>Used</th><th>% Used</th><th>Per-Risk Max</th><th>Buffer</th><th>Health</th><th>30-Day Trend</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${capRows.map(c => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${c.carrier}</strong></td>
+            <td style="white-space:nowrap;">$${(c.treaty/1e6).toFixed(2)}M</td>
+            <td style="white-space:nowrap;">$${(c.used/1e6).toFixed(2)}M</td>
+            <td style="white-space:nowrap;"><div style="display:flex; align-items:center; gap:var(--space-sm);"><div class="market-fit-bar" style="width:100px;"><div class="market-fit-fill" style="width:${c.pct}%; background:${c.pct >= 80 ? 'var(--status-red)' : c.pct >= 65 ? 'var(--status-amber)' : 'var(--status-green)'};"></div></div><strong>${c.pct}%</strong></div></td>
+            <td style="white-space:nowrap;">$${(c.per_risk_max/1e6).toFixed(1)}M</td>
+            <td style="white-space:nowrap;"><strong style="color:${c.buffer < 1000000 ? 'var(--status-amber)' : 'var(--text-primary)'};">$${(c.buffer/1e6).toFixed(2)}M</strong></td>
+            <td style="white-space:nowrap;">${_mgaCarrierHealthBadge(c.health)}</td>
+            <td style="white-space:nowrap;"><span style="color:${c.trend_30d.startsWith('+') ? 'var(--status-amber)' : c.trend_30d.startsWith('-') ? 'var(--status-green)' : 'var(--text-muted)'};">${c.trend_30d}</span></td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Request capacity increase for ${c.carrier}')">Request +</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="padding: var(--space-md); background: rgba(108,92,231,0.08); border-left: 3px solid var(--mga-accent); border-radius: var(--radius-md);">
+      <strong>💡 Proactive Capacity Forecast</strong>
+      <div style="color:var(--text-muted); font-size:0.82rem; margin-top:6px;">
+        Based on 30-day trend: <strong>SEMC / Liberty</strong> projected to hit 100% capacity by <strong>2026-06-02</strong>. Recommendation: request $4M treaty increase before next QBR (2026-04-25).
+      </div>
+    </div>
+  ` : `
+    <div class="data-table-wrapper">
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Request #</th><th>Carrier</th><th>Type</th><th>Description</th><th>Submitted</th><th>Submitted By</th><th>Status</th><th>Priority</th><th>ETA</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${reqs.map(r => `
+          <tr>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${r.id}</strong></td>
+            <td style="white-space:nowrap;"><strong>${r.carrier}</strong></td>
+            <td style="white-space:nowrap;">${badge('gray', r.type)}</td>
+            <td style="font-size:0.82rem;">${r.description}${r.counter ? `<div style="color:var(--status-amber); font-size:0.78rem; margin-top:4px;"><strong>Counter-offer:</strong> ${r.counter}</div>` : ''}${r.decline_reason ? `<div style="color:var(--status-red); font-size:0.78rem; margin-top:4px;"><strong>Decline reason:</strong> ${r.decline_reason}</div>` : ''}</td>
+            <td style="white-space:nowrap;">${r.submitted}</td>
+            <td style="white-space:nowrap;">${r.submitted_by}</td>
+            <td style="white-space:nowrap;">${badge(r.status === 'Approved' ? 'green' : r.status === 'Declined' ? 'red' : r.status === 'Counter-Offered' ? 'amber' : 'blue', r.status)}</td>
+            <td style="white-space:nowrap;">${_mgaCompliancePriorityBadge(r.priority)}</td>
+            <td style="white-space:nowrap;">${r.eta}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Open ${r.id} full history · emails · documents · decision trail')">Open</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  `}`;
+}
+
+function renderMgaCarrierAnalytics() {
+  const A = D.mgaCarrierAnalytics;
+  const maxPremium = Math.max(...A.profitability_by_carrier.map(c => c.premium));
+  const maxQuarterly = Math.max(...A.growth_trend.map(g => g.total));
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📈 Carrier Comparison &amp; Analytics</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Profitability · volume · loss ratio by product · authority utilization · contingent commission projections</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <select class="form-input" style="width:160px;"><option>Last 12 months</option><option>YTD</option><option>Last 5 quarters</option></select>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Export analytics pack · PDF + CSV · all carriers + all metrics')">📥 Export</button>
+    </div>
+  </div>
+
+  ${_mgaCarrierSubNav('mga-carrier-analytics')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">💰 PROFITABILITY BY CARRIER (YTD)</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Carrier</th><th>Premium YTD</th><th>Loss Ratio</th><th>Combined Ratio</th><th>Commission Paid</th><th>Contingent (proj FY)</th><th>Net Margin</th><th></th></tr></thead>
+      <tbody>
+        ${A.profitability_by_carrier.sort((a,b) => b.margin - a.margin).map(c => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${c.carrier}</strong></td>
+          <td style="white-space:nowrap;"><div style="display:flex; align-items:center; gap:var(--space-sm);"><div class="market-fit-bar" style="width:100px;"><div class="market-fit-fill" style="width:${(c.premium/maxPremium)*100}%; background:var(--mga-accent);"></div></div><strong>$${(c.premium/1e6).toFixed(2)}M</strong></div></td>
+          <td style="white-space:nowrap;"><strong style="color:${c.loss_ratio <= 40 ? 'var(--status-green)' : c.loss_ratio <= 55 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${c.loss_ratio}%</strong></td>
+          <td style="white-space:nowrap;">${c.combined_ratio}%</td>
+          <td style="white-space:nowrap;">$${(c.comm/1000).toFixed(0)}k</td>
+          <td style="white-space:nowrap;"><strong style="color:var(--status-green);">$${(c.contingent/1000).toFixed(0)}k</strong></td>
+          <td style="white-space:nowrap;"><strong style="color:${c.margin >= 15 ? 'var(--status-green)' : c.margin >= 8 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${c.margin}%</strong></td>
+          <td></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📈 TOTAL WRITTEN PREMIUM (quarterly)</div>
+      <div style="display:flex; align-items:flex-end; gap: var(--space-sm); height: 200px; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+        ${A.growth_trend.map(g => `
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap: 4px;">
+            <div style="width:100%; background:linear-gradient(180deg, var(--mga-accent), #a67dff); height:${(g.total/maxQuarterly)*100}%; border-radius: 4px 4px 0 0;"></div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${g.q}</div>
+            <div style="font-size:0.78rem; font-weight:700;">$${(g.total/1e6).toFixed(1)}M</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🎯 AUTHORITY UTILIZATION</div>
+      <div style="font-size:0.82rem;">
+        ${A.authority_utilization.map(a => `
+          <div style="margin-bottom: var(--space-sm);">
+            <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+              <strong>${a.carrier}</strong>
+              <span><span style="color:var(--text-muted);">Bind</span> <strong>${a.binding_used}%</strong> · <span style="color:var(--text-muted);">Claims</span> <strong>${a.claims_used}%</strong></span>
+            </div>
+            <div style="display:flex; gap:4px;">
+              <div style="flex:1; background:var(--bg-card); height:4px; border-radius:2px; overflow:hidden;"><div style="height:100%; width:${a.binding_used}%; background:${a.binding_used >= 80 ? 'var(--status-red)' : 'var(--mga-accent)'};"></div></div>
+              <div style="flex:1; background:var(--bg-card); height:4px; border-radius:2px; overflow:hidden;"><div style="height:100%; width:${a.claims_used}%; background:${a.claims_used >= 80 ? 'var(--status-red)' : 'var(--status-green)'};"></div></div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">📊 LOSS RATIO — BY CARRIER × PRODUCT</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Carrier</th><th>Product</th><th>Loss Ratio</th><th>Status</th></tr></thead>
+      <tbody>
+        ${A.loss_ratio_by_product_carrier.sort((a,b) => a.lr - b.lr).map(p => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${p.carrier}</strong></td>
+          <td style="white-space:nowrap;">${p.product}</td>
+          <td style="white-space:nowrap;"><div style="display:flex; align-items:center; gap:var(--space-sm);"><div class="market-fit-bar" style="width:120px;"><div class="market-fit-fill" style="width:${p.lr}%; background:${p.lr <= 30 ? 'var(--status-green)' : p.lr <= 45 ? 'var(--mga-accent)' : p.lr <= 60 ? 'var(--status-amber)' : 'var(--status-red)'};"></div></div><strong>${p.lr}%</strong></div></td>
+          <td style="white-space:nowrap;">${badge(p.lr <= 30 ? 'green' : p.lr <= 45 ? 'blue' : p.lr <= 60 ? 'amber' : 'red', p.lr <= 30 ? 'Excellent' : p.lr <= 45 ? 'Strong' : p.lr <= 60 ? 'Acceptable' : 'Monitor')}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
     </div>
   </div>`;
 }
@@ -17012,87 +18209,1311 @@ function renderMGABrokers() {
   </div>`;
 }
 
-function renderMGAPolicies() {
+// ─── MGA · Policy Management ───
+function _mgaPolicySubNav(active) {
+  const tabs = [
+    { key: 'mga-policies',            label: 'Dashboard',    icon: '📊' },
+    { key: 'mga-policies-list',       label: 'All Policies', icon: '📋' },
+    { key: 'mga-policy-endorsements', label: 'Endorsements', icon: '✏' },
+    { key: 'mga-policy-coi',          label: 'COI Generator',icon: '📄' },
+    { key: 'mga-policy-servicing',    label: 'Servicing',    icon: '🛠' }
+  ];
   return `
-  <h2 style="margin-bottom: var(--space-lg);">Policy Repository</h2>
-  <div class="filter-bar">
-    <input class="form-input" placeholder="Search policies…" value="Magnolia" />
-    <select class="form-input"><option>Broker ▼</option></select>
-    <select class="form-input"><option>Carrier ▼</option></select>
-    <select class="form-input"><option>Line ▼</option></select>
-    <select class="form-input"><option>All Statuses ▼</option></select>
-    <select class="form-input"><option>Expiry: Next 30 days</option></select>
-    <button class="btn btn-secondary btn-sm" style="margin-left:auto;">Export CSV</button>
-  </div>
-  <div class="data-table-wrapper">
-    <table class="data-table">
-      <thead><tr><th>Policy #</th><th>Client</th><th>Carrier</th><th>Line</th><th>Premium</th><th>Expiry</th><th>Status</th></tr></thead>
-      <tbody>
-        ${D.mgaPolicies.map(p => `
-        <tr>
-          <td>${p.id}</td><td>${p.client}</td><td>${p.carrier}</td><td>${p.line}</td><td>${p.premium}</td><td>${p.expiry}</td>
-          <td>${p.ok ? '✅' : '⚠️'}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _mgaPolicyStatusBadge(p) {
+  const map = { 'Active': 'green', 'Renewing': 'amber', 'In Renewal': 'red', 'Expired': 'gray', 'Cancelled': 'gray', 'Reopened Claim': 'amber' };
+  return badge(map[p.status] || p.status_color || 'gray', p.status);
+}
+
+function renderMgaPoliciesDashboard() {
+  const policies = D.mgaPoliciesEnhanced;
+  const active = policies.filter(p => p.status === 'Active' || p.status === 'Reopened Claim');
+  const renewing = policies.filter(p => p.status === 'Renewing' || p.status === 'In Renewal');
+  const expiring30 = policies.filter(p => p.days_to_expiry > 0 && p.days_to_expiry <= 30);
+  const expiring90 = policies.filter(p => p.days_to_expiry > 30 && p.days_to_expiry <= 90);
+  const newBiz = policies.filter(p => p.compliance_flags.includes('New Business'));
+  const totalPremium = policies.filter(p => p.status === 'Active' || p.status === 'Renewing').reduce((s, p) => s + p.premium, 0);
+  const openEndorsements = D.mgaPolicyEndorsements.filter(e => e.status !== 'Issued').length;
+  const analytics = D.mgaPoliciesAnalytics;
+  const maxLobPrem = Math.max(...analytics.inforce_by_lob.map(l => l.premium));
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📋 Policy Management</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${active.length} active · ${renewing.length} renewing · ${newBiz.length} new business · $${(totalPremium/1e6).toFixed(2)}M in-force premium · ${openEndorsements} open endorsements</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-policies-list'})">🔍 Search Policies</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-policy-coi'})">📄 Generate COI</button>
+    </div>
   </div>
 
-  <div class="section-title">POLICY DETAIL — SEMC-WC-2025-48821 (Expanded)</div>
-  <div class="detail-panel">
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-lg);">
-      <div><span style="color:var(--text-muted); font-size:0.78rem;">Named Insured:</span> Magnolia Construction LLC</div>
-      <div><span style="color:var(--text-muted); font-size:0.78rem;">Carrier:</span> SEMC · Line: Workers Comp · Premium: $184,700</div>
-      <div><span style="color:var(--text-muted); font-size:0.78rem;">Effective:</span> Jun 1 2025</div>
-      <div><span style="color:var(--text-muted); font-size:0.78rem;">Expiry:</span> Jun 1 2026 · Days Left: 44 ⚠️</div>
-      <div><span style="color:var(--text-muted); font-size:0.78rem;">States:</span> CA ($147,200) · TX ($31,500) · NC (included)</div>
+  ${kpiCards(D.mgaPoliciesKPIs, 6)}
+
+  ${_mgaPolicySubNav('mga-policies')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">⏳ EXPIRING IN NEXT 90 DAYS</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-policy-servicing'})">View servicing tasks →</button>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Policy #</th><th>Insured</th><th>Product</th><th>Agent</th><th>Premium</th><th>Expires</th><th>Days</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${[...expiring30, ...expiring90].map(p => `
+          <tr onclick="window.setState({screen:'mga-policy-profile', policyId:'${p.id}'})" style="cursor:pointer;">
+            <td style="white-space:nowrap;"><strong style="color:var(--mga-accent); font-family:monospace; font-size:0.82rem;">${p.policy_number}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${p.carrier}</div></td>
+            <td style="white-space:nowrap;"><strong>${p.insured}</strong></td>
+            <td style="white-space:nowrap;">${p.product}<div style="color:var(--text-muted); font-size:0.72rem;">${p.lob}</div></td>
+            <td style="white-space:nowrap; font-size:0.82rem;">${p.agent}</td>
+            <td style="white-space:nowrap;"><strong>$${p.premium.toLocaleString()}</strong></td>
+            <td style="white-space:nowrap;">${p.expiry}</td>
+            <td style="white-space:nowrap;"><strong style="color:${p.days_to_expiry <= 30 ? 'var(--status-red)' : 'var(--status-amber)'};">${p.days_to_expiry}d</strong></td>
+            <td style="white-space:nowrap;">${_mgaPolicyStatusBadge(p)}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); window.showAlert &amp;&amp; window.showAlert('Start renewal for ${p.policy_number}')">🔄 Renew</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
     </div>
-    <div class="tab-bar">
-      <div class="tab-item active">Documents</div>
-      <div class="tab-item">Endorsements</div>
-      <div class="tab-item">Claims</div>
-      <div class="tab-item">Loss Run</div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📊 IN-FORCE MIX (by LOB)</div>
+        ${analytics.inforce_by_lob.map(l => `
+          <div style="margin-bottom:var(--space-sm);">
+            <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px;">
+              <strong>${l.lob}</strong>
+              <span>${l.count} · $${(l.premium/1e6).toFixed(1)}M</span>
+            </div>
+            <div style="background:var(--bg-card); height:5px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${(l.premium/maxLobPrem)*100}%; background:var(--mga-accent);"></div></div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📈 RETENTION TREND</div>
+        <div style="display:flex; align-items:flex-end; gap: 4px; height: 90px; padding: var(--space-sm) 0;">
+          ${analytics.retention_trend.map(t => `
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+              <div style="width:100%; background:linear-gradient(180deg, var(--mga-accent), #a67dff); height:${t.retention}%; border-radius: 3px 3px 0 0;"></div>
+              <div style="font-size:0.7rem; font-weight:700; margin-top:4px;">${t.retention}%</div>
+              <div style="color:var(--text-muted); font-size:0.65rem;">${t.period.split(' ')[1]}</div>
+            </div>`).join('')}
+        </div>
+      </div>
     </div>
-    <div style="display:flex; gap: var(--space-sm); flex-wrap: wrap;">
-      <button class="btn btn-secondary btn-sm">📄 Dec Page</button>
-      <button class="btn btn-secondary btn-sm">📋 Full Policy</button>
-      <button class="btn btn-primary btn-sm">🔄 Start Renewal</button>
-      <button class="btn btn-ghost btn-sm">📧 Email</button>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">✏ OPEN ENDORSEMENTS (${openEndorsements})</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-policy-endorsements'})">All →</button>
+      </div>
+      ${D.mgaPolicyEndorsements.filter(e => e.status !== 'Issued').slice(0, 5).map(e => `
+        <div onclick="window.setState({screen:'mga-policy-profile', policyId:'${e.policy_id}', policyTab:'endorsements'})" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+            <strong style="font-size:0.85rem;">${e.insured} · ${e.type}</strong>
+            ${badge(e.status === 'Awaiting UW Review' ? 'amber' : e.status === 'Carrier Referred' ? 'red' : 'blue', e.status)}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${e.id} · Premium impact ${e.premium_impact >= 0 ? '+' : ''}$${e.premium_impact.toLocaleString()}</div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">📄 RECENT COI REQUESTS</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-policy-coi'})">Generator →</button>
+      </div>
+      ${D.mgaCOIRequests.slice(0, 5).map(c => `
+        <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+            <strong style="font-size:0.85rem;">${c.certificate_holder}</strong>
+            ${c.status === 'Issued' ? badge('green', `✓ ${c.wait_sec}s`) : badge('amber', c.status)}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${c.insured} · ${c.type}</div>
+        </div>`).join('')}
     </div>
   </div>`;
 }
 
-function renderMGACommissions() {
-  return `
-  <h2 style="margin-bottom: var(--space-lg);">Commission Management</h2>
-  ${kpiCards(D.mgaCommKPIs)}
+function renderMgaPoliciesList() {
+  const statusF = state.policyStatusFilter || 'all';
+  const lobF = state.policyLobFilter || 'all';
+  const carrierF = state.policyCarrierFilter || 'all';
+  const q = (state.policyQuery || '').toLowerCase();
+  let rows = D.mgaPoliciesEnhanced;
+  if (statusF !== 'all') rows = rows.filter(p => p.status === statusF);
+  if (lobF !== 'all') rows = rows.filter(p => p.lob === lobF);
+  if (carrierF !== 'all') rows = rows.filter(p => p.carrier_id === carrierF);
+  if (q) rows = rows.filter(p => p.policy_number.toLowerCase().includes(q) || p.insured.toLowerCase().includes(q) || p.agent.toLowerCase().includes(q) || (p.states || []).join(' ').toLowerCase().includes(q));
+  const lobs = [...new Set(D.mgaPoliciesEnhanced.map(p => p.lob))];
+  const statuses = [...new Set(D.mgaPoliciesEnhanced.map(p => p.status))];
 
-  <div class="section-title">PENDING BROKER COMMISSION REQUESTS</div>
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📋 All Policies</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${rows.length} of ${D.mgaPoliciesEnhanced.length} shown · search by policy #, insured, agent, state · filters below</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Export policy list as CSV · all visible rows · ' + ${rows.length} + ' policies')">📥 Export CSV</button>
+  </div>
+
+  ${_mgaPolicySubNav('mga-policies-list')}
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <input class="form-input" placeholder="🔍 Policy #, insured, agent, state..." value="${state.policyQuery || ''}" oninput="window.setState({policyQuery:this.value})"/>
+    <select class="form-input" onchange="window.setState({policyStatusFilter:this.value})">
+      <option value="all"${statusF==='all'?' selected':''}>All Statuses</option>
+      ${statuses.map(s => `<option value="${s}"${statusF===s?' selected':''}>${s}</option>`).join('')}
+    </select>
+    <select class="form-input" onchange="window.setState({policyLobFilter:this.value})">
+      <option value="all"${lobF==='all'?' selected':''}>All LOBs</option>
+      ${lobs.map(l => `<option value="${l}"${lobF===l?' selected':''}>${l}</option>`).join('')}
+    </select>
+    <select class="form-input" onchange="window.setState({policyCarrierFilter:this.value})">
+      <option value="all"${carrierF==='all'?' selected':''}>All Carriers</option>
+      ${D.mgaCarriersEnhanced.map(c => `<option value="${c.id}"${carrierF===c.id?' selected':''}>${c.name}</option>`).join('')}
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({policyStatusFilter:'all', policyLobFilter:'all', policyCarrierFilter:'all', policyQuery:''})">Clear</button>
+  </div>
+
   <div class="data-table-wrapper">
+    <div class="table-scroll">
     <table class="data-table">
-      <thead><tr><th>Broker</th><th>Policy #</th><th>Client</th><th>Comm %</th><th>Amount</th><th>Action</th></tr></thead>
+      <thead><tr><th>Policy #</th><th>Carrier</th><th>Insured</th><th>Product / LOB</th><th>Agent</th><th>States</th><th>Effective</th><th>Expiry</th><th>Premium</th><th>LR</th><th>Open Claims</th><th>Paid %</th><th>Status</th><th>Flags</th><th>Actions</th></tr></thead>
       <tbody>
-        ${D.mgaPendingComm.map(c => `
+        ${rows.map(p => `
         <tr>
-          <td>${c.broker}</td><td>${c.policy}</td><td>${c.client}</td><td>${c.pct}</td><td>${c.amount}</td>
-          <td>
-            <button class="btn btn-success btn-sm">✅</button>
-            <button class="btn btn-danger btn-sm" style="margin-left:4px;">❌</button>
+          <td style="white-space:nowrap;"><strong style="color:var(--mga-accent); font-family:monospace; font-size:0.82rem;">${p.policy_number}</strong><div style="color:var(--text-muted); font-size:0.7rem; font-family:monospace;">${p.id}</div></td>
+          <td style="white-space:nowrap;">${p.carrier}</td>
+          <td style="white-space:nowrap;"><strong>${p.insured}</strong></td>
+          <td style="white-space:nowrap;">${p.product}<div style="color:var(--text-muted); font-size:0.72rem;">${p.lob}</div></td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${p.agent}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${p.states.join(', ')}</td>
+          <td style="white-space:nowrap;">${p.effective}</td>
+          <td style="white-space:nowrap;"><strong style="color:${p.days_to_expiry <= 0 ? 'var(--status-red)' : p.days_to_expiry <= 30 ? 'var(--status-amber)' : 'var(--text-primary)'};">${p.expiry}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${p.days_to_expiry >= 0 ? p.days_to_expiry + 'd' : 'Expired ' + Math.abs(p.days_to_expiry) + 'd ago'}</div></td>
+          <td style="white-space:nowrap;"><strong>$${p.premium.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${p.loss_ratio === 0 && p.open_claims === 0 ? '—' : `<strong style="color:${p.loss_ratio <= 40 ? 'var(--status-green)' : p.loss_ratio <= 55 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${p.loss_ratio}%</strong>`}</td>
+          <td style="white-space:nowrap;">${p.open_claims > 0 ? `<strong>${p.open_claims}</strong><div style="color:var(--text-muted); font-size:0.7rem;">$${(p.open_reserves/1000).toFixed(0)}k res</div>` : '<span style="color:var(--text-muted);">—</span>'}</td>
+          <td style="white-space:nowrap;"><div style="display:flex; align-items:center; gap:var(--space-sm);"><div class="market-fit-bar" style="width:60px;"><div class="market-fit-fill" style="width:${p.paid_pct}%; background:${p.paid_pct >= 90 ? 'var(--status-green)' : p.paid_pct >= 50 ? 'var(--mga-accent)' : 'var(--status-amber)'};"></div></div><span style="font-size:0.78rem;">${p.paid_pct}%</span></div></td>
+          <td style="white-space:nowrap;">${_mgaPolicyStatusBadge(p)}</td>
+          <td style="white-space:nowrap;">${(p.compliance_flags || []).map(f => `<span style="display:inline-block; padding:2px 6px; border-radius:999px; font-size:0.68rem; font-weight:600; background:rgba(255,171,0,0.15); color:var(--status-amber); margin:1px;">⚠ ${f}</span>`).join('')}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-primary btn-sm" onclick="window.setState({screen:'mga-policy-profile', policyId:'${p.id}'})">360°</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaPolicyProfile() {
+  const policyId = state.policyId || 'POL-10445';
+  const p = D.mgaPoliciesEnhanced.find(x => x.id === policyId) || D.mgaPoliciesEnhanced[0];
+  const isCanonical = p.id === 'POL-10445';
+  const detail = isCanonical ? D.mgaPolicyDetailCanonical : {
+    policy_id: p.id,
+    transactions: [
+      { type: 'Issuance', effective: p.effective, processed: p.effective + ' 09:00', premium: p.premium, change: '+' + p.premium, actor: 'System', note: 'Policy issued · bound from quote' }
+    ],
+    servicing_history: [
+      { ts: p.effective + ' 09:00', actor: 'System', event: 'Policy issued · declarations sent to insured' }
+    ],
+    risk_profile: { score: 70 + Math.floor((p.id.charCodeAt(7) || 0) % 20), tier: p.loss_ratio <= 40 ? 'Preferred' : p.loss_ratio <= 55 ? 'Standard' : 'Substandard', moderator_notes: p.loss_ratio <= 40 ? 'Clean loss history · strong risk profile' : 'Monitor loss ratio trend · targeted underwriting review recommended' }
+  };
+
+  const tab = state.policyTab || 'overview';
+  const tabs = [
+    { key: 'overview',     label: 'Overview',     icon: '📋' },
+    { key: 'coverages',    label: 'Coverages',    icon: '🛡' },
+    { key: 'transactions', label: 'Transactions', icon: '📊' },
+    { key: 'endorsements', label: 'Endorsements', icon: '✏' },
+    { key: 'claims',       label: 'Claims',       icon: '🗂' },
+    { key: 'billing',      label: 'Billing',      icon: '💰' },
+    { key: 'documents',    label: 'Documents',    icon: '📎' },
+    { key: 'activity',     label: 'Activity',     icon: '🔄' }
+  ];
+
+  const linkedClaims = D.mgaClaims.filter(c => c.policy_id === p.policy_number);
+  const linkedEndorsements = D.mgaPolicyEndorsements.filter(e => e.policy_id === p.id);
+  const linkedDocs = D.mgaDocs.filter(d => d.linked_entity === p.policy_number);
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <div style="color:var(--text-muted); font-size:0.78rem; margin-bottom:4px;"><a style="cursor:pointer; color:var(--mga-accent);" onclick="window.setState({screen:'mga-policies-list'})">← All Policies</a></div>
+      <h2 style="margin:0;">${p.policy_number}</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${p.insured} · ${p.product} · ${p.carrier} · ${p.agent}</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-ghost" onclick="window.showAlert &amp;&amp; window.showAlert('Export policy packet · declarations + forms + endorsements · PDF')">📄 Export</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-policy-endorsements', endorsementPolicy:'${p.id}'})">✏ New Endorsement</button>
+      ${p.days_to_expiry <= 90 ? `<button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Start renewal for ${p.policy_number}')">🔄 Renewal</button>` : `<button class="btn btn-primary" onclick="window.setState({screen:'mga-policy-coi', coiPolicyId:'${p.id}'})">📄 Issue COI</button>`}
+    </div>
+  </div>
+
+  ${_mgaPolicySubNav('')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:var(--space-md);">
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Status</div><div style="margin-top:6px;">${_mgaPolicyStatusBadge(p)}</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Premium</div><strong style="font-size:1.3rem;">$${p.premium.toLocaleString()}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${p.prior_premium ? `Prior $${p.prior_premium.toLocaleString()}` : 'New Business'}</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Effective</div><strong style="font-size:0.95rem;">${p.effective}</strong><div style="color:var(--text-muted); font-size:0.72rem;">Exp ${p.expiry} (${p.days_to_expiry}d)</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Commission</div><strong style="font-size:1.3rem;">$${p.commission.toLocaleString()}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${p.commission_pct}% rate</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Loss Ratio</div><strong style="font-size:1.3rem; color:${p.loss_ratio <= 40 ? 'var(--status-green)' : p.loss_ratio <= 55 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${p.loss_ratio === 0 && p.open_claims === 0 ? '—' : p.loss_ratio + '%'}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${p.open_claims} open · $${(p.open_reserves/1000).toFixed(0)}k res</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Billing</div><strong style="font-size:0.95rem;">${p.billing}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${p.installments}x · ${p.paid_pct}% paid</div></div>
+    </div>
+    ${p.compliance_flags.length > 0 ? `<div style="margin-top: var(--space-md); padding: var(--space-sm); background: rgba(255,171,0,0.08); border-left: 3px solid var(--status-amber); border-radius:var(--radius-sm); font-size:0.85rem;">${p.compliance_flags.map(f => `⚠ ${f}`).join(' · ')}</div>` : ''}
+  </div>
+
+  <div style="display:flex; gap: var(--space-xs); border-bottom: 1px solid var(--border-subtle); margin-bottom: var(--space-lg); flex-wrap:wrap;">
+    ${tabs.map(t => `
+      <div onclick="window.setState({policyTab:'${t.key}'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === t.key ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === t.key ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === t.key ? '700' : '500'}; font-size:0.88rem;">
+        ${t.icon} ${t.label}
+      </div>`).join('')}
+  </div>
+
+  ${tab === 'overview' ? `
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+      <div style="display:flex; flex-direction:column; gap:var(--space-lg);">
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">🏢 INSURED &amp; POLICY</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:var(--space-md); font-size:0.85rem;">
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Named Insured</div><strong>${p.insured}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${p.client_id}</div></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Carrier</div><strong>${p.carrier}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${p.carrier_ref}</div></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Agent</div><strong>${p.agent}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${p.agent_id}</div></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Product</div><strong>${p.product}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">LOB</div><strong>${p.lob}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">States</div><strong>${p.states.join(', ')}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Policy Period</div><strong>${p.effective} → ${p.expiry}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Deductible</div><strong>$${p.deductible.toLocaleString()}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Last Endorsement</div><strong>${p.last_endorsement || '—'}</strong></div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">🗺 EXPOSURE SUMMARY</div>
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); font-size:0.85rem;">
+            ${Object.entries(p.exposure).map(([k, v]) => `
+              <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:capitalize;">${k.replace(/_/g,' ')}</div><strong>${typeof v === 'number' ? v.toLocaleString() : Array.isArray(v) ? v.join(', ') : v}</strong></div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">📊 RISK PROFILE</div>
+          <div style="text-align:center; padding: var(--space-md) 0;">
+            <div style="font-size:2.4rem; font-weight:800; color:${detail.risk_profile.score >= 85 ? 'var(--status-green)' : detail.risk_profile.score >= 70 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${detail.risk_profile.score}</div>
+            <div style="color:var(--text-muted); font-size:0.82rem;">${detail.risk_profile.tier} · Risk Score</div>
+          </div>
+          <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem;">${detail.risk_profile.moderator_notes}</div>
+        </div>
+
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">🔗 QUICK LINKS</div>
+          <div style="display:flex; flex-direction:column; gap:var(--space-xs);">
+            <button class="btn btn-ghost btn-sm" style="justify-content:space-between;" onclick="window.setState({policyTab:'claims'})">🗂 Claims (${linkedClaims.length}) →</button>
+            <button class="btn btn-ghost btn-sm" style="justify-content:space-between;" onclick="window.setState({policyTab:'endorsements'})">✏ Endorsements (${linkedEndorsements.length}) →</button>
+            <button class="btn btn-ghost btn-sm" style="justify-content:space-between;" onclick="window.setState({policyTab:'documents'})">📎 Documents (${linkedDocs.length}) →</button>
+            <button class="btn btn-ghost btn-sm" style="justify-content:space-between;" onclick="window.setState({screen:'mga-docs-vault', vaultEntity:'${p.policy_number}', vaultType:'policy'})">🗄 Doc Vault →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  ` : tab === 'coverages' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🛡 COVERAGES &amp; LIMITS</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Coverage</th><th>Status</th></tr></thead>
+        <tbody>
+          ${p.coverages.map(c => `<tr><td><strong>${c}</strong></td><td style="white-space:nowrap;">${badge('green','Bound')}</td></tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background: rgba(108,92,231,0.08); border-radius:var(--radius-sm); font-size:0.85rem;">
+        <strong>Deductible:</strong> $${p.deductible.toLocaleString()} · <strong>States:</strong> ${p.states.join(', ')}
+      </div>
+    </div>
+  ` : tab === 'transactions' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📊 TRANSACTION HISTORY</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Type</th><th>Effective</th><th>Processed</th><th>Premium</th><th>Change</th><th>Actor</th><th>Note</th></tr></thead>
+        <tbody>
+          ${detail.transactions.map(t => `
+          <tr>
+            <td style="white-space:nowrap;">${badge(t.type === 'Issuance' ? 'green' : t.type === 'Cancellation' ? 'red' : 'blue', t.type)}</td>
+            <td style="white-space:nowrap;">${t.effective}</td>
+            <td style="white-space:nowrap; font-size:0.82rem;">${t.processed}</td>
+            <td style="white-space:nowrap;"><strong>$${t.premium.toLocaleString()}</strong></td>
+            <td style="white-space:nowrap;"><strong style="color:${t.change.startsWith('+') ? 'var(--status-green)' : 'var(--status-amber)'};">${t.change}</strong></td>
+            <td style="white-space:nowrap;">${t.actor}</td>
+            <td style="font-size:0.82rem;">${t.note}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  ` : tab === 'endorsements' ? `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">✏ ENDORSEMENTS (${linkedEndorsements.length})</div>
+      <button class="btn btn-primary btn-sm" onclick="window.setState({screen:'mga-policy-endorsements', endorsementPolicy:'${p.id}'})">+ New Endorsement</button>
+    </div>
+    ${linkedEndorsements.length === 0 ? '<div style="padding: var(--space-lg); background:var(--bg-secondary); border-radius:var(--radius-lg); text-align:center; color:var(--text-muted);">No endorsements on this policy.</div>' : `
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Endorsement #</th><th>Type</th><th>Description</th><th>Effective</th><th>Premium Impact</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${linkedEndorsements.map(e => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${e.id}</strong></td>
+          <td style="white-space:nowrap;">${e.type}</td>
+          <td style="font-size:0.82rem;">${e.description}</td>
+          <td style="white-space:nowrap;">${e.effective}</td>
+          <td style="white-space:nowrap;"><strong style="color:${e.premium_impact > 0 ? 'var(--status-green)' : e.premium_impact < 0 ? 'var(--status-amber)' : 'var(--text-muted)'};">${e.premium_impact >= 0 ? '+' : ''}$${e.premium_impact.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${badge(e.status === 'Issued' ? 'green' : e.status === 'Ready to Issue' ? 'blue' : 'amber', e.status)}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${e.submitted}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Open endorsement ${e.id} detail · status: ${e.status}')">Open</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>`}
+  ` : tab === 'claims' ? `
+    <div class="section-title">🗂 CLAIMS ON THIS POLICY (${linkedClaims.length})</div>
+    ${linkedClaims.length === 0 ? '<div style="padding: var(--space-lg); background:var(--bg-secondary); border-radius:var(--radius-lg); text-align:center; color:var(--text-muted);">No claims on this policy.</div>' : `
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Claim #</th><th>Status</th><th>Loss Date</th><th>Cause</th><th>Reserve</th><th>Paid</th><th>Outstanding</th><th>Adjuster</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${linkedClaims.map(c => `
+        <tr onclick="window.setState({screen:'mga-claim-details', claimId:'${c.id}'})" style="cursor:pointer;">
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${c.id}</strong></td>
+          <td style="white-space:nowrap;">${badge(c.statusColor, c.status)}</td>
+          <td style="white-space:nowrap;">${c.loss_date}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${c.sub_status}</td>
+          <td style="white-space:nowrap;"><strong>$${c.current_reserve.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">$${c.paid.toLocaleString()}</td>
+          <td style="white-space:nowrap;"><strong style="color:${c.outstanding > 0 ? 'var(--status-amber)' : 'var(--text-muted)'};">$${c.outstanding.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${(D.mgaAdjusters.find(a => a.id === c.adjuster) || {name:c.adjuster}).name}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); window.setState({screen:'mga-claim-details', claimId:'${c.id}'})">Open</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>`}
+  ` : tab === 'billing' ? `
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💰 BILLING SCHEDULE</div>
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Paid</th></tr></thead>
+          <tbody>
+            ${Array.from({length: p.installments}, (_, i) => {
+              const paid = Math.floor(p.installments * p.paid_pct / 100);
+              const installment = Math.round(p.premium / p.installments);
+              const due = new Date(p.effective);
+              due.setMonth(due.getMonth() + Math.floor(12 * i / p.installments));
+              const dueStr = due.toISOString().slice(0,10);
+              const isPaid = i < paid;
+              return `<tr><td style="white-space:nowrap;">${i+1}</td><td style="white-space:nowrap;">${dueStr}</td><td style="white-space:nowrap;"><strong>$${installment.toLocaleString()}</strong></td><td style="white-space:nowrap;">${isPaid ? badge('green','✓ Paid') : i === paid ? badge('amber','Due') : badge('gray','Pending')}</td><td style="white-space:nowrap; font-size:0.82rem;">${isPaid ? 'ACH · ' + dueStr : '—'}</td></tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">💰 SUMMARY</div>
+          <div style="font-size:0.85rem;">
+            <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Billing Type:</span> <strong>${p.billing}</strong></div>
+            <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Installments:</span> <strong>${p.installments}</strong></div>
+            <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Total Premium:</span> <strong>$${p.premium.toLocaleString()}</strong></div>
+            <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Paid:</span> <strong style="color:var(--status-green);">$${Math.round(p.premium * p.paid_pct / 100).toLocaleString()}</strong></div>
+            <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Outstanding:</span> <strong>$${Math.round(p.premium * (100-p.paid_pct) / 100).toLocaleString()}</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  ` : tab === 'documents' ? `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">📎 POLICY DOCUMENTS (${linkedDocs.length})</div>
+      <button class="btn btn-primary btn-sm" onclick="window.setState({screen:'mga-docs-upload', uploadLinkedEntity:'${p.policy_number}', uploadLinkedType:'policy'})">📤 Upload</button>
+    </div>
+    ${linkedDocs.length === 0 ? '<div style="padding: var(--space-lg); background:var(--bg-secondary); border-radius:var(--radius-lg); text-align:center; color:var(--text-muted);">No documents linked to this policy yet.</div>' : `
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Doc #</th><th>Name</th><th>Sub-Category</th><th>Size</th><th>Uploaded</th><th>By</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${linkedDocs.map(d => `
+        <tr onclick="window.setState({screen:'mga-docs-viewer', docId:'${d.id}'})" style="cursor:pointer;">
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${d.id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${d.name}</strong></td>
+          <td style="white-space:nowrap;">${badge('gray', d.sub)}</td>
+          <td style="white-space:nowrap;">${(d.size_kb < 1024 ? d.size_kb + ' KB' : (d.size_kb/1024).toFixed(1) + ' MB')}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${d.uploaded}</td>
+          <td style="white-space:nowrap;">${d.uploaded_by}</td>
+          <td style="white-space:nowrap;">${badge(d.status === 'Final' ? 'green' : 'amber', d.status)}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); window.setState({screen:'mga-docs-viewer', docId:'${d.id}'})">👁</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>`}
+  ` : `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔄 SERVICING HISTORY</div>
+      ${detail.servicing_history.map(e => `
+        <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+            <strong style="font-size:0.88rem;">${e.event}</strong>
+            <span style="color:var(--text-muted); font-size:0.78rem;">${e.ts}</span>
+          </div>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${e.actor}</div>
+        </div>`).join('')}
+    </div>
+  `}`;
+}
+
+function renderMgaPolicyEndorsements() {
+  const statusF = state.endorsementStatusFilter || 'all';
+  const typeF = state.endorsementTypeFilter || 'all';
+  const q = (state.endorsementQuery || '').toLowerCase();
+  let rows = D.mgaPolicyEndorsements;
+  if (statusF !== 'all') rows = rows.filter(e => e.status === statusF);
+  if (typeF !== 'all') rows = rows.filter(e => e.type === typeF);
+  if (q) rows = rows.filter(e => e.insured.toLowerCase().includes(q) || e.policy_number.toLowerCase().includes(q) || e.id.toLowerCase().includes(q));
+  const open = D.mgaPolicyEndorsements.filter(e => e.status !== 'Issued');
+  const issued = D.mgaPolicyEndorsements.filter(e => e.status === 'Issued');
+  const byType = D.mgaPoliciesAnalytics.endorsements_by_type;
+  const types = [...new Set(D.mgaPolicyEndorsements.map(e => e.type))];
+  const statuses = [...new Set(D.mgaPolicyEndorsements.map(e => e.status))];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">✏ Endorsement Request Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${open.length} open · ${issued.length} issued in period · avg turnaround 1.8 days · UW-reviewed + carrier-referred workflow</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Start new endorsement · pick policy · type · describe change · attach documents')">+ New Endorsement</button>
+  </div>
+
+  ${_mgaPolicySubNav('mga-policy-endorsements')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Open</div><div class="kpi-value${open.length > 0 ? ' warning' : ''}">${open.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Awaiting UW</div><div class="kpi-value">${D.mgaPolicyEndorsements.filter(e => e.status === 'Awaiting UW Review').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Carrier Referred</div><div class="kpi-value">${D.mgaPolicyEndorsements.filter(e => e.status === 'Carrier Referred').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Ready to Issue</div><div class="kpi-value">${D.mgaPolicyEndorsements.filter(e => e.status === 'Ready to Issue').length}</div></div>
+  </div>
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <input class="form-input" placeholder="🔍 Search insured, policy #, ID..." value="${state.endorsementQuery || ''}" oninput="window.setState({endorsementQuery:this.value})"/>
+    <select class="form-input" onchange="window.setState({endorsementStatusFilter:this.value})">
+      <option value="all"${statusF==='all'?' selected':''}>All Statuses</option>
+      ${statuses.map(s => `<option value="${s}"${statusF===s?' selected':''}>${s}</option>`).join('')}
+    </select>
+    <select class="form-input" onchange="window.setState({endorsementTypeFilter:this.value})">
+      <option value="all"${typeF==='all'?' selected':''}>All Types</option>
+      ${types.map(t => `<option value="${t}"${typeF===t?' selected':''}>${t}</option>`).join('')}
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({endorsementStatusFilter:'all', endorsementTypeFilter:'all', endorsementQuery:''})">Clear</button>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 3fr 1fr; gap: var(--space-lg);">
+    <div class="data-table-wrapper">
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Endorsement #</th><th>Policy</th><th>Insured</th><th>Type</th><th>Description</th><th>Premium Impact</th><th>Effective</th><th>Status</th><th>Priority</th><th>Submitted</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${rows.map(e => `
+          <tr>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${e.id}</strong></td>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;"><a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'mga-policy-profile', policyId:'${e.policy_id}'})">${e.policy_number}</a></td>
+            <td style="white-space:nowrap;"><strong>${e.insured}</strong></td>
+            <td style="white-space:nowrap;">${badge('gray', e.type)}</td>
+            <td style="font-size:0.82rem;">${e.description}</td>
+            <td style="white-space:nowrap;"><strong style="color:${e.premium_impact > 0 ? 'var(--status-green)' : e.premium_impact < 0 ? 'var(--status-amber)' : 'var(--text-muted)'};">${e.premium_impact >= 0 ? '+' : ''}$${e.premium_impact.toLocaleString()}</strong></td>
+            <td style="white-space:nowrap;">${e.effective}</td>
+            <td style="white-space:nowrap;">${badge(e.status === 'Issued' ? 'green' : e.status === 'Ready to Issue' ? 'blue' : e.status === 'Carrier Referred' ? 'red' : 'amber', e.status)}</td>
+            <td style="white-space:nowrap;">${badge(e.priority === 'High' ? 'red' : e.priority === 'Low' ? 'gray' : 'amber', e.priority)}</td>
+            <td style="white-space:nowrap; font-size:0.82rem;">${e.submitted}</td>
+            <td style="white-space:nowrap;">${e.status === 'Ready to Issue' ? `<button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Issue endorsement ${e.id} · generate docs · notify insured')">Issue</button>` : e.status === 'Awaiting Insured Signature' ? `<button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Remind insured to sign ${e.id}')">Remind</button>` : `<button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Open ${e.id}')">Open</button>`}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📊 BY TYPE (YTD)</div>
+      ${byType.map(t => `
+        <div style="display:flex; justify-content:space-between; padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.82rem;">
+          <span>${t.type}</span><strong>${t.count}</strong>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderMgaPolicyCoi() {
+  const tab = state.coiTab || 'generate';
+  const preselectedPolicyId = state.coiPolicyId;
+  const preselectedPolicy = preselectedPolicyId ? D.mgaPoliciesEnhanced.find(p => p.id === preselectedPolicyId) : null;
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📄 COI Generator</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Individual + bulk certificate issuance · Additional Insured / Loss Payee / Waiver of Subrogation · avg generation 2–3 seconds</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Open Bulk COI wizard · upload CSV with certificate holders · generate up to 500 COI in one batch')">📦 Bulk Generate</button>
+  </div>
+
+  ${_mgaPolicySubNav('mga-policy-coi')}
+
+  <div style="display:flex; gap: var(--space-xs); border-bottom: 1px solid var(--border-subtle); margin-bottom: var(--space-lg);">
+    <div onclick="window.setState({coiTab:'generate'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'generate' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'generate' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'generate' ? '700' : '500'}; font-size:0.9rem;">
+      ➕ Generate New COI
+    </div>
+    <div onclick="window.setState({coiTab:'recent'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'recent' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'recent' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'recent' ? '700' : '500'}; font-size:0.9rem;">
+      📜 Recent COI (${D.mgaCOIRequests.length})
+    </div>
+  </div>
+
+  ${tab === 'generate' ? `
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">➕ GENERATE CERTIFICATE OF INSURANCE</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+          <div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Policy *</div>
+            <select class="form-input" style="width:100%;">
+              <option>${preselectedPolicy ? preselectedPolicy.policy_number + ' — ' + preselectedPolicy.insured : 'Select policy...'}</option>
+              ${D.mgaPoliciesEnhanced.filter(p => p.status === 'Active').slice(0, 10).map(p => `<option>${p.policy_number} — ${p.insured}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Certificate Type *</div>
+            <select class="form-input" style="width:100%;">
+              <option>Certificate Holder</option>
+              <option>Additional Insured</option>
+              <option>Waiver of Subrogation</option>
+              <option>Loss Payee</option>
+              <option>Additional Insured + Waiver</option>
+            </select>
+          </div>
+          <div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Certificate Holder Name *</div>
+            <input class="form-input" placeholder="e.g. Port of Sacramento" style="width:100%;"/>
+          </div>
+          <div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Holder Address</div>
+            <input class="form-input" placeholder="Street address" style="width:100%;"/>
+          </div>
+          <div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">City</div>
+            <input class="form-input" style="width:100%;"/>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:var(--space-sm);">
+            <div>
+              <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">State</div>
+              <input class="form-input" style="width:100%;"/>
+            </div>
+            <div>
+              <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">ZIP</div>
+              <input class="form-input" style="width:100%;"/>
+            </div>
+          </div>
+          <div style="grid-column: 1 / -1;">
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Description of Operations</div>
+            <textarea class="form-input" rows="3" style="width:100%;" placeholder="e.g. As respects all work performed by Westshore Logistics for Port of Sacramento..."></textarea>
+          </div>
+          <div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Recipient Email</div>
+            <input class="form-input" type="email" placeholder="holder@example.com" style="width:100%;"/>
+          </div>
+          <div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Auto-Renew</div>
+            <select class="form-input" style="width:100%;"><option>Yes — regenerate 7d before policy renewal</option><option>No — one-time only</option></select>
+          </div>
+        </div>
+        <div style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(0,230,118,0.08); border-left: 3px solid var(--status-green); border-radius:var(--radius-md); font-size:0.85rem;">
+          <strong>✓ Auto-verification:</strong> Policy is Active · coverage matches request · no subjectivities. Ready for instant generation.
+        </div>
+        <div style="display:flex; gap:var(--space-sm); margin-top: var(--space-md);">
+          <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Preview COI PDF · ACORD 25 format · watermarked')">👁 Preview</button>
+          <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('COI generated · emailed to holder · copy stored in policy vault · audit log created')">✓ Generate &amp; Email</button>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">💡 QUICK ACTIONS</div>
+          <div style="display:flex; flex-direction:column; gap:var(--space-xs);">
+            <button class="btn btn-ghost btn-sm" style="justify-content:flex-start;" onclick="window.showAlert &amp;&amp; window.showAlert('Open bulk COI wizard · CSV upload')">📦 Bulk Generate (CSV)</button>
+            <button class="btn btn-ghost btn-sm" style="justify-content:flex-start;" onclick="window.showAlert &amp;&amp; window.showAlert('Reissue COI · select existing COI and regenerate')">🔄 Reissue Existing</button>
+            <button class="btn btn-ghost btn-sm" style="justify-content:flex-start;" onclick="window.showAlert &amp;&amp; window.showAlert('Manage additional insured list · across policies')">📋 AI Schedule</button>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">📄 COI FORMATS</div>
+          <div style="font-size:0.85rem;">
+            <div style="padding: 4px 0;">✓ ACORD 25 — Standard</div>
+            <div style="padding: 4px 0;">✓ ACORD 27 — Property</div>
+            <div style="padding: 4px 0;">✓ ACORD 28 — Evidence of Property</div>
+            <div style="padding: 4px 0;">✓ Carrier-specific templates</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  ` : `
+    <div class="data-table-wrapper">
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>COI #</th><th>Policy</th><th>Insured</th><th>Certificate Holder</th><th>Type</th><th>Requested</th><th>By</th><th>Status</th><th>Generated In</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${D.mgaCOIRequests.map(c => `
+          <tr>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${c.id}</strong></td>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;"><a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'mga-policy-profile', policyId:'${c.policy_id}'})">${c.policy_number}</a></td>
+            <td style="white-space:nowrap;">${c.insured}</td>
+            <td style="white-space:nowrap;"><strong>${c.certificate_holder}</strong></td>
+            <td style="white-space:nowrap;">${badge('gray', c.type)}</td>
+            <td style="white-space:nowrap; font-size:0.82rem;">${c.requested}</td>
+            <td style="white-space:nowrap; font-size:0.82rem;">${c.requested_by}</td>
+            <td style="white-space:nowrap;">${c.status === 'Issued' ? badge('green','✓ Issued') : badge('amber', c.status)}</td>
+            <td style="white-space:nowrap; font-size:0.82rem; color:${c.wait_sec && c.wait_sec <= 5 ? 'var(--status-green)' : 'var(--text-muted)'};">${c.wait_sec ? c.wait_sec + 's' : '—'}</td>
+            <td style="white-space:nowrap;">${c.doc_id ? `<button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-docs-viewer', docId:'${c.doc_id}'})">👁 View</button> <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Email ${c.id} to ${c.certificate_holder}')">📧 Re-send</button>` : `<button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Route ${c.id} to UW review')">Review</button>`}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  `}`;
+}
+
+function renderMgaPolicyDocs() {
+  return renderMgaDocsExplorer();
+}
+
+function renderMgaPolicyServicing() {
+  const statusF = state.taskStatusFilter || 'all';
+  const typeF = state.taskTypeFilter || 'all';
+  const assignedF = state.taskAssignedFilter || 'all';
+  let rows = D.mgaPolicyTasks;
+  if (statusF !== 'all') rows = rows.filter(t => t.status === statusF);
+  if (typeF !== 'all') rows = rows.filter(t => t.type === typeF);
+  if (assignedF !== 'all') rows = rows.filter(t => t.assigned === assignedF);
+  const types = [...new Set(D.mgaPolicyTasks.map(t => t.type))];
+  const assignees = [...new Set(D.mgaPolicyTasks.map(t => t.assigned))];
+  const cancReasons = D.mgaPoliciesAnalytics.cancellation_reasons;
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🛠 Servicing Task Queue</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${rows.length} tasks · renewals · endorsement follow-ups · premium audits · SIU investigations · agent-initiated requests</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Create new servicing task · link to policy · assign · priority · due date')">+ New Task</button>
+  </div>
+
+  ${_mgaPolicySubNav('mga-policy-servicing')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Open</div><div class="kpi-value${D.mgaPolicyTasks.filter(t => t.status === 'Open').length > 0 ? ' warning' : ''}">${D.mgaPolicyTasks.filter(t => t.status === 'Open').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">In Progress</div><div class="kpi-value">${D.mgaPolicyTasks.filter(t => t.status === 'In Progress').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Waiting</div><div class="kpi-value">${D.mgaPolicyTasks.filter(t => t.status === 'Waiting').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">High Priority</div><div class="kpi-value warning">${D.mgaPolicyTasks.filter(t => t.priority === 'High').length}</div></div>
+  </div>
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <select class="form-input" onchange="window.setState({taskStatusFilter:this.value})">
+      <option value="all"${statusF==='all'?' selected':''}>All Statuses</option>
+      <option value="Open"${statusF==='Open'?' selected':''}>Open</option>
+      <option value="In Progress"${statusF==='In Progress'?' selected':''}>In Progress</option>
+      <option value="Waiting"${statusF==='Waiting'?' selected':''}>Waiting</option>
+    </select>
+    <select class="form-input" onchange="window.setState({taskTypeFilter:this.value})">
+      <option value="all"${typeF==='all'?' selected':''}>All Types</option>
+      ${types.map(t => `<option value="${t}"${typeF===t?' selected':''}>${t}</option>`).join('')}
+    </select>
+    <select class="form-input" onchange="window.setState({taskAssignedFilter:this.value})">
+      <option value="all"${assignedF==='all'?' selected':''}>All Assignees</option>
+      ${assignees.map(a => `<option value="${a}"${assignedF===a?' selected':''}>${a}</option>`).join('')}
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({taskStatusFilter:'all', taskTypeFilter:'all', taskAssignedFilter:'all'})">Clear</button>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 3fr 1fr; gap: var(--space-lg);">
+    <div class="data-table-wrapper">
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Task #</th><th>Policy</th><th>Type</th><th>Description</th><th>Assigned</th><th>Priority</th><th>Status</th><th>Due</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${rows.map(t => `
+          <tr>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${t.id}</strong></td>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;"><a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'mga-policy-profile', policyId:'${t.policy_id}'})">${t.policy_number}</a></td>
+            <td style="white-space:nowrap;">${badge('gray', t.type)}</td>
+            <td style="font-size:0.82rem;">${t.description}</td>
+            <td style="white-space:nowrap;">${t.assigned}</td>
+            <td style="white-space:nowrap;">${badge(t.priority === 'High' ? 'red' : t.priority === 'Medium' ? 'amber' : 'gray', t.priority)}</td>
+            <td style="white-space:nowrap;">${badge(t.status === 'In Progress' ? 'blue' : t.status === 'Waiting' ? 'amber' : 'gray', t.status)}</td>
+            <td style="white-space:nowrap;">${t.due}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Open task ${t.id} detail')">Open</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">❌ CANCELLATION REASONS</div>
+      ${cancReasons.map(r => `
+        <div style="margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px;">
+            <strong>${r.reason}</strong>
+            <span><strong>${r.count}</strong> (${r.pct}%)</span>
+          </div>
+          <div style="background:var(--bg-card); height:5px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${r.pct*2}%; background:${r.pct >= 30 ? 'var(--status-red)' : r.pct >= 15 ? 'var(--status-amber)' : 'var(--mga-accent)'};"></div></div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ─── MGA · Commissions & Payments ───
+function _mgaCommissionsSubNav(active) {
+  const tabs = [
+    { key: 'mga-commissions',                 label: 'Dashboard',       icon: '📊' },
+    { key: 'mga-commissions-agents',          label: 'Agent Center',    icon: '👥' },
+    { key: 'mga-commissions-statements',      label: 'Statements',      icon: '🧾' },
+    { key: 'mga-commissions-payouts',         label: 'Payouts',         icon: '💵' },
+    { key: 'mga-commissions-reconciliation',  label: 'Reconciliation',  icon: '⚖' },
+    { key: 'mga-commissions-rules',           label: 'Rule Engine',     icon: '🧩' },
+    { key: 'mga-commissions-tax',             label: '1099 / Tax',      icon: '📄' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderMgaCommissionsDashboard() {
+  const A = D.mgaCommissionAnalytics;
+  const profiles = D.mgaAgentCommissionProfiles;
+  const pendingApprovals = D.mgaPayoutApprovals.filter(p => p.status === 'Pending Approval');
+  const reconciliationIssues = D.mgaCarrierCommReconciliation.filter(r => r.status === 'Dispute Open');
+  const recentTxns = [...D.mgaCommissionTxns].slice(0, 8);
+  const maxTrend = Math.max(...A.monthly_trend.map(m => m.commission + m.profit_share));
+  const topAgents = [...profiles].sort((a,b) => b.ytd_earned - a.ytd_earned).slice(0, 5);
+  const leakage = A.leakage;
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">💰 Commissions &amp; Payments</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">End-to-end commission processing · ${profiles.length} agents active · next payout May 5 · $284k monthly run</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-commissions-reconciliation'})">⚖ Reconcile</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-commissions-payouts'})">💵 Payouts (${pendingApprovals.length})</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.mgaCommissionsKPIs, 6)}
+
+  ${_mgaCommissionsSubNav('mga-commissions')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📈 MONTHLY COMMISSION + PROFIT SHARE TREND</div>
+      <div style="display:flex; align-items:flex-end; gap: var(--space-sm); height: 200px; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+        ${A.monthly_trend.map(m => {
+          const total = m.commission + m.profit_share;
+          const h = (total / maxTrend) * 100;
+          return `
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap: 4px;">
+            <div style="width:100%; height:${h}%; display:flex; flex-direction:column; justify-content:flex-end; border-radius: 4px 4px 0 0; overflow:hidden;">
+              <div style="background:var(--mga-accent); height:${(m.profit_share/total)*100}%;" title="Profit Share: $${m.profit_share.toLocaleString()}"></div>
+              <div style="background:#a67dff; height:${(m.commission/total)*100}%;" title="Commission: $${m.commission.toLocaleString()}"></div>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${m.month}</div>
+            <div style="font-size:0.78rem; font-weight:700;">$${(total/1000).toFixed(0)}k</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex; gap:var(--space-md); justify-content:center; margin-top: var(--space-sm); font-size:0.78rem;">
+        <span><span style="display:inline-block; width:10px; height:10px; background:#a67dff; border-radius:2px; margin-right:4px;"></span>Commission</span>
+        <span><span style="display:inline-block; width:10px; height:10px; background:var(--mga-accent); border-radius:2px; margin-right:4px;"></span>Profit Share</span>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🏆 TOP AGENTS BY YTD</div>
+        ${topAgents.map(a => `
+          <div onclick="window.setState({screen:'mga-commissions-agents', commissionAgentId:'${a.agent_id}'})" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+              <strong style="font-size:0.85rem;">${a.agent}</strong>
+              <strong style="font-size:0.85rem; color:var(--status-green);">$${(a.ytd_earned/1000).toFixed(0)}k</strong>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${a.tier} · ${a.policies} policies · NB ${a.new_biz_pct}% / RN ${a.renewal_pct}%</div>
+          </div>`).join('')}
+      </div>
+
+      ${reconciliationIssues.length > 0 ? `
+      <div style="background:var(--bg-secondary); border:1px solid var(--status-red); border-left: 4px solid var(--status-red); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title" style="color:var(--status-red);">🚨 RECONCILIATION DISPUTES (${reconciliationIssues.length})</div>
+        ${reconciliationIssues.map(r => `
+          <div onclick="window.setState({screen:'mga-commissions-reconciliation'})" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+              <strong style="font-size:0.82rem;">${r.carrier}</strong>
+              <strong style="color:var(--status-red);">$${Math.abs(r.variance).toLocaleString()}</strong>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${r.note || 'Variance under investigation'}</div>
+          </div>`).join('')}
+      </div>
+      ` : ''}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">📝 RECENT COMMISSION TRANSACTIONS</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-commissions-agents'})">View all →</button>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Txn #</th><th>Agent</th><th>Policy</th><th>Type</th><th>Premium</th><th>Rate</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          ${recentTxns.map(t => `
+          <tr>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${t.id}</strong></td>
+            <td style="white-space:nowrap;">${t.agent}</td>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;"><a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'mga-policy-profile', policyId:'${t.policy_id}'})">${t.policy_number}</a></td>
+            <td style="white-space:nowrap;">${badge(t.type === 'Chargeback' ? 'red' : t.type === 'Renewal' ? 'green' : t.type === 'Override' ? 'amber' : 'blue', t.type)}</td>
+            <td style="white-space:nowrap;">$${t.premium.toLocaleString()}</td>
+            <td style="white-space:nowrap;">${t.rate_pct}%</td>
+            <td style="white-space:nowrap;"><strong style="color:${t.net_payable >= 0 ? 'var(--status-green)' : 'var(--status-red)'};">${t.net_payable >= 0 ? '+' : ''}$${t.net_payable.toLocaleString()}</strong></td>
+            <td style="white-space:nowrap;">${badge(t.status === 'Paid' ? 'green' : t.status === 'Approved' ? 'blue' : 'amber', t.status)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔍 LEAKAGE ANALYSIS (YTD)</div>
+      <div style="text-align:center; padding: var(--space-md) 0;">
+        <div style="font-size:2rem; font-weight:800; color:${leakage.leakage_pct <= 2 ? 'var(--status-green)' : leakage.leakage_pct <= 3.5 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${leakage.leakage_pct}%</div>
+        <div style="color:var(--text-muted); font-size:0.82rem;">Leakage (industry avg 3.5%)</div>
+      </div>
+      <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem;">
+        <div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">Earned YTD</span><strong>$${(leakage.total_earned_ytd/1e6).toFixed(2)}M</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">Paid YTD</span><strong>$${(leakage.paid_out_ytd/1e6).toFixed(2)}M</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">Uncollected Chargebacks</span><strong style="color:var(--status-amber);">$${(leakage.uncollected_chargebacks/1000).toFixed(1)}k</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">Unreconciled Variance</span><strong style="color:var(--status-amber);">$${(leakage.unreconciled_variance/1000).toFixed(1)}k</strong></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaCommissionsAgents() {
+  const agentId = state.commissionAgentId || 'AGT-2038';
+  const agent = D.mgaAgentCommissionProfiles.find(a => a.agent_id === agentId) || D.mgaAgentCommissionProfiles[0];
+  const txns = D.mgaCommissionTxns.filter(t => t.agent_id === agent.agent_id);
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">👥 Agent Commission Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Per-agent commission model · YTD earnings · detailed transaction history · self-service portal (agent view)</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Generate commission statement for ${agent.agent} · current period · PDF + email')">📄 Generate Statement</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Edit commission model for ${agent.agent} · requires approval')">✏ Edit Rates</button>
+    </div>
+  </div>
+
+  ${_mgaCommissionsSubNav('mga-commissions-agents')}
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <select class="form-input" onchange="window.setState({commissionAgentId:this.value})" style="max-width:320px;">
+      ${D.mgaAgentCommissionProfiles.map(a => `<option value="${a.agent_id}"${agent.agent_id===a.agent_id?' selected':''}>${a.agent} (${a.agent_id})</option>`).join('')}
+    </select>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:var(--space-md); margin-bottom: var(--space-md);">
+      <div><div style="color:var(--text-muted); font-size:0.72rem;">YTD Earned</div><strong style="font-size:1.3rem; color:var(--status-green);">$${(agent.ytd_earned/1000).toFixed(0)}k</strong></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem;">YTD Paid</div><strong style="font-size:1.3rem;">$${(agent.ytd_paid/1000).toFixed(0)}k</strong></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem;">Pending</div><strong style="font-size:1.3rem; color:var(--status-amber);">$${(agent.ytd_pending/1000).toFixed(0)}k</strong></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem;">Chargebacks</div><strong style="font-size:1.3rem; color:var(--status-red);">$${(agent.ytd_chargebacks/1000).toFixed(1)}k</strong></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem;">Profit Share Accrued</div><strong style="font-size:1.3rem; color:var(--mga-accent);">$${(agent.profit_share_accrued/1000).toFixed(0)}k</strong></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem;">Next Payout</div><strong style="font-size:1.3rem;">$${(agent.next_payout/1000).toFixed(1)}k</strong></div>
+    </div>
+    <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.85rem;">
+      <strong>${agent.tier}</strong> · ${agent.model} · <strong>NB ${agent.new_biz_pct}%</strong> / <strong>RN ${agent.renewal_pct}%</strong>${agent.override_pct > 0 ? ` / Override <strong>${agent.override_pct}%</strong>` : ''} · ${agent.policies} policies · ${agent.statements} statements
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">📝 TRANSACTIONS (${txns.length})</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Txn #</th><th>Policy</th><th>Carrier</th><th>Product</th><th>Type</th><th>Premium</th><th>Rate</th><th>Amount</th><th>Chargeback</th><th>Net</th><th>Status</th><th>Statement</th><th>Payout</th></tr></thead>
+      <tbody>
+        ${txns.map(t => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${t.id}</strong></td>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;"><a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'mga-policy-profile', policyId:'${t.policy_id}'})">${t.policy_number}</a></td>
+          <td style="white-space:nowrap;">${t.carrier}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${t.product}</td>
+          <td style="white-space:nowrap;">${badge(t.type === 'Chargeback' ? 'red' : t.type === 'Renewal' ? 'green' : t.type === 'Override' ? 'amber' : 'blue', t.type)}</td>
+          <td style="white-space:nowrap;">$${t.premium.toLocaleString()}</td>
+          <td style="white-space:nowrap;">${t.rate_pct}%</td>
+          <td style="white-space:nowrap;"><strong>$${t.amount.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${t.chargeback > 0 ? `<strong style="color:var(--status-red);">-$${t.chargeback.toLocaleString()}</strong>` : '—'}</td>
+          <td style="white-space:nowrap;"><strong style="color:${t.net_payable >= 0 ? 'var(--status-green)' : 'var(--status-red)'};">${t.net_payable >= 0 ? '+' : ''}$${t.net_payable.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${badge(t.status === 'Paid' ? 'green' : t.status === 'Approved' ? 'blue' : 'amber', t.status)}</td>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;">${t.statement}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${t.payout_date || '—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaCommissionsStatements() {
+  const periodF = state.stmtPeriodFilter || 'all';
+  const statusF = state.stmtStatusFilter || 'all';
+  let rows = D.mgaCommissionStatements;
+  if (periodF !== 'all') rows = rows.filter(s => s.period === periodF);
+  if (statusF !== 'all') rows = rows.filter(s => s.status === statusF);
+  const periods = [...new Set(D.mgaCommissionStatements.map(s => s.period))];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🧾 Commission Statement Generator</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Monthly statements · detailed policy-level breakdown · PDF + email delivery · agent portal access</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Regenerate all April 2026 statements · reset approval · requires admin')">🔄 Regenerate</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Run statement generation for May 2026 · 14 agents · preview before sending')">+ Generate Batch</button>
+    </div>
+  </div>
+
+  ${_mgaCommissionsSubNav('mga-commissions-statements')}
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <select class="form-input" onchange="window.setState({stmtPeriodFilter:this.value})">
+      <option value="all"${periodF==='all'?' selected':''}>All Periods</option>
+      ${periods.map(p => `<option value="${p}"${periodF===p?' selected':''}>${p}</option>`).join('')}
+    </select>
+    <select class="form-input" onchange="window.setState({stmtStatusFilter:this.value})">
+      <option value="all"${statusF==='all'?' selected':''}>All Statuses</option>
+      <option value="Pending Approval"${statusF==='Pending Approval'?' selected':''}>Pending Approval</option>
+      <option value="Paid"${statusF==='Paid'?' selected':''}>Paid</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({stmtPeriodFilter:'all', stmtStatusFilter:'all'})">Clear</button>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Statement #</th><th>Period</th><th>Agent</th><th>Txns</th><th>Gross</th><th>Chargebacks</th><th>Net</th><th>Status</th><th>Generated</th><th>Sent</th><th>Paid</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(s => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${s.id}</strong></td>
+          <td style="white-space:nowrap;">${s.period}</td>
+          <td style="white-space:nowrap;"><strong>${s.agent}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${s.agent_id}</div></td>
+          <td style="white-space:nowrap;"><strong>${s.transactions}</strong></td>
+          <td style="white-space:nowrap;">$${s.gross.toLocaleString()}</td>
+          <td style="white-space:nowrap;">${s.chargebacks > 0 ? `<strong style="color:var(--status-red);">-$${s.chargebacks.toLocaleString()}</strong>` : '—'}</td>
+          <td style="white-space:nowrap;"><strong>$${s.net.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${badge(s.status === 'Paid' ? 'green' : 'amber', s.status)}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${s.generated}</td>
+          <td style="white-space:nowrap; font-size:0.82rem; color:var(--status-green);">${s.sent || '—'}</td>
+          <td style="white-space:nowrap; font-size:0.82rem; color:var(--status-green);">${s.paid || '—'}</td>
+          <td style="white-space:nowrap;">${s.pdf_doc ? `<button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-docs-viewer', docId:'${s.pdf_doc}'})">👁 PDF</button>` : ''} <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Email ' + '${s.id}' + ' to ${s.agent}')">📧</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaCommissionsPayouts() {
+  const rows = D.mgaPayoutApprovals;
+  const pending = rows.filter(r => r.status === 'Pending Approval');
+  const completed = rows.filter(r => r.status === 'Completed');
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">💵 Payout Approval Queue</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${pending.length} pending approval · ${completed.length} completed (period) · approval-gated for amounts above $100k · ACH + Wire + Check</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Initiate ad-hoc payout · mid-month for top producers or expedites')">+ New Payout</button>
+  </div>
+
+  ${_mgaCommissionsSubNav('mga-commissions-payouts')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Pending Amount</div><div class="kpi-value warning">$${(pending.reduce((s, r) => s + r.total_amount, 0)/1000).toFixed(0)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Agents in Next Run</div><div class="kpi-value">${pending.reduce((s, r) => s + r.agents, 0)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Paid This Month</div><div class="kpi-value">$${(completed.reduce((s, r) => s + r.total_amount, 0)/1000).toFixed(0)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Processing Time</div><div class="kpi-value">2.1d</div></div>
+  </div>
+
+  ${pending.length > 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--status-amber); border-left: 4px solid var(--status-amber); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title" style="color:var(--status-amber);">⏳ PENDING PAYOUT APPROVALS (${pending.length})</div>
+      ${pending.map(p => `
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius: var(--radius-md); margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center; margin-bottom: var(--space-sm);">
+            <div>
+              <strong style="font-size:1rem;">${p.batch}</strong>
+              <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${p.id} · ${p.period} · Submitted by ${p.submitted_by}</div>
+            </div>
+            <div style="display:flex; gap:var(--space-sm); align-items:center;">
+              ${badge(p.priority === 'High' ? 'red' : 'amber', p.priority)}
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Decline payout ${p.id} · reason required')">Decline</button>
+              <button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Approve payout ${p.id} · $' + ${p.total_amount} + ' · ' + '${p.agents}' + ' agents · ACH initiated')">✓ Approve</button>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-sm); font-size:0.82rem;">
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Total Amount</div><strong style="font-size:1.1rem;">$${p.total_amount.toLocaleString()}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Agents</div><strong>${p.agents}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Method</div><strong>${p.payment_method}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Scheduled</div><strong>${p.scheduled}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Requires</div><strong>${p.requires}</strong></div>
+          </div>
+          <div style="margin-top:var(--space-sm); padding: var(--space-sm); background: rgba(108,92,231,0.08); border-radius:var(--radius-sm); font-size:0.82rem;"><strong>Note:</strong> ${p.note}</div>
+        </div>`).join('')}
+    </div>
+  ` : ''}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">✓ COMPLETED PAYOUTS</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Payout #</th><th>Batch</th><th>Period</th><th>Amount</th><th>Agents</th><th>Method</th><th>Scheduled</th><th>Approved By</th><th>Approved</th><th>Completed</th></tr></thead>
+      <tbody>
+        ${completed.map(p => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${p.id}</strong></td>
+          <td style="white-space:nowrap;">${p.batch}</td>
+          <td style="white-space:nowrap;">${p.period}</td>
+          <td style="white-space:nowrap;"><strong>$${p.total_amount.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${p.agents}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${p.payment_method}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${p.scheduled || '—'}</td>
+          <td style="white-space:nowrap;">${p.approved_by || '—'}</td>
+          <td style="white-space:nowrap; font-size:0.82rem; color:var(--status-green);">${p.approved || '—'}</td>
+          <td style="white-space:nowrap; font-size:0.82rem; color:var(--status-green);">${p.completed || '—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaCommissionsReconciliation() {
+  const rows = D.mgaCarrierCommReconciliation;
+  const disputes = rows.filter(r => r.status === 'Dispute Open');
+  const reconciled = rows.filter(r => r.status === 'Reconciled');
+  const totalExpected = rows.reduce((s, r) => s + r.mga_expected, 0);
+  const totalReceived = rows.reduce((s, r) => s + r.carrier_paid, 0);
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">⚖ Carrier Commission Reconciliation</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Match MGA commission earned against carrier payments · dispute tracking · ${reconciled.length} reconciled · ${disputes.length} disputes open</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Run reconciliation · pulls latest carrier bordereau acknowledgment + matches to commission ledger')">🔄 Run Reconciliation</button>
+  </div>
+
+  ${_mgaCommissionsSubNav('mga-commissions-reconciliation')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">MGA Expected</div><div class="kpi-value">$${(totalExpected/1000).toFixed(0)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Received</div><div class="kpi-value">$${(totalReceived/1000).toFixed(0)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Variance</div><div class="kpi-value${(totalExpected - totalReceived) !== 0 ? ' warning' : ''}">$${((totalExpected - totalReceived)/1000).toFixed(1)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Open Disputes</div><div class="kpi-value${disputes.length > 0 ? ' warning' : ''}">${disputes.length}</div></div>
+  </div>
+
+  ${disputes.length > 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--status-red); border-left: 4px solid var(--status-red); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title" style="color:var(--status-red);">🚨 OPEN DISPUTES (${disputes.length})</div>
+      ${disputes.map(d => `
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius: var(--radius-md); margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center; margin-bottom: var(--space-sm);">
+            <div><strong>${d.carrier}</strong> · ${d.id} · ${d.period}</div>
+            <div style="display:flex; gap:var(--space-sm); align-items:center;"><strong style="color:var(--status-red);">$${Math.abs(d.variance).toLocaleString()} variance</strong><button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Open dispute resolution for ${d.id} · ledger compare · scheduled meeting')">Resolve</button></div>
+          </div>
+          <div style="font-size:0.82rem; color:var(--text-secondary);">${d.note}</div>
+        </div>`).join('')}
+    </div>
+  ` : ''}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">⚖ CARRIER COMMISSION RECONCILIATION</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Recon #</th><th>Carrier</th><th>Period</th><th>MGA Expected</th><th>Carrier Paid</th><th>Variance</th><th>Status</th><th>Payment Received</th><th>Ack Ref</th><th>Notes</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(r => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${r.id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${r.carrier}</strong></td>
+          <td style="white-space:nowrap;">${r.period}</td>
+          <td style="white-space:nowrap;"><strong>$${r.mga_expected.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">$${r.carrier_paid.toLocaleString()}</td>
+          <td style="white-space:nowrap;"><strong style="color:${r.variance === 0 ? 'var(--text-muted)' : 'var(--status-red)'};">${r.variance === 0 ? '—' : (r.variance > 0 ? '+' : '') + '$' + r.variance.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${badge(r.statusColor, r.status)}</td>
+          <td style="white-space:nowrap;">${r.payment_received}</td>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;">${r.ack_ref}</td>
+          <td style="font-size:0.78rem;">${r.note || '—'}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('View ' + '${r.id}' + ' detail · ledger compare')">View</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaCommissionsRules() {
+  const rows = D.mgaCommissionRules;
+  const active = rows.filter(r => r.status === 'Active');
+  const draft = rows.filter(r => r.status === 'Draft');
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🧩 Commission Rule Engine</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">No-code rule builder · tier rates · chargeback logic · overrides · profit share accrual · all audit-logged</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Open visual rule designer · trigger + condition + action · test against sample data · save as draft')">+ New Rule</button>
+  </div>
+
+  ${_mgaCommissionsSubNav('mga-commissions-rules')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Active Rules</div><div class="kpi-value">${active.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Draft</div><div class="kpi-value">${draft.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Uses (30d)</div><div class="kpi-value">${rows.reduce((s, r) => s + r.uses_30d, 0).toLocaleString()}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Last Added</div><div class="kpi-value" style="font-size:0.9rem;">${rows.sort((a,b) => b.created.localeCompare(a.created))[0].created}</div></div>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Rule #</th><th>Name</th><th>Trigger</th><th>Condition</th><th>Action</th><th>Priority</th><th>Status</th><th>Uses (30d)</th><th>Last Edited</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(r => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${r.id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${r.name}</strong></td>
+          <td style="white-space:nowrap;">${badge('gray', r.trigger)}</td>
+          <td style="font-size:0.78rem; font-family:monospace; color:var(--text-muted);">${r.condition}</td>
+          <td style="font-size:0.78rem;">${r.action}</td>
+          <td style="white-space:nowrap;">${r.priority}</td>
+          <td style="white-space:nowrap;">${badge(r.status === 'Active' ? 'green' : 'gray', r.status)}</td>
+          <td style="white-space:nowrap;"><strong>${r.uses_30d}</strong></td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${r.last_edited}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Edit rule ${r.id} · visual designer')">Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Test rule ${r.id} against sample data · dry run')">Test</button>
+            ${r.status === 'Draft' ? `<button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Activate rule ${r.id} · requires approval')">Activate</button>` : `<button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Pause rule ${r.id}')">⏸</button>`}
           </td>
         </tr>`).join('')}
       </tbody>
     </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaCommissionsTax() {
+  const yearF = state.taxYearFilter || 'all';
+  let rows = D.mgaTax1099s;
+  if (yearF !== 'all') rows = rows.filter(r => String(r.tax_year) === yearF);
+  const years = [...new Set(D.mgaTax1099s.map(r => r.tax_year))].sort((a,b) => b - a);
+  const totalPaid2025 = D.mgaTax1099s.filter(r => r.tax_year === 2025).reduce((s, r) => s + r.total_paid, 0);
+  const totalAccruing2026 = D.mgaTax1099s.filter(r => r.tax_year === 2026).reduce((s, r) => s + r.total_paid, 0);
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📄 1099 &amp; Tax Reporting Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">1099-NEC generation · TIN management · IRS filing · state tax reporting · audit-ready</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Export 1099 summary for tax year · CSV + PDF · all agents')">📥 Export Summary</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Generate 1099-NEC forms · IRS e-file · correction tracking · certified mail to agents')">+ Generate 1099s</button>
+    </div>
   </div>
 
-  <div class="section-title">COMMISSION CONFIG (by Carrier / Product)</div>
+  ${_mgaCommissionsSubNav('mga-commissions-tax')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">2025 Total Paid</div><div class="kpi-value">$${(totalPaid2025/1e6).toFixed(2)}M</div></div>
+    <div class="kpi-card"><div class="kpi-label">2025 1099s Filed</div><div class="kpi-value">${D.mgaTax1099s.filter(r => r.tax_year === 2025 && r.status === 'Filed').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">2026 Accruing</div><div class="kpi-value">$${(totalAccruing2026/1e6).toFixed(2)}M</div></div>
+    <div class="kpi-card"><div class="kpi-label">Corrections (2025)</div><div class="kpi-value">${D.mgaTax1099s.filter(r => r.tax_year === 2025 && r.correction).length}</div></div>
+  </div>
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <select class="form-input" onchange="window.setState({taxYearFilter:this.value})">
+      <option value="all"${yearF==='all'?' selected':''}>All Years</option>
+      ${years.map(y => `<option value="${y}"${yearF===String(y)?' selected':''}>${y}</option>`).join('')}
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({taxYearFilter:'all'})">Clear</button>
+  </div>
+
   <div class="data-table-wrapper">
+    <div class="table-scroll">
     <table class="data-table">
-      <thead><tr><th>Carrier</th><th>Product</th><th>Broker Comm %</th><th>MGA Comm %</th></tr></thead>
+      <thead><tr><th>Agent ID</th><th>Agent</th><th>TIN (masked)</th><th>Address</th><th>Tax Year</th><th>Total Paid</th><th>Status</th><th>Filed</th><th>Correction</th><th>Actions</th></tr></thead>
       <tbody>
-        ${D.mgaCommConfig.map(c => `
-        <tr><td>${c.carrier}</td><td>${c.product}</td><td>${c.brokerPct}</td><td>${c.mgaPct}</td></tr>
-        `).join('')}
+        ${rows.map(r => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong>${r.agent_id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${r.agent}</strong></td>
+          <td style="white-space:nowrap; font-family:monospace;">${r.tin_masked}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${r.address}</td>
+          <td style="white-space:nowrap;">${r.tax_year}</td>
+          <td style="white-space:nowrap;"><strong>$${r.total_paid.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${badge(r.status === 'Filed' ? 'green' : 'amber', r.status)}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${r.filed_date || '—'}</td>
+          <td style="white-space:nowrap;">${r.correction ? badge('red','⚠ Correction') : '—'}</td>
+          <td style="white-space:nowrap;">${r.doc_id ? `<button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-docs-viewer', docId:'${r.doc_id}'})">👁 1099</button>` : `<button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Generate 1099 for ${r.agent} · ${r.tax_year}')">Generate</button>`}</td>
+        </tr>`).join('')}
       </tbody>
     </table>
+    </div>
   </div>`;
 }
 
@@ -17135,6 +19556,7950 @@ function renderMGACompliance() {
         </tr>`).join('')}
       </tbody>
     </table>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// MGA — AGENTS & BROKERS MANAGEMENT MODULE
+// ════════════════════════════════════════════════════════════════
+function _mgaAgentSubNav(active) {
+  const tabs = [
+    { key: 'mga-agents',             label: 'Dashboard',    icon: '📊' },
+    { key: 'mga-agents-directory',   label: 'Directory',    icon: '📇' },
+    { key: 'mga-agent-onboarding',   label: 'Onboarding',   icon: '🚀' },
+    { key: 'mga-agent-scorecards',   label: 'Scorecards',   icon: '🏅' },
+    { key: 'mga-agent-commissions',  label: 'Commissions',  icon: '💰' },
+    { key: 'mga-agent-access',       label: 'Portal Access',icon: '🔐' },
+    { key: 'mga-agent-broadcast',    label: 'Broadcast',    icon: '📣' },
+    { key: 'mga-agent-templates',    label: 'Templates',    icon: '🧾' },
+    { key: 'mga-agent-analytics',    label: 'Analytics',    icon: '📈' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _mgaTierBadge(tier) {
+  const t = D.mgaAgentTiers.find(x => x.key === tier);
+  if (!t) return '';
+  return `<span class="mga-tier-badge mga-tier-${tier}">${t.label}</span>`;
+}
+
+function _mgaHealthDot(h) {
+  const map = { green: 'var(--status-green)', amber: 'var(--status-amber)', red: 'var(--status-red)' };
+  return `<span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${map[h] || 'var(--text-muted)'}; box-shadow:0 0 8px ${map[h] || 'transparent'};"></span>`;
+}
+
+function renderMgaAgentsDashboard() {
+  const agents = D.mgaAgents;
+  const active = agents.filter(a => a.stage === 'Active');
+  const top5 = [...active].sort((a,b) => b.premium_ytd - a.premium_ytd).slice(0, 5);
+  const watch = active.filter(a => a.health === 'amber' || a.health === 'red');
+  const onboarding = agents.filter(a => a.stage === 'Application' || a.stage === 'Prospecting' || a.stage === 'Appointment');
+  const notif = D.mgaAgentCommNotifications;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Agents &amp; Brokers</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${agents.length} agents · ${active.length} active · production-tiered with automated scoring</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-agent-analytics'})">📈 Analytics</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-agent-onboarding', mgaAgentOnbStep:1})">+ Onboard New Agent</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.mgaAgentKPIs, 6)}
+
+  ${_mgaAgentSubNav('mga-agents')}
+
+  <div style="display:grid; grid-template-columns: 3fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">🏆 TOP 5 PRODUCERS (YTD)</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-agents-directory'})">Directory →</button>
+      </div>
+      ${top5.map((a, i) => `
+        <div class="mga-agent-row" onclick="window.setState({screen:'mga-agent-profile', currentAgentId:'${a.id}'})">
+          <div class="mga-rank">#${i+1}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <strong>${a.name}</strong>
+              ${_mgaTierBadge(a.tier)}
+              ${_mgaHealthDot(a.health)}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${a.primary} · ${a.states} · ${a.lobs.slice(0,3).join(', ')}${a.lobs.length > 3 ? ' +' + (a.lobs.length - 3) : ''}</div>
+          </div>
+          <div class="mga-agent-stats">
+            <div><div class="mga-stat-label">Premium YTD</div><strong>$${(a.premium_ytd/1e6).toFixed(2)}M</strong></div>
+            <div><div class="mga-stat-label">Bind Ratio</div><strong style="color:${a.bind_ratio>=55?'var(--status-green)':a.bind_ratio>=40?'var(--mga-accent)':'var(--status-amber)'};">${a.bind_ratio}%</strong></div>
+            <div><div class="mga-stat-label">Loss Ratio</div><strong style="color:${a.loss_ratio<=45?'var(--status-green)':a.loss_ratio<=60?'var(--mga-accent)':'var(--status-red)'};">${a.loss_ratio}%</strong></div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🔔 NOTIFICATIONS</div>
+        ${notif.slice(0,4).map(n => `
+          <div style="padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); ${n.unread?'':'opacity:0.6;'}">
+            <div style="display:flex; align-items:center; gap:6px;">
+              ${n.unread?'<span style="width:6px; height:6px; border-radius:50%; background:var(--mga-accent);"></span>':''}
+              <strong style="font-size:0.82rem;">${n.title}</strong>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px; margin-left:${n.unread?'10px':'0'};">${n.body}</div>
+            <div style="color:var(--text-muted); font-size:0.7rem; margin-top:2px; margin-left:${n.unread?'10px':'0'};">${n.ts}</div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🚀 IN ONBOARDING (${onboarding.length})</div>
+        ${onboarding.map(a => `
+          <div style="padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); cursor:pointer;" onclick="window.setState({screen:'mga-agent-profile', currentAgentId:'${a.id}'})">
+            <strong style="font-size:0.85rem;">${a.name}</strong>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${a.stage} · ${a.watch_note || ''}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">⚠ WATCH LIST — NEEDS ATTENTION (${watch.length})</div>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-agents-directory'})">View all agents →</button>
+    </div>
+    ${watch.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">All active agents are healthy 🎉</div>' : `
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Agent</th><th>Tier</th><th>Health</th><th>Loss Ratio</th><th>Premium YTD</th><th>Concern</th><th>Action</th></tr></thead>
+        <tbody>
+          ${watch.map(a => `
+          <tr onclick="window.setState({screen:'mga-agent-profile', currentAgentId:'${a.id}'})" style="cursor:pointer;">
+            <td style="white-space:nowrap;"><strong>${a.name}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${a.primary}</div></td>
+            <td style="white-space:nowrap;">${_mgaTierBadge(a.tier)}</td>
+            <td style="white-space:nowrap;">${_mgaHealthDot(a.health)} ${a.health}</td>
+            <td style="white-space:nowrap;"><strong style="color:${a.loss_ratio>70?'var(--status-red)':'var(--status-amber)'};">${a.loss_ratio}%</strong></td>
+            <td style="white-space:nowrap;">$${(a.premium_ytd/1000).toFixed(0)}k</td>
+            <td style="font-size:0.82rem;">${a.watch_note || '—'}</td>
+            <td onclick="event.stopPropagation();"><button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'mga-agent-profile', currentAgentId:'${a.id}'})">Review</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    `}
+  </div>`;
+}
+
+function renderMgaAgentsDirectory() {
+  const tierF = state.mgaAgentTier || 'all';
+  const stageF = state.mgaAgentStage || 'all';
+  const q = (state.mgaAgentQuery || '').toLowerCase();
+  let rows = D.mgaAgents;
+  if (tierF !== 'all') rows = rows.filter(a => a.tier === tierF);
+  if (stageF !== 'all') rows = rows.filter(a => a.stage === stageF);
+  if (q) rows = rows.filter(a => (a.name + ' ' + a.primary + ' ' + a.states + ' ' + a.lobs.join(' ') + ' ' + a.id).toLowerCase().includes(q));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Agent Directory</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${rows.length} agent${rows.length===1?'':'s'} · filter by tier, stage, or search</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Exporting ${rows.length} agents to CSV')">Export</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-agent-broadcast'})">📧 Bulk Message</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-agent-onboarding', mgaAgentOnbStep:1})">+ New Agent</button>
+    </div>
+  </div>
+
+  ${_mgaAgentSubNav('mga-agents-directory')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-sm);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search by name, contact, state, LOB, agent ID..." value="${state.mgaAgentQuery || ''}" oninput="window.setState({mgaAgentQuery:this.value})"/>
+      <select class="form-input" style="width:180px;" onchange="window.setState({mgaAgentStage:this.value})">
+        <option value="all">All Stages</option>
+        ${D.mgaAgentStages.map(s => `<option value="${s}" ${stageF===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({mgaAgentTier:'all', mgaAgentStage:'all', mgaAgentQuery:''})">Reset</button>
+    </div>
+    <div style="display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+      <div class="cust-pill${tierF==='all'?' active':''}" onclick="window.setState({mgaAgentTier:'all'})">All Tiers <span class="cust-pill-count">${D.mgaAgents.length}</span></div>
+      ${D.mgaAgentTiers.map(t => `
+        <div class="cust-pill${tierF===t.key?' active':''}" onclick="window.setState({mgaAgentTier:'${t.key}'})">${t.label} <span class="cust-pill-count">${D.mgaAgents.filter(a => a.tier === t.key).length}</span></div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Health</th><th>Agent</th><th>NPN</th><th>Primary Contact</th><th>Tier</th><th>Stage</th><th>Score</th><th>States</th><th>LOBs</th><th>Premium YTD</th><th>Bind %</th><th>LR %</th><th>Retention</th><th>Policies</th><th>Comm %</th><th>Action</th></tr></thead>
+      <tbody>
+        ${rows.map(a => {
+          const isOnboarding = a.stage === 'Prospecting' || a.stage === 'Application' || a.stage === 'Appointment';
+          const dash = '<span style="color:var(--text-muted);">—</span>';
+          const projBadge = (val) => `<span style="color:var(--text-muted); font-size:0.7rem; font-style:italic;">${val}</span>`;
+          return `
+        <tr onclick="window.setState({screen:'mga-agent-profile', currentAgentId:'${a.id}'})" style="cursor:pointer;">
+          <td style="white-space:nowrap;">${_mgaHealthDot(a.health)}</td>
+          <td style="white-space:nowrap;"><strong style="color:var(--mga-accent);">${a.name}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${a.id}</div></td>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;">${a.npn || projBadge('pending NIPR')}</td>
+          <td style="white-space:nowrap;">${a.primary}<div style="color:var(--text-muted); font-size:0.72rem;">${a.phone}</div></td>
+          <td style="white-space:nowrap;">${_mgaTierBadge(a.tier)}</td>
+          <td style="white-space:nowrap;">${badge(a.stage==='Active'?'green':a.stage==='On Hold'?'red':a.stage==='Terminated'?'gray':'amber', a.stage)}</td>
+          <td style="white-space:nowrap;">${a.performance_score !== null ? `<strong style="color:${a.performance_score>=80?'var(--status-green)':a.performance_score>=65?'var(--mga-accent)':a.performance_score>=50?'var(--status-amber)':'var(--status-red)'};">${a.performance_score}</strong>` : projBadge('pending data')}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${a.states}</td>
+          <td style="font-size:0.78rem; white-space:nowrap;">${a.lobs.slice(0,3).join(', ')}${a.lobs.length > 3 ? ' +'+(a.lobs.length-3) : ''}</td>
+          <td style="white-space:nowrap;">${isOnboarding ? projBadge('~$' + ((a.projected_volume||0)/1000).toFixed(0) + 'k proj.') : `<strong>$${(a.premium_ytd/1000).toFixed(0)}k</strong>`}</td>
+          <td style="white-space:nowrap;">${a.bind_ratio !== null ? `<strong style="color:${a.bind_ratio>=55?'var(--status-green)':a.bind_ratio>=40?'var(--mga-accent)':'var(--status-amber)'};">${a.bind_ratio}%</strong>` : projBadge('n/a — ' + (a.stage||'').toLowerCase())}</td>
+          <td style="white-space:nowrap;">${a.loss_ratio !== null ? `<strong style="color:${a.loss_ratio<=45?'var(--status-green)':a.loss_ratio<=60?'var(--mga-accent)':'var(--status-red)'};">${a.loss_ratio}%</strong>` : projBadge('n/a — no book')}</td>
+          <td style="white-space:nowrap;">${a.retention !== null ? a.retention + '%' : projBadge('n/a')}</td>
+          <td style="white-space:nowrap;">${a.active_policies}</td>
+          <td style="white-space:nowrap;">${a.commission_rate !== null ? a.commission_rate + '%' : projBadge('TBD in contract')}</td>
+          <td onclick="event.stopPropagation();"><button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'mga-agent-profile', currentAgentId:'${a.id}'})">${isOnboarding ? 'Review' : 'View'}</button></td>
+        </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+    ${rows.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding: var(--space-xl);">No agents match this filter.</div>' : ''}
+    <div style="padding: var(--space-md); color:var(--text-muted); font-size:0.8rem;">Showing ${rows.length} of ${D.mgaAgents.length} agents · Total YTD premium: $${(rows.reduce((s,a) => s + a.premium_ytd, 0)/1e6).toFixed(2)}M</div>
+  </div>`;
+}
+
+function _mgaBuildAgentDetail(a) {
+  // For AGT-2038 (Bridgepoint) use the canonical hand-crafted record
+  if (a.id === D.mgaAgentDetail.id) return D.mgaAgentDetail;
+  // Otherwise synthesize a realistic record from the agent's core fields
+  const nameLower = a.name.toLowerCase();
+  const nameCompact = nameLower.replace(/[^a-z]/g, '').slice(0, 12);
+  const entity = /llc|group|insurance/.test(nameLower) ? 'LLC' : /companies|corp|inc/.test(nameLower) ? 'Corporation' : /sawyer|advisors|partners/.test(nameLower) ? 'Partnership' : 'LLC';
+  const founded = a.joined ? parseInt(a.joined.slice(0,4)) - (a.premium_ytd > 5e6 ? 25 : a.premium_ytd > 2e6 ? 15 : a.premium_ytd > 500000 ? 10 : 6) : 2018;
+  const employees = a.premium_ytd > 5e6 ? 1200 : a.premium_ytd > 2e6 ? 280 : a.premium_ytd > 500000 ? 42 : a.premium_ytd > 0 ? 14 : 8;
+  const feinSuffix = String(a.id.replace(/\D/g,'')).slice(-3).padStart(3, '0');
+  const fein = '88-XXXX' + feinSuffix;
+  const addressMap = {
+    'CA': '1201 Industrial Blvd, Sacramento CA 95814',
+    'TX': '2800 Post Oak Blvd, Houston TX 77056',
+    'NY': '1166 Avenue of the Americas, New York NY 10036',
+    'IL': '200 East Randolph, Chicago IL 60601',
+    'AZ': '2575 E Camelback Rd, Phoenix AZ 85016',
+    'OR': '111 SW Fifth Ave, Portland OR 97204',
+    'WA': '601 Union St, Seattle WA 98101',
+    'FL': '777 Brickell Ave, Miami FL 33131',
+    'NV': '3773 Howard Hughes Pkwy, Las Vegas NV 89169',
+    'All 50': '444 Madison Avenue, New York NY 10022'
+  };
+  const firstState = a.states === 'All 50' ? 'All 50' : (a.states.split(',')[0].trim());
+  const address = addressMap[firstState] || addressMap[a.states] || '1201 Main Street, Suite 200';
+  // Split primary contact into first + last
+  const nameParts = a.primary.split(' ');
+  const firstName = nameParts[0];
+  const lastName = nameParts[nameParts.length-1];
+  // Synthesize 2-3 additional contacts based on producer count
+  const titles = ['CFO','Senior Producer','Commercial CSR','Operations Director','Account Executive','Underwriting Manager'];
+  const otherContacts = [];
+  const producerCount = Math.max(1, a.producers - 1);
+  const firstNames = ['Michael','Jennifer','Robert','Lisa','David','Priya','Carlos','Janet','Amy','Chris','Hannah','Trevor'];
+  const lastNames = ['Chen','Park','Kim','Torres','Liu','Morgan','Reyes','Novak','Singh','Harris','Patel','Wu'];
+  for (let i = 0; i < Math.min(producerCount, 3); i++) {
+    const fn = firstNames[(a.id.charCodeAt(5) + i) % firstNames.length];
+    const ln = lastNames[(a.id.charCodeAt(6) + i) % lastNames.length];
+    const title = titles[(i + a.id.charCodeAt(7)) % titles.length];
+    otherContacts.push({
+      name: `${fn} ${ln}`,
+      title,
+      email: `${fn.toLowerCase()}.${ln.toLowerCase()}@${nameCompact}.com`,
+      phone: `(${a.phone.match(/\((\d{3})\)/)?.[1] || '415'}) 555-0${100 + i * 11}`,
+      decision_maker: i === 0
+    });
+  }
+  // Licenses from states
+  const stateList = a.states === 'All 50' ? ['CA','NY','TX','FL','IL','NV','OR','WA','AZ','NJ'] : a.states.split(',').map(s => s.trim()).filter(s => s.length === 2);
+  const licenses = stateList.slice(0, 8).map((st, i) => ({
+    state: st,
+    npn: a.npn || '—',
+    license_no: `${st}-LIC-${(parseInt(a.id.replace(/\D/g,'')) * 7 + i * 1003).toString().slice(-6)}`,
+    type: i === 0 ? 'Producer License' : 'Non-Resident Producer',
+    status: a.license_check === 'EXPIRING' ? 'Expiring Soon' : a.license_check === 'Pending' ? 'Pending' : 'Active',
+    expires: a.eo_expiry !== '—' && a.eo_expiry !== 'Pending' ? a.eo_expiry : '2027-01-15'
+  }));
+  // Appointments from LOBs
+  const authorityMap = { tier1: { WC:'$500k', GL:'$500k', BOP:'$250k', Auto:'$400k', Cyber:'Refer for bind', Property:'$500k', Umbrella:'$300k', 'D&O':'Refer for bind', Professional:'$300k', 'Tech E&O':'Refer for bind', Management:'Refer for bind' }, tier2: { WC:'$250k', GL:'$250k', BOP:'$150k', Auto:'$200k', Cyber:'Quote only', Property:'$250k', Umbrella:'$150k', 'D&O':'Quote only', Professional:'$150k', 'Tech E&O':'Quote only', Management:'Quote only' }, tier3: { WC:'$100k', GL:'$100k', BOP:'$50k', Auto:'$75k', Cyber:'Refer all', Property:'$100k', Umbrella:'Refer all', 'D&O':'Refer all', Professional:'$75k', 'Tech E&O':'Refer all', Management:'Refer all' } };
+  const appointments = a.lobs.map(lob => ({
+    lob: lob === 'WC' ? 'Workers Comp' : lob === 'GL' ? 'General Liability' : lob === 'Auto' ? 'Commercial Auto' : lob,
+    states: a.states,
+    authority: `Bind up to ${(authorityMap[a.tier] || {})[lob] || '$100k'}`,
+    effective: a.joined || '—'
+  }));
+  // Commission structure
+  const bonusThreshold = a.tier === 'tier1' ? 3500000 : a.tier === 'tier2' ? 2000000 : 1000000;
+  const commStruct = {
+    new_business: a.commission_rate || 10,
+    renewal: a.commission_rate || 10,
+    bonus_threshold: bonusThreshold,
+    bonus_rate: a.tier === 'tier1' ? 2 : a.tier === 'tier2' ? 1.5 : 1,
+    contingent: a.tier === 'tier1' ? 'Yes — 2% profit share' : a.tier === 'tier2' ? 'Yes — 1% profit share' : 'None (probation)'
+  };
+  // E&O insurance
+  const eoCarriers = ['Scottsdale','Markel','Navigators','Hiscox','Great American','Philadelphia'];
+  const eo = {
+    carrier: eoCarriers[(a.id.charCodeAt(4) || 0) % eoCarriers.length],
+    limit: a.premium_ytd > 5e6 ? '$5M/$10M' : a.premium_ytd > 1e6 ? '$2M/$4M' : '$1M/$2M',
+    expires: a.eo_expiry !== '—' && a.eo_expiry !== 'Pending' ? a.eo_expiry : 'Pending',
+    uploaded: a.joined || '—'
+  };
+  // Contract
+  const contract = {
+    version: a.tier === 'tier1' ? 'v3.2 · Preferred' : a.tier === 'tier2' ? 'v3.2 · Standard' : 'v3.2 · Developing',
+    signed: a.joined || '—',
+    auto_renew: true,
+    next_review: a.joined ? (parseInt(a.joined.slice(0,4)) + 3) + '-' + a.joined.slice(5) : '—'
+  };
+  // Performance scorecard (only for agents with production data)
+  let scorecard = null;
+  if (a.performance_score !== null && a.premium_ytd > 0) {
+    const rankOfMany = n => `${Math.max(1, Math.round((100 - n) * 1.42))} of 142`;
+    scorecard = {
+      submission_volume: { value: a.submissions_ytd, rank: rankOfMany(Math.min(99, Math.round(a.submissions_ytd / 2.6))), percentile: Math.min(99, Math.round(a.submissions_ytd / 2.6)), trend: a.performance_score >= 80 ? 'up' : a.performance_score >= 65 ? 'flat' : 'down' },
+      bind_ratio:        { value: a.bind_ratio,     rank: rankOfMany(Math.min(99, a.bind_ratio + 25)),  percentile: Math.min(99, a.bind_ratio + 25),  trend: a.bind_ratio >= 55 ? 'up' : 'flat' },
+      loss_ratio:        { value: a.loss_ratio,     rank: rankOfMany(Math.min(99, 100 - a.loss_ratio)), percentile: Math.min(99, 100 - a.loss_ratio), trend: a.loss_ratio <= 45 ? 'down' : a.loss_ratio <= 60 ? 'flat' : 'up' },
+      avg_premium:       { value: Math.round(a.premium_ytd / Math.max(1, a.active_policies)), rank: rankOfMany(Math.min(99, Math.round(a.premium_ytd / Math.max(1, a.active_policies) / 1000))), percentile: 76, trend: 'flat' },
+      retention:         { value: a.retention,      rank: rankOfMany(Math.min(99, a.retention)),        percentile: Math.min(99, a.retention),        trend: a.retention >= 85 ? 'up' : 'flat' },
+      quality_score:     { value: a.quality,        rank: rankOfMany(Math.min(99, a.quality)),          percentile: Math.min(99, a.quality),          trend: a.quality >= 85 ? 'up' : 'flat' }
+    };
+  }
+  // Documents (always standard set)
+  const documents = [
+    { name: `Appointment Contract ${contract.version.split(' ')[0]}.pdf`, type: 'Contract',   signed: contract.signed,   status: 'Active' },
+    { name: `E&O Certificate ${eo.expires}.pdf`,                          type: 'E&O',        uploaded: eo.uploaded,     expires: eo.expires, status: eo.expires === 'Pending' ? 'Pending' : 'Active' },
+    { name: 'W-9 Form.pdf',                                               type: 'W-9',        uploaded: a.joined || '—', status: 'Active' },
+    { name: `Commission Schedule — Q2 2026.pdf`,                          type: 'Commission', uploaded: '2026-04-01',    status: 'Active' },
+    { name: `${stateList[0] || 'State'} License Certificate.pdf`,         type: 'License',    uploaded: a.joined || '—', status: 'Active' },
+    ...(a.stage === 'Active' && a.premium_ytd > 0 ? [{ name: 'Quarterly Business Review — Q1 2026.pdf', type: 'QBR', uploaded: '2026-04-05', status: 'Active' }] : [])
+  ];
+  // QBR history (only for active agents with production)
+  const qbrHistory = a.stage === 'Active' && a.premium_ytd > 0 ? [
+    { date: '2026-04-05', overall: a.performance_score,       highlights: a.performance_score >= 80 ? ['+18% premium growth YoY','Top-quartile loss ratio','Strong retention metrics'] : a.performance_score >= 65 ? ['Steady Q1 production','Quality score improved'] : ['Onboarding training completed'],                           concerns: a.loss_ratio > 55 ? ['Loss ratio trending high — remediation plan discussed'] : a.retention < 85 ? ['Below-target retention · client outreach plan'] : [], next_date: '2026-07-05' },
+    { date: '2026-01-08', overall: Math.max(40, a.performance_score - 4), highlights: ['Strong Q4 production','Met YoY premium target'], concerns: a.bind_ratio < 45 ? ['Bind ratio below Tier target'] : [], next_date: '2026-04-05' },
+    { date: '2025-10-10', overall: Math.max(40, a.performance_score - 6), highlights: ['Completed cyber training','Expanded LOB mix'], concerns: a.quality < 75 ? ['Submission quality needs improvement'] : [], next_date: '2026-01-08' }
+  ] : [];
+  // Activity timeline (varies by stage)
+  const activity = a.stage === 'Active' ? [
+    { ts: '2026-04-18 14:22', event: `New submission received — ${a.lobs[0]} renewal (projected $${Math.round(a.premium_ytd / Math.max(1, a.active_policies) / 1000)}k)`, actor: a.primary },
+    { ts: '2026-04-15 10:04', event: `Commission statement April 2026 · $${a.pending_comm.toLocaleString()} ${a.pending_comm > 0 ? 'pending approval' : 'paid'}`, actor: 'MGA Finance' },
+    { ts: '2026-04-10 09:18', event: `QBR completed · score ${a.performance_score} · ${a.loss_ratio > 55 ? 'remediation actions assigned' : 'no action items'}`,                                            actor: 'MGA Operations' },
+    { ts: '2026-04-05 11:30', event: 'Q2 commission statement uploaded',                                                                                                                                          actor: 'MGA Finance' },
+    { ts: '2026-03-22 16:40', event: `Tier review: maintained ${a.tier === 'tier1' ? 'Tier 1 — Preferred' : a.tier === 'tier2' ? 'Tier 2 — Standard' : 'Tier 3 — Developing'}`,                             actor: 'Auto-scoring' },
+    { ts: '2026-02-14 13:05', event: `Bound policy · $${Math.round(a.premium_ytd / Math.max(1, a.active_policies)).toLocaleString()} premium`,                                                                   actor: a.primary }
+  ] : a.stage === 'On Hold' ? [
+    { ts: '2026-04-18 09:00', event: `Placed on hold — ${a.watch_note || 'compliance review'}`, actor: 'MGA Compliance' },
+    { ts: '2026-04-15 14:20', event: 'E&O renewal reminder sent (3rd notice)',                  actor: 'MGA Operations' },
+    { ts: '2026-04-01 10:15', event: 'New submission auto-declined · agent on hold',            actor: 'System' },
+    { ts: '2026-03-18 11:30', event: 'Compliance team notified · hold triggered',               actor: 'Auto-compliance' }
+  ] : a.stage === 'Application' ? [
+    { ts: '2026-04-17 15:22', event: `Background check in progress (${a.application_progress}% complete)`, actor: 'MGA Compliance' },
+    { ts: '2026-04-12 11:40', event: 'License verification via NIPR · all states confirmed',              actor: 'Auto-verification' },
+    { ts: '2026-04-08 09:30', event: 'E&O certificate received and validated',                           actor: 'MGA Compliance' },
+    { ts: '2026-04-05 14:00', event: `Application submitted · projected annual volume $${(a.projected_volume || 0).toLocaleString()}`, actor: a.primary },
+    { ts: '2026-04-02 10:20', event: `Referred by ${a.referrer || 'cold outreach'}`, actor: 'MGA BDR' }
+  ] : [
+    { ts: '2026-04-16 11:00', event: `Initial outreach · exec meeting scheduled ${a.expected_appt || 'TBD'}`, actor: 'MGA BDR' },
+    { ts: '2026-04-10 14:30', event: `Referred by ${a.referrer || 'cold outreach'}`,                          actor: a.referrer || 'MGA BDR' },
+    { ts: '2026-04-05 09:15', event: 'Discovery call completed · target lines discussed',                     actor: 'MGA BDR' }
+  ];
+  return {
+    id: a.id,
+    name: a.name,
+    dba: /companies|mclennan|solutions|insurance services/i.test(a.name) ? null : a.name.split(' ').slice(0, 2).join(' '),
+    entity_type: entity,
+    fein,
+    npn: a.npn,
+    website: `${nameCompact}.com`,
+    founded,
+    employees,
+    primary_contact: { name: a.primary, title: a.tier === 'tier1' ? 'Principal' : 'Senior Producer', email: a.contact, phone: a.phone, decision_maker: true },
+    other_contacts: otherContacts,
+    address,
+    licenses,
+    appointments,
+    commission_structure: commStruct,
+    eo_insurance: eo,
+    contract,
+    performance_scorecard: scorecard,
+    documents,
+    qbr_history: qbrHistory,
+    activity_timeline: activity,
+    projected_volume: a.projected_volume,
+    expected_appt: a.expected_appt,
+    referrer: a.referrer,
+    application_progress: a.application_progress,
+    watch_note: a.watch_note
+  };
+}
+
+function renderMgaAgentProfile() {
+  const a = D.mgaAgents.find(x => x.id === state.currentAgentId) || D.mgaAgents[0];
+  const d = _mgaBuildAgentDetail(a);
+  const sc = d.performance_scorecard;
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-agents-directory'})" style="padding:4px 8px; margin-left:-8px;">← Back to Directory</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="flex:1;">
+      <div style="display:flex; align-items:center; gap:var(--space-sm); flex-wrap:wrap;">
+        <h2 style="margin:0;">${a.name}</h2>
+        ${_mgaTierBadge(a.tier)}
+        ${_mgaHealthDot(a.health)}
+        ${badge(a.stage==='Active'?'green':a.stage==='On Hold'?'red':'amber', a.stage)}
+      </div>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px; font-family:monospace;">${a.id} · NPN ${a.npn || '—'} · Joined ${a.joined || '—'} · ${a.primary} · ${a.phone}</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm); flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="window.showAlert('Messaging ${a.primary}')">💬 Message</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Schedule QBR with ${a.name}')">📅 Schedule QBR</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Adjust tier / commission / authority')">⚙ Adjust Terms</button>
+      ${a.stage === 'Active' ? `<button class="btn btn-danger" onclick="window.showAlert('Place ${a.name} on hold — confirm?')">⏸ Place on Hold</button>` : ''}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Performance Score</div><div class="kpi-value" style="color:${a.performance_score===null?'var(--text-muted)':a.performance_score>=80?'var(--status-green)':a.performance_score>=65?'var(--mga-accent)':a.performance_score>=50?'var(--status-amber)':'var(--status-red)'};">${a.performance_score===null?'—':a.performance_score}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Premium YTD</div><div class="kpi-value" style="font-size:1.3rem;">$${(a.premium_ytd/1e6).toFixed(2)}M</div></div>
+    <div class="kpi-card"><div class="kpi-label">Bind Ratio</div><div class="kpi-value" style="color:${a.bind_ratio>=55?'var(--status-green)':a.bind_ratio>=40?'var(--mga-accent)':'var(--status-amber)'};">${a.bind_ratio}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Loss Ratio</div><div class="kpi-value" style="color:${a.loss_ratio<=45?'var(--status-green)':a.loss_ratio<=60?'var(--mga-accent)':'var(--status-red)'};">${a.loss_ratio}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Retention</div><div class="kpi-value">${a.retention}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Active Policies</div><div class="kpi-value">${a.active_policies}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Pending Comm</div><div class="kpi-value" style="font-size:1.3rem;">$${(a.pending_comm/1000).toFixed(1)}k</div></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📋 BUSINESS PROFILE</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap: 10px 16px; font-size:0.88rem; line-height:1.5;">
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">DBA</div><strong>${d?.dba || '—'}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">Entity</div><strong>${d?.entity_type || '—'}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">FEIN</div><strong style="font-family:monospace;">${d?.fein || '—'}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">Website</div><strong style="color:var(--mga-accent);">${d?.website || '—'}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">Founded</div><strong>${d?.founded || '—'}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">Employees</div><strong>${d?.employees || '—'}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">Producers</div><strong>${a.producers}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem;">States</div><strong>${a.states}</strong></div>
+        <div style="grid-column:1/-1;"><div style="color:var(--text-muted); font-size:0.72rem;">Address</div><strong>${d?.address || '—'}</strong></div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">👤 CONTACTS (${d ? (1 + d.other_contacts.length) : 1})</div>
+      <div style="background:var(--bg-card); padding: var(--space-sm); border-radius:var(--radius-sm); margin-bottom: var(--space-sm); border-left: 3px solid var(--mga-accent);">
+        <div style="font-size:0.72rem; color:var(--mga-accent); font-weight:700;">⭐ PRIMARY</div>
+        <strong>${a.primary}</strong>
+        <div style="color:var(--text-muted); font-size:0.72rem;">${d?.primary_contact?.title || a.primary} · ${a.contact} · ${a.phone}</div>
+      </div>
+      ${d?.other_contacts.map(c => `
+        <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+          <strong style="font-size:0.85rem;">${c.name}</strong>
+          <div style="color:var(--text-muted); font-size:0.72rem;">${c.title} · ${c.email}</div>
+        </div>`).join('') || ''}
+    </div>
+  </div>
+
+  ${sc ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">🏅 PERFORMANCE SCORECARD</div>
+      <div class="mga-scorecard">
+        ${Object.entries(sc).map(([key, v]) => {
+          const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          const suffix = key.includes('ratio') || key === 'retention' || key === 'quality_score' ? '%' : key === 'avg_premium' ? '' : '';
+          const prefix = key === 'avg_premium' ? '$' : '';
+          const displayVal = key === 'avg_premium' ? v.value.toLocaleString() : v.value;
+          const isHighGood = key !== 'loss_ratio';
+          const isGood = isHighGood ? v.percentile >= 80 : v.percentile >= 80;
+          return `
+            <div class="mga-score-tile">
+              <div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">${label}</div>
+              <div style="font-size:1.6rem; font-weight:800; color:${isGood?'var(--status-green)':v.percentile>=60?'var(--mga-accent)':'var(--status-amber)'}; margin-top:2px;">${prefix}${displayVal}${suffix}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">${v.rank} · ${v.percentile}th pctile</div>
+              <div style="font-size:0.75rem; color:${v.trend==='up'?'var(--status-green)':v.trend==='down'?(isHighGood?'var(--status-amber)':'var(--status-green)'):'var(--text-muted)'}; margin-top:2px;">${v.trend==='up'?'↗ improving':v.trend==='down'?'↘ declining':'→ stable'}</div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+  ` : ''}
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🪪 LICENSES &amp; APPOINTMENTS</div>
+      ${d?.npn ? `<div style="margin-bottom: var(--space-sm); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem;"><strong>NPN:</strong> <span style="font-family:monospace; color:var(--mga-accent);">${d.npn}</span> <span style="color:var(--text-muted);">· National Producer Number · verified via NIPR</span></div>` : ''}
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>State</th><th>NPN</th><th>State License #</th><th>Type</th><th>Status</th><th>Expires</th></tr></thead>
+        <tbody>
+          ${(d?.licenses || []).map(l => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${l.state}</strong></td>
+            <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${l.npn || '—'}</td>
+            <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${l.license_no}</td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${l.type}</td>
+            <td style="white-space:nowrap;">${badge('green', l.status)}</td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${l.expires}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+      <div style="margin-top: var(--space-md);">
+        <div class="section-title" style="margin-top:var(--space-sm); font-size:0.72rem;">APPOINTMENTS / AUTHORITY</div>
+        ${(d?.appointments || []).map(app => `
+          <div style="display:flex; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle); font-size:0.85rem;">
+            <div>
+              <strong>${app.lob}</strong>
+              <div style="color:var(--text-muted); font-size:0.72rem;">${app.states}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="color:var(--mga-accent); font-size:0.82rem; font-weight:600;">${app.authority}</div>
+              <div style="color:var(--text-muted); font-size:0.7rem;">Since ${app.effective}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">💰 COMMISSION STRUCTURE</div>
+      ${d?.commission_structure ? `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px 16px; font-size:0.85rem;">
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">New Business</div><strong style="font-size:1.1rem; color:var(--status-green);">${d.commission_structure.new_business}%</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Renewal</div><strong style="font-size:1.1rem; color:var(--status-green);">${d.commission_structure.renewal}%</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Bonus Threshold</div><strong>$${(d.commission_structure.bonus_threshold/1e6).toFixed(1)}M / yr</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Bonus Rate</div><strong>+${d.commission_structure.bonus_rate}%</strong></div>
+          <div style="grid-column:1/-1;"><div style="color:var(--text-muted); font-size:0.72rem;">Contingent / Profit Share</div><strong>${d.commission_structure.contingent}</strong></div>
+        </div>
+      ` : '<div style="color:var(--text-muted); font-size:0.85rem;">Standard tier-based commission. See Commission Rules for details.</div>'}
+      <div style="margin-top:var(--space-md); padding-top:var(--space-md); border-top:1px solid var(--border-subtle);">
+        <div class="section-title" style="margin-top:0; font-size:0.72rem;">E&amp;O INSURANCE</div>
+        <div style="font-size:0.85rem; line-height:1.7;">
+          <div><strong>${d?.eo_insurance?.carrier || '—'}</strong> · Limit ${d?.eo_insurance?.limit || '—'}</div>
+          <div style="color:var(--text-muted); font-size:0.75rem;">Expires ${d?.eo_insurance?.expires || '—'} · Uploaded ${d?.eo_insurance?.uploaded || '—'}</div>
+        </div>
+      </div>
+      <div style="margin-top:var(--space-md); padding-top:var(--space-md); border-top:1px solid var(--border-subtle);">
+        <div class="section-title" style="margin-top:0; font-size:0.72rem;">CONTRACT</div>
+        <div style="font-size:0.85rem; line-height:1.7;">
+          <div><strong>${d?.contract?.version || '—'}</strong> · Signed ${d?.contract?.signed || '—'}</div>
+          <div style="color:var(--text-muted); font-size:0.75rem;">Auto-renew: ${d?.contract?.auto_renew?'Yes':'No'} · Next review ${d?.contract?.next_review || '—'}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📁 DOCUMENTS VAULT</div>
+      ${(d?.documents || []).map(doc => `
+        <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); align-items:center;">
+          <div style="font-size:1.6rem;">${doc.type==='Contract'?'📄':doc.type==='E&O'?'🛡':doc.type==='W-9'?'📰':doc.type==='Commission'?'💰':doc.type==='License'?'🪪':'📋'}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:0.85rem; font-weight:600;">${doc.name}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${doc.type} · ${badge('green', doc.status)} · ${doc.signed ? 'Signed ' + doc.signed : doc.uploaded ? 'Uploaded ' + doc.uploaded : ''}${doc.expires ? ' · expires ' + doc.expires : ''}</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Downloading ${doc.name}')">⬇</button>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">${d.qbr_history.length > 0 ? '📅 QBR HISTORY' : '🚀 ONBOARDING STATUS'}</div>
+      ${d.qbr_history.length > 0 ? d.qbr_history.map(q => `
+        <div style="padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:0.88rem;">${q.date}</strong>
+            <strong style="font-size:1.1rem; color:${q.overall>=85?'var(--status-green)':'var(--mga-accent)'};">${q.overall}</strong>
+          </div>
+          ${q.highlights.length > 0 ? `<div style="margin-top:4px;">${q.highlights.map(h => `<div style="font-size:0.78rem; color:var(--status-green);">✓ ${h}</div>`).join('')}</div>` : ''}
+          ${q.concerns.length > 0 ? `<div style="margin-top:4px;">${q.concerns.map(c => `<div style="font-size:0.78rem; color:var(--status-amber);">⚠ ${c}</div>`).join('')}</div>` : ''}
+          <div style="color:var(--text-muted); font-size:0.7rem; margin-top:4px;">Next QBR: ${q.next_date}</div>
+        </div>`).join('') : `
+        <div style="padding: var(--space-sm) 0;">
+          <div style="font-size:0.85rem; line-height:1.7;">
+            <div style="display:flex; justify-content:space-between; padding: 4px 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Stage</span><strong>${a.stage}</strong></div>
+            ${d.application_progress !== undefined ? `<div style="display:flex; justify-content:space-between; padding: 4px 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Application progress</span><strong>${d.application_progress}%</strong></div>` : ''}
+            ${d.projected_volume ? `<div style="display:flex; justify-content:space-between; padding: 4px 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Projected annual volume</span><strong>$${(d.projected_volume/1e6).toFixed(2)}M</strong></div>` : ''}
+            ${d.expected_appt ? `<div style="display:flex; justify-content:space-between; padding: 4px 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Expected appointment</span><strong>${d.expected_appt}</strong></div>` : ''}
+            ${d.referrer ? `<div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">Referred by</span><strong>${d.referrer}</strong></div>` : ''}
+          </div>
+          ${d.application_progress !== undefined ? `
+            <div style="margin-top: var(--space-md);">
+              <div style="color:var(--text-muted); font-size:0.72rem; margin-bottom:4px;">ONBOARDING COMPLETE</div>
+              <div style="background:var(--bg-card); height:10px; border-radius:5px; overflow:hidden;"><div style="height:100%; width:${d.application_progress}%; background:linear-gradient(90deg, var(--mga-accent), var(--status-green));"></div></div>
+            </div>
+          ` : ''}
+          ${a.watch_note ? `<div style="margin-top: var(--space-md); padding: var(--space-sm); background: rgba(255,171,0,0.1); border-left: 3px solid var(--status-amber); border-radius:var(--radius-sm); font-size:0.78rem;">⚠ ${a.watch_note}</div>` : ''}
+          <button class="btn btn-primary btn-sm" style="width:100%; margin-top:var(--space-md);" onclick="window.setState({screen:'mga-agent-onboarding', mgaAgentOnbStep:1})">Open Onboarding Wizard →</button>
+        </div>
+      `}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">📜 ACTIVITY TIMELINE</div>
+    ${(d?.activity_timeline || []).map(t => `
+      <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); font-size:0.85rem;">
+        <div style="color:var(--text-muted); font-family:monospace; font-size:0.72rem; min-width:140px;">${t.ts}</div>
+        <div style="flex:1;">${t.event}</div>
+        <div style="color:var(--text-muted); font-size:0.72rem;">${t.actor}</div>
+      </div>`).join('') || '<div style="color:var(--text-muted); font-size:0.85rem;">No recent activity.</div>'}
+  </div>`;
+}
+
+function renderMgaAgentOnboarding() {
+  const step = state.mgaAgentOnbStep || 1;
+  const steps = D.mgaAgentOnboardingSteps;
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-agents'})" style="padding:4px 8px; margin-left:-8px;">← Back to Dashboard</button>
+  </div>
+  <div style="margin-bottom: var(--space-lg);">
+    <h2 style="margin:0;">Agent Onboarding Wizard</h2>
+    <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">5-step appointment flow · auto-validates licenses · digital contract signing · instant portal provisioning</div>
+  </div>
+
+  ${_mgaAgentSubNav('mga-agent-onboarding')}
+
+  <div class="market-stepper" style="margin-bottom: var(--space-lg);">
+    ${steps.map((s, idx) => `
+      <div class="market-step${idx+1 === step ? ' active' : ''}${idx+1 < step ? ' done' : ''}">
+        <div class="market-step-num">${idx+1 < step ? '✓' : idx+1}</div>
+        <div class="market-step-label">${s.label}</div>
+      </div>
+      ${idx < steps.length - 1 ? '<div class="market-step-line"></div>' : ''}`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-xl); margin-bottom: var(--space-lg);">
+    ${step === 1 ? `
+      <h3 style="margin-top:0;">Step 1 — Application</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Collect agency info, license history, and E&amp;O. Applicant completes fields via a branded external link.</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md);">
+        <div class="form-group"><label class="form-label">Agency Name</label><input class="form-input" placeholder="Acme Insurance Agency"/></div>
+        <div class="form-group"><label class="form-label">DBA (if any)</label><input class="form-input"/></div>
+        <div class="form-group"><label class="form-label">Entity Type</label><select class="form-input"><option>LLC</option><option>Corporation</option><option>Sole Proprietor</option><option>Partnership</option></select></div>
+        <div class="form-group"><label class="form-label">Year Founded</label><input class="form-input" type="number" placeholder="2015"/></div>
+        <div class="form-group"><label class="form-label">FEIN</label><input class="form-input" placeholder="XX-XXXXXXX"/></div>
+        <div class="form-group"><label class="form-label">Annual Production Volume</label><input class="form-input" placeholder="$5M"/></div>
+        <div class="form-group"><label class="form-label">Primary Contact</label><input class="form-input"/></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email"/></div>
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Business Address</label><input class="form-input"/></div>
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">States Licensed</label><input class="form-input" placeholder="CA, NV, OR, WA — or 'All 50'"/></div>
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Lines of Business Requested</label><input class="form-input" placeholder="WC, GL, BOP, Auto, Cyber"/></div>
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Upload license + E&amp;O</label><input class="form-input" type="file" multiple/></div>
+      </div>
+    ` : step === 2 ? `
+      <h3 style="margin-top:0;">Step 2 — Due Diligence &amp; Compliance</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Automated checks run in parallel — typically completes within 24 hours.</div>
+      <div style="display:flex; flex-direction:column; gap:var(--space-sm);">
+        ${[
+          { label: 'State DOI License Verification', status: 'Verified', detail: 'All 5 states confirmed · no disciplinary actions' },
+          { label: 'E&O Insurance Validation',        status: 'Verified', detail: 'Scottsdale $2M/$4M · expires 2027-01-15' },
+          { label: 'AML / OFAC Screening',            status: 'Clean',    detail: 'No matches on sanctions or PEP lists' },
+          { label: 'Background Check',                 status: 'Clean',    detail: '10-year background · no criminal history' },
+          { label: 'Credit / Financial Check',         status: 'Pass',     detail: 'D&B PAYDEX 82 · no bankruptcies' },
+          { label: 'Carrier References',               status: 'In Progress', detail: '2 of 3 references received' }
+        ].map(c => `
+          <div class="cust-autopay-row">
+            <div style="font-size:1.6rem;">${c.status.includes('Verified')||c.status.includes('Clean')||c.status.includes('Pass')?'✅':'⏳'}</div>
+            <div style="flex:1;">
+              <strong>${c.label}</strong>
+              <div style="color:var(--text-muted); font-size:0.78rem;">${c.detail}</div>
+            </div>
+            ${badge(c.status.includes('Verified')||c.status.includes('Clean')||c.status.includes('Pass')?'green':'amber', c.status)}
+          </div>`).join('')}
+      </div>
+    ` : step === 3 ? `
+      <h3 style="margin-top:0;">Step 3 — Contract &amp; Appointment</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Configure appointment terms and send for digital signing. Contract uses DocuSign.</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md);">
+        <div class="form-group"><label class="form-label">Starting Tier</label><select class="form-input"><option>Tier 3 — Developing (probation)</option><option>Tier 2 — Standard</option><option>Tier 1 — Preferred (requires exec approval)</option></select></div>
+        <div class="form-group"><label class="form-label">Effective Date</label><input class="form-input" type="date" value="2026-05-01"/></div>
+        <div class="form-group"><label class="form-label">New Business Commission %</label><input class="form-input" value="10.0"/></div>
+        <div class="form-group"><label class="form-label">Renewal Commission %</label><input class="form-input" value="10.0"/></div>
+        <div class="form-group"><label class="form-label">Binding Authority Cap</label><select class="form-input"><option>$150,000 (standard)</option><option>$250,000</option><option>$500,000</option><option>Refer all to MGA</option></select></div>
+        <div class="form-group"><label class="form-label">Contingent / Profit Share</label><select class="form-input"><option>None (probation)</option><option>1% after 12 mo</option><option>2% after 12 mo</option></select></div>
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">LOBs Approved</label><input class="form-input" value="WC, GL, BOP"/></div>
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Territories</label><input class="form-input" value="CA, NV, OR, WA, AZ"/></div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background: rgba(108,92,231,0.1); border-radius:var(--radius-sm); font-size:0.85rem;">
+        ℹ Contract v3.2 (standard appointment agreement) will be sent to <strong>sarah@bridgepoint.com</strong> via DocuSign on Continue.
+      </div>
+    ` : step === 4 ? `
+      <h3 style="margin-top:0;">Step 4 — Portal Setup</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Provision the agent sub-portal with product access, branding, and welcome kit.</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md);">
+        <div class="form-group"><label class="form-label">Portal URL</label><input class="form-input" value="acme.mga-portal.com" disabled/></div>
+        <div class="form-group"><label class="form-label">Admin Login</label><input class="form-input" value="sarah@bridgepoint.com"/></div>
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Products Enabled</label><div class="radio-group"><span class="radio-pill active">WC</span><span class="radio-pill active">GL</span><span class="radio-pill active">BOP</span><span class="radio-pill">Auto</span><span class="radio-pill">Cyber</span><span class="radio-pill">Property</span></div></div>
+      </div>
+      <div style="margin-top: var(--space-md); display:flex; flex-direction:column; gap:var(--space-sm);">
+        ${[
+          'Welcome email sent to primary contact',
+          'Welcome kit PDF attached (product guides, rating sheets)',
+          '2 training videos scheduled (onboarding + first submission walkthrough)',
+          'Agent added to monthly newsletter list',
+          'Test submission environment ready'
+        ].map(i => `
+          <div style="display:flex; gap: var(--space-sm); align-items:center; padding: 6px 0; font-size:0.88rem;">
+            <span style="width:20px; height:20px; border-radius:50%; background:var(--status-green); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:0.7rem;">✓</span>
+            ${i}
+          </div>`).join('')}
+      </div>
+    ` : `
+      <div style="text-align:center; padding: var(--space-xl) 0;">
+        <div style="font-size:5rem; margin-bottom: var(--space-md);">🎉</div>
+        <h3 style="margin:0;">Appointment Complete — Go-Live</h3>
+        <div style="color:var(--text-muted); margin-top: var(--space-sm);">New agent: <strong style="font-family:monospace; color:var(--mga-accent); font-size:1.1rem;">AGT-2042</strong></div>
+        <div style="margin-top: var(--space-lg); padding: var(--space-lg); background: rgba(0,230,118,0.1); border-radius:var(--radius-md); display:inline-block; text-align:left; font-size:0.88rem; line-height:1.9;">
+          ✓ Contract signed and filed<br/>
+          ✓ Portal login delivered<br/>
+          ✓ Probation period starts 2026-05-01 (12 months)<br/>
+          ✓ First submission review scheduled<br/>
+          ✓ Quarterly QBR cadence activated<br/>
+          ✓ Auto-scoring enabled · tier movement reviewed quarterly
+        </div>
+      </div>
+    `}
+  </div>
+
+  ${step < 5 ? `
+    <div style="display:flex; justify-content:space-between;">
+      <button class="btn btn-secondary" ${step === 1 ? 'disabled' : ''} onclick="window.setState({mgaAgentOnbStep:${Math.max(1, step-1)}})">← Back</button>
+      <button class="btn btn-primary" onclick="window.setState({mgaAgentOnbStep:${step+1}})">${step === 4 ? '🚀 Finalize Appointment' : 'Continue →'}</button>
+    </div>
+  ` : `
+    <div style="display:flex; gap:var(--space-sm); justify-content:center;">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-agents', mgaAgentOnbStep:1})">Back to Dashboard</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-agent-profile', currentAgentId:'AGT-2038', mgaAgentOnbStep:1})">View New Agent Profile →</button>
+    </div>
+  `}`;
+}
+
+function renderMgaAgentScorecards() {
+  const agents = D.mgaAgents.filter(a => a.stage === 'Active');
+  const sortBy = state.mgaScorecardSort || 'score';
+  let rows = [...agents];
+  if (sortBy === 'score') rows.sort((a,b) => (b.performance_score || 0) - (a.performance_score || 0));
+  if (sortBy === 'premium') rows.sort((a,b) => b.premium_ytd - a.premium_ytd);
+  if (sortBy === 'bind') rows.sort((a,b) => b.bind_ratio - a.bind_ratio);
+  if (sortBy === 'lr') rows.sort((a,b) => a.loss_ratio - b.loss_ratio);
+  if (sortBy === 'retention') rows.sort((a,b) => b.retention - a.retention);
+  if (sortBy === 'quality') rows.sort((a,b) => b.quality - a.quality);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Performance Scorecards</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Real-time scorecards across ${agents.length} active agents · auto-tier movement weekly</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Running auto-scoring batch · tier movements will apply at 12am Pacific')">🔄 Run Auto-Scoring</button>
+  </div>
+
+  ${_mgaAgentSubNav('mga-agent-scorecards')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+      <span style="color:var(--text-muted); font-size:0.82rem; padding:6px 4px;">Sort by:</span>
+      ${[
+        {k:'score',      l:'Performance Score'},
+        {k:'premium',    l:'Premium YTD'},
+        {k:'bind',       l:'Bind Ratio'},
+        {k:'lr',         l:'Loss Ratio'},
+        {k:'retention',  l:'Retention'},
+        {k:'quality',    l:'Quality Score'}
+      ].map(s => `<div class="cust-pill${sortBy===s.k?' active':''}" onclick="window.setState({mgaScorecardSort:'${s.k}'})">${s.l}</div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div style="margin-bottom: var(--space-sm); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--text-muted);">
+      💡 <strong>Performance Score</strong> is a weighted composite: Premium (25%) · Bind Ratio (20%) · Loss Ratio (25%, inverted) · Retention (15%) · Quality (15%). Recalculated weekly.
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Rank</th><th>Agent</th><th>Tier</th><th>Score</th><th>Submissions</th><th>Bind Ratio</th><th>Loss Ratio</th><th>Avg Premium</th><th>Retention</th><th>Quality</th><th>Premium YTD</th><th>Movement</th></tr></thead>
+      <tbody>
+        ${rows.map((a, i) => `
+        <tr onclick="window.setState({screen:'mga-agent-profile', currentAgentId:'${a.id}'})" style="cursor:pointer;">
+          <td style="white-space:nowrap; font-weight:700;">${i < 3 ? ['🥇','🥈','🥉'][i] : '#' + (i+1)}</td>
+          <td style="white-space:nowrap;"><strong>${a.name}</strong></td>
+          <td style="white-space:nowrap;">${_mgaTierBadge(a.tier)}</td>
+          <td style="white-space:nowrap;"><strong style="font-size:1.05rem; color:${a.performance_score>=80?'var(--status-green)':a.performance_score>=65?'var(--mga-accent)':a.performance_score>=50?'var(--status-amber)':'var(--status-red)'};">${a.performance_score}</strong></td>
+          <td style="white-space:nowrap;">${a.submissions_ytd}</td>
+          <td style="white-space:nowrap;"><strong style="color:${a.bind_ratio>=55?'var(--status-green)':a.bind_ratio>=40?'var(--mga-accent)':'var(--status-amber)'};">${a.bind_ratio}%</strong></td>
+          <td style="white-space:nowrap;"><strong style="color:${a.loss_ratio<=45?'var(--status-green)':a.loss_ratio<=60?'var(--mga-accent)':'var(--status-red)'};">${a.loss_ratio}%</strong></td>
+          <td style="white-space:nowrap;">$${Math.round(a.premium_ytd/Math.max(1,a.active_policies)).toLocaleString()}</td>
+          <td style="white-space:nowrap;">${a.retention}%</td>
+          <td style="white-space:nowrap;"><strong style="color:${a.quality>=85?'var(--status-green)':a.quality>=70?'var(--mga-accent)':'var(--status-amber)'};">${a.quality}</strong></td>
+          <td style="white-space:nowrap;"><strong>$${(a.premium_ytd/1e6).toFixed(2)}M</strong></td>
+          <td style="white-space:nowrap; font-size:0.72rem;">${a.tier==='tier1' && a.loss_ratio > 55 ? '<span style="color:var(--status-amber);">⚠ LR watch</span>' : a.tier==='tier2' && a.bind_ratio >= 55 && a.loss_ratio <= 45 ? '<span style="color:var(--status-green);">↗ Tier 1 candidate</span>' : a.tier==='tier3' && a.quality >= 80 ? '<span style="color:var(--status-green);">↗ Tier 2 eligible</span>' : '—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-top:var(--space-lg);">
+    <div class="section-title">🎯 TIER PROGRAM RULES</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);">
+      ${D.mgaAgentTiers.map(t => `
+        <div class="mga-tier-card mga-tier-card-${t.key}">
+          <div class="mga-tier-card-head">${t.label}</div>
+          <div style="color:var(--text-secondary); font-size:0.82rem; line-height:1.5; margin-top:var(--space-sm);">${t.desc}</div>
+          <div style="margin-top:var(--space-md); font-size:0.78rem;">
+            <strong>Qualify:</strong> ${t.key==='tier1'?'Premium ≥ $3M · Bind ≥ 55% · LR ≤ 45% · Quality ≥ 85':t.key==='tier2'?'Premium ≥ $800k · Bind ≥ 45% · LR ≤ 55% · Quality ≥ 75':'New appointment (12mo probation) · all others'}
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderMgaAgentCommissions() {
+  const comm = D.mgaAgentCommissions;
+  const pending = comm.filter(c => c.status === 'Pending Approval');
+  const paid = comm.filter(c => c.status === 'Paid');
+  const processing = comm.filter(c => c.status === 'Processing');
+  const totalPending = pending.reduce((s,c) => s + c.total, 0);
+  const totalPaid = paid.reduce((s,c) => s + c.total, 0);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Commission Management</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Approve, process, and audit commission statements across all agents</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Exporting commission register')">📥 Export</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Batch-approving ' + ${pending.length} + ' pending commissions totaling $' + ${totalPending}.toLocaleString())">✓ Approve All Pending ($${totalPending.toLocaleString()})</button>
+    </div>
+  </div>
+
+  ${_mgaAgentSubNav('mga-agent-commissions')}
+
+  <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Pending Approval</div><div class="kpi-value warning">${pending.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Pending $</div><div class="kpi-value" style="color:var(--status-amber); font-size:1.4rem;">$${(totalPending/1000).toFixed(1)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Processing</div><div class="kpi-value">${processing.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Paid (Month)</div><div class="kpi-value" style="color:var(--status-green); font-size:1.4rem;">$${(totalPaid/1000).toFixed(1)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">MGA Net Earned</div><div class="kpi-value" style="font-size:1.4rem;">$48k</div></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">📋 COMMISSION STATEMENTS — APRIL 2026</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Agent</th><th>Period</th><th>New Business</th><th>Renewal</th><th>Bonus</th><th>Overrides</th><th>Chargebacks</th><th>Total</th><th>Status</th><th>Paid</th><th>Method</th><th>Action</th></tr></thead>
+      <tbody>
+        ${comm.map(c => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${c.agent}</strong>${c.note?`<div style="color:var(--text-muted); font-size:0.7rem;">${c.note}</div>`:''}</td>
+          <td style="white-space:nowrap;">${c.period}</td>
+          <td style="white-space:nowrap;">$${c.new_business.toLocaleString()}</td>
+          <td style="white-space:nowrap;">$${c.renewal.toLocaleString()}</td>
+          <td style="white-space:nowrap; color:${c.bonus>0?'var(--status-green)':'var(--text-muted)'};">${c.bonus>0?'$'+c.bonus.toLocaleString():'—'}</td>
+          <td style="white-space:nowrap; color:${c.overrides>0?'var(--status-green)':'var(--text-muted)'};">${c.overrides>0?'$'+c.overrides.toLocaleString():'—'}</td>
+          <td style="white-space:nowrap; color:${c.chargebacks<0?'var(--status-red)':'var(--text-muted)'};">${c.chargebacks<0?'$'+c.chargebacks.toLocaleString():'—'}</td>
+          <td style="white-space:nowrap;"><strong style="font-size:0.95rem;">$${c.total.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${badge(c.statusColor, c.status)}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${c.paid_date}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${c.method}</td>
+          <td style="display:flex; gap:4px;">
+            ${c.status === 'Pending Approval' ? `
+              <button class="btn btn-primary btn-sm" onclick="window.showAlert('Approved ${c.agent} commission')">✓</button>
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Dispute ${c.agent} commission')">?</button>
+            ` : `
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Download statement ${c.agent} ' + c.period)">⬇</button>
+            `}
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">⚙ COMMISSION RULE CONFIGURATION</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Carrier</th><th>LOB</th><th>NB Rate</th><th>Renewal Rate</th><th>Bonus Structure</th><th>Contingent</th><th>Tier 1 Uplift</th><th>Tier 3 Haircut</th><th>Action</th></tr></thead>
+      <tbody>
+        ${D.mgaAgentCommissionRules.map(r => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${r.carrier}</strong></td>
+          <td style="white-space:nowrap;">${r.lob}</td>
+          <td style="white-space:nowrap;"><strong>${r.nb_rate}%</strong></td>
+          <td style="white-space:nowrap;"><strong>${r.renewal_rate}%</strong></td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.bonus}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.contingent}</td>
+          <td style="white-space:nowrap; color:var(--status-green);">${r.tier1_uplift}</td>
+          <td style="white-space:nowrap; color:var(--status-amber);">${r.tier3_haircut}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="window.showAlert('Edit ${r.carrier} / ${r.lob} rules')">Edit</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaAgentAccess() {
+  const activeAgents = D.mgaAgents.filter(a => a.stage === 'Active');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Agent Portal Access &amp; Settings</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Manage sub-portal logins, product permissions, and branding templates · ${activeAgents.length} active portals</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.setState({screen:'mga-agent-broadcast'})">📧 New Broadcast</button>
+  </div>
+
+  ${_mgaAgentSubNav('mga-agent-access')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">🔐 AGENT SUB-PORTAL ACCESS (${activeAgents.length})</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Agent</th><th>Portal URL</th><th>Admin User</th><th>Products</th><th>Authority Cap</th><th>2FA</th><th>Last Login</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        ${activeAgents.map(a => {
+          const subdomain = a.name.toLowerCase().replace(/[^a-z]/g,'').slice(0,12);
+          const hoursSinceLogin = a.submissions_30d > 20 ? 2 : a.submissions_30d > 10 ? 18 : a.submissions_30d > 5 ? 52 : 120;
+          const lastLogin = hoursSinceLogin < 24 ? `${hoursSinceLogin}h ago` : `${Math.floor(hoursSinceLogin/24)}d ago`;
+          return `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${a.name}</strong><div style="color:var(--text-muted); font-size:0.7rem; font-family:monospace;">${a.id}</div></td>
+            <td style="font-family:monospace; font-size:0.75rem; white-space:nowrap; color:var(--mga-accent);">${subdomain}.mga-portal.com</td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${a.contact}</td>
+            <td style="font-size:0.78rem; white-space:nowrap;">${a.lobs.slice(0,3).join(', ')}${a.lobs.length>3?' +'+(a.lobs.length-3):''}</td>
+            <td style="white-space:nowrap;">${a.tier==='tier1'?'$500k':a.tier==='tier2'?'$250k':'$150k'}</td>
+            <td style="white-space:nowrap;">${badge('green', 'Enabled')}</td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${lastLogin}</td>
+            <td style="white-space:nowrap;">${badge('green', 'Active')}</td>
+            <td style="display:flex; gap:4px;">
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Editing ${a.name} permissions')">⚙ Permissions</button>
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Suspending ${a.name} portal access — user will be logged out immediately')">⏸ Suspend</button>
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Impersonating ${a.name} — action logged to audit trail')">👁 Impersonate</button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🎨 AGENT BRANDING &amp; TEMPLATES</div>
+      <div style="font-size:0.85rem; line-height:1.7; color:var(--text-secondary); margin-bottom: var(--space-md);">
+        Each agent can white-label their sub-portal with their own logo, colors, producer photos, and email templates.
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); margin-bottom: var(--space-md); font-size:0.82rem;">
+        <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">BRANDED PORTALS</div><strong>28 of ${activeAgents.length}</strong></div>
+        <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">TEMPLATE VERSIONS</div><strong>12 active</strong></div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:100%;" onclick="window.setState({screen:'mga-agent-templates'})">Manage Branding Templates →</button>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📢 BULK COMMUNICATIONS</div>
+      <div style="font-size:0.82rem; line-height:1.8;">
+        <div style="display:flex; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);"><span>📧 Monthly newsletter</span><strong>142 recipients</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);"><span>📣 Rate change announcements</span><strong>Automated</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);"><span>🎓 Training webinars</span><strong>Quarterly</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 6px 0;"><span>📋 Appetite changes</span><strong>Instant notify</strong></div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:100%; margin-top:var(--space-md);" onclick="window.setState({screen:'mga-agent-broadcast'})">Open Broadcast Composer →</button>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">🛡 AUDIT LOG — LAST 7 DAYS</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Timestamp</th><th>Agent</th><th>User</th><th>Action</th><th>IP</th></tr></thead>
+      <tbody>
+        ${[
+          { ts: '2026-04-19 09:22', agent: 'Bridgepoint',    user: 'Sarah Chen',     action: 'Logged in · viewed submissions',           ip: '72.14.188.4' },
+          { ts: '2026-04-18 15:40', agent: 'Lockton',         user: 'Sarah Mitchell', action: 'Bound policy SEMC-WC-2025-48821',          ip: '208.54.42.8' },
+          { ts: '2026-04-18 11:22', agent: 'Hub International',user: 'Mike Torres',   action: 'Updated producer roster — added 2',        ip: '98.42.113.22'},
+          { ts: '2026-04-17 16:04', agent: 'USI Insurance',   user: 'Tom Chen',       action: 'Accessed appetite matrix',                 ip: '172.88.44.12'},
+          { ts: '2026-04-17 14:15', agent: 'Bridgepoint',    user: 'Lisa Park',      action: 'Uploaded loss run to submission',           ip: '72.14.188.4' },
+          { ts: '2026-04-16 09:50', agent: 'MGA Admin',       user: 'Marc D.',        action: 'Impersonated USI Insurance · audit',       ip: '10.0.0.42'   }
+        ].map(l => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${l.ts}</td>
+          <td style="white-space:nowrap;"><strong>${l.agent}</strong></td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${l.user}</td>
+          <td style="font-size:0.82rem;">${l.action}</td>
+          <td style="font-family:monospace; font-size:0.78rem; color:var(--text-muted);">${l.ip}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaAgentAnalytics() {
+  const a = D.mgaAgentAnalytics;
+  const maxLob = Math.max(...a.lob_mix.map(x => x.premium));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Agent Analytics</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Production by tier · LOB mix · retention trend · submission quality</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <select class="form-input" style="width:160px;"><option>Last 12 months</option><option>YTD</option><option>Trailing 24 months</option></select>
+      <button class="btn btn-primary" onclick="window.showAlert('Export queued')">Export</button>
+    </div>
+  </div>
+
+  ${_mgaAgentSubNav('mga-agent-analytics')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">PRODUCTION BY TIER</div>
+    ${a.production_by_tier.map(t => `
+      <div style="margin-bottom: var(--space-md);">
+        <div style="display:flex; justify-content:space-between; font-size:0.88rem; margin-bottom:4px;">
+          <span><strong>${t.tier}</strong> <span style="color:var(--text-muted);">· ${t.agents} agents · Bind ${t.bind_ratio}% · LR ${t.loss_ratio}%</span></span>
+          <span><strong>$${(t.premium_ytd/1e6).toFixed(1)}M</strong> <span style="color:var(--text-muted);">(${t.share}% of book)</span></span>
+        </div>
+        <div style="background:var(--bg-card); height:12px; border-radius:6px; overflow:hidden;"><div style="height:100%; width:${t.share}%; background:${t.tier.includes('Tier 1')?'linear-gradient(90deg, var(--status-green), #66bb6a)':t.tier.includes('Tier 2')?'linear-gradient(90deg, var(--mga-accent), #a67dff)':'var(--status-amber)'};"></div></div>
+      </div>`).join('')}
+    <div style="margin-top: var(--space-md); padding: var(--space-sm); background: rgba(0,230,118,0.1); border-radius:var(--radius-sm); font-size:0.82rem; color:var(--status-green);">
+      🎯 Goal: 70%+ of premium from Tier 1 · currently <strong>59%</strong> — push 3 Tier-2 candidates into Tier 1 to hit target.
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🏆 TOP 5 AGENTS</div>
+      <table class="data-table">
+        <thead><tr><th>Agent</th><th>Premium</th><th>Bind</th><th>LR</th><th>Ret</th></tr></thead>
+        <tbody>
+          ${a.top_agents.map(t => `
+          <tr>
+            <td><strong>${t.name}</strong></td>
+            <td style="white-space:nowrap;">$${(t.premium/1e6).toFixed(1)}M</td>
+            <td><strong style="color:var(--status-green);">${t.bind_ratio}%</strong></td>
+            <td><strong style="color:${t.loss_ratio<=45?'var(--status-green)':'var(--mga-accent)'};">${t.loss_ratio}%</strong></td>
+            <td>${t.retention}%</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">⚠ BOTTOM 3 AGENTS (needs attention)</div>
+      ${a.bottom_agents.map(t => `
+        <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>${t.name}</strong>
+            <strong style="color:var(--status-red);">LR ${t.loss_ratio}%</strong>
+          </div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">Premium $${(t.premium/1000).toFixed(0)}k · Bind ${t.bind_ratio}% · Ret ${t.retention}%</div>
+          <div style="color:var(--status-amber); font-size:0.78rem; margin-top:2px;">⚠ ${t.concern}</div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📊 LOB MIX ACROSS ALL AGENTS</div>
+      ${a.lob_mix.map(l => `
+        <div style="margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+            <strong>${l.lob}</strong>
+            <span><strong>$${(l.premium/1e6).toFixed(2)}M</strong> <span style="color:var(--text-muted);">(${l.share}%)</span></span>
+          </div>
+          <div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden;"><div style="height:100%; width:${(l.premium/maxLob)*100}%; background:linear-gradient(90deg, var(--mga-accent), #a67dff);"></div></div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📈 AGENT CHURN / GROWTH TREND</div>
+      <div style="display:flex; align-items:flex-end; gap:var(--space-sm); height:180px; padding-bottom: var(--space-md);">
+        ${a.retention_trend.map(q => `
+          <div style="flex:1; text-align:center;">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:1px; height:140px; justify-content:flex-end;">
+              <div style="background:var(--status-green); width:70%; height:${q.new*10}px; border-radius:var(--radius-sm) var(--radius-sm) 0 0;" title="New: ${q.new}"></div>
+              <div style="background:var(--status-red); width:70%; height:${q.terminated*10}px;" title="Terminated: ${q.terminated}"></div>
+            </div>
+            <div style="font-size:0.72rem; font-weight:600; margin-top:4px;">${q.q}</div>
+            <div style="color:var(--text-muted); font-size:0.68rem;">+${q.new}/-${q.terminated}</div>
+          </div>`).join('')}
+      </div>
+      <div style="display:flex; gap:var(--space-md); font-size:0.75rem; justify-content:center;">
+        <span><span style="display:inline-block; width:10px; height:10px; background:var(--status-green); border-radius:2px; margin-right:4px;"></span>New appointed</span>
+        <span><span style="display:inline-block; width:10px; height:10px; background:var(--status-red); border-radius:2px; margin-right:4px;"></span>Terminated</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">✅ SUBMISSION QUALITY — LAST 4 WEEKS</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Week</th><th>Submitted</th><th>Clean</th><th>Flagged</th><th>Rejected</th><th>Quality %</th></tr></thead>
+      <tbody>
+        ${a.submission_quality.map(w => { const pct = Math.round(w.clean / w.submitted * 100); return `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${w.week}</strong></td>
+          <td>${w.submitted}</td>
+          <td style="color:var(--status-green);"><strong>${w.clean}</strong></td>
+          <td style="color:var(--status-amber);">${w.flagged}</td>
+          <td style="color:var(--status-red);">${w.rejected}</td>
+          <td><strong style="color:${pct>=85?'var(--status-green)':pct>=75?'var(--mga-accent)':'var(--status-amber)'};">${pct}%</strong></td>
+        </tr>`; }).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaAgentBroadcast() {
+  const broadcasts = D.mgaAgentBroadcasts;
+  const templates = D.mgaAgentBroadcastTemplates;
+  const selectedTpl = state.mgaBroadcastTpl || templates[0].id;
+  const tpl = templates.find(t => t.id === selectedTpl) || templates[0];
+  const sent = broadcasts.filter(b => b.status === 'Sent');
+  const avgOpenRate = Math.round(sent.reduce((s,b) => s + (b.opened/Math.max(1,b.delivered))*100, 0) / Math.max(1, sent.length));
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-agent-access'})" style="padding:4px 8px; margin-left:-8px;">← Back to Portal Access</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Broadcast Composer</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Send newsletters, rate changes, appetite updates, and training invites to appointed agents</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-agent-templates'})">🎨 Templates</button>
+      <button class="btn btn-primary" onclick="window.showAlert('✓ Broadcast scheduled · 142 recipients · will send Apr 20 at 8:00 AM Pacific')">🚀 Schedule Send</button>
+    </div>
+  </div>
+
+  ${_mgaAgentSubNav('mga-agent-access')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Broadcasts Sent (30d)</div><div class="kpi-value">${sent.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Open Rate</div><div class="kpi-value" style="color:var(--status-green);">${avgOpenRate}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Active Templates</div><div class="kpi-value">${templates.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Drafts</div><div class="kpi-value warning">${broadcasts.filter(b => b.status === 'Draft').length}</div></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">✏ COMPOSE</div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Start from a template</label>
+        <select class="form-input" onchange="window.setState({mgaBroadcastTpl:this.value})">
+          ${templates.map(t => `<option value="${t.id}" ${selectedTpl===t.id?'selected':''}>${t.name} · ${t.channel} · ${t.open_rate}% avg open</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Audience</label>
+        <select class="form-input">
+          <option>${tpl.audience} · 142 agents</option>
+          <option>Tier 1 only · 12 agents</option>
+          <option>Tier 2 only · 68 agents</option>
+          <option>Tier 3 only · 62 agents</option>
+          <option>By LOB — Workers Comp · 84 agents</option>
+          <option>By LOB — General Liability · 96 agents</option>
+          <option>By state — California · 42 agents</option>
+          <option>Custom (pick manually)</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Channel</label>
+        <div class="radio-group">
+          <span class="radio-pill ${tpl.channel.includes('Email')?'active':''}">📧 Email</span>
+          <span class="radio-pill ${tpl.channel.includes('SMS')?'active':''}">💬 SMS</span>
+          <span class="radio-pill">🔔 Portal notification</span>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Subject</label>
+        <input class="form-input" placeholder="e.g. Q2 Appetite Update · SEMC adds CA class codes"/>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Message body <span style="color:var(--text-muted); font-size:0.72rem;">(variables: ${tpl.variables.map(v => '{{'+v+'}}').join(', ')})</span></label>
+        <textarea class="form-input" rows="8" placeholder="Hi {{agent_name}},&#10;&#10;We're writing to let you know that..."></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Schedule</label>
+        <div class="radio-group">
+          <span class="radio-pill active">Send now</span>
+          <span class="radio-pill">Schedule for later</span>
+          <span class="radio-pill">Save as draft</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="window.showAlert('✓ Preview rendered · 142 recipients · estimated delivery 8 minutes')">👁 Preview &amp; Send →</button>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📋 TEMPLATE PREVIEW — ${tpl.name}</div>
+      <div style="background:#fafaf6; color:#222; padding: var(--space-lg); border-radius:var(--radius-md); min-height:360px; font-family:Arial, sans-serif; font-size:0.82rem;">
+        <div style="border-bottom: 3px solid var(--mga-accent); padding-bottom:8px; margin-bottom: var(--space-md); display:flex; justify-content:space-between;">
+          <div>
+            <div style="font-size:0.65rem; color:#888;">MGA BROADCAST · ${tpl.category.toUpperCase()}</div>
+            <div style="font-weight:800; font-size:1.05rem;">Singlepoint MGA</div>
+          </div>
+          <div style="font-size:0.7rem; color:#888;">${tpl.channel}</div>
+        </div>
+        <div style="line-height:1.7;">
+          <p><strong>Subject:</strong> ${tpl.name}</p>
+          <p>Hi <em>{{agent_name}}</em>,</p>
+          <p>This is a preview of the <strong>${tpl.name}</strong> template. When sent, variables will be replaced with actual values for each recipient.</p>
+          <p><strong>Variables in this template:</strong></p>
+          <ul style="margin-left: 20px;">
+            ${tpl.variables.map(v => `<li style="margin-bottom: 4px;"><code style="background:#eee; padding:2px 6px; border-radius:3px; font-size:0.75rem;">{{${v}}}</code></li>`).join('')}
+          </ul>
+          <p style="margin-top: var(--space-md); color:#666; font-size:0.78rem;">— Your MGA team</p>
+        </div>
+        <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid #ddd; color:#888; font-size:0.7rem;">
+          Singlepoint MGA · 1201 Industrial Blvd, Sacramento CA 95814 · <a style="color:#888;">Unsubscribe</a>
+        </div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--text-muted);">
+        💡 This template has a historical <strong style="color:var(--status-green);">${tpl.open_rate}% open rate</strong>. Last used ${tpl.last_used}.
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">📜 SENT BROADCAST HISTORY</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Broadcast #</th><th>Template</th><th>Subject</th><th>Sent</th><th>Recipients</th><th>Delivered</th><th>Opened</th><th>Clicked</th><th>Replied</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        ${broadcasts.map(b => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong style="color:var(--mga-accent);">${b.id}</strong></td>
+          <td style="white-space:nowrap;">${b.template}</td>
+          <td style="font-size:0.82rem;">${b.subject}</td>
+          <td style="font-size:0.78rem; white-space:nowrap;">${b.sent || 'Draft'}</td>
+          <td style="white-space:nowrap;">${b.recipients}</td>
+          <td style="white-space:nowrap;">${b.delivered}${b.delivered>0?` (${Math.round(b.delivered/b.recipients*100)}%)`:''}</td>
+          <td style="white-space:nowrap;"><strong style="color:${b.delivered>0 && b.opened/b.delivered>=0.6?'var(--status-green)':''};">${b.opened}${b.delivered>0?` (${Math.round(b.opened/b.delivered*100)}%)`:''}</strong></td>
+          <td style="white-space:nowrap;">${b.clicked}</td>
+          <td style="white-space:nowrap;">${b.replied}</td>
+          <td style="white-space:nowrap;">${badge(b.statusColor, b.status)}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="window.showAlert('Opening analytics for ${b.id}')">📊</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaAgentTemplates() {
+  const templates = D.mgaAgentBrandingTemplates;
+  const components = D.mgaAgentEmailComponents;
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-agent-access'})" style="padding:4px 8px; margin-left:-8px;">← Back to Portal Access</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Branding Templates Library</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${templates.length} templates · white-label agent sub-portals with your brand</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Opening template builder — upload logo, set colors, configure fonts')">+ New Template</button>
+  </div>
+
+  ${_mgaAgentSubNav('mga-agent-access')}
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    ${templates.map(t => `
+      <div class="mga-template-card">
+        <div class="mga-template-preview" style="background: ${t.primary ? `linear-gradient(135deg, ${t.primary}, ${t.accent})` : 'linear-gradient(135deg, #444, #666)'};">
+          <div style="font-size:3rem;">${t.preview}</div>
+          ${t.default ? '<span class="mga-template-pill">DEFAULT</span>' : ''}
+        </div>
+        <div style="padding: var(--space-md);">
+          <div style="font-weight:700; font-size:1rem;">${t.name}</div>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-top:4px; line-height:1.5;">${t.description}</div>
+          <div style="display:flex; justify-content:space-between; margin-top: var(--space-md); font-size:0.72rem; color:var(--text-muted);">
+            <span>👥 ${t.uses} agents using</span>
+            <span>Updated ${t.last_updated}</span>
+          </div>
+          <div style="display:flex; gap:4px; margin-top: var(--space-sm);">
+            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="window.showAlert('Preview ${t.name} in full-screen')">👁 Preview</button>
+            <button class="btn btn-primary btn-sm" style="flex:1;" onclick="window.showAlert('Applying ${t.name} — select which agents to apply to')">Apply</button>
+            ${!t.default ? `<button class="btn btn-ghost btn-sm" onclick="window.showAlert('Editing ${t.name}')">✏</button>` : ''}
+          </div>
+        </div>
+      </div>`).join('')}
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🧩 EMAIL TEMPLATE COMPONENTS</div>
+      ${components.map(c => `
+        <div style="display:flex; gap: var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); align-items:center;">
+          <label class="cust-toggle">
+            <input type="checkbox" ${c.active?'checked':''}/>
+            <span class="cust-toggle-slider"></span>
+          </label>
+          <div style="flex:1;">
+            <strong style="font-size:0.88rem;">${c.type}</strong>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${c.desc}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">⚙ GLOBAL BRAND SETTINGS</div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Upload master logo</label>
+        <input class="form-input" type="file" accept="image/*"/>
+      </div>
+      <div class="form-row" style="margin-bottom: var(--space-md);">
+        <div class="form-group"><label class="form-label">Primary color</label><input class="form-input" type="color" value="#6c5ce7"/></div>
+        <div class="form-group"><label class="form-label">Accent color</label><input class="form-input" type="color" value="#a67dff"/></div>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Default font family</label>
+        <select class="form-input"><option>Inter (default)</option><option>Helvetica Neue</option><option>Segoe UI</option><option>Roboto</option></select>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Legal footer (CAN-SPAM)</label>
+        <textarea class="form-input" rows="3">Singlepoint MGA · 1201 Industrial Blvd, Sacramento CA 95814 · Licensed in CA, NV, OR, WA, AZ, TX, NY, FL</textarea>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="window.showAlert('✓ Global brand settings saved · will apply to all new templates')">💾 Save Global Settings</button>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">📋 TEMPLATE USAGE BY AGENT</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Agent</th><th>Template</th><th>Customizations</th><th>Last Updated</th><th>Email Open Rate</th><th>Action</th></tr></thead>
+      <tbody>
+        ${D.mgaAgents.filter(a => a.stage === 'Active').slice(0, 10).map((a, i) => {
+          const tpl = templates[i % templates.length];
+          const customs = i % 3 === 0 ? 'Custom logo + colors' : i % 3 === 1 ? 'Default' : 'Custom colors only';
+          const openRate = 55 + Math.round(Math.random() * 25);
+          return `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${a.name}</strong></td>
+            <td style="white-space:nowrap;">${tpl.preview} ${tpl.name}</td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${customs}</td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${['2026-04-10','2026-03-22','2026-04-15','2026-02-28','2026-04-01'][i % 5]}</td>
+            <td style="white-space:nowrap;"><strong style="color:${openRate>=70?'var(--status-green)':openRate>=60?'var(--mga-accent)':'var(--status-amber)'};">${openRate}%</strong></td>
+            <td style="display:flex; gap:4px;">
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Opening ${a.name} template customizer')">✏ Edit</button>
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Preview ${a.name} portal')">👁</button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// MGA — SUBMISSIONS & UNDERWRITING MODULE
+// ════════════════════════════════════════════════════════════════
+function _mgaSubSubNav(active) {
+  const tabs = [
+    { key: 'mga-submissions',       label: 'Dashboard',        icon: '📊' },
+    { key: 'mga-sub-inbox',         label: 'Inbox',            icon: '📥' },
+    { key: 'mga-sub-agent-history', label: 'By Agent',         icon: '👥' },
+    { key: 'mga-sub-referrals',     label: 'Carrier Referrals',icon: '↗' },
+    { key: 'mga-sub-guidelines',    label: 'Guidelines',       icon: '📚' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _mgaSubStatusBadge(s) {
+  const map = {
+    'New': 'blue',
+    'Auto-Triaged': 'blue',
+    'Pending Agent Info': 'amber',
+    'In Underwriting': 'blue',
+    'Peer Review': 'amber',
+    'Quoted': 'green',
+    'Approved': 'green',
+    'Conditional Approve': 'amber',
+    'Referred to Carrier': 'amber',
+    'Declined': 'red',
+    'Withdrawn': 'gray',
+    'Bound': 'green'
+  };
+  return badge(map[s] || 'gray', s);
+}
+
+function _mgaRiskBar(score) {
+  const color = score >= 80 ? 'var(--status-green)' : score >= 65 ? 'var(--mga-accent)' : score >= 50 ? 'var(--status-amber)' : 'var(--status-red)';
+  return `<div style="display:inline-flex; align-items:center; gap:6px;"><div style="width:60px; height:6px; background:var(--bg-card); border-radius:3px; overflow:hidden;"><div style="height:100%; width:${score}%; background:${color};"></div></div><strong style="color:${color};">${score}</strong></div>`;
+}
+
+function _mgaAgeBadge(hrs) {
+  if (hrs <= 24) return `<span style="color:var(--status-green);">${hrs}h</span>`;
+  if (hrs <= 48) return `<span style="color:var(--status-amber);">${hrs}h</span>`;
+  return `<strong style="color:var(--status-red);">${hrs}h ⚠</strong>`;
+}
+
+function renderMgaSubmissionsDashboard() {
+  const subs = D.mgaSubmissions;
+  const pipeline = [
+    { key: 'New',                 label: 'New',                 color: 'blue',  count: subs.filter(s => s.status === 'New' || s.status === 'Auto-Triaged').length },
+    { key: 'In Underwriting',     label: 'In UW',               color: 'blue',  count: subs.filter(s => s.status === 'In Underwriting' || s.status === 'Peer Review').length },
+    { key: 'Pending Agent Info',  label: 'Pending Info',        color: 'amber', count: subs.filter(s => s.status === 'Pending Agent Info').length },
+    { key: 'Referred',            label: 'Referred to Carrier', color: 'amber', count: subs.filter(s => s.status === 'Referred to Carrier').length },
+    { key: 'Quoted',              label: 'Quoted / Approved',   color: 'green', count: subs.filter(s => s.status === 'Quoted' || s.status === 'Approved' || s.status === 'Conditional Approve').length },
+    { key: 'Bound',               label: 'Bound',               color: 'green', count: subs.filter(s => s.status === 'Bound').length },
+    { key: 'Declined',            label: 'Declined',            color: 'red',   count: subs.filter(s => s.status === 'Declined').length }
+  ];
+  const aged = subs.filter(s => s.age_hrs > 48 && !['Bound','Declined','Withdrawn','Approved'].includes(s.status));
+  const hot = subs.filter(s => s.status === 'New' || s.status === 'Auto-Triaged').slice(0, 5);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Submissions &amp; Underwriting</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${subs.length} submissions in flight · automated triage + human UW · target TAT 24h standard risks</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-sub-guidelines'})">📚 Guidelines</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-sub-inbox'})">📥 Open Inbox</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.mgaSubmissionKPIs, 6)}
+
+  ${_mgaSubSubNav('mga-submissions')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">PIPELINE</div>
+      <div style="color:var(--text-muted); font-size:0.82rem;">Total in pipeline: <strong>$${(subs.reduce((s,x) => s + (x.final_premium || x.target_premium), 0) / 1e6).toFixed(2)}M</strong></div>
+    </div>
+    <div class="market-pipeline">
+      ${pipeline.map((p, i) => `
+        <div class="market-stage market-stage-${p.color}">
+          <div class="market-stage-count">${p.count}</div>
+          <div class="market-stage-label">${p.label}</div>
+        </div>
+        ${i < pipeline.length - 1 ? '<span class="market-stage-arrow">›</span>' : ''}
+      `).join('')}
+    </div>
+  </div>
+
+  ${aged.length > 0 ? `
+    <div style="background: linear-gradient(135deg, rgba(255,82,82,0.08), rgba(255,82,82,0.02)); border:1px solid rgba(255,82,82,0.3); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg); display:flex; gap:var(--space-md); align-items:center;">
+      <div style="font-size:2rem;">⏰</div>
+      <div style="flex:1;">
+        <strong>${aged.length} submissions aging — 48+ hours in pipeline</strong>
+        <div style="color:var(--text-secondary); font-size:0.85rem;">Target TAT is 24h standard / 48h complex. Escalate or reassign overdue submissions below.</div>
+      </div>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-sub-inbox', mgaSubFilter:'aging'})">View Aging →</button>
+    </div>
+  ` : ''}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">🆕 RECENT SUBMISSIONS</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-sub-inbox'})">See all →</button>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Submission</th><th>Agent</th><th>Insured</th><th>LOB</th><th>Target Premium</th><th>Risk</th><th>Status</th><th>Age</th></tr></thead>
+        <tbody>
+          ${hot.map(s => `
+          <tr onclick="window.setState({screen:'mga-sub-details', currentSubmissionId:'${s.id}'})" style="cursor:pointer;">
+            <td style="white-space:nowrap; font-family:monospace;"><strong style="color:var(--mga-accent);">${s.id}</strong></td>
+            <td style="white-space:nowrap;">${s.agent_name}</td>
+            <td style="white-space:nowrap;">${s.insured}</td>
+            <td style="white-space:nowrap;">${s.product}</td>
+            <td style="white-space:nowrap;">$${s.target_premium.toLocaleString()}</td>
+            <td style="white-space:nowrap;">${_mgaRiskBar(s.risk_score)}</td>
+            <td style="white-space:nowrap;">${_mgaSubStatusBadge(s.status)}</td>
+            <td style="white-space:nowrap;">${_mgaAgeBadge(s.age_hrs)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">👥 UNDERWRITER WORK QUEUE</div>
+        ${D.mgaUnderwriters.map(u => `
+          <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); align-items:center;">
+            <div class="producer-avatar" style="background:${u.avatar_color}; width:32px; height:32px; font-size:0.7rem;">${u.initials}</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:0.85rem; font-weight:600;">${u.name}</div>
+              <div style="color:var(--text-muted); font-size:0.72rem;">${u.wip} in queue · ${u.avg_tat}h avg · ${u.bind_rate}% bind</div>
+            </div>
+            <div class="market-fit-bar" style="width:40px;"><div class="market-fit-fill" style="width:${Math.min(100, u.wip * 5)}%; background:${u.wip > 15 ? 'var(--status-amber)' : 'var(--mga-accent)'};"></div></div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📊 DECLINE REASONS (30d)</div>
+        ${D.mgaDeclineReasons.slice(0, 5).map(r => `
+          <div style="margin-bottom: var(--space-sm);">
+            <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px;">
+              <span>${r.label}</span>
+              <strong>${r.count}</strong>
+            </div>
+            <div style="background:var(--bg-card); height:5px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${r.count * 2}%; background:var(--status-red); opacity:0.7;"></div></div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaSubmissionsInbox() {
+  const filter = state.mgaSubFilter || 'all';
+  const q = (state.mgaSubQuery || '').toLowerCase();
+  let rows = D.mgaSubmissions;
+  if (filter === 'new') rows = rows.filter(s => s.status === 'New' || s.status === 'Auto-Triaged');
+  if (filter === 'uw')  rows = rows.filter(s => s.status === 'In Underwriting' || s.status === 'Peer Review');
+  if (filter === 'pending') rows = rows.filter(s => s.status === 'Pending Agent Info');
+  if (filter === 'referred') rows = rows.filter(s => s.status === 'Referred to Carrier');
+  if (filter === 'declined') rows = rows.filter(s => s.status === 'Declined' || s.status === 'Withdrawn');
+  if (filter === 'aging') rows = rows.filter(s => s.age_hrs > 48 && !['Bound','Declined','Withdrawn','Approved'].includes(s.status));
+  if (q) rows = rows.filter(s => (s.id + ' ' + s.insured + ' ' + s.agent_name + ' ' + s.product).toLowerCase().includes(q));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Submission Inbox</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${rows.length} of ${D.mgaSubmissions.length} · pipeline value $${(rows.reduce((s,x)=>s+(x.final_premium||x.target_premium),0)/1e6).toFixed(2)}M</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Exporting ' + ${rows.length} + ' submissions to CSV')">Export</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Bulk reassign — pick target underwriter')">🔀 Bulk Reassign</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Opening manual submission entry form')">+ Manual Entry</button>
+    </div>
+  </div>
+
+  ${_mgaSubSubNav('mga-sub-inbox')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-sm);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search by submission ID, insured, agent, LOB..." value="${state.mgaSubQuery || ''}" oninput="window.setState({mgaSubQuery:this.value})"/>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({mgaSubFilter:'all', mgaSubQuery:''})">Reset</button>
+    </div>
+    <div style="display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+      ${[
+        { k: 'all',      l: 'All',                count: D.mgaSubmissions.length },
+        { k: 'new',      l: 'New / Triaged',      count: D.mgaSubmissions.filter(s => s.status === 'New' || s.status === 'Auto-Triaged').length },
+        { k: 'uw',       l: 'In UW',              count: D.mgaSubmissions.filter(s => s.status === 'In Underwriting' || s.status === 'Peer Review').length },
+        { k: 'pending',  l: 'Pending Info',       count: D.mgaSubmissions.filter(s => s.status === 'Pending Agent Info').length },
+        { k: 'referred', l: 'Referred',           count: D.mgaSubmissions.filter(s => s.status === 'Referred to Carrier').length },
+        { k: 'aging',    l: '⚠ Aging (48h+)',     count: D.mgaSubmissions.filter(s => s.age_hrs > 48 && !['Bound','Declined','Withdrawn','Approved'].includes(s.status)).length },
+        { k: 'declined', l: 'Declined/Withdrawn', count: D.mgaSubmissions.filter(s => s.status === 'Declined' || s.status === 'Withdrawn').length }
+      ].map(p => `<div class="cust-pill${filter===p.k?' active':''}" onclick="window.setState({mgaSubFilter:'${p.k}'})">${p.l} <span class="cust-pill-count">${p.count}</span></div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Submission</th><th>Agent</th><th>Insured</th><th>LOB / Product</th><th>State</th><th>Received</th><th>Effective</th><th>Target $</th><th>Risk</th><th>Appetite</th><th>Status</th><th>Underwriter</th><th>Age</th><th>Docs</th><th>Action</th></tr></thead>
+      <tbody>
+        ${rows.map(s => `
+        <tr onclick="window.setState({screen:'mga-sub-details', currentSubmissionId:'${s.id}'})" style="cursor:pointer;">
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong style="color:var(--mga-accent);">${s.id}</strong>${s.priority === 'High' ? '<div style="color:var(--status-red); font-size:0.7rem;">🔥 High priority</div>' : ''}${s.red_flags > 0 ? `<div style="color:var(--status-amber); font-size:0.7rem;">⚠ ${s.red_flags} flag${s.red_flags===1?'':'s'}</div>` : ''}</td>
+          <td style="white-space:nowrap;"><strong>${s.agent_name}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${s.agent_id}</div></td>
+          <td style="white-space:nowrap;"><strong>${s.insured}</strong><div style="color:var(--text-muted); font-size:0.72rem;">NAICS ${s.naics}</div></td>
+          <td style="white-space:nowrap;">${s.product}<div style="color:var(--text-muted); font-size:0.72rem;">${s.lob}</div></td>
+          <td style="white-space:nowrap;">${s.state}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${s.received}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${s.effective}</td>
+          <td style="white-space:nowrap;"><strong>$${s.target_premium.toLocaleString()}</strong>${s.final_premium ? `<div style="color:var(--status-green); font-size:0.72rem;">→ $${s.final_premium.toLocaleString()}</div>` : ''}</td>
+          <td style="white-space:nowrap;">${_mgaRiskBar(s.risk_score)}</td>
+          <td style="white-space:nowrap;"><strong style="color:${s.appetite_match>=85?'var(--status-green)':s.appetite_match>=70?'var(--mga-accent)':'var(--status-amber)'};">${s.appetite_match}%</strong></td>
+          <td style="white-space:nowrap;">${_mgaSubStatusBadge(s.status)}</td>
+          <td style="white-space:nowrap;">${s.underwriter_name || '<span style="color:var(--text-muted);">Auto-triage</span>'}</td>
+          <td style="white-space:nowrap;">${_mgaAgeBadge(s.age_hrs)}</td>
+          <td style="white-space:nowrap;">${s.documents} 📎</td>
+          <td onclick="event.stopPropagation();"><button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'mga-sub-details', currentSubmissionId:'${s.id}'})">Open</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+    ${rows.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding: var(--space-xl);">No submissions match this filter.</div>' : ''}
+  </div>`;
+}
+
+function renderMgaSubmissionDetail() {
+  const s = D.mgaSubmissions.find(x => x.id === state.currentSubmissionId) || D.mgaSubmissions[0];
+  const d = s.id === D.mgaSubmissionDetail.id ? D.mgaSubmissionDetail : null;
+  const uw = s.underwriter ? D.mgaUnderwriters.find(u => u.id === s.underwriter) : null;
+  const agent = D.mgaAgents.find(a => a.id === s.agent_id);
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-sub-inbox'})" style="padding:4px 8px; margin-left:-8px;">← Back to Inbox</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="flex:1;">
+      <div style="display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap;">
+        <h2 style="margin:0;">${s.insured}</h2>
+        ${_mgaSubStatusBadge(s.status)}
+        ${s.priority === 'High' ? badge('red', 'High Priority') : ''}
+      </div>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px; font-family:monospace;">${s.id} · ${s.product} · ${s.state} · NAICS ${s.naics} · Effective ${s.effective}</div>
+      <div style="color:var(--text-muted); font-size:0.82rem; margin-top:2px;">Agent: <strong>${s.agent_name}</strong> · Submitted ${s.received} · ${s.channel}</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm); flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="window.showAlert('Requesting additional info from ${s.agent_name}')">📧 Request Info</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Escalating to peer review')">⬆ Escalate</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-sub-worksheet', currentSubmissionId:'${s.id}'})">🖊 Open UW Worksheet</button>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Risk Score</div><div class="kpi-value" style="color:${s.risk_score>=80?'var(--status-green)':s.risk_score>=65?'var(--mga-accent)':s.risk_score>=50?'var(--status-amber)':'var(--status-red)'};">${s.risk_score}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Appetite Match</div><div class="kpi-value" style="color:${s.appetite_match>=85?'var(--status-green)':s.appetite_match>=70?'var(--mga-accent)':'var(--status-amber)'};">${s.appetite_match}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Target Premium</div><div class="kpi-value" style="font-size:1.3rem;">$${(s.target_premium/1000).toFixed(0)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Loss Ratio 3yr</div><div class="kpi-value" style="color:${s.loss_ratio_3yr<=30?'var(--status-green)':s.loss_ratio_3yr<=55?'var(--mga-accent)':'var(--status-red)'};">${s.loss_ratio_3yr}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Age in Pipeline</div><div class="kpi-value" style="color:${s.age_hrs<=24?'var(--status-green)':s.age_hrs<=48?'var(--mga-accent)':'var(--status-red)'};">${s.age_hrs}h</div></div>
+    <div class="kpi-card"><div class="kpi-label">Documents</div><div class="kpi-value">${s.documents}</div></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🏢 INSURED / RISK OVERVIEW</div>
+      ${d ? `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap: 10px 16px; font-size:0.85rem;">
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Legal Name</div><strong>${d.risk_overview.insured_legal_name}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">DBA</div><strong>${d.risk_overview.dba || '—'}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Revenue</div><strong>${d.risk_overview.revenue}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Years in Business</div><strong>${d.risk_overview.years_in_business}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Employees</div><strong>${d.risk_overview.employees_split}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Website</div><strong style="color:var(--mga-accent);">${d.risk_overview.website}</strong></div>
+          <div style="grid-column:1/-1;"><div style="color:var(--text-muted); font-size:0.72rem;">Operations</div><strong>${d.risk_overview.operations}</strong></div>
+          <div style="grid-column:1/-1;"><div style="color:var(--text-muted); font-size:0.72rem;">Address</div><strong>${d.risk_overview.address}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">CEO</div><strong>${d.risk_overview.ceo}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">CFO</div><strong>${d.risk_overview.cfo}</strong></div>
+        </div>
+      ` : `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap: 10px 16px; font-size:0.85rem;">
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Insured</div><strong>${s.insured}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">NAICS</div><strong>${s.naics}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Revenue</div><strong>$${(s.revenue/1e6).toFixed(1)}M</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Employees</div><strong>${s.employees}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">State</div><strong>${s.state}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Effective Date</div><strong>${s.effective}</strong></div>
+        </div>
+      `}
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">👤 ASSIGNED UNDERWRITER</div>
+        ${uw ? `
+          <div style="display:flex; gap:var(--space-sm); align-items:center;">
+            <div class="producer-avatar" style="background:${uw.avatar_color};">${uw.initials}</div>
+            <div style="flex:1;">
+              <strong>${uw.name}</strong>
+              <div style="color:var(--text-muted); font-size:0.72rem;">${uw.title}</div>
+              <div style="color:var(--text-muted); font-size:0.72rem;">Authority: $${(uw.authority/1000).toFixed(0)}k · WIP ${uw.wip}</div>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" style="width:100%; margin-top:var(--space-sm);" onclick="window.showAlert('Reassign to different underwriter')">🔀 Reassign</button>
+        ` : `
+          <div style="text-align:center; padding: var(--space-md) 0;">
+            <div style="font-size:2rem;">⚙</div>
+            <div style="color:var(--text-muted); font-size:0.85rem;">Auto-triage in progress</div>
+            <button class="btn btn-primary btn-sm" style="width:100%; margin-top:var(--space-sm);" onclick="window.showAlert('Manually assigning to underwriter')">Assign Manually</button>
+          </div>
+        `}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">👥 SUBMITTING AGENT</div>
+        <div style="font-size:0.85rem; line-height:1.7;">
+          <div><strong>${s.agent_name}</strong></div>
+          ${agent ? `
+            <div style="color:var(--text-muted); font-size:0.72rem;">${agent.primary} · ${agent.contact}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">Tier: ${agent.tier === 'tier1' ? '⭐ Preferred' : agent.tier === 'tier2' ? 'Standard' : 'Developing'}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">YTD: ${agent.submissions_ytd} submissions · ${agent.bind_ratio}% bind</div>
+          ` : ''}
+        </div>
+        <button class="btn btn-ghost btn-sm" style="width:100%; margin-top:var(--space-sm);" onclick="window.setState({screen:'mga-agent-profile', currentAgentId:'${s.agent_id}'})">View Agent Profile →</button>
+      </div>
+    </div>
+  </div>
+
+  ${d ? `
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">⚠ EXPOSURES</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap: 10px 16px; font-size:0.85rem;">
+          ${d.exposures.map(e => `<div><div style="color:var(--text-muted); font-size:0.72rem;">${e.k}</div><strong>${e.v}</strong></div>`).join('')}
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📋 COVERAGE REQUESTED</div>
+        ${d.coverage_requested.map(c => `
+          <div style="display:flex; justify-content:space-between; padding: 5px 0; border-bottom:1px solid var(--border-subtle); font-size:0.85rem;">
+            <span>${c.k}</span>
+            <strong>${c.v}</strong>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">📉 LOSS HISTORY (5 YEARS)</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Year</th><th>Claims</th><th>Paid</th><th>Reserves</th><th>Status</th></tr></thead>
+        <tbody>
+          ${d.loss_history.map(l => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${l.year}</strong></td>
+            <td style="white-space:nowrap;">${l.claims}</td>
+            <td style="white-space:nowrap;">$${l.paid.toLocaleString()}</td>
+            <td style="white-space:nowrap;">$${l.reserves.toLocaleString()}</td>
+            <td style="white-space:nowrap;">${l.status}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">❓ QUESTIONNAIRE RESPONSES</div>
+        ${d.questionnaire.map(q => `
+          <div style="padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle);">
+            <div style="color:var(--text-muted); font-size:0.75rem;">${q.q}</div>
+            <div style="font-size:0.85rem; margin-top:2px;"><strong>${q.a}</strong></div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📎 DOCUMENTS (${d.documents.length})</div>
+        ${d.documents.map(doc => `
+          <div style="display:flex; gap:var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); align-items:center;">
+            <div style="font-size:1.4rem;">📄</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:0.85rem; font-weight:600;">${doc.name}</div>
+              <div style="color:var(--text-muted); font-size:0.72rem;">${doc.type} · ${doc.size} · ${doc.uploaded}</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Opening ' + '${doc.name}')">View</button>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📝 UW NOTES</div>
+        ${d.uw_notes.map(n => `
+          <div style="padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle);">
+            <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); margin-bottom:3px;">
+              <strong style="color:var(--text-primary);">${n.author}</strong>
+              <span>${n.ts}</span>
+            </div>
+            <div style="font-size:0.85rem; line-height:1.5;">${n.note}</div>
+          </div>`).join('')}
+        <div style="display:flex; gap:var(--space-sm); margin-top: var(--space-md);">
+          <input class="form-input" style="flex:1;" placeholder="Add a UW note..."/>
+          <button class="btn btn-primary" onclick="window.showAlert('Note added to audit trail')">Add Note</button>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🔒 AUDIT TRAIL</div>
+        ${d.audit_trail.map(a => `
+          <div style="display:flex; gap: var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); font-size:0.82rem; align-items:flex-start;">
+            <div style="font-family:monospace; color:var(--text-muted); font-size:0.7rem; min-width:120px;">${a.ts}</div>
+            <div style="flex:1;"><strong>${a.actor}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${a.action}</div></div>
+            <div style="font-size:0.68rem; color:var(--mga-accent);">${a.category}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  ` : `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg); text-align:center;">
+      <div style="font-size:2rem; margin-bottom: var(--space-sm);">📄</div>
+      <div style="color:var(--text-muted); font-size:0.85rem;">Detailed risk and document data not yet loaded · check the ${s.documents} attached files on the UW Worksheet.</div>
+    </div>
+  `}`;
+}
+
+function renderMgaSubmissionWorksheet() {
+  const s = D.mgaSubmissions.find(x => x.id === state.currentSubmissionId) || D.mgaSubmissions.find(x => x.id === D.mgaSubmissionDetail.id) || D.mgaSubmissions[0];
+  const d = s.id === D.mgaSubmissionDetail.id ? D.mgaSubmissionDetail : null;
+  const pricing = d?.pricing || { base_premium: s.target_premium, schedule_credits: [], debits: [], fees: [], final_premium: s.target_premium, commission_rate: 13, commission_dollars: Math.round(s.target_premium * 0.13), mga_fee: Math.round(s.target_premium * 0.03) };
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-sub-details', currentSubmissionId:'${s.id}'})" style="padding:4px 8px; margin-left:-8px;">← Back to Submission</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Underwriting Worksheet</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px; font-family:monospace;">${s.id} · ${s.insured} · ${s.product}</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Saving draft')">💾 Save Draft</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Generating quote PDF')">📄 Generate Quote</button>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">💰 PRICING WORKSHEET</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Line Item</th><th style="text-align:right;">Amount</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Base Premium</strong></td>
+            <td style="text-align:right; font-family:monospace;">$${pricing.base_premium.toLocaleString()}</td>
+          </tr>
+          ${pricing.schedule_credits.map(c => `
+          <tr style="color:var(--status-green);">
+            <td>Schedule Credit · ${c.reason}</td>
+            <td style="text-align:right; font-family:monospace;">${c.amount.toLocaleString()}</td>
+          </tr>`).join('')}
+          ${pricing.debits.map(c => `
+          <tr style="color:var(--status-amber);">
+            <td>Schedule Debit · ${c.reason}</td>
+            <td style="text-align:right; font-family:monospace;">+${c.amount.toLocaleString()}</td>
+          </tr>`).join('')}
+          ${pricing.fees.map(f => `
+          <tr>
+            <td>${f.k}</td>
+            <td style="text-align:right; font-family:monospace;">+$${f.v.toLocaleString()}</td>
+          </tr>`).join('')}
+          <tr style="background:var(--bg-card); font-weight:700;">
+            <td>FINAL PREMIUM</td>
+            <td style="text-align:right; font-family:monospace; font-size:1.15rem; color:var(--status-green);">$${pricing.final_premium.toLocaleString()}</td>
+          </tr>
+          <tr style="color:var(--text-muted); font-size:0.82rem;">
+            <td>Agent commission (${pricing.commission_rate}%)</td>
+            <td style="text-align:right; font-family:monospace;">$${pricing.commission_dollars.toLocaleString()}</td>
+          </tr>
+          <tr style="color:var(--text-muted); font-size:0.82rem;">
+            <td>MGA fee</td>
+            <td style="text-align:right; font-family:monospace;">$${pricing.mga_fee.toLocaleString()}</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🎯 DECISION</div>
+        <div style="display:flex; flex-direction:column; gap: var(--space-sm);">
+          <button class="btn btn-primary" onclick="window.showAlert('✓ Approved at $' + ${pricing.final_premium}.toLocaleString() + ' · agent notified')">✅ Approve at $${(pricing.final_premium/1000).toFixed(0)}k</button>
+          <button class="btn btn-secondary" onclick="window.showAlert('Sending conditional approval — specify outstanding requirements')">📋 Conditional Approve</button>
+          <button class="btn btn-secondary" onclick="window.showAlert('Referring to carrier — choose carrier next')">↗ Refer to Carrier</button>
+          <button class="btn btn-secondary" onclick="window.showAlert('Requesting additional info from agent')">📧 Request Info</button>
+          <button class="btn btn-danger" onclick="window.showAlert('Decline — pick a reason code')">❌ Decline</button>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🧪 AI RECOMMENDATIONS</div>
+        <div style="padding: var(--space-sm); background: rgba(108,92,231,0.08); border-left:3px solid var(--mga-accent); border-radius:var(--radius-sm); font-size:0.82rem; margin-bottom: var(--space-sm);">
+          <strong>Recommend: Approve at target -4%</strong><br/>
+          <span style="color:var(--text-muted);">Strong security posture, clean loss run, peer-comparable class. Similar risks bound at 8–12% below incumbent.</span>
+        </div>
+        <div style="padding: var(--space-sm); background: rgba(0,230,118,0.08); border-left:3px solid var(--status-green); border-radius:var(--radius-sm); font-size:0.82rem; margin-bottom: var(--space-sm);">
+          ✓ No red flags detected · passes automated triage
+        </div>
+        <div style="padding: var(--space-sm); background: rgba(255,171,0,0.08); border-left:3px solid var(--status-amber); border-radius:var(--radius-sm); font-size:0.82rem;">
+          ⚠ PHI count (2.1M) trending high for size · consider sub-limit on notification costs
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">📝 UW DECISION NOTES</div>
+    <textarea class="form-input" rows="5" placeholder="Document your underwriting rationale — risk profile assessment, schedule credits/debits applied, conditions, exclusions..."></textarea>
+    <div style="margin-top: var(--space-sm); display:flex; gap:var(--space-sm); flex-wrap:wrap;">
+      <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Inserting template — Approval rationale')">📋 Approval template</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Inserting template — Decline rationale')">📋 Decline template</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Inserting template — Conditional approve')">📋 Conditional template</button>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">📚 RELATED GUIDELINES</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);">
+      ${D.mgaUwGuidelines.filter(g => g.lob === s.lob || g.lob === 'All Lines').slice(0, 3).map(g => `
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); cursor:pointer;" onclick="window.setState({screen:'mga-sub-guidelines'})">
+          <div style="font-size:0.72rem; color:var(--mga-accent); text-transform:uppercase; font-weight:700;">${g.lob}</div>
+          <strong style="font-size:0.9rem;">${g.title}</strong>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">v${g.version} · ${g.owner}</div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderMgaSubmissionAgentHistory() {
+  const agentId = state.mgaSubAgentFilter || 'AGT-2041';
+  const agent = D.mgaAgents.find(a => a.id === agentId);
+  const subs = D.mgaSubmissions.filter(s => s.agent_id === agentId);
+  const summary = D.mgaAgentSubmissionSummary.find(a => a.agent_id === agentId);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Agent Submission History</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Production, quality, and bind-ratio by submitting agent</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <select class="form-input" style="width:280px;" onchange="window.setState({mgaSubAgentFilter:this.value})">
+        ${D.mgaAgentSubmissionSummary.map(a => {
+          const ag = D.mgaAgents.find(x => x.id === a.agent_id);
+          return `<option value="${a.agent_id}" ${a.agent_id===agentId?'selected':''}>${ag?.name || a.agent_id} (${a.ytd_submissions} submissions · ${a.bind_ratio}% bind)</option>`;
+        }).join('')}
+      </select>
+    </div>
+  </div>
+
+  ${_mgaSubSubNav('mga-sub-agent-history')}
+
+  ${agent && summary ? `
+    <div style="background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(108,92,231,0.02)); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <div style="display:flex; gap:var(--space-sm); align-items:center;">
+            <h3 style="margin:0;">${agent.name}</h3>
+            ${_mgaTierBadge(agent.tier)}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.85rem;">${agent.primary} · ${agent.contact}</div>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-top:4px;">Top LOBs: ${summary.top_lobs}</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'mga-agent-profile', currentAgentId:'${agentId}'})">View Agent Profile →</button>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+      <div class="kpi-card"><div class="kpi-label">YTD Submissions</div><div class="kpi-value">${summary.ytd_submissions}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Bound</div><div class="kpi-value" style="color:var(--status-green);">${summary.bound}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Declined</div><div class="kpi-value" style="color:var(--status-red);">${summary.declined}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Bind Ratio</div><div class="kpi-value" style="color:${summary.bind_ratio>=55?'var(--status-green)':summary.bind_ratio>=45?'var(--mga-accent)':'var(--status-amber)'};">${summary.bind_ratio}%</div></div>
+      <div class="kpi-card"><div class="kpi-label">Avg TAT</div><div class="kpi-value">${summary.avg_tat_hrs}h</div></div>
+      <div class="kpi-card"><div class="kpi-label">Submission Quality</div><div class="kpi-value" style="color:${summary.quality>=85?'var(--status-green)':'var(--mga-accent)'};">${summary.quality}</div></div>
+    </div>
+  ` : ''}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">${subs.length} SUBMISSIONS IN PIPELINE</div>
+    ${subs.length === 0 ? '<div style="color:var(--text-muted); text-align:center; padding: var(--space-xl);">No submissions in flight for this agent.</div>' : `
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Submission</th><th>Insured</th><th>Product</th><th>Target Premium</th><th>Risk</th><th>Status</th><th>Age</th><th>Final Premium</th><th>Action</th></tr></thead>
+        <tbody>
+          ${subs.map(s => `
+          <tr onclick="window.setState({screen:'mga-sub-details', currentSubmissionId:'${s.id}'})" style="cursor:pointer;">
+            <td style="font-family:monospace; white-space:nowrap;"><strong style="color:var(--mga-accent);">${s.id}</strong></td>
+            <td style="white-space:nowrap;"><strong>${s.insured}</strong></td>
+            <td style="white-space:nowrap;">${s.product}</td>
+            <td style="white-space:nowrap;">$${s.target_premium.toLocaleString()}</td>
+            <td style="white-space:nowrap;">${_mgaRiskBar(s.risk_score)}</td>
+            <td style="white-space:nowrap;">${_mgaSubStatusBadge(s.status)}</td>
+            <td style="white-space:nowrap;">${_mgaAgeBadge(s.age_hrs)}</td>
+            <td style="white-space:nowrap;">${s.final_premium ? '$' + s.final_premium.toLocaleString() : '—'}</td>
+            <td onclick="event.stopPropagation();"><button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'mga-sub-details', currentSubmissionId:'${s.id}'})">Open</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    `}
+  </div>`;
+}
+
+function renderMgaSubmissionGuidelines() {
+  const q = (state.mgaGuidelineQuery || '').toLowerCase();
+  const lobF = state.mgaGuidelineLob || 'all';
+  let rows = D.mgaUwGuidelines;
+  if (lobF !== 'all') rows = rows.filter(g => g.lob === lobF);
+  if (q) rows = rows.filter(g => (g.title + ' ' + g.summary + ' ' + g.tags.join(' ')).toLowerCase().includes(q));
+  const lobs = ['all', ...new Set(D.mgaUwGuidelines.map(g => g.lob))];
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Underwriting Guidelines Library</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${D.mgaUwGuidelines.length} guidelines · versioned · searchable · link from any submission</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Opening guideline editor')">+ New Guideline</button>
+  </div>
+
+  ${_mgaSubSubNav('mga-sub-guidelines')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-sm);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search by title, LOB, tag..." value="${state.mgaGuidelineQuery || ''}" oninput="window.setState({mgaGuidelineQuery:this.value})"/>
+    </div>
+    <div style="display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+      ${lobs.map(lob => `<div class="cust-pill${lobF===lob?' active':''}" onclick="window.setState({mgaGuidelineLob:'${lob}'})">${lob === 'all' ? 'All LOBs' : lob}</div>`).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--space-md);">
+    ${rows.map(g => `
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); cursor:pointer; transition:var(--transition-fast);" onmouseover="this.style.background='var(--bg-card-hover)'" onmouseout="this.style.background='var(--bg-secondary)'" onclick="window.showAlert('Opening ' + '${g.title}')">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-sm);">
+          <span class="cust-policy-tag" style="background:rgba(108,92,231,0.15); color:var(--mga-accent);">${g.lob}</span>
+          <span style="color:var(--text-muted); font-size:0.72rem;">v${g.version}</span>
+        </div>
+        <strong style="font-size:1rem;">${g.title}</strong>
+        <div style="color:var(--text-muted); font-size:0.82rem; margin-top:6px; line-height:1.5;">${g.summary}</div>
+        <div style="display:flex; gap:4px; margin-top: var(--space-sm); flex-wrap:wrap;">
+          ${g.tags.map(t => `<span class="cust-policy-tag">${t}</span>`).join('')}
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top: var(--space-sm); font-size:0.72rem; color:var(--text-muted);">
+          <span>👤 ${g.owner}</span>
+          <span>Updated ${g.updated}</span>
+        </div>
+      </div>`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-top: var(--space-lg);">
+    <div class="section-title">🎯 APPETITE RULES ENGINE</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Rule ID</th><th>LOB</th><th>Class Codes / Criteria</th><th>States</th><th>Revenue Range</th><th>Max LR</th><th>Authority</th><th>Priority</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        ${D.mgaAppetiteRules.map(r => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong>${r.id}</strong></td>
+          <td style="white-space:nowrap;">${r.lob}</td>
+          <td style="font-size:0.82rem;">${r.class_codes}</td>
+          <td style="white-space:nowrap;">${r.states}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.revenue_min} – ${r.revenue_max}</td>
+          <td style="white-space:nowrap;">${r.loss_ratio_max !== null ? r.loss_ratio_max + '%' : '—'}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.authority}</td>
+          <td style="white-space:nowrap;">P${r.priority}</td>
+          <td style="white-space:nowrap;">${badge(r.active ? 'green' : 'gray', r.active ? 'Active' : 'Paused')}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="window.showAlert('Edit rule ' + '${r.id}')">Edit</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaSubmissionReferrals() {
+  const refs = D.mgaCarrierReferrals;
+  const open = refs.filter(r => r.status === 'Under Carrier Review');
+  const decided = refs.filter(r => r.status !== 'Under Carrier Review');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Carrier Referrals</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Submissions referred to carriers — outside MGA authority · ${open.length} under review</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Opening referral composer · pick submission + carrier')">+ New Referral</button>
+  </div>
+
+  ${_mgaSubSubNav('mga-sub-referrals')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Total Referrals (30d)</div><div class="kpi-value">${refs.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Under Review</div><div class="kpi-value warning">${open.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Bound by Carrier</div><div class="kpi-value" style="color:var(--status-green);">${refs.filter(r => r.status === 'Bound').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Carrier TAT</div><div class="kpi-value">42h</div></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">⏳ UNDER CARRIER REVIEW (${open.length})</div>
+    ${open.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No referrals under active carrier review.</div>' : `
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Referral #</th><th>Submission</th><th>Insured</th><th>Carrier</th><th>Reason</th><th>Sent</th><th>Carrier Contact</th><th>MGA UW</th><th>SLA</th><th>Action</th></tr></thead>
+        <tbody>
+          ${open.map(r => `
+          <tr>
+            <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong>${r.id}</strong></td>
+            <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap; cursor:pointer; color:var(--mga-accent);" onclick="window.setState({screen:'mga-sub-details', currentSubmissionId:'${r.submission}'})">${r.submission}</td>
+            <td style="white-space:nowrap;"><strong>${r.insured}</strong></td>
+            <td style="white-space:nowrap;">${r.carrier}</td>
+            <td style="font-size:0.82rem;">${r.reason}</td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${r.sent}</td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${r.carrier_contact}</td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${r.underwriter}</td>
+            <td style="white-space:nowrap;">${r.sla_hrs}h</td>
+            <td><button class="btn btn-secondary btn-sm" onclick="window.showAlert('Chasing carrier for update on ' + '${r.id}')">🔔 Chase</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    `}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">✓ RESOLVED (${decided.length})</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Referral #</th><th>Submission</th><th>Insured</th><th>Carrier</th><th>Reason</th><th>Sent</th><th>Outcome</th><th>MGA UW</th></tr></thead>
+      <tbody>
+        ${decided.map(r => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong>${r.id}</strong></td>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap; color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'mga-sub-details', currentSubmissionId:'${r.submission}'})">${r.submission}</td>
+          <td style="white-space:nowrap;"><strong>${r.insured}</strong></td>
+          <td style="white-space:nowrap;">${r.carrier}</td>
+          <td style="font-size:0.82rem;">${r.reason}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.sent}</td>
+          <td style="white-space:nowrap;">${badge(r.statusColor, r.status)}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.underwriter}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// MGA — PRODUCTS & RATING ENGINE MODULE
+// ════════════════════════════════════════════════════════════════
+function _mgaProductSubNav(active) {
+  const tabs = [
+    { key: 'mga-products',          label: 'Dashboard',         icon: '📊' },
+    { key: 'mga-product-catalog',   label: 'Catalog',           icon: '🧩' },
+    { key: 'mga-product-builder',   label: 'Builder',           icon: '🛠' },
+    { key: 'mga-product-rating',    label: 'Rating Studio',     icon: '⚙' },
+    { key: 'mga-product-simulator', label: 'Simulator',         icon: '🧪' },
+    { key: 'mga-product-launch',    label: 'Launch Pipeline',   icon: '🚀' },
+    { key: 'mga-product-analytics', label: 'Analytics',         icon: '📈' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _mgaLifecyclePill(stage) {
+  const s = D.mgaProductLifecycleStages.find(x => x.key === stage);
+  if (!s) return '';
+  return badge(s.color, s.label);
+}
+
+function _mgaProductRow(p, compact) {
+  const isLaunched = p.launched !== null;
+  return `
+    <tr onclick="window.setState({screen:'mga-product-builder', currentProductId:'${p.id}'})" style="cursor:pointer;">
+      <td style="white-space:nowrap;"><strong style="color:var(--mga-accent);">${p.name}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${p.code}</div></td>
+      <td style="white-space:nowrap;">${p.lob}</td>
+      <td style="white-space:nowrap;">${p.type}</td>
+      <td style="font-size:0.82rem; white-space:nowrap;">${p.states}</td>
+      <td style="font-size:0.82rem; white-space:nowrap;">${p.carriers.join(', ')}</td>
+      <td style="white-space:nowrap;">${_mgaLifecyclePill(p.stage)}</td>
+      <td style="white-space:nowrap;">${isLaunched ? `<strong>$${(p.written_premium/1e6).toFixed(2)}M</strong>` : '<span style="color:var(--text-muted); font-size:0.75rem; font-style:italic;">pre-launch</span>'}</td>
+      <td style="white-space:nowrap;">${p.loss_ratio !== null ? `<strong style="color:${p.loss_ratio<=35?'var(--status-green)':p.loss_ratio<=50?'var(--mga-accent)':'var(--status-amber)'};">${p.loss_ratio}%</strong>` : '<span style="color:var(--text-muted);">—</span>'}</td>
+      <td style="white-space:nowrap;">${p.bind_ratio !== null ? `<strong>${p.bind_ratio}%</strong>` : '<span style="color:var(--text-muted);">—</span>'}</td>
+      <td style="white-space:nowrap;">${p.combined_ratio !== null ? `<strong style="color:${p.combined_ratio<=80?'var(--status-green)':p.combined_ratio<=95?'var(--mga-accent)':'var(--status-amber)'};">${p.combined_ratio}%</strong>` : '<span style="color:var(--text-muted);">—</span>'}</td>
+      <td style="white-space:nowrap;">v${p.version}</td>
+      ${!compact ? `<td style="white-space:nowrap;"><strong>${p.policies}</strong></td>` : ''}
+      <td onclick="event.stopPropagation();"><button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'mga-product-builder', currentProductId:'${p.id}'})">Open</button></td>
+    </tr>`;
+}
+
+function renderMgaProductsDashboard() {
+  const prods = D.mgaProducts;
+  const launched = prods.filter(p => p.launched !== null);
+  const inDev = prods.filter(p => ['ideation','design','testing','carrier_appr','rate_filing'].includes(p.stage));
+  const topProfit = [...launched].sort((a,b) => (b.profit_margin || 0) - (a.profit_margin || 0)).slice(0, 5);
+  const lifecycleCounts = D.mgaProductLifecycleStages.map(s => ({ ...s, count: prods.filter(p => p.stage === s.key).length }));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Products &amp; Rating Engine</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${launched.length} live products · ${inDev.length} in development · design, rate, launch, monitor · full version control</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-product-simulator'})">🧪 Rate Simulator</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Opening new product wizard')">+ New Product</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.mgaProductKPIs, 6)}
+
+  ${_mgaProductSubNav('mga-products')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">🔄 PRODUCT LIFECYCLE</div>
+    <div class="market-pipeline">
+      ${lifecycleCounts.map((s, i) => `
+        <div class="market-stage market-stage-${s.color}">
+          <div class="market-stage-count">${s.count}</div>
+          <div class="market-stage-label">${s.label}</div>
+        </div>
+        ${i < lifecycleCounts.length - 1 ? '<span class="market-stage-arrow">›</span>' : ''}
+      `).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">🏆 TOP 5 BY PROFIT MARGIN</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-product-analytics'})">All analytics →</button>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Rank</th><th>Product</th><th>Written Premium</th><th>Loss Ratio</th><th>Combined</th><th>Profit %</th></tr></thead>
+        <tbody>
+          ${topProfit.map((p, i) => `
+          <tr onclick="window.setState({screen:'mga-product-builder', currentProductId:'${p.id}'})" style="cursor:pointer;">
+            <td style="white-space:nowrap; font-weight:700;">${i < 3 ? ['🥇','🥈','🥉'][i] : '#' + (i+1)}</td>
+            <td style="white-space:nowrap;"><strong>${p.name}</strong></td>
+            <td style="white-space:nowrap;">$${(p.written_premium/1e6).toFixed(2)}M</td>
+            <td style="white-space:nowrap;"><strong style="color:var(--status-green);">${p.loss_ratio}%</strong></td>
+            <td style="white-space:nowrap;"><strong>${p.combined_ratio}%</strong></td>
+            <td style="white-space:nowrap;"><strong style="color:var(--status-green);">${p.profit_margin}%</strong></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🚀 IN LAUNCH PIPELINE</div>
+        ${D.mgaLaunchPipeline.slice(0, 5).map(l => `
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;" onclick="window.setState({screen:'mga-product-launch'})">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm);">
+              <strong style="font-size:0.85rem;">${l.product}</strong>
+              ${_mgaLifecyclePill(l.stage)}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">Target: ${l.target_launch} · Owner: ${l.owner}</div>
+            <div style="background:var(--bg-card); height:6px; border-radius:3px; overflow:hidden; margin-top:4px;"><div style="height:100%; width:${l.progress}%; background:linear-gradient(90deg, var(--mga-accent), var(--status-green));"></div></div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">⚠ RATE CHANGE ALERTS</div>
+        <div style="font-size:0.82rem; line-height:1.7;">
+          <div style="padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+            <strong>FleetSafe Auto</strong> LR trending 52% · <span style="color:var(--status-amber);">+6.1% rate change filed</span>
+          </div>
+          <div style="padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+            <strong>MS-BOP-V1</strong> (legacy) LR 58% · <span style="color:var(--status-red);">recommend sunset by Q3</span>
+          </div>
+          <div style="padding: 6px 0;">
+            <strong>SecureEdge Cyber</strong> · <span style="color:var(--status-green);">favorable — consider -1.5%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaProductCatalog() {
+  const stageF = state.mgaProductStageFilter || 'all';
+  const lobF = state.mgaProductLobFilter || 'all';
+  const q = (state.mgaProductQuery || '').toLowerCase();
+  let rows = D.mgaProducts;
+  if (stageF !== 'all') rows = rows.filter(p => p.stage === stageF);
+  if (lobF !== 'all') rows = rows.filter(p => p.lob === lobF);
+  if (q) rows = rows.filter(p => (p.name + ' ' + p.code + ' ' + p.lob + ' ' + p.states + ' ' + p.carriers.join(' ')).toLowerCase().includes(q));
+  const lobs = ['all', ...new Set(D.mgaProducts.map(p => p.lob))];
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Product Catalog</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${rows.length} products · filter by LOB, lifecycle stage, or search</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Exporting catalog to CSV')">Export</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Opening new product wizard')">+ New Product</button>
+    </div>
+  </div>
+
+  ${_mgaProductSubNav('mga-product-catalog')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-sm);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search by name, code, LOB, state..." value="${state.mgaProductQuery || ''}" oninput="window.setState({mgaProductQuery:this.value})"/>
+      <select class="form-input" style="width:180px;" onchange="window.setState({mgaProductLobFilter:this.value})">
+        ${lobs.map(l => `<option value="${l}" ${lobF===l?'selected':''}>${l === 'all' ? 'All LOBs' : l}</option>`).join('')}
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({mgaProductStageFilter:'all', mgaProductLobFilter:'all', mgaProductQuery:''})">Reset</button>
+    </div>
+    <div style="display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+      <div class="cust-pill${stageF==='all'?' active':''}" onclick="window.setState({mgaProductStageFilter:'all'})">All <span class="cust-pill-count">${D.mgaProducts.length}</span></div>
+      ${D.mgaProductLifecycleStages.map(s => { const cnt = D.mgaProducts.filter(p => p.stage === s.key).length; return cnt > 0 ? `<div class="cust-pill${stageF===s.key?' active':''}" onclick="window.setState({mgaProductStageFilter:'${s.key}'})">${s.label} <span class="cust-pill-count">${cnt}</span></div>` : ''; }).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Product</th><th>LOB</th><th>Type</th><th>States</th><th>Carriers</th><th>Stage</th><th>Written</th><th>Loss Ratio</th><th>Bind %</th><th>Combined</th><th>Version</th><th>Policies</th><th>Action</th></tr></thead>
+      <tbody>
+        ${rows.map(p => _mgaProductRow(p, false)).join('')}
+      </tbody>
+    </table>
+    </div>
+    ${rows.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding: var(--space-xl);">No products match this filter.</div>' : ''}
+    <div style="padding: var(--space-md); color:var(--text-muted); font-size:0.8rem;">Showing ${rows.length} of ${D.mgaProducts.length} · $${(rows.reduce((s,p) => s + p.written_premium, 0)/1e6).toFixed(2)}M written premium</div>
+  </div>`;
+}
+
+function renderMgaProductBuilder() {
+  const p = D.mgaProducts.find(x => x.id === state.currentProductId) || D.mgaProducts[0];
+  const d = p.id === D.mgaProductDetail.id ? D.mgaProductDetail : null;
+  const tab = state.mgaProductTab || 'general';
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-product-catalog'})" style="padding:4px 8px; margin-left:-8px;">← Back to Catalog</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="flex:1;">
+      <div style="display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap;">
+        <h2 style="margin:0;">${p.name}</h2>
+        ${_mgaLifecyclePill(p.stage)}
+        <span class="cust-policy-tag" style="background:rgba(108,92,231,0.15); color:var(--mga-accent);">${p.type}</span>
+      </div>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px; font-family:monospace;">${p.id} · ${p.code} · v${p.version} · ${p.lob} · ${p.carriers.join(' + ')}</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm); flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-product-simulator', currentProductId:'${p.id}'})">🧪 Test Rates</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Creating new version v' + ((parseFloat('${p.version}') + 0.1).toFixed(1)))">➕ New Version</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Saving ' + '${p.name}')">💾 Save</button>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Written Premium</div><div class="kpi-value">${p.written_premium > 0 ? '$' + (p.written_premium/1e6).toFixed(2) + 'M' : '—'}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Loss Ratio</div><div class="kpi-value" style="color:${p.loss_ratio===null?'var(--text-muted)':p.loss_ratio<=35?'var(--status-green)':p.loss_ratio<=50?'var(--mga-accent)':'var(--status-amber)'};">${p.loss_ratio === null ? '—' : p.loss_ratio + '%'}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Bind Ratio</div><div class="kpi-value">${p.bind_ratio === null ? '—' : p.bind_ratio + '%'}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Combined Ratio</div><div class="kpi-value">${p.combined_ratio === null ? '—' : p.combined_ratio + '%'}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Retention</div><div class="kpi-value">${p.retention === null ? '—' : p.retention + '%'}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Active Policies</div><div class="kpi-value">${p.policies}</div></div>
+  </div>
+
+  <div style="display:flex; gap:var(--space-sm); border-bottom:1px solid var(--border-subtle); margin-bottom: var(--space-lg); padding-bottom: var(--space-sm); overflow-x:auto;">
+    ${[
+      { k: 'general',      l: 'General',             i: '📋' },
+      { k: 'coverages',    l: 'Coverages & Forms',   i: '🛡' },
+      { k: 'rules',        l: 'UW Rules',            i: '⚖' },
+      { k: 'rating',       l: 'Rating Factors',      i: '💰' },
+      { k: 'questions',    l: 'Questionnaire',       i: '❓' },
+      { k: 'history',      l: 'Rate History',        i: '📜' }
+    ].map(t => `
+      <div onclick="window.setState({mgaProductTab:'${t.k}'})" style="padding: 6px 14px; cursor:pointer; border-radius: var(--radius-sm); ${tab===t.k ? 'background:var(--mga-accent); color:#fff;' : 'color:var(--text-muted);'} font-size:0.85rem; white-space:nowrap;">
+        ${t.i} ${t.l}
+      </div>`).join('')}
+  </div>
+
+  ${tab === 'general' ? `
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">PRODUCT DETAILS</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group"><label class="form-label">Product Name</label><input class="form-input" value="${d?.general?.name || p.name}"/></div>
+          <div class="form-group"><label class="form-label">Product Code</label><input class="form-input" value="${d?.general?.code || p.code}" style="font-family:monospace;"/></div>
+          <div class="form-group"><label class="form-label">Line of Business</label><input class="form-input" value="${p.lob}"/></div>
+          <div class="form-group"><label class="form-label">Type</label><select class="form-input"><option ${p.type==='Admitted'?'selected':''}>Admitted</option><option ${p.type==='Surplus / E&S'?'selected':''}>Surplus / E&S</option></select></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Description</label><textarea class="form-input" rows="3">${d?.general?.description || 'Product description...'}</textarea></div>
+          <div class="form-group"><label class="form-label">Available States</label><input class="form-input" value="${Array.isArray(p.states) ? p.states.join(', ') : p.states}"/></div>
+          <div class="form-group"><label class="form-label">Target Market</label><input class="form-input" value="${d?.general?.target_market || p.target}"/></div>
+          <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Target Classes / Criteria</label><textarea class="form-input" rows="2">${d?.general?.target_classes || 'Target class codes and criteria...'}</textarea></div>
+          <div class="form-group"><label class="form-label">Primary Carrier</label><input class="form-input" value="${p.carriers[0]}"/></div>
+          <div class="form-group"><label class="form-label">Effective Date</label><input class="form-input" type="date" value="${d?.general?.effective || '2026-01-01'}"/></div>
+          <div class="form-group"><label class="form-label">Product Owner</label><input class="form-input" value="${d?.general?.owner || 'Marcus Henderson'}"/></div>
+          <div class="form-group"><label class="form-label">Filing Number</label><input class="form-input" value="${d?.general?.filing_number || '—'}" style="font-family:monospace;"/></div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">📊 QUICK STATS</div>
+          <div style="font-size:0.85rem; line-height:1.9;">
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Launched</span><strong>${p.launched || 'Not yet'}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Version</span><strong>${p.version}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Last Rate Change</span><strong>${p.last_rate_change || '—'}${p.rate_change_pct ? ' ('+(p.rate_change_pct > 0 ? '+' : '')+p.rate_change_pct+'%)' : ''}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Forms</span><strong>${p.forms}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Rating Factors</span><strong>${p.rating_factors}</strong></div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">🏢 CARRIERS</div>
+          ${p.carriers.map(c => `
+            <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.88rem;">
+              <strong>${c}</strong>
+              <div style="color:var(--text-muted); font-size:0.72rem;">Active · participating</div>
+            </div>`).join('')}
+          <button class="btn btn-ghost btn-sm" style="width:100%; margin-top:var(--space-sm);" onclick="window.showAlert('Add additional carrier to product')">+ Add Carrier</button>
+        </div>
+      </div>
+    </div>
+  ` : tab === 'coverages' ? `
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+          <div class="section-title" style="margin:0;">🛡 COVERAGES</div>
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Add coverage')">+ Add</button>
+        </div>
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Coverage</th><th>Default Limit</th><th>Mandatory</th></tr></thead>
+          <tbody>
+            ${(d?.coverages || [{k:'Primary Coverage',v:'—',mandatory:true}]).map(c => `
+            <tr>
+              <td><strong>${c.k}</strong></td>
+              <td style="font-size:0.82rem; white-space:nowrap;">${c.v}</td>
+              <td style="white-space:nowrap;">${c.mandatory ? badge('green','Required') : badge('gray','Optional')}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+          <div class="section-title" style="margin:0;">📄 FORMS LIBRARY (${p.forms})</div>
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Upload new form')">+ Upload</button>
+        </div>
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Form</th><th>Type</th><th>Version</th><th>Filed</th></tr></thead>
+          <tbody>
+            ${(d?.forms || []).map(f => `
+            <tr>
+              <td style="font-size:0.82rem;"><strong>${f.name}</strong></td>
+              <td style="font-size:0.82rem; white-space:nowrap;">${f.type}</td>
+              <td style="font-size:0.82rem; white-space:nowrap;">${f.version}</td>
+              <td style="font-size:0.82rem; white-space:nowrap;">${f.filed}</td>
+            </tr>`).join('') || '<tr><td colspan="4" style="color:var(--text-muted); font-style:italic;">Forms list not yet populated — use Upload to add.</td></tr>'}
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  ` : tab === 'rules' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">⚖ UNDERWRITING RULES</div>
+        <button class="btn btn-primary btn-sm" onclick="window.showAlert('Add new rule')">+ New Rule</button>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Type</th><th>Rule</th><th>Action</th><th>Priority</th><th>Manage</th></tr></thead>
+        <tbody>
+          ${(d?.underwriting_rules || []).map((r, i) => `
+          <tr>
+            <td style="white-space:nowrap;">${badge(r.type === 'eligibility' ? 'green' : r.type === 'referral' ? 'amber' : 'red', r.type)}</td>
+            <td>${r.rule}</td>
+            <td style="white-space:nowrap;"><strong>${r.action}</strong></td>
+            <td style="white-space:nowrap;">P${i+1}</td>
+            <td style="display:flex; gap:4px;">
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Edit rule')">✏</button>
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Pause rule')">⏸</button>
+            </td>
+          </tr>`).join('') || '<tr><td colspan="5" style="color:var(--text-muted); font-style:italic; padding: var(--space-xl); text-align:center;">No rules configured yet. Click + New Rule to start.</td></tr>'}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  ` : tab === 'rating' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">💰 RATING FACTORS</div>
+        <div style="display:flex; gap:var(--space-sm);">
+          <button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'mga-product-simulator', currentProductId:'${p.id}'})">🧪 Test Formula</button>
+          <button class="btn btn-primary btn-sm" onclick="window.showAlert('Add new rating factor')">+ Add Factor</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Factor</th><th>Type</th><th>Varies By</th><th>Example</th><th>Impact</th><th>Action</th></tr></thead>
+        <tbody>
+          ${(d?.rating_factors || []).map(f => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${f.factor}</strong></td>
+            <td style="white-space:nowrap;">${badge(f.type === 'base' ? 'blue' : f.type === 'modifier' ? 'amber' : f.type === 'discount' || f.type === 'credit' ? 'green' : 'gray', f.type)}</td>
+            <td style="white-space:nowrap;">${f.by}</td>
+            <td style="font-size:0.82rem;">${f.example}</td>
+            <td style="white-space:nowrap;">${badge(f.impact === 'Primary' ? 'red' : f.impact === 'Secondary' ? 'amber' : 'gray', f.impact)}</td>
+            <td style="display:flex; gap:4px;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert('Edit factor')">✏</button></td>
+          </tr>`).join('') || '<tr><td colspan="6" style="color:var(--text-muted); font-style:italic; padding: var(--space-xl); text-align:center;">No rating factors yet. Click + Add Factor to start building the rate table.</td></tr>'}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    ${d?.pricing_example ? `
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💡 WORKED EXAMPLE — ${d.pricing_example.insured}</div>
+        <table class="data-table">
+          <thead><tr><th>Line Item</th><th style="text-align:right;">Value</th></tr></thead>
+          <tbody>
+            <tr><td>Class Code</td><td style="text-align:right;">${d.pricing_example.class_code}</td></tr>
+            <tr><td>Annual Payroll</td><td style="text-align:right; font-family:monospace;">$${d.pricing_example.payroll.toLocaleString()}</td></tr>
+            <tr><td>Base Rate (per $100)</td><td style="text-align:right; font-family:monospace;">$${d.pricing_example.base_rate}</td></tr>
+            <tr><td>Base Premium</td><td style="text-align:right; font-family:monospace;"><strong>$${d.pricing_example.base_premium.toLocaleString()}</strong></td></tr>
+            <tr style="color:var(--mga-accent);"><td>× Experience Mod (${d.pricing_example.ex_mod})</td><td style="text-align:right; font-family:monospace;">$${d.pricing_example.modified_premium.toLocaleString()}</td></tr>
+            <tr style="color:var(--status-green);"><td>Schedule Credit (${d.pricing_example.schedule_credit_pct}%)</td><td style="text-align:right; font-family:monospace;">${d.pricing_example.schedule_credit.toLocaleString()}</td></tr>
+            <tr><td><strong>Subtotal</strong></td><td style="text-align:right; font-family:monospace;"><strong>$${d.pricing_example.subtotal.toLocaleString()}</strong></td></tr>
+            <tr style="color:var(--status-green);"><td>Premium Discount (${d.pricing_example.premium_discount_pct}%)</td><td style="text-align:right; font-family:monospace;">${d.pricing_example.premium_discount.toLocaleString()}</td></tr>
+            <tr><td>Terrorism (TRIA)</td><td style="text-align:right; font-family:monospace;">+$${d.pricing_example.terrorism}</td></tr>
+            <tr><td>Taxes &amp; Assessments</td><td style="text-align:right; font-family:monospace;">+$${d.pricing_example.taxes.toLocaleString()}</td></tr>
+            <tr style="background:var(--bg-card); font-weight:700;"><td>FINAL PREMIUM</td><td style="text-align:right; font-family:monospace; font-size:1.1rem; color:var(--status-green);">$${d.pricing_example.final_premium.toLocaleString()}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    ` : ''}
+  ` : tab === 'questions' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">❓ DYNAMIC QUESTIONNAIRE</div>
+        <button class="btn btn-primary btn-sm" onclick="window.showAlert('Add new question')">+ Add Question</button>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>#</th><th>Question</th><th>Type</th><th>Required</th><th>Risk Weight</th><th>Action</th></tr></thead>
+        <tbody>
+          ${(d?.questionnaire || []).map((q, i) => `
+          <tr>
+            <td style="white-space:nowrap; font-weight:700;">${i+1}</td>
+            <td>${q.q}</td>
+            <td style="white-space:nowrap;">${q.type}</td>
+            <td style="white-space:nowrap;">${q.required ? badge('red','Required') : badge('gray','Optional')}</td>
+            <td style="white-space:nowrap;"><strong>${q.weight}</strong></td>
+            <td style="display:flex; gap:4px;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert('Edit question')">✏</button></td>
+          </tr>`).join('') || '<tr><td colspan="6" style="color:var(--text-muted); font-style:italic; padding: var(--space-xl); text-align:center;">No questions configured yet.</td></tr>'}
+        </tbody>
+      </table>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background: rgba(108,92,231,0.08); border-radius:var(--radius-sm); font-size:0.82rem; color:var(--text-muted);">
+        💡 Risk weights sum to 100. The questionnaire feeds the auto-triage risk-scoring engine — weight-tune quarterly against bound vs. declined outcomes.
+      </div>
+    </div>
+  ` : `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📜 RATE CHANGE HISTORY</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Effective</th><th>Version</th><th>Change %</th><th>Reason</th><th>Approved By</th></tr></thead>
+        <tbody>
+          ${(d?.rate_history || []).map(h => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${h.effective}</strong></td>
+            <td style="white-space:nowrap;">v${h.version}</td>
+            <td style="white-space:nowrap;"><strong style="color:${h.change_pct === 0 ? 'var(--text-muted)' : h.change_pct > 0 ? 'var(--status-amber)' : 'var(--status-green)'};">${h.change_pct > 0 ? '+' : ''}${h.change_pct}%</strong></td>
+            <td>${h.reason}</td>
+            <td style="white-space:nowrap;">${h.approved_by}</td>
+          </tr>`).join('') || '<tr><td colspan="5" style="color:var(--text-muted); font-style:italic; padding: var(--space-xl); text-align:center;">No rate changes yet.</td></tr>'}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  `}`;
+}
+
+function renderMgaProductRating() {
+  const activeProducts = D.mgaProducts.filter(p => p.launched !== null);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Rating Engine Configuration Studio</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">No-code formula builder · versioned rate tables · effective-dated · carrier-aware</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-product-simulator'})">🧪 Simulator</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Publishing rate changes to production · carriers will be notified')">🚀 Publish Changes</button>
+    </div>
+  </div>
+
+  ${_mgaProductSubNav('mga-product-rating')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">⚙ RATE TABLES BY PRODUCT</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Product</th><th>Current Version</th><th>Pending Version</th><th>Effective</th><th>Rating Factors</th><th>Last Change</th><th>Change %</th><th>Action</th></tr></thead>
+      <tbody>
+        ${activeProducts.map(p => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${p.name}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${p.code}</div></td>
+          <td style="white-space:nowrap;"><strong>v${p.version}</strong></td>
+          <td style="white-space:nowrap;">${Math.random() > 0.7 ? `<strong style="color:var(--status-amber);">v${(parseFloat(p.version) + 0.1).toFixed(1)} (draft)</strong>` : '<span style="color:var(--text-muted);">—</span>'}</td>
+          <td style="white-space:nowrap;">${p.last_rate_change || '—'}</td>
+          <td style="white-space:nowrap;">${p.rating_factors}</td>
+          <td style="white-space:nowrap;">${p.last_rate_change || '—'}</td>
+          <td style="white-space:nowrap;">${p.rate_change_pct !== null ? `<strong style="color:${p.rate_change_pct > 0 ? 'var(--status-amber)' : 'var(--status-green)'};">${p.rate_change_pct > 0 ? '+' : ''}${p.rate_change_pct}%</strong>` : '<span style="color:var(--text-muted);">—</span>'}</td>
+          <td style="display:flex; gap:4px;">
+            <button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'mga-product-builder', currentProductId:'${p.id}', mgaProductTab:'rating'})">Edit Factors</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-product-simulator', currentProductId:'${p.id}'})">🧪</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🧮 NO-CODE FORMULA BUILDER</div>
+      <div style="padding:var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); font-family:monospace; font-size:0.82rem; line-height:1.9; margin-bottom: var(--space-md);">
+        <div><span style="color:var(--text-muted);">// WorkForce WC — CA Small Biz · v3.2</span></div>
+        <div><span style="color:var(--mga-accent);">base_premium</span> = (payroll / 100) × base_rate_by_class</div>
+        <div><span style="color:var(--mga-accent);">modified_premium</span> = base_premium × experience_mod</div>
+        <div><span style="color:var(--mga-accent);">schedule_credit</span> = modified_premium × safety_credit_pct</div>
+        <div><span style="color:var(--mga-accent);">subtotal</span> = modified_premium + schedule_credit</div>
+        <div><span style="color:var(--mga-accent);">premium_discount</span> = subtotal × discount_pct_by_band</div>
+        <div><span style="color:var(--mga-accent);">pre_tax_premium</span> = subtotal + premium_discount + terrorism</div>
+        <div><span style="color:var(--status-green);">final_premium</span> = pre_tax_premium × (1 + tax_rate)</div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:100%;" onclick="window.showAlert('Opening visual formula editor')">🎨 Open Visual Editor</button>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📊 A/B TESTING</div>
+      <div style="font-size:0.85rem; line-height:1.7; margin-bottom: var(--space-md);">Test two rating models against live submissions. 10% of traffic is randomly assigned to the B model for 30 days, with automatic winner promotion if bind ratio + LR meet thresholds.</div>
+      <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem; margin-bottom: var(--space-sm);">
+        <strong>Active test:</strong> WF-WC-CA v3.1 vs v3.2 · 14 days remaining
+      </div>
+      <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem;">
+        <strong>Prior test:</strong> SE-CYB v2.2 → v2.3 · winner promoted 2026-03-10 (+2.8% bind rate)
+      </div>
+      <button class="btn btn-secondary btn-sm" style="width:100%; margin-top:var(--space-md);" onclick="window.showAlert('Configure new A/B test')">+ New A/B Test</button>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">🤖 AI RATE OPTIMIZATION</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);">
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <div style="color:var(--status-green); font-size:0.72rem; text-transform:uppercase; font-weight:700;">RECOMMEND</div>
+        <strong style="font-size:0.92rem;">Reduce SE-CYB rates 1.5%</strong>
+        <div style="color:var(--text-muted); font-size:0.78rem; margin-top:4px;">LR trending 28% · bind rate could lift 4-6% with small cut. Revenue impact: +$180k/yr</div>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <div style="color:var(--status-amber); font-size:0.72rem; text-transform:uppercase; font-weight:700;">WATCH</div>
+        <strong style="font-size:0.92rem;">FS-AUTO LR trending up</strong>
+        <div style="color:var(--text-muted); font-size:0.78rem; margin-top:4px;">LR 52%, up 4pts in 90d. Consider another +3% rate change or tighten class-code mix.</div>
+      </div>
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <div style="color:var(--status-red); font-size:0.72rem; text-transform:uppercase; font-weight:700;">ACT</div>
+        <strong style="font-size:0.92rem;">MS-BOP-V1 → Sunset</strong>
+        <div style="color:var(--text-muted); font-size:0.78rem; margin-top:4px;">Combined 94% · retention 72% · migrate 18 policies to MS-BOP (v3.4) by Q3.</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaProductSimulator() {
+  const p = D.mgaProducts.find(x => x.id === state.currentProductId) || D.mgaProducts.find(x => x.launched) || D.mgaProducts[0];
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Rate Testing Simulator</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Test quotes with sample data · compare versions · model profitability · no impact on production</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Running simulation · generating quote comparison')">▶ Run Simulation</button>
+  </div>
+
+  ${_mgaProductSubNav('mga-product-simulator')}
+
+  <div style="display:grid; grid-template-columns: 1fr 2fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🎯 TEST INPUT</div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Product</label>
+        <select class="form-input" onchange="window.setState({currentProductId:this.value})">
+          ${D.mgaProducts.filter(x => x.launched !== null).map(x => `<option value="${x.id}" ${x.id===p.id?'selected':''}>${x.name} · v${x.version}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Sample Insured</label>
+        <input class="form-input" value="Magnolia Construction LLC"/>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Annual Payroll / Revenue</label>
+        <input class="form-input" value="$2,400,000"/>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Primary Class Code</label>
+        <input class="form-input" value="5403 Carpentry"/>
+      </div>
+      <div class="form-row" style="margin-bottom: var(--space-md);">
+        <div class="form-group"><label class="form-label">Experience Mod</label><input class="form-input" value="0.92"/></div>
+        <div class="form-group"><label class="form-label">Prior LR (3yr)</label><input class="form-input" value="22%"/></div>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Safety Program</label>
+        <div class="radio-group">
+          <span class="radio-pill active">OSHA VPP</span>
+          <span class="radio-pill">Basic</span>
+          <span class="radio-pill">None</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Compare Versions</label>
+        <div class="radio-group">
+          <span class="radio-pill active">v${p.version} (current)</span>
+          <span class="radio-pill">v${(parseFloat(p.version) - 0.1).toFixed(1)} (prior)</span>
+          <span class="radio-pill">v${(parseFloat(p.version) + 0.1).toFixed(1)} (draft)</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💡 SIMULATION RESULT</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); align-items:center; margin-bottom: var(--space-md);">
+          <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); text-align:center;">
+            <div style="color:var(--text-muted); font-size:0.72rem;">v${(parseFloat(p.version) - 0.1).toFixed(1)} Prior</div>
+            <div style="font-size:1.8rem; font-weight:800; color:var(--text-secondary);">$84,480</div>
+          </div>
+          <div style="text-align:center; font-size:2rem;">→</div>
+          <div style="padding: var(--space-md); background:linear-gradient(135deg, rgba(0,230,118,0.1), rgba(0,230,118,0.03)); border:2px solid rgba(0,230,118,0.3); border-radius:var(--radius-md); text-align:center;">
+            <div style="color:var(--status-green); font-size:0.72rem; font-weight:700;">v${p.version} CURRENT</div>
+            <div style="font-size:1.8rem; font-weight:800; color:var(--status-green);">$87,646</div>
+            <div style="color:var(--status-amber); font-size:0.78rem;">+$3,166 (+3.7%)</div>
+          </div>
+        </div>
+        <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem;">
+          <strong>Impact analysis:</strong> Rate increase absorbed by 15% schedule credit + 9.5% premium discount. Net effective +3.7% at final premium.
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📊 PROFITABILITY MODEL</div>
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Metric</th><th>v${(parseFloat(p.version) - 0.1).toFixed(1)}</th><th>v${p.version}</th><th>Delta</th></tr></thead>
+          <tbody>
+            <tr><td>Premium</td><td>$84,480</td><td>$87,646</td><td style="color:var(--status-amber);">+3.7%</td></tr>
+            <tr><td>Expected Loss Cost</td><td>$32,100</td><td>$32,900</td><td style="color:var(--status-amber);">+2.5%</td></tr>
+            <tr><td>Loss Ratio</td><td>38%</td><td>37.5%</td><td style="color:var(--status-green);">-0.5pp</td></tr>
+            <tr><td>Expense Ratio</td><td>28%</td><td>28%</td><td>—</td></tr>
+            <tr style="background:var(--bg-card); font-weight:700;"><td>Combined Ratio</td><td>66%</td><td>65.5%</td><td style="color:var(--status-green);">-0.5pp</td></tr>
+            <tr><td>Profit Margin</td><td>34%</td><td>34.5%</td><td style="color:var(--status-green);">+0.5pp</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">📜 RECENT SIMULATIONS</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Sim #</th><th>Run</th><th>Product</th><th>Agent / Insured</th><th>v(A) / v(B)</th><th>Premium A</th><th>Premium B</th><th>Delta</th><th>User</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        ${D.mgaRateSimulations.map(s => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong style="color:var(--mga-accent);">${s.id}</strong></td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${s.run}</td>
+          <td style="white-space:nowrap;"><strong>${s.product}</strong></td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${s.agent} · ${s.insured}</td>
+          <td style="white-space:nowrap;">${s.version_a} → ${s.version_b}</td>
+          <td style="white-space:nowrap;">$${s.premium_a.toLocaleString()}</td>
+          <td style="white-space:nowrap;"><strong>$${s.premium_b.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;"><strong style="color:${s.delta > 0 ? 'var(--status-amber)' : 'var(--status-green)'};">${s.delta > 0 ? '+' : ''}${s.delta}%</strong></td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${s.user}</td>
+          <td style="white-space:nowrap;">${badge(s.status === 'Approved' ? 'green' : 'amber', s.status)}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="window.showAlert('Re-run simulation ' + '${s.id}')">Re-run</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaProductLaunch() {
+  const pipe = D.mgaLaunchPipeline;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Product Launch Pipeline</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${pipe.length} products in development · tracking from ideation through full launch · goal 2–4 launches per year</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Opening new product wizard — starts at Ideation stage')">+ New Product Concept</button>
+  </div>
+
+  ${_mgaProductSubNav('mga-product-launch')}
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    ${pipe.map(l => `
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-sm); margin-bottom: var(--space-md);">
+          <div style="flex:1;">
+            <strong style="font-size:1rem;">${l.product}</strong>
+            <div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace; margin-top:2px;">${l.id}</div>
+          </div>
+          ${_mgaLifecyclePill(l.stage)}
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.78rem; color:var(--text-muted); margin-bottom:4px;">
+          <span>Progress</span>
+          <strong style="color:var(--mga-accent);">${l.progress}%</strong>
+        </div>
+        <div style="background:var(--bg-card); height:10px; border-radius:5px; overflow:hidden; margin-bottom: var(--space-md);"><div style="height:100%; width:${l.progress}%; background:linear-gradient(90deg, var(--mga-accent), var(--status-green));"></div></div>
+        <div style="font-size:0.82rem; line-height:1.7;">
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Target Launch</span><strong>${l.target_launch}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Owner</span><strong>${l.owner}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Open Items</span><strong>${l.open_items}</strong></div>
+        </div>
+        ${l.blockers.length > 0 ? `
+          <div style="margin-top: var(--space-md);">
+            <div style="color:var(--text-muted); font-size:0.7rem; text-transform:uppercase; font-weight:700; margin-bottom:4px;">⚠ BLOCKERS</div>
+            ${l.blockers.map(b => `<div style="font-size:0.78rem; color:var(--status-amber); padding: 3px 0;">• ${b}</div>`).join('')}
+          </div>
+        ` : ''}
+        <div style="margin-top: var(--space-md); display:flex; gap:4px;">
+          <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="window.setState({screen:'mga-product-builder', currentProductId:'${l.id}'})">Open Builder</button>
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Opening launch checklist for ' + '${l.product}')">✅ Checklist</button>
+        </div>
+      </div>`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">🗓 LAUNCH WORKFLOW — STANDARD 8-STEP PROCESS</div>
+    <div class="market-pipeline">
+      ${[
+        { label: 'Ideation',         color: 'blue' },
+        { label: 'Design',           color: 'blue' },
+        { label: 'Internal Review',  color: 'amber' },
+        { label: 'Carrier Approval', color: 'amber' },
+        { label: 'Rate Filing',      color: 'amber' },
+        { label: 'Agent Training',   color: 'blue' },
+        { label: 'Soft Launch',      color: 'green' },
+        { label: 'Full Launch',      color: 'green' }
+      ].map((s, i) => `
+        <div class="market-stage market-stage-${s.color}">
+          <div class="market-stage-count">${i+1}</div>
+          <div class="market-stage-label">${s.label}</div>
+        </div>
+        ${i < 7 ? '<span class="market-stage-arrow">›</span>' : ''}
+      `).join('')}
+    </div>
+    <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem; color:var(--text-muted);">
+      💡 Typical cadence: 90 days from ideation to soft launch · 120–150 days to full launch. Admitted products add 30–60 days for state DOI rate filing. Post-launch monitoring runs 90 days with weekly reviews.
+    </div>
+  </div>`;
+}
+
+function renderMgaProductAnalytics() {
+  const a = D.mgaProductAnalytics;
+  const maxProfit = Math.max(...a.profitability.map(p => p.profit));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Product Performance Analytics</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Profitability · rate-change impact · submission-to-bound · new-product performance</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <select class="form-input" style="width:160px;"><option>Last 12 months</option><option>YTD</option><option>Trailing 24 months</option></select>
+      <button class="btn btn-primary" onclick="window.showAlert('Export full analytics PDF')">Export</button>
+    </div>
+  </div>
+
+  ${_mgaProductSubNav('mga-product-analytics')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">💰 PROFITABILITY BY PRODUCT</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Product</th><th>Written Premium</th><th>Loss Ratio</th><th>Combined Ratio</th><th>Profit $</th><th>Profit %</th><th>Chart</th></tr></thead>
+      <tbody>
+        ${a.profitability.map(p => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${p.product}</strong></td>
+          <td style="white-space:nowrap;">$${(p.written/1e6).toFixed(2)}M</td>
+          <td style="white-space:nowrap;"><strong style="color:${p.loss_ratio<=35?'var(--status-green)':p.loss_ratio<=50?'var(--mga-accent)':'var(--status-amber)'};">${p.loss_ratio}%</strong></td>
+          <td style="white-space:nowrap;"><strong>${p.combined}%</strong></td>
+          <td style="white-space:nowrap;"><strong>$${(p.profit/1e6).toFixed(2)}M</strong></td>
+          <td style="white-space:nowrap;"><strong style="color:${p.profit_pct>=25?'var(--status-green)':p.profit_pct>=15?'var(--mga-accent)':'var(--status-amber)'};">${p.profit_pct}%</strong></td>
+          <td style="white-space:nowrap; min-width:200px;"><div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden; width:180px;"><div style="height:100%; width:${(p.profit/maxProfit)*100}%; background:linear-gradient(90deg, var(--mga-accent), var(--status-green));"></div></div></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📈 RATE CHANGE IMPACT</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Product</th><th>Change</th><th>Retained</th><th>NB Δ</th><th>Premium Δ</th></tr></thead>
+        <tbody>
+          ${a.rate_impact.map(r => `
+          <tr>
+            <td><strong>${r.product}</strong></td>
+            <td style="white-space:nowrap; color:var(--status-amber);">+${r.rate_change}%</td>
+            <td style="white-space:nowrap;"><strong style="color:${r.retained>=88?'var(--status-green)':r.retained>=84?'var(--mga-accent)':'var(--status-amber)'};">${r.retained}%</strong></td>
+            <td style="white-space:nowrap; color:${r.new_business_delta>0?'var(--status-green)':'var(--status-red)'};">${r.new_business_delta > 0 ? '+' : ''}${r.new_business_delta}</td>
+            <td style="white-space:nowrap;">+$${(r.premium_delta/1000).toFixed(0)}k</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🎯 SUBMISSION-TO-BOUND BY PRODUCT</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Product</th><th>Submitted</th><th>Quoted</th><th>Bound</th><th>Bind %</th><th>TAT</th></tr></thead>
+        <tbody>
+          ${a.submission_to_bound.map(r => `
+          <tr>
+            <td><strong>${r.product}</strong></td>
+            <td>${r.submitted}</td>
+            <td>${r.quoted}</td>
+            <td>${r.bound}</td>
+            <td style="white-space:nowrap;"><strong style="color:${r.bind_ratio>=55?'var(--status-green)':r.bind_ratio>=45?'var(--mga-accent)':'var(--status-amber)'};">${r.bind_ratio}%</strong></td>
+            <td style="white-space:nowrap;">${r.avg_tat_hrs}h</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">💡 KEY TAKEAWAYS</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);">
+      <div style="padding: var(--space-md); background: rgba(0,230,118,0.08); border-left: 3px solid var(--status-green); border-radius:var(--radius-md);">
+        <strong>🏆 Best performer</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">OverShield Umbrella · 62% combined · 38% margin · retention 94%. Scale through agent tier-1 expansion.</p>
+      </div>
+      <div style="padding: var(--space-md); background: rgba(255,171,0,0.08); border-left: 3px solid var(--status-amber); border-radius:var(--radius-md);">
+        <strong>⚠ Margin pressure</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">FleetSafe Auto · 88% combined · 12% margin. Recent +6.1% rate helping; monitor LR trend monthly.</p>
+      </div>
+      <div style="padding: var(--space-md); background: rgba(108,92,231,0.08); border-left: 3px solid var(--mga-accent); border-radius:var(--radius-md);">
+        <strong>🚀 Growth opportunity</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">SecureEdge Cyber · 68% combined · 32% margin. Launching SMB Express variant Q3 to capture smaller risks.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// MGA — POLICY ISSUANCE & BINDINGS MODULE
+// ════════════════════════════════════════════════════════════════
+function _mgaBindSubNav(active) {
+  const tabs = [
+    { key: 'mga-bindings',        label: 'Dashboard',         icon: '📊' },
+    { key: 'mga-bind-quick',      label: 'Quick Bind',        icon: '⚡' },
+    { key: 'mga-bind-wizard',     label: 'Issuance Wizard',   icon: '🧙' },
+    { key: 'mga-bind-bulk-certs', label: 'Bulk Certificates', icon: '📄' },
+    { key: 'mga-bind-audit',      label: 'Audit Log',         icon: '🔒' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderMgaBindingsDashboard() {
+  const b = D.mgaBindings;
+  const pending = b.filter(x => x.status === 'Pending Bind' || x.status === 'Authority Check');
+  const bound = b.filter(x => x.status === 'Bound' || x.status === 'Documents Generating');
+  const issued = b.filter(x => x.status === 'Issued' || x.status === 'Carrier Reporting' || x.status === 'Active');
+  const cancelled = b.filter(x => x.status === 'Cancelled' || x.status === 'Rewritten' || x.status === 'Reinstated');
+  const stages = [
+    { label: 'Pending Bind',   color: 'amber', count: pending.length },
+    { label: 'Bound',          color: 'blue',  count: bound.length },
+    { label: 'Docs Generating',color: 'blue',  count: b.filter(x => x.status === 'Documents Generating').length },
+    { label: 'Issued',         color: 'green', count: b.filter(x => x.status === 'Issued').length },
+    { label: 'Carrier Reported',color: 'green',count: b.filter(x => x.carrier_reporting === 'Reported').length },
+    { label: 'Active',         color: 'green', count: b.filter(x => x.status === 'Active').length },
+    { label: 'Cancelled',      color: 'red',   count: b.filter(x => x.status === 'Cancelled').length }
+  ];
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Bindings &amp; Issuance</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${b.length} bindings tracked · ${pending.length} awaiting bind · ${bound.length} bound not yet issued · STP available for low-risk approved submissions</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-bind-audit'})">🔒 Audit Log</button>
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-bind-bulk-certs'})">📄 Bulk Certs</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-bind-quick'})">⚡ Quick Bind</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.mgaBindingKPIs, 6)}
+
+  ${_mgaBindSubNav('mga-bindings')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">BINDINGS PIPELINE</div>
+      <div style="color:var(--text-muted); font-size:0.82rem;">Total: $${(b.reduce((s,x) => s + x.written_premium, 0) / 1e6).toFixed(2)}M · STP today: ${b.filter(x => x.stp && x.bound_at && x.bound_at.startsWith('2026-04-19')).length}</div>
+    </div>
+    <div class="market-pipeline">
+      ${stages.map((s, i) => `
+        <div class="market-stage market-stage-${s.color}">
+          <div class="market-stage-count">${s.count}</div>
+          <div class="market-stage-label">${s.label}</div>
+        </div>
+        ${i < stages.length - 1 ? '<span class="market-stage-arrow">›</span>' : ''}
+      `).join('')}
+    </div>
+  </div>
+
+  ${pending.length > 0 ? `
+    <div style="background: linear-gradient(135deg, rgba(255,171,0,0.08), rgba(255,171,0,0.02)); border:1px solid rgba(255,171,0,0.3); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg); display:flex; gap:var(--space-md); align-items:center;">
+      <div style="font-size:2rem;">⏳</div>
+      <div style="flex:1;">
+        <strong>${pending.length} submissions approved and awaiting bind</strong>
+        <div style="color:var(--text-secondary); font-size:0.85rem;">Total pending premium: $${(pending.reduce((s,x) => s + x.written_premium, 0) / 1000).toFixed(0)}k · all within agent authority · ready for one-click bind</div>
+      </div>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-bind-quick'})">⚡ Bind All Eligible →</button>
+    </div>
+  ` : ''}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">🆕 RECENT BINDINGS</div>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Binding</th><th>Policy #</th><th>Insured</th><th>Product</th><th>Premium</th><th>Bound</th><th>Issued</th><th>Status</th><th>STP</th><th>Carrier</th><th>Action</th></tr></thead>
+        <tbody>
+          ${b.slice(0, 10).map(x => `
+          <tr onclick="window.setState({screen:'mga-bind-policy', currentBindingId:'${x.id}'})" style="cursor:pointer;">
+            <td style="font-family:monospace; white-space:nowrap;"><strong style="color:var(--mga-accent);">${x.id}</strong></td>
+            <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${x.policy_number}</td>
+            <td style="white-space:nowrap;">${x.insured}</td>
+            <td style="white-space:nowrap;">${x.product}</td>
+            <td style="white-space:nowrap;"><strong>$${x.written_premium.toLocaleString()}</strong></td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${x.bound_at || '—'}</td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${x.issued_at || '—'}</td>
+            <td style="white-space:nowrap;">${badge(x.statusColor, x.status)}</td>
+            <td style="white-space:nowrap;">${x.stp ? '<span style="color:var(--status-green);">⚡ Yes</span>' : '<span style="color:var(--text-muted);">Manual</span>'}</td>
+            <td style="white-space:nowrap;">${badge(x.carrier_reporting === 'Reported' ? 'green' : x.carrier_reporting === 'Pending' || x.carrier_reporting === 'Queued' ? 'amber' : 'gray', x.carrier_reporting || '—')}</td>
+            <td onclick="event.stopPropagation();"><button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'mga-bind-policy', currentBindingId:'${x.id}'})">Open</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🛡 AUTHORITY UTILIZATION</div>
+        ${D.mgaAuthorityLimits.slice(0, 5).map(a => `
+          <div style="margin-bottom: var(--space-sm);">
+            <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px;">
+              <span><strong>${a.name}</strong> <span style="color:var(--text-muted); font-size:0.72rem;">· ${a.entity}</span></span>
+              <strong style="color:${a.pct_capacity>=80?'var(--status-amber)':a.pct_capacity>=60?'var(--mga-accent)':'var(--status-green)'};">${a.pct_capacity}%</strong>
+            </div>
+            <div style="background:var(--bg-card); height:6px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${a.pct_capacity}%; background:${a.pct_capacity>=80?'var(--status-amber)':a.pct_capacity>=60?'var(--mga-accent)':'var(--status-green)'};"></div></div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">⚡ STP ELIGIBILITY (TODAY)</div>
+        <div style="text-align:center; padding: var(--space-sm) 0;">
+          <div style="font-size:2.4rem; font-weight:800; color:var(--status-green);">42%</div>
+          <div style="color:var(--text-muted); font-size:0.82rem;">of bindings processed automatically</div>
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.6;">
+          Straight-Through Processing applies to:
+          <ul style="margin: 6px 0 0 18px;">
+            <li>Approved submissions within authority</li>
+            <li>Clean compliance checks</li>
+            <li>Standard product / rating version</li>
+            <li>No manual endorsements</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaBindingsQuickBind() {
+  const eligible = D.mgaBindings.filter(b => b.status === 'Pending Bind' || b.status === 'Authority Check');
+  const approvedSubs = D.mgaSubmissions.filter(s => s.status === 'Approved' || s.status === 'Conditional Approve' || s.status === 'Quoted');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Quick Bind</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">One-click binding from approved submissions · auto-validates authority, compliance, and payment · issues binder immediately</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Bulk-binding ' + ${eligible.length} + ' eligible submissions · this will run all authority + compliance checks and issue binders')">⚡ Bind All ${eligible.length} Eligible</button>
+  </div>
+
+  ${_mgaBindSubNav('mga-bind-quick')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Ready to Bind</div><div class="kpi-value">${eligible.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Premium</div><div class="kpi-value">$${(eligible.reduce((s,x) => s + x.written_premium, 0) / 1000).toFixed(0)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">STP Eligible</div><div class="kpi-value" style="color:var(--status-green);">${Math.round(eligible.length * 0.6)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Need Manual Review</div><div class="kpi-value warning">${Math.ceil(eligible.length * 0.4)}</div></div>
+  </div>
+
+  ${eligible.length === 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-2xl); text-align:center;">
+      <div style="font-size:3rem; margin-bottom: var(--space-md);">✅</div>
+      <h3 style="margin:0;">All approved submissions bound</h3>
+      <div style="color:var(--text-muted); margin-top: var(--space-sm);">Nothing in the bind queue right now. When underwriters approve new submissions, they'll appear here for one-click binding.</div>
+    </div>
+  ` : `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">🎯 READY FOR BINDING (${eligible.length})</div>
+      ${eligible.map(e => `
+        <div class="cust-autopay-row" style="padding: var(--space-md);">
+          <div style="font-size:2rem;">${e.status === 'Authority Check' ? '⚠' : '⚡'}</div>
+          <div style="flex:1;">
+            <div style="display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap;">
+              <strong>${e.insured}</strong>
+              ${badge(e.statusColor, e.status)}
+              ${e.authority_used >= e.auth_cap * 0.85 ? badge('amber', `${Math.round(e.authority_used / e.auth_cap * 100)}% of cap`) : '<span class="cust-policy-tag" style="background:rgba(0,230,118,0.15); color:var(--status-green);">Within authority</span>'}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${e.product} · ${e.agent_name} · ${e.state} · Effective ${e.effective}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">From submission <strong style="color:var(--mga-accent);">${e.submission}</strong></div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:1.2rem; font-weight:800;">$${e.written_premium.toLocaleString()}</div>
+            <button class="btn btn-primary btn-sm" style="margin-top:4px;" onclick="window.setState({screen:'mga-bind-wizard', currentBindingId:'${e.id}'})">⚡ Bind Now →</button>
+          </div>
+        </div>`).join('')}
+    </div>
+  `}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">📥 RECENTLY APPROVED SUBMISSIONS (NOT YET BOUND)</div>
+    ${approvedSubs.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No pending approved submissions.</div>' : `
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Submission</th><th>Agent</th><th>Insured</th><th>Product</th><th>Final Premium</th><th>Status</th><th>Approved</th><th>Action</th></tr></thead>
+        <tbody>
+          ${approvedSubs.map(s => `
+          <tr>
+            <td style="font-family:monospace; white-space:nowrap; cursor:pointer;" onclick="window.setState({screen:'mga-sub-details', currentSubmissionId:'${s.id}'})"><strong style="color:var(--mga-accent);">${s.id}</strong></td>
+            <td style="white-space:nowrap;">${s.agent_name}</td>
+            <td style="white-space:nowrap;"><strong>${s.insured}</strong></td>
+            <td style="white-space:nowrap;">${s.product}</td>
+            <td style="white-space:nowrap;"><strong>$${(s.final_premium || s.target_premium).toLocaleString()}</strong></td>
+            <td style="white-space:nowrap;">${_mgaSubStatusBadge(s.status)}</td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${s.received}</td>
+            <td><button class="btn btn-primary btn-sm" onclick="window.setState({screen:'mga-bind-wizard', currentSubmissionId:'${s.id}'})">⚡ Bind</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    `}
+  </div>`;
+}
+
+function renderMgaBindingsIssuanceWizard() {
+  const b = state.currentBindingId ? D.mgaBindings.find(x => x.id === state.currentBindingId) : null;
+  const s = !b && state.currentSubmissionId ? D.mgaSubmissions.find(x => x.id === state.currentSubmissionId) : null;
+  const premium = b ? b.written_premium : s ? (s.final_premium || s.target_premium) : 87646;
+  const insured = b ? b.insured : s ? s.insured : 'Sample Insured';
+  const product = b ? b.product : s ? s.product : 'Sample Product';
+  const step = state.mgaBindWizStep || 1;
+  const steps = ['Validate','Review Terms','Authority Check','Generate Docs','Issue & Notify'];
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-bind-quick', mgaBindWizStep:1})" style="padding:4px 8px; margin-left:-8px;">← Back to Quick Bind</button>
+  </div>
+  <div style="margin-bottom: var(--space-lg);">
+    <h2 style="margin:0;">Policy Issuance Wizard</h2>
+    <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${insured} · ${product} · $${premium.toLocaleString()} · 5-step guided flow</div>
+  </div>
+
+  ${_mgaBindSubNav('mga-bind-wizard')}
+
+  <div class="market-stepper" style="margin-bottom: var(--space-lg);">
+    ${steps.map((st, idx) => `
+      <div class="market-step${idx+1 === step ? ' active' : ''}${idx+1 < step ? ' done' : ''}">
+        <div class="market-step-num">${idx+1 < step ? '✓' : idx+1}</div>
+        <div class="market-step-label">${st}</div>
+      </div>
+      ${idx < steps.length - 1 ? '<div class="market-step-line"></div>' : ''}`).join('')}
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-xl); margin-bottom: var(--space-lg);">
+    ${step === 1 ? `
+      <h3 style="margin-top:0;">Step 1 — Pre-Binding Validation</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">All underwriting requirements must be satisfied before binding. The system runs these checks automatically.</div>
+      <div style="display:flex; flex-direction:column; gap: var(--space-sm);">
+        ${[
+          { label: 'Underwriting requirements satisfied',        status: 'pass', detail: 'All required documents on file · UW decision logged' },
+          { label: 'Agent authority limit not exceeded',         status: 'pass', detail: `Using $${premium.toLocaleString()} of $500k cap (${Math.round(premium/500000*100)}%)` },
+          { label: 'Product-level capacity available',            status: 'pass', detail: 'Product cap remaining: $1.58M of $10M' },
+          { label: 'State capacity available',                     status: 'pass', detail: 'CA aggregate: $6.58M of $15M used' },
+          { label: 'Payment confirmed (if required)',              status: 'pass', detail: 'Direct bill · payment due at issuance · no pre-bind payment required' },
+          { label: 'Compliance & regulatory checks',               status: 'pass', detail: 'All 7 compliance rules passed' }
+        ].map(c => `
+          <div class="cust-autopay-row">
+            <div style="font-size:1.6rem;">${c.status === 'pass' ? '✅' : '⚠'}</div>
+            <div style="flex:1;">
+              <strong>${c.label}</strong>
+              <div style="color:var(--text-muted); font-size:0.78rem;">${c.detail}</div>
+            </div>
+            ${badge(c.status === 'pass' ? 'green' : 'amber', c.status.toUpperCase())}
+          </div>`).join('')}
+      </div>
+    ` : step === 2 ? `
+      <h3 style="margin-top:0;">Step 2 — Review Final Terms</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Confirm effective date, premium, commissions, and final endorsements.</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+        <div class="form-group"><label class="form-label">Effective Date</label><input class="form-input" type="date" value="2026-06-01"/></div>
+        <div class="form-group"><label class="form-label">Effective Time</label><input class="form-input" type="time" value="00:01"/></div>
+        <div class="form-group"><label class="form-label">Expiration Date</label><input class="form-input" type="date" value="2027-06-01"/></div>
+        <div class="form-group"><label class="form-label">Term</label><select class="form-input"><option>12 months</option><option>6 months</option><option>Short rate</option></select></div>
+        <div class="form-group"><label class="form-label">Written Premium</label><input class="form-input" value="$${premium.toLocaleString()}"/></div>
+        <div class="form-group"><label class="form-label">Commission Rate</label><input class="form-input" value="13.0%"/></div>
+        <div class="form-group"><label class="form-label">Billing Type</label><select class="form-input"><option>Agency Bill</option><option>Direct Bill</option></select></div>
+        <div class="form-group"><label class="form-label">Billing Frequency</label><select class="form-input"><option>Quarterly</option><option>Monthly</option><option>Annual</option></select></div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background: rgba(108,92,231,0.08); border-radius:var(--radius-sm); font-size:0.82rem;">
+        ℹ Endorsements to apply at issuance: <strong>3</strong> (Waiver of Subro · CA Cancellation · Additional Insured — Kroger)
+      </div>
+    ` : step === 3 ? `
+      <h3 style="margin-top:0;">Step 3 — Authority Check</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">System verifies this binding is within delegated authority at all levels.</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Level</th><th>Cap</th><th>Used</th><th>This Binding</th><th>Post-Bind</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Agent</strong> (Bridgepoint)</td>
+            <td>$500k</td>
+            <td>$212k</td>
+            <td>$${premium.toLocaleString()}</td>
+            <td>$${(212000 + premium).toLocaleString()} (${Math.round((212000 + premium)/500000*100)}%)</td>
+            <td>${badge('green','✓ Within')}</td>
+          </tr>
+          <tr>
+            <td><strong>Product</strong> (WF-WC-CA)</td>
+            <td>$10M</td>
+            <td>$8.42M</td>
+            <td>$${premium.toLocaleString()}</td>
+            <td>$${((8420000 + premium)/1e6).toFixed(2)}M (${Math.round((8420000 + premium)/10000000*100)}%)</td>
+            <td>${badge('green','✓ Within')}</td>
+          </tr>
+          <tr>
+            <td><strong>Underwriter</strong> (Elena Rodriguez)</td>
+            <td>$750k</td>
+            <td>$412k</td>
+            <td>$${premium.toLocaleString()}</td>
+            <td>$${(412000 + premium).toLocaleString()} (${Math.round((412000 + premium)/750000*100)}%)</td>
+            <td>${badge('green','✓ Within')}</td>
+          </tr>
+          <tr>
+            <td><strong>State Aggregate</strong> (CA)</td>
+            <td>$15M</td>
+            <td>$6.58M</td>
+            <td>$${premium.toLocaleString()}</td>
+            <td>$${((6580000 + premium)/1e6).toFixed(2)}M (${Math.round((6580000 + premium)/15000000*100)}%)</td>
+            <td>${badge('green','✓ Within')}</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(0,230,118,0.08); border-radius:var(--radius-md);">
+        <strong style="color:var(--status-green);">✓ All authority checks passed.</strong> Ready to proceed.
+      </div>
+    ` : step === 4 ? `
+      <h3 style="margin-top:0;">Step 4 — Generate Policy Documents</h3>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: var(--space-lg);">Auto-generating full policy package. This typically takes 10–30 seconds.</div>
+      <div style="display:flex; flex-direction:column; gap: var(--space-sm);">
+        ${[
+          { name: 'Declarations Page',         status: 'done', size: '420 KB' },
+          { name: 'Workers Comp Policy Form',  status: 'done', size: '2.1 MB' },
+          { name: 'Endorsement Schedule',      status: 'done', size: '180 KB' },
+          { name: 'Location Schedule',         status: 'done', size: '96 KB' },
+          { name: 'Officer Exclusion Form',    status: 'done', size: '64 KB' },
+          { name: 'ADR Notice (CA)',           status: 'done', size: '48 KB' },
+          { name: 'Binder (temporary proof)',   status: 'done', size: '120 KB' }
+        ].map(doc => `
+          <div class="cust-autopay-row">
+            <div style="font-size:1.6rem;">✅</div>
+            <div style="flex:1;">
+              <strong>${doc.name}</strong>
+              <div style="color:var(--text-muted); font-size:0.78rem;">Version 3.2 · ${doc.size}</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Preview ' + '${doc.name}')">👁 Preview</button>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem;">
+        ✓ Compliance watermark applied · ✓ All forms version-controlled · ✓ Ready for delivery
+      </div>
+    ` : `
+      <div style="text-align:center; padding: var(--space-xl) 0;">
+        <div style="font-size:5rem; margin-bottom: var(--space-md);">🎉</div>
+        <h3 style="margin:0;">Policy Issued</h3>
+        <div style="color:var(--text-muted); margin-top: var(--space-sm);">Policy #: <strong style="font-family:monospace; color:var(--mga-accent); font-size:1.1rem;">SEMC-WC-2026-48823</strong></div>
+        <div style="margin-top: var(--space-lg); padding: var(--space-lg); background: rgba(0,230,118,0.1); border-radius:var(--radius-md); display:inline-block; text-align:left; font-size:0.88rem; line-height:1.9;">
+          ✓ Policy bound at ${new Date().toISOString().slice(0,10)} 00:01 PT<br/>
+          ✓ Binder B-2026-4843 issued<br/>
+          ✓ 7 document package generated (2.9 MB total)<br/>
+          ✓ Agent notified via email + portal<br/>
+          ✓ Insured notified with welcome kit<br/>
+          ✓ Bordereau auto-queued for SEMC delivery<br/>
+          ✓ Billing cycle started · first invoice due Q2<br/>
+          ✓ Renewal record created for 2027-06-01
+        </div>
+      </div>
+    `}
+  </div>
+
+  ${step < 5 ? `
+    <div style="display:flex; justify-content:space-between;">
+      <button class="btn btn-secondary" ${step === 1 ? 'disabled' : ''} onclick="window.setState({mgaBindWizStep:${Math.max(1, step-1)}})">← Back</button>
+      <button class="btn btn-primary" onclick="window.setState({mgaBindWizStep:${step+1}})">${step === 4 ? '🚀 Issue Policy' : 'Continue →'}</button>
+    </div>
+  ` : `
+    <div style="display:flex; gap:var(--space-sm); justify-content:center;">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-bindings', mgaBindWizStep:1})">Back to Dashboard</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-bind-policy', currentBindingId:'BND-48839', mgaBindWizStep:1})">View Policy 360° →</button>
+    </div>
+  `}`;
+}
+
+function renderMgaBindingsDocPackage() {
+  const b = D.mgaBindings.find(x => x.id === state.currentBindingId) || D.mgaBindings.find(x => x.documents_ready) || D.mgaBindings[0];
+  const d = b.id === D.mgaBindingDetail.id ? D.mgaBindingDetail : null;
+  const docs = d ? d.documents_package : [];
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-bind-policy', currentBindingId:'${b.id}'})" style="padding:4px 8px; margin-left:-8px;">← Back to Policy</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Document Package</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${b.policy_number} · ${b.insured} · ${docs.length || 7} documents · version-controlled</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Emailing full package to agent and insured')">📧 Send Package</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Downloading full package · 2.9 MB ZIP')">⬇ Download ZIP</button>
+    </div>
+  </div>
+
+  ${_mgaBindSubNav('mga-bind-docs')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📄 DOCUMENT PACKAGE</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Document</th><th>Type</th><th>Size</th><th>Status</th><th>Generated</th><th>Action</th></tr></thead>
+        <tbody>
+          ${(docs.length ? docs : [
+            { name: 'Declarations Page.pdf',    type: 'Dec',         size: '420 KB', status: 'Generated', generated: b.bound_at || '—' },
+            { name: 'Policy Form.pdf',          type: 'Policy',      size: '2.1 MB', status: 'Generated', generated: b.bound_at || '—' },
+            { name: 'Binder.pdf',               type: 'Binder',      size: '120 KB', status: 'Generated', generated: b.bound_at || '—' }
+          ]).map(doc => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${doc.name}</strong></td>
+            <td style="white-space:nowrap;">${doc.type}</td>
+            <td style="white-space:nowrap;">${doc.size}</td>
+            <td style="white-space:nowrap;">${badge('green', doc.status)}</td>
+            <td style="font-size:0.82rem; white-space:nowrap;">${doc.generated}</td>
+            <td style="display:flex; gap:4px;">
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Preview ' + '${doc.name}')">👁</button>
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Download ' + '${doc.name}')">⬇</button>
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Re-generate ' + '${doc.name} with latest data')">🔄</button>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📬 DELIVERY</div>
+        <div class="form-group" style="margin-bottom: var(--space-sm);">
+          <label class="form-label" style="font-size:0.78rem;">Delivery Method</label>
+          <div class="radio-group">
+            <span class="radio-pill active">📧 Digital (PDF)</span>
+            <span class="radio-pill">📬 Mail</span>
+            <span class="radio-pill">📱 SMS Link</span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom: var(--space-sm);">
+          <label class="form-label" style="font-size:0.78rem;">Agent (CC)</label>
+          <input class="form-input" value="sarah@bridgepoint.com"/>
+        </div>
+        <div class="form-group" style="margin-bottom: var(--space-sm);">
+          <label class="form-label" style="font-size:0.78rem;">Insured</label>
+          <input class="form-input" value="james@magnoliaconstruction.com"/>
+        </div>
+        <label style="display:flex; gap: var(--space-sm); align-items:center; font-size:0.82rem; margin-bottom: var(--space-sm);">
+          <input type="checkbox" checked/> Require e-signature on select forms
+        </label>
+        <button class="btn btn-primary btn-sm" style="width:100%;" onclick="window.showAlert('Package sent · agent and insured notified')">🚀 Send Now</button>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🏢 CARRIER REPORTING</div>
+        ${d?.carrier_reporting ? `
+          <div style="font-size:0.85rem; line-height:1.9;">
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Status</span>${badge('green', d.carrier_reporting.status)}</div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Sent</span><strong>${d.carrier_reporting.sent_at}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Method</span><strong>${d.carrier_reporting.method}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Batch</span><strong>${d.carrier_reporting.bordereau_batch}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Fields</span><strong>${d.carrier_reporting.fields_sent}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">ACK</span><strong style="color:var(--status-green);">${d.carrier_reporting.ack_reference}</strong></div>
+          </div>
+        ` : `
+          <div style="font-size:0.85rem;">${badge(b.carrier_reporting === 'Reported' ? 'green' : 'amber', b.carrier_reporting || '—')}</div>
+        `}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaBindingsPolicy360() {
+  const b = D.mgaBindings.find(x => x.id === state.currentBindingId) || D.mgaBindings.find(x => x.id === D.mgaBindingDetail.id) || D.mgaBindings[0];
+  const d = b.id === D.mgaBindingDetail.id ? D.mgaBindingDetail : null;
+  return `
+  <div style="margin-bottom: var(--space-md);">
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-bindings'})" style="padding:4px 8px; margin-left:-8px;">← Back to Bindings</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="flex:1;">
+      <div style="display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap;">
+        <h2 style="margin:0;">${b.insured}</h2>
+        ${badge(b.statusColor, b.status)}
+        ${b.stp ? '<span class="cust-policy-tag" style="background:rgba(0,230,118,0.15); color:var(--status-green);">⚡ STP</span>' : ''}
+      </div>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px; font-family:monospace;">Policy #<strong style="color:var(--mga-accent);">${b.policy_number}</strong> · Binder ${b.binder_number || 'pending'} · ${b.id}</div>
+      <div style="color:var(--text-muted); font-size:0.82rem; margin-top:2px;">${b.product} · ${b.carrier} · ${b.state} · Effective ${b.effective} → ${b.expiration}</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm); flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-bind-docs', currentBindingId:'${b.id}'})">📄 Documents</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Opening endorsement composer')">✏ Endorse</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Cancellation workflow — choose Flat / Pro-Rata / Short Rate')">🚫 Cancel</button>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Written Premium</div><div class="kpi-value" style="font-size:1.3rem;">$${(b.written_premium/1000).toFixed(1)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Authority Used</div><div class="kpi-value" style="font-size:1.3rem; color:${b.authority_used/b.auth_cap>=0.85?'var(--status-amber)':'var(--status-green)'};">${Math.round(b.authority_used/b.auth_cap*100)}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Carrier Reporting</div><div class="kpi-value" style="font-size:1.1rem; color:${b.carrier_reporting==='Reported'?'var(--status-green)':'var(--status-amber)'};">${b.carrier_reporting || '—'}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Documents</div><div class="kpi-value">${b.documents_ready ? '✓' : '⏳'}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Bound</div><div class="kpi-value" style="font-size:0.95rem;">${b.bound_at ? b.bound_at.split(' ')[0] : '—'}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Issued</div><div class="kpi-value" style="font-size:0.95rem;">${b.issued_at ? b.issued_at.split(' ')[0] : '—'}</div></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📋 POLICY HEADER</div>
+      ${d ? `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap: 10px 16px; font-size:0.85rem;">
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Policy Number</div><strong style="font-family:monospace;">${d.policy_header.policy_number}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Carrier Policy #</div><strong style="font-family:monospace;">${d.policy_header.carrier_policy_no}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Carrier</div><strong>${d.policy_header.carrier}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">MGA Reference</div><strong>${d.policy_header.mga_reference}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">LOB</div><strong>${d.policy_header.line_of_business}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Product</div><strong>${d.policy_header.product} · ${d.policy_header.product_version}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Effective</div><strong>${d.policy_header.effective}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Expiration</div><strong>${d.policy_header.expiration}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Term</div><strong>${d.policy_header.term}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">State</div><strong>${d.policy_header.state}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Billing Type</div><strong>${d.policy_header.billing_type}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Billing Frequency</div><strong>${d.policy_header.billing_frequency}</strong></div>
+        </div>
+      ` : `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap: 10px 16px; font-size:0.85rem;">
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Policy Number</div><strong style="font-family:monospace;">${b.policy_number}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Carrier</div><strong>${b.carrier}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Product</div><strong>${b.product}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">LOB</div><strong>${b.lob}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Effective</div><strong>${b.effective}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Expiration</div><strong>${b.expiration}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">State</div><strong>${b.state}</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Written Premium</div><strong>$${b.written_premium.toLocaleString()}</strong></div>
+        </div>
+      `}
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🏢 INSURED</div>
+        ${d ? `
+          <div style="font-size:0.85rem; line-height:1.7;">
+            <div><strong>${d.insured.legal_name}</strong>${d.insured.dba ? ` <span style="color:var(--text-muted); font-size:0.75rem;">(${d.insured.dba})</span>` : ''}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">FEIN: ${d.insured.fein}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">${d.insured.primary_contact}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">📧 ${d.insured.email}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">📞 ${d.insured.phone}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">${d.insured.primary_address}</div>
+          </div>
+        ` : `
+          <div style="font-size:0.85rem;"><strong>${b.insured}</strong></div>
+        `}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">👤 ISSUANCE DATA</div>
+        <div style="font-size:0.85rem; line-height:1.9;">
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Bound By</span><strong>${b.bound_by || '—'}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Bound At</span><strong>${b.bound_at || '—'}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Issued At</span><strong>${b.issued_at || '—'}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Binder Number</span><strong style="font-family:monospace;">${b.binder_number || '—'}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Processing</span><strong style="color:${b.stp?'var(--status-green)':'var(--mga-accent)'};">${b.stp ? '⚡ STP (Auto)' : 'Manual'}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">From Submission</span><strong style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'mga-sub-details', currentSubmissionId:'${b.submission}'})">${b.submission} →</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  ${d ? `
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💰 PREMIUM BREAKDOWN</div>
+        <div class="table-scroll">
+        <table class="data-table">
+          <tbody>
+            <tr><td>Base Premium</td><td style="text-align:right; font-family:monospace;">$${d.premium_breakdown.base.toLocaleString()}</td></tr>
+            <tr><td>Experience Mod (${d.premium_breakdown.ex_mod})</td><td style="text-align:right; font-family:monospace;">$${d.premium_breakdown.modified.toLocaleString()}</td></tr>
+            <tr style="color:var(--status-green);"><td>Schedule Credit</td><td style="text-align:right; font-family:monospace;">${d.premium_breakdown.schedule_credit.toLocaleString()}</td></tr>
+            <tr style="color:var(--status-green);"><td>Premium Discount</td><td style="text-align:right; font-family:monospace;">${d.premium_breakdown.premium_discount.toLocaleString()}</td></tr>
+            <tr><td>Terrorism (TRIA)</td><td style="text-align:right; font-family:monospace;">+$${d.premium_breakdown.terrorism}</td></tr>
+            <tr><td>Taxes &amp; Assessments</td><td style="text-align:right; font-family:monospace;">+$${d.premium_breakdown.taxes.toLocaleString()}</td></tr>
+            <tr style="background:var(--bg-card); font-weight:700;"><td>WRITTEN PREMIUM</td><td style="text-align:right; font-family:monospace; font-size:1.05rem; color:var(--status-green);">$${d.premium_breakdown.written.toLocaleString()}</td></tr>
+            <tr style="color:var(--text-muted); font-size:0.82rem;"><td>Agent Commission (${d.premium_breakdown.commission_rate}%)</td><td style="text-align:right; font-family:monospace;">$${d.premium_breakdown.commission.toLocaleString()}</td></tr>
+            <tr style="color:var(--text-muted); font-size:0.82rem;"><td>MGA Fee</td><td style="text-align:right; font-family:monospace;">$${d.premium_breakdown.mga_fee.toLocaleString()}</td></tr>
+            <tr style="color:var(--text-muted); font-size:0.82rem;"><td>Carrier Share</td><td style="text-align:right; font-family:monospace;">$${d.premium_breakdown.carrier_share.toLocaleString()}</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🛡 AUTHORITY USED</div>
+        <div style="font-size:0.85rem; line-height:1.9;">
+          <div><span style="color:var(--text-muted); font-size:0.72rem;">RESULT</span><br/><strong style="color:var(--status-green);">${d.authority_check.result}</strong></div>
+          <div style="margin-top: var(--space-md);">
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">This Binding</span><strong>$${d.authority_check.used.toLocaleString()}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Agent Cap</span><strong>$${d.authority_check.agent_cap.toLocaleString()}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Product Cap</span><strong>$${d.authority_check.product_cap.toLocaleString()}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Underwriter Cap</span><strong>$${d.authority_check.underwriter_cap.toLocaleString()}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">State Aggregate</span><strong>$${(d.authority_check.aggregate_state_used/1e6).toFixed(2)}M / $${(d.authority_check.aggregate_state_cap/1e6).toFixed(2)}M</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">🛡 COVERAGE SCHEDULE</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Coverage</th><th>Limit</th><th>Deductible</th><th>Premium</th></tr></thead>
+        <tbody>
+          ${d.coverage_schedule.map(c => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${c.coverage}</strong></td>
+            <td style="white-space:nowrap;">${c.limit}</td>
+            <td style="white-space:nowrap;">${c.deductible}</td>
+            <td style="white-space:nowrap;">${c.premium > 0 ? '$' + c.premium : '—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📍 LOCATIONS (${d.locations.length})</div>
+        ${d.locations.map(l => `
+          <div style="padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); font-size:0.85rem;">
+            <strong>${l.label}</strong>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${l.address}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">Payroll $${l.payroll.toLocaleString()} · ${l.class_codes.join(', ')}</div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">✏ ENDORSEMENTS APPLIED</div>
+        ${d.endorsements.map(e => `
+          <div style="padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); font-size:0.85rem;">
+            <strong>${e.form}</strong>
+            <div style="color:var(--text-muted); font-size:0.78rem;">${e.title}</div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">Applied ${e.applied} · Premium impact: ${e.premium_effect === 0 ? 'No charge' : '$'+e.premium_effect}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">✅ COMPLIANCE CHECKS</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Check</th><th>Detail</th><th>Status</th></tr></thead>
+        <tbody>
+          ${d.compliance_checks.map(c => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${c.check}</strong></td>
+            <td style="font-size:0.82rem;">${c.detail}</td>
+            <td style="white-space:nowrap;">${badge(c.status === 'pass' ? 'green' : 'amber', c.status.toUpperCase())}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔒 AUDIT TRAIL</div>
+      ${d.audit_trail.map(a => `
+        <div style="display:flex; gap: var(--space-sm); padding: var(--space-sm) 0; border-bottom:1px solid var(--border-subtle); font-size:0.82rem; align-items:flex-start;">
+          <div style="font-family:monospace; color:var(--text-muted); font-size:0.72rem; min-width:140px;">${a.ts}</div>
+          <div style="flex:1;"><strong>${a.actor}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${a.event}</div></div>
+          <div style="font-size:0.68rem; color:var(--mga-accent);">${a.category}</div>
+        </div>`).join('')}
+    </div>
+  ` : ''}`;
+}
+
+function renderMgaBindingsBulkCerts() {
+  const bulk = D.mgaBulkCerts;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Bulk Certificate Generator</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Issue many certificates at once for agents, renewals, or multi-holder packages · CSV import supported</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Opening bulk cert composer — upload CSV with policy IDs + holder info')">+ New Bulk Request</button>
+  </div>
+
+  ${_mgaBindSubNav('mga-bind-bulk-certs')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Batches (30d)</div><div class="kpi-value">${bulk.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Certificates Issued</div><div class="kpi-value">${bulk.reduce((s,x) => s + x.certificates, 0)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Batch Size</div><div class="kpi-value">${Math.round(bulk.reduce((s,x) => s + x.certificates, 0) / bulk.length)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Processing</div><div class="kpi-value warning">${bulk.filter(b => b.status === 'Processing').length}</div></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">📦 BULK REQUESTS (30 days)</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Batch ID</th><th>Batch Name</th><th>Requested By</th><th>Requested</th><th>Policies</th><th>Certificates</th><th>Format</th><th>Status</th><th>Sent</th><th>Action</th></tr></thead>
+      <tbody>
+        ${bulk.map(b => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong style="color:var(--mga-accent);">${b.id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${b.batch}</strong></td>
+          <td style="white-space:nowrap;">${b.requested_by}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${b.requested}</td>
+          <td style="white-space:nowrap;">${b.policies}</td>
+          <td style="white-space:nowrap;">${b.certificates}</td>
+          <td style="white-space:nowrap;">${b.format}</td>
+          <td style="white-space:nowrap;">${badge(b.statusColor, b.status)}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${b.sent || '—'}</td>
+          <td style="display:flex; gap:4px;">
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Download batch ' + '${b.id}')">⬇</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Re-send batch ' + '${b.id}')">📧</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">⚙ QUICK ISSUE TEMPLATES</div>
+      <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-md);">
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+          <strong>📋 Agent Book Refresh</strong>
+          <p style="color:var(--text-muted); font-size:0.78rem; margin-top:4px;">Issue new COI for every active certificate on every policy in one agent's book (annual renewal).</p>
+          <button class="btn btn-secondary btn-sm" style="margin-top: var(--space-sm);" onclick="window.showAlert('Opening agent-book refresh wizard')">Start</button>
+        </div>
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+          <strong>🏢 Multi-Holder Package</strong>
+          <p style="color:var(--text-muted); font-size:0.78rem; margin-top:4px;">Issue certificates for a single policy to multiple holders (landlord + contractor + vendor, etc.).</p>
+          <button class="btn btn-secondary btn-sm" style="margin-top: var(--space-sm);" onclick="window.showAlert('Opening multi-holder wizard')">Start</button>
+        </div>
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+          <strong>📥 CSV Import</strong>
+          <p style="color:var(--text-muted); font-size:0.78rem; margin-top:4px;">Upload a spreadsheet with policy # + holder info. System auto-issues and emails.</p>
+          <button class="btn btn-secondary btn-sm" style="margin-top: var(--space-sm);" onclick="window.showAlert('Upload CSV template')">Upload CSV</button>
+        </div>
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md);">
+          <strong>🔄 Renewal Batch</strong>
+          <p style="color:var(--text-muted); font-size:0.78rem; margin-top:4px;">Auto-issue renewal certificates 30 days before policy expiry · scheduled nightly.</p>
+          <button class="btn btn-secondary btn-sm" style="margin-top: var(--space-sm);" onclick="window.showAlert('Renewal batch scheduler')">Schedule</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📊 BULK THROUGHPUT</div>
+      <div style="font-size:0.85rem; line-height:1.9;">
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Avg processing time</span><strong>22 min / batch</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Success rate</span><strong style="color:var(--status-green);">99.4%</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Max batch size</span><strong>500 certs</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Queue depth</span><strong>1</strong></div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--text-muted);">
+        💡 Large batches (>200) run overnight. Small batches (<50) process inline within 5 min.
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaBindingsAuditLog() {
+  const audit = D.mgaIssuanceAudit;
+  const catFilter = state.mgaAuditCategory || 'all';
+  const sevFilter = state.mgaAuditSeverity || 'all';
+  const q = (state.mgaAuditQuery || '').toLowerCase();
+  let rows = audit;
+  if (catFilter !== 'all') rows = rows.filter(a => a.category === catFilter);
+  if (sevFilter !== 'all') rows = rows.filter(a => a.severity === sevFilter);
+  if (q) rows = rows.filter(a => (a.action + ' ' + a.actor + ' ' + a.bind_id).toLowerCase().includes(q));
+  const cats = ['all', ...new Set(audit.map(a => a.category))];
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Issuance Audit Log</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Every binding, issuance, cancellation, and compliance event · immutable · 7-year retention</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert('Exporting audit log to CSV · 7-year archive available')">Export</button>
+      <button class="btn btn-secondary" onclick="window.showAlert('Running post-issuance quality audit on random 2% sample')">🔍 Random QA Audit</button>
+    </div>
+  </div>
+
+  ${_mgaBindSubNav('mga-bind-audit')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Events (24h)</div><div class="kpi-value">${rows.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Warnings</div><div class="kpi-value warning">${audit.filter(a => a.severity === 'warning').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">STP Events</div><div class="kpi-value" style="color:var(--status-green);">${audit.filter(a => a.action.includes('STP')).length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Carrier Events</div><div class="kpi-value">${audit.filter(a => a.category === 'Carrier').length}</div></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-sm);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search by action, actor, or binding ID..." value="${state.mgaAuditQuery || ''}" oninput="window.setState({mgaAuditQuery:this.value})"/>
+      <select class="form-input" style="width:180px;" onchange="window.setState({mgaAuditSeverity:this.value})">
+        <option value="all">All Severity</option>
+        <option value="info" ${sevFilter==='info'?'selected':''}>Info</option>
+        <option value="warning" ${sevFilter==='warning'?'selected':''}>Warning</option>
+        <option value="error" ${sevFilter==='error'?'selected':''}>Error</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({mgaAuditCategory:'all', mgaAuditSeverity:'all', mgaAuditQuery:''})">Reset</button>
+    </div>
+    <div style="display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+      ${cats.map(c => `<div class="cust-pill${catFilter===c?' active':''}" onclick="window.setState({mgaAuditCategory:'${c}'})">${c === 'all' ? 'All Categories' : c}</div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Timestamp</th><th>Binding</th><th>Actor</th><th>Action</th><th>Category</th><th>Severity</th><th>IP</th></tr></thead>
+      <tbody>
+        ${rows.map(a => `
+        <tr onclick="window.setState({screen:'mga-bind-policy', currentBindingId:'${a.bind_id}'})" style="cursor:pointer;">
+          <td style="font-family:monospace; font-size:0.78rem; white-space:nowrap;">${a.ts}</td>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong style="color:var(--mga-accent);">${a.bind_id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${a.actor}</strong></td>
+          <td>${a.action}</td>
+          <td style="white-space:nowrap;">${badge(a.category === 'Issuance' ? 'green' : a.category === 'Compliance' ? 'blue' : a.category === 'Cancellation' ? 'red' : 'gray', a.category)}</td>
+          <td style="white-space:nowrap;">${badge(a.severity === 'error' ? 'red' : a.severity === 'warning' ? 'amber' : 'gray', a.severity.toUpperCase())}</td>
+          <td style="font-family:monospace; font-size:0.78rem; color:var(--text-muted); white-space:nowrap;">${a.ip}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+    ${rows.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding: var(--space-xl);">No audit events match this filter.</div>' : ''}
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// MGA — RISK & APPETITE MANAGEMENT MODULE
+// ════════════════════════════════════════════════════════════════
+function _mgaAppetiteSubNav(active) {
+  const tabs = [
+    { key: 'mga-appetite',           label: 'Dashboard',        icon: '📊' },
+    { key: 'mga-appetite-matrix',    label: 'Matrix',           icon: '🎯' },
+    { key: 'mga-appetite-exposure',  label: 'Portfolio Exposure',icon: '🗺' },
+    { key: 'mga-appetite-cat',       label: 'Cat Exposure',     icon: '🌪' },
+    { key: 'mga-appetite-scoring',   label: 'Risk Scoring',     icon: '🧮' },
+    { key: 'mga-appetite-rules',     label: 'Rule Builder',     icon: '⚙' },
+    { key: 'mga-appetite-approvals', label: 'Approvals',        icon: '✅' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _mgaAppetitePill(tier) {
+  const t = D.mgaAppetiteTiers.find(x => x.key === tier);
+  if (!t) return '';
+  return `<span style="display:inline-block; padding:3px 10px; border-radius:999px; font-size:0.7rem; font-weight:700; background:${t.color}22; color:${t.color}; border:1px solid ${t.color}66;">${t.label}</span>`;
+}
+
+function renderMgaAppetiteDashboard() {
+  const tiers = D.mgaAppetiteTiers;
+  const matrix = D.mgaAppetiteMatrix;
+  const tierCounts = tiers.map(t => ({ ...t, count: matrix.filter(m => m.tier === t.key).length, written: matrix.filter(m => m.tier === t.key).reduce((s,x) => s + x.written_ytd, 0) }));
+  const pendingApprovals = D.mgaAppetiteChanges.filter(c => c.status === 'Pending Committee Review');
+  const topLobShare = D.mgaPortfolioExposure.by_lob;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Risk &amp; Appetite Management</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Control what risks we accept and at what price · ${matrix.length} appetite cells · ${D.mgaAppetiteRulesEnhanced.length} rules live · ${pendingApprovals.length} pending approvals</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-appetite-approvals'})">✅ Approvals (${pendingApprovals.length})</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-appetite-rules'})">+ New Appetite Rule</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.mgaAppetiteKPIs, 6)}
+
+  ${_mgaAppetiteSubNav('mga-appetite')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">🎯 TIER DISTRIBUTION</div>
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md);">
+      ${tierCounts.map(t => `
+        <div style="padding:var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); border-left: 4px solid ${t.color};">
+          <div style="color:${t.color}; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;">${t.label}</div>
+          <div style="font-size:2rem; font-weight:800; margin-top:4px;">${t.count}</div>
+          <div style="color:var(--text-muted); font-size:0.78rem;">appetite cells</div>
+          <div style="color:var(--text-secondary); font-size:0.82rem; margin-top: var(--space-sm);">$${(t.written/1e6).toFixed(2)}M written YTD</div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px; line-height:1.4;">${t.desc}</div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">🗺 APPETITE HEAT MAP — LOB × STATE</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-appetite-matrix'})">Full matrix →</button>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>LOB / Class</th><th>State</th><th>Tier</th><th>Capacity Used</th><th>Policies</th><th>Written YTD</th><th>Loss Ratio</th></tr></thead>
+        <tbody>
+          ${matrix.slice(0, 10).map(m => `
+          <tr onclick="window.setState({screen:'mga-appetite-matrix'})" style="cursor:pointer;">
+            <td style="white-space:nowrap;"><strong>${m.lob}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${m.class_group}</div></td>
+            <td style="white-space:nowrap;">${m.state}</td>
+            <td style="white-space:nowrap;">${_mgaAppetitePill(m.tier)}</td>
+            <td style="white-space:nowrap;"><div class="market-fit-bar" style="width:80px;"><div class="market-fit-fill" style="width:${m.capacity_pct}%; background:${m.capacity_pct>=70?'var(--status-amber)':'var(--status-green)'};"></div></div><strong style="font-size:0.82rem;">${m.capacity_pct}%</strong></td>
+            <td style="white-space:nowrap;">${m.policies}</td>
+            <td style="white-space:nowrap;">$${(m.written_ytd/1e6).toFixed(2)}M</td>
+            <td style="white-space:nowrap;">${m.loss_ratio !== null ? `<strong style="color:${m.loss_ratio<=40?'var(--status-green)':m.loss_ratio<=55?'var(--mga-accent)':'var(--status-amber)'};">${m.loss_ratio}%</strong>` : '<span style="color:var(--text-muted);">—</span>'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">⏳ PENDING APPROVALS (${pendingApprovals.length})</div>
+        ${pendingApprovals.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No pending changes.</div>' : pendingApprovals.map(c => `
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;" onclick="window.setState({screen:'mga-appetite-approvals'})">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+              <strong style="font-size:0.85rem;">${c.title}</strong>
+              ${badge(c.priority === 'High' ? 'red' : 'amber', c.priority)}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">By ${c.proposed_by} · ${c.submitted}</div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📊 LOB MIX (actual vs. target)</div>
+        ${topLobShare.map(l => `
+          <div style="margin-bottom: var(--space-sm);">
+            <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:3px;">
+              <strong>${l.lob}</strong>
+              <span>${l.share}% / ${l.target_share}% <strong style="color:${l.delta>0?'var(--status-amber)':l.delta<0?'var(--mga-accent)':'var(--text-muted)'};">(${l.delta > 0 ? '+' : ''}${l.delta}pp)</strong></span>
+            </div>
+            <div style="background:var(--bg-card); height:5px; border-radius:3px; overflow:hidden; position:relative;"><div style="height:100%; width:${l.share*2.5}%; background:${Math.abs(l.delta) <= 1 ? 'var(--status-green)' : 'var(--status-amber)'};"></div></div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">💡 APPETITE RECOMMENDATIONS</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);">
+      <div style="padding: var(--space-md); background: rgba(0,230,118,0.08); border-left: 3px solid var(--status-green); border-radius:var(--radius-md);">
+        <strong>🚀 Expand — Cyber (Tech)</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">LR 28% · 64% capacity used · consider opening to manufacturing SaaS class (currently excluded).</p>
+      </div>
+      <div style="padding: var(--space-md); background: rgba(255,171,0,0.08); border-left: 3px solid var(--status-amber); border-radius:var(--radius-md);">
+        <strong>⚠ Watch — FL Coastal GL</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">Wind cap approaching 30% of treaty · defer renewals past hurricane season or partition capacity.</p>
+      </div>
+      <div style="padding: var(--space-md); background: rgba(255,82,82,0.08); border-left: 3px solid var(--status-red); border-radius:var(--radius-md);">
+        <strong>🚫 Restrict — WC Heavy Mfg</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">LR 68% · 14% capacity used but 3 recent declinations. Tighten to senior UW-only with ExMod ≤ 0.95.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaAppetiteMatrix() {
+  const lobF = state.mgaAppetiteLobFilter || 'all';
+  const tierF = state.mgaAppetiteTierFilter || 'all';
+  const stateF = state.mgaAppetiteStateFilter || 'all';
+  const q = (state.mgaAppetiteQuery || '').toLowerCase();
+  let rows = D.mgaAppetiteMatrix;
+  if (lobF !== 'all') rows = rows.filter(m => m.lob === lobF);
+  if (tierF !== 'all') rows = rows.filter(m => m.tier === tierF);
+  if (stateF !== 'all') rows = rows.filter(m => m.state.includes(stateF));
+  if (q) rows = rows.filter(m => (m.lob + ' ' + m.state + ' ' + m.class_group + ' ' + m.notes).toLowerCase().includes(q));
+  const lobs = ['all', ...new Set(D.mgaAppetiteMatrix.map(m => m.lob))];
+  const states = ['all', ...new Set(D.mgaAppetiteMatrix.map(m => m.state))];
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Dynamic Appetite Matrix</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${rows.length} of ${D.mgaAppetiteMatrix.length} appetite cells · filter by LOB, state, tier, or search</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.setState({screen:'mga-appetite-rules'})">+ New Rule</button>
+  </div>
+
+  ${_mgaAppetiteSubNav('mga-appetite-matrix')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-sm);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Try: 'Restaurants in Texas with >$5M revenue' · search by LOB, state, class, notes..." value="${state.mgaAppetiteQuery || ''}" oninput="window.setState({mgaAppetiteQuery:this.value})"/>
+      <select class="form-input" style="width:200px;" onchange="window.setState({mgaAppetiteLobFilter:this.value})">
+        ${lobs.map(l => `<option value="${l}" ${lobF===l?'selected':''}>${l === 'all' ? 'All LOBs' : l}</option>`).join('')}
+      </select>
+      <select class="form-input" style="width:180px;" onchange="window.setState({mgaAppetiteStateFilter:this.value})">
+        ${states.map(s => `<option value="${s}" ${stateF===s?'selected':''}>${s === 'all' ? 'All States' : s}</option>`).join('')}
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({mgaAppetiteLobFilter:'all', mgaAppetiteTierFilter:'all', mgaAppetiteStateFilter:'all', mgaAppetiteQuery:''})">Reset</button>
+    </div>
+    <div style="display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+      <div class="cust-pill${tierF==='all'?' active':''}" onclick="window.setState({mgaAppetiteTierFilter:'all'})">All Tiers <span class="cust-pill-count">${D.mgaAppetiteMatrix.length}</span></div>
+      ${D.mgaAppetiteTiers.map(t => { const cnt = D.mgaAppetiteMatrix.filter(m => m.tier === t.key).length; return `<div class="cust-pill${tierF===t.key?' active':''}" onclick="window.setState({mgaAppetiteTierFilter:'${t.key}'})"><span style="color:${t.color};">●</span> ${t.label} <span class="cust-pill-count">${cnt}</span></div>`; }).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>LOB</th><th>Class / Segment</th><th>State</th><th>Tier</th><th>Capacity</th><th>Policies</th><th>Written YTD</th><th>Loss Ratio</th><th>Notes</th><th>Action</th></tr></thead>
+      <tbody>
+        ${rows.map(m => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${m.lob}</strong></td>
+          <td style="font-size:0.82rem;">${m.class_group}</td>
+          <td style="white-space:nowrap;">${m.state}</td>
+          <td style="white-space:nowrap;">${_mgaAppetitePill(m.tier)}</td>
+          <td style="white-space:nowrap;"><div style="display:flex; align-items:center; gap:6px;"><div class="market-fit-bar"><div class="market-fit-fill" style="width:${m.capacity_pct}%; background:${m.capacity_pct>=70?'var(--status-amber)':'var(--status-green)'};"></div></div><strong>${m.capacity_pct}%</strong></div></td>
+          <td style="white-space:nowrap;">${m.policies}</td>
+          <td style="white-space:nowrap;">${m.written_ytd > 0 ? '$' + (m.written_ytd/1e6).toFixed(2) + 'M' : '<span style="color:var(--text-muted);">—</span>'}</td>
+          <td style="white-space:nowrap;">${m.loss_ratio !== null ? `<strong style="color:${m.loss_ratio<=40?'var(--status-green)':m.loss_ratio<=55?'var(--mga-accent)':'var(--status-amber)'};">${m.loss_ratio}%</strong>` : '<span style="color:var(--text-muted);">n/a</span>'}</td>
+          <td style="font-size:0.78rem;">${m.notes}</td>
+          <td style="display:flex; gap:4px;"><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-appetite-rules'})">Edit</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+    ${rows.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding: var(--space-xl);">No appetite cells match this filter.</div>' : ''}
+  </div>`;
+}
+
+function renderMgaAppetiteExposure() {
+  const pe = D.mgaPortfolioExposure;
+  const totalTiv = pe.by_state.reduce((s,x) => s + x.tiv, 0);
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Portfolio Exposure Monitor</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Total Insured Value $${(totalTiv/1e9).toFixed(2)}B across ${pe.by_state.length} states · concentration + accumulation tracking · real-time alerts</div>
+    </div>
+    <button class="btn btn-secondary" onclick="window.showAlert('Export exposure report to PDF')">Export</button>
+  </div>
+
+  ${_mgaAppetiteSubNav('mga-appetite-exposure')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Total TIV</div><div class="kpi-value">$${(totalTiv/1e9).toFixed(2)}B</div></div>
+    <div class="kpi-card"><div class="kpi-label">Active Policies</div><div class="kpi-value">${pe.by_state.reduce((s,x) => s + x.policies, 0).toLocaleString()}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Top State Concentration</div><div class="kpi-value warning">${pe.by_state[0].concentration_pct}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Loss Ratio</div><div class="kpi-value">38%</div></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🗺 EXPOSURE BY STATE</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>State</th><th>TIV</th><th>Policies</th><th>Premium YTD</th><th>Loss Ratio</th><th>Concentration</th><th>Heat</th></tr></thead>
+        <tbody>
+          ${pe.by_state.map(s => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${s.state}</strong></td>
+            <td style="white-space:nowrap;">$${(s.tiv/1e6).toFixed(0)}M</td>
+            <td style="white-space:nowrap;">${s.policies}</td>
+            <td style="white-space:nowrap;">$${(s.premium_ytd/1e6).toFixed(2)}M</td>
+            <td style="white-space:nowrap;"><strong style="color:${s.loss_ratio<=40?'var(--status-green)':s.loss_ratio<=55?'var(--mga-accent)':'var(--status-amber)'};">${s.loss_ratio}%</strong></td>
+            <td style="white-space:nowrap;"><strong style="color:${s.concentration_pct>=20?'var(--status-amber)':'var(--text-primary)'};">${s.concentration_pct}%</strong></td>
+            <td style="white-space:nowrap; min-width:180px;"><div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden; width:160px;"><div style="height:100%; width:${Math.min(100, s.concentration_pct * 2)}%; background:${s.concentration_pct>=20?'var(--status-amber)':'linear-gradient(90deg, var(--mga-accent), var(--status-green))'};"></div></div></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">👥 CONCENTRATION BY AGENT (TOP 10)</div>
+        ${pe.top_agents.map(a => `
+          <div style="margin-bottom: var(--space-sm);">
+            <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:3px;">
+              <strong>${a.agent}</strong>
+              <strong style="color:${a.concentration_pct>=15?'var(--status-amber)':'var(--text-primary)'};">${a.concentration_pct}%</strong>
+            </div>
+            <div style="background:var(--bg-card); height:5px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${Math.min(100, a.concentration_pct * 3)}%; background:${a.concentration_pct>=15?'var(--status-amber)':'linear-gradient(90deg, var(--mga-accent), var(--status-green))'};"></div></div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">📍 TOP LOCATIONS BY TIV</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Location</th><th>TIV</th><th>Policies</th><th>Premium YTD</th></tr></thead>
+      <tbody>
+        ${pe.top_locations.map(l => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${l.location}</strong></td>
+          <td style="white-space:nowrap;">$${(l.tiv/1e6).toFixed(0)}M</td>
+          <td style="white-space:nowrap;">${l.policies}</td>
+          <td style="white-space:nowrap;">$${(l.premium/1e6).toFixed(2)}M</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">⚠ ACCUMULATION ALERTS</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);">
+      <div style="padding: var(--space-md); background: rgba(255,171,0,0.08); border-left: 3px solid var(--status-amber); border-radius:var(--radius-md);">
+        <strong>CA concentration at 59%</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">Above 50% target · consider diversification push to NV, AZ, OR.</p>
+      </div>
+      <div style="padding: var(--space-md); background: rgba(255,82,82,0.08); border-left: 3px solid var(--status-red); border-radius:var(--radius-md);">
+        <strong>FL Coastal wind at 84%</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">Approaching treaty limit · defer new business or partition capacity.</p>
+      </div>
+      <div style="padding: var(--space-md); background: rgba(0,230,118,0.08); border-left: 3px solid var(--status-green); border-radius:var(--radius-md);">
+        <strong>TX market growing healthy</strong>
+        <p style="color:var(--text-muted); margin-top:6px; font-size:0.82rem;">10% share at 42% LR · good trajectory, continue growth.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaAppetiteCat() {
+  const cat = D.mgaCatExposure;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Catastrophe Exposure Dashboard</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">PML tracking · reinsurance treaty capacity · peril-by-region breakdown</div>
+    </div>
+    <button class="btn btn-secondary" onclick="window.showAlert('Running stress test scenario')">🧪 Stress Test</button>
+  </div>
+
+  ${_mgaAppetiteSubNav('mga-appetite-cat')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Total Cat TIV</div><div class="kpi-value">$${(cat.reduce((s,c) => s + c.tiv, 0)/1e9).toFixed(2)}B</div></div>
+    <div class="kpi-card"><div class="kpi-label">Max 1-in-250 PML</div><div class="kpi-value warning">$${(Math.max(...cat.map(c => c.pml_1in250))/1e6).toFixed(0)}M</div></div>
+    <div class="kpi-card"><div class="kpi-label">Treaty Capacity</div><div class="kpi-value">$${(cat.reduce((s,c) => s + c.reinsurance_attach, 0)/1e6).toFixed(0)}M</div></div>
+    <div class="kpi-card"><div class="kpi-label">At Capacity</div><div class="kpi-value warning">${cat.filter(c => c.status === 'Approaching Cap').length}</div></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">🌪 PERIL × REGION EXPOSURE</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Peril</th><th>Region</th><th>TIV</th><th>Policies</th><th>PML 1-in-100</th><th>PML 1-in-250</th><th>Reinsurance Attach</th><th>Capacity Remaining</th><th>Status</th></tr></thead>
+      <tbody>
+        ${cat.map(c => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${c.peril}</strong></td>
+          <td style="white-space:nowrap;">${c.region}</td>
+          <td style="white-space:nowrap;">$${(c.tiv/1e6).toFixed(0)}M</td>
+          <td style="white-space:nowrap;">${c.policies}</td>
+          <td style="white-space:nowrap;">$${(c.pml_1in100/1e6).toFixed(1)}M</td>
+          <td style="white-space:nowrap;"><strong>$${(c.pml_1in250/1e6).toFixed(1)}M</strong></td>
+          <td style="white-space:nowrap;">$${(c.reinsurance_attach/1e6).toFixed(0)}M</td>
+          <td style="white-space:nowrap;">$${(c.capacity_remaining/1e6).toFixed(1)}M</td>
+          <td style="white-space:nowrap;">${badge(c.status === 'Healthy' ? 'green' : c.status === 'Watch' ? 'amber' : 'red', c.status)}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🗺 GEOGRAPHIC HEAT MAP</div>
+      <div style="padding: var(--space-xl); background:var(--bg-card); border-radius:var(--radius-md); text-align:center;">
+        <div style="font-size:4rem; margin-bottom: var(--space-md);">🗺️</div>
+        <div style="color:var(--text-muted); font-size:0.82rem;">Interactive geographic heat map visualization</div>
+        <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">Visualizes TIV concentration by ZIP code · color-coded by peril</div>
+        <button class="btn btn-secondary btn-sm" style="margin-top: var(--space-md);" onclick="window.showAlert('Loading full-screen heat map · requires geospatial data license')">Open Full Map</button>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">💡 CAT MODELING INTEGRATION</div>
+      <div style="font-size:0.85rem; line-height:1.7; margin-bottom: var(--space-md);">Portfolio is modeled nightly against:</div>
+      <div style="font-size:0.82rem; line-height:1.9;">
+        <div style="display:flex; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);"><span>🔥 AIR Wildfire Model</span><strong>Last run: 06:00 PT</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);"><span>🌊 RMS Flood Model</span><strong>Last run: 06:00 PT</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);"><span>🌪 KCC Wind Model</span><strong>Last run: 06:00 PT</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 6px 0;"><span>🌎 USGS Earthquake</span><strong>Last run: 06:00 PT</strong></div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--text-muted);">
+        💡 Results feed directly into appetite engine · auto-triggers defensive actions when thresholds breach.
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaAppetiteScoring() {
+  const m = D.mgaRiskScoringModel;
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Risk Scoring Simulator</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${m.factors.length} factors weighted · predictive scoring · feeds appetite engine and rating factors</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Running score simulation with current inputs')">▶ Score This Risk</button>
+  </div>
+
+  ${_mgaAppetiteSubNav('mga-appetite-scoring')}
+
+  <div style="display:grid; grid-template-columns: 1fr 2fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🧪 TEST A RISK</div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Product / LOB</label>
+        <select class="form-input"><option>Workers Comp — WF-WC-CA</option><option>General Liability</option><option>Cyber</option></select>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">State</label>
+        <input class="form-input" value="CA"/>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">NAICS / Industry</label>
+        <input class="form-input" value="238220 — Plumbing/HVAC"/>
+      </div>
+      <div class="form-row" style="margin-bottom: var(--space-md);">
+        <div class="form-group"><label class="form-label">Revenue</label><input class="form-input" value="$42M"/></div>
+        <div class="form-group"><label class="form-label">Years</label><input class="form-input" value="14"/></div>
+      </div>
+      <div class="form-row" style="margin-bottom: var(--space-md);">
+        <div class="form-group"><label class="form-label">Prior LR</label><input class="form-input" value="22%"/></div>
+        <div class="form-group"><label class="form-label">ExMod</label><input class="form-input" value="0.92"/></div>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--space-md);">
+        <label class="form-label">Safety Program</label>
+        <select class="form-input"><option>OSHA VPP (best)</option><option>Basic</option><option>None</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Prior Cancellations</label>
+        <select class="form-input"><option>None</option><option>1 non-renewal</option><option>2+ / fraud</option></select>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); text-align:center;">
+        <div class="section-title" style="text-align:left;">📊 SCORE RESULT</div>
+        <div style="font-size:4rem; font-weight:800; color:var(--status-green); margin: var(--space-md) 0;">91</div>
+        <div>${badge('green','Preferred · Auto-approve at target')}</div>
+        <div style="color:var(--text-muted); font-size:0.82rem; margin-top:var(--space-sm);">Sample: Magnolia Construction · WC CA</div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">FACTOR CONTRIBUTION</div>
+        ${m.factors.map(f => `
+          <div style="margin-bottom: var(--space-sm);">
+            <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px;">
+              <span>${f.factor}</span>
+              <strong>${f.weight}%</strong>
+            </div>
+            <div style="background:var(--bg-card); height:6px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${f.weight*3}%; background:var(--mga-accent);"></div></div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">🎯 SCORE → OUTCOME MATRIX</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Score Range</th><th>Tier</th><th>Automated Action</th><th>Avg Bind Rate</th><th>Avg Loss Ratio</th></tr></thead>
+      <tbody>
+        ${m.outcomes.map(o => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${o.score_range}</strong></td>
+          <td style="white-space:nowrap;">${badge(o.tier === 'Preferred' ? 'green' : o.tier === 'Standard' ? 'blue' : o.tier === 'Watch' ? 'amber' : 'red', o.tier)}</td>
+          <td>${o.action}</td>
+          <td style="white-space:nowrap;"><strong style="color:${o.avg_bind_rate>=60?'var(--status-green)':o.avg_bind_rate>=40?'var(--mga-accent)':'var(--status-amber)'};">${o.avg_bind_rate}%</strong></td>
+          <td style="white-space:nowrap;">${o.avg_loss_ratio !== null ? o.avg_loss_ratio + '%' : '<span style="color:var(--text-muted);">n/a</span>'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">⚙ SCORING MODEL CONFIGURATION</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Factor</th><th>Weight</th><th>Aggressive Threshold</th><th>Selective Threshold</th><th>Restricted Threshold</th><th>Action</th></tr></thead>
+      <tbody>
+        ${m.factors.map(f => `
+        <tr>
+          <td><strong>${f.factor}</strong></td>
+          <td style="white-space:nowrap;"><strong>${f.weight}%</strong></td>
+          <td style="font-size:0.82rem; white-space:nowrap; color:var(--status-green);">${f.threshold_aggressive}</td>
+          <td style="font-size:0.82rem; white-space:nowrap; color:var(--status-amber);">${f.threshold_selective}</td>
+          <td style="font-size:0.82rem; white-space:nowrap; color:var(--status-red);">${f.threshold_restricted}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="window.showAlert('Edit factor thresholds')">Edit</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+    <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--text-muted);">
+      💡 Total weight must equal 100%. Thresholds calibrated quarterly against bound vs. declined outcomes.
+    </div>
+  </div>`;
+}
+
+function renderMgaAppetiteRules() {
+  const tierF = state.mgaRuleTierFilter || 'all';
+  const q = (state.mgaRuleQuery || '').toLowerCase();
+  let rows = D.mgaAppetiteRulesEnhanced;
+  if (tierF !== 'all') rows = rows.filter(r => r.tier === tierF);
+  if (q) rows = rows.filter(r => (r.id + ' ' + r.lob + ' ' + r.state + ' ' + r.risk_attr + ' ' + r.notes).toLowerCase().includes(q));
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Appetite Rule Builder</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${rows.length} of ${D.mgaAppetiteRulesEnhanced.length} rules · version-controlled · audit-logged</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-appetite-approvals'})">View Approvals</button>
+      <button class="btn btn-primary" onclick="window.showAlert('Opening new rule builder wizard')">+ New Rule</button>
+    </div>
+  </div>
+
+  ${_mgaAppetiteSubNav('mga-appetite-rules')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="display:flex; gap:var(--space-sm); margin-bottom: var(--space-sm);">
+      <input type="text" class="form-input" style="flex:1;" placeholder="🔍 Search by ID, LOB, state, risk attributes..." value="${state.mgaRuleQuery || ''}" oninput="window.setState({mgaRuleQuery:this.value})"/>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({mgaRuleTierFilter:'all', mgaRuleQuery:''})">Reset</button>
+    </div>
+    <div style="display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+      <div class="cust-pill${tierF==='all'?' active':''}" onclick="window.setState({mgaRuleTierFilter:'all'})">All Tiers <span class="cust-pill-count">${D.mgaAppetiteRulesEnhanced.length}</span></div>
+      ${D.mgaAppetiteTiers.map(t => { const cnt = D.mgaAppetiteRulesEnhanced.filter(r => r.tier === t.key).length; return cnt > 0 ? `<div class="cust-pill${tierF===t.key?' active':''}" onclick="window.setState({mgaRuleTierFilter:'${t.key}'})"><span style="color:${t.color};">●</span> ${t.label} <span class="cust-pill-count">${cnt}</span></div>` : ''; }).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Rule ID</th><th>Version</th><th>LOB</th><th>State</th><th>Risk Attributes</th><th>Tier</th><th>Max Limit</th><th>Referral</th><th>Effective</th><th>Expiry</th><th>Modified By</th><th>Notes</th><th>Action</th></tr></thead>
+      <tbody>
+        ${rows.map(r => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong style="color:var(--mga-accent);">${r.id}</strong></td>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;">${r.version}</td>
+          <td style="white-space:nowrap;"><strong>${r.lob}</strong></td>
+          <td style="white-space:nowrap;">${r.state}</td>
+          <td style="font-size:0.82rem;">${r.risk_attr}</td>
+          <td style="white-space:nowrap;">${_mgaAppetitePill(r.tier)}</td>
+          <td style="white-space:nowrap;">${r.max_limit > 0 ? '$' + r.max_limit.toLocaleString() : '—'}</td>
+          <td style="white-space:nowrap;">${r.referral_threshold > 0 ? '$' + r.referral_threshold.toLocaleString() : '—'}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.effective}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.expiry}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${r.last_modified}</td>
+          <td style="font-size:0.78rem;">${r.notes}</td>
+          <td style="display:flex; gap:4px;">
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Edit rule ' + '${r.id}')">✏</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('View rule history')">📜</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert('Clone rule')">📋</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaAppetiteApprovals() {
+  const changes = D.mgaAppetiteChanges;
+  const pending = changes.filter(c => c.status === 'Pending Committee Review');
+  const approved = changes.filter(c => c.status === 'Approved');
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Appetite Change Approval Workflow</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Committee-reviewed appetite changes · ${pending.length} pending · full audit trail · version-controlled</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert('Opening change proposal form')">+ Propose Change</button>
+  </div>
+
+  ${_mgaAppetiteSubNav('mga-appetite-approvals')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Pending Review</div><div class="kpi-value warning">${pending.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Approved (30d)</div><div class="kpi-value" style="color:var(--status-green);">${approved.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Turnaround</div><div class="kpi-value" style="font-size:1.2rem;">2.4 days</div></div>
+    <div class="kpi-card"><div class="kpi-label">Next Committee</div><div class="kpi-value" style="font-size:1rem;">Tue Apr 22</div></div>
+  </div>
+
+  ${pending.length > 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">⏳ PENDING COMMITTEE REVIEW (${pending.length})</div>
+      ${pending.map(c => `
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); margin-bottom: var(--space-sm); border-left: 4px solid var(--status-amber);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+            <div>
+              <div style="display:flex; gap: var(--space-sm); align-items:center; flex-wrap:wrap;">
+                <strong style="font-size:1rem;">${c.title}</strong>
+                ${badge(c.priority === 'High' ? 'red' : c.priority === 'Medium' ? 'amber' : 'gray', c.priority)}
+              </div>
+              <div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace; margin-top:4px;">${c.id} · affects rule ${c.rule_id}</div>
+            </div>
+            <div style="display:flex; gap:4px;">
+              <button class="btn btn-primary btn-sm" onclick="window.showAlert('✓ Approved ' + '${c.id}' + ' · change will take effect on specified date')">✅ Approve</button>
+              <button class="btn btn-secondary btn-sm" onclick="window.showAlert('Requesting more info on ' + '${c.id}')">❓ Info</button>
+              <button class="btn btn-danger btn-sm" onclick="window.showAlert('Rejected ' + '${c.id}' + ' · proposer notified')">❌ Reject</button>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-sm); font-size:0.82rem; margin-bottom: var(--space-sm);">
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Tier Change</div><strong>${c.tier_from} → ${c.tier_to}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Proposed By</div><strong>${c.proposed_by}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Submitted</div><strong>${c.submitted}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Effective</div><strong>${c.effective_from || c.expiry_to || 'On approval'}</strong></div>
+          </div>
+          <div style="padding: var(--space-sm); background: rgba(108,92,231,0.08); border-radius:var(--radius-sm); font-size:0.82rem;">
+            <strong>Rationale:</strong> ${c.rationale}
+          </div>
+        </div>`).join('')}
+    </div>
+  ` : ''}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">✓ APPROVED CHANGES (last 30 days)</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Change #</th><th>Rule</th><th>Title</th><th>Priority</th><th>Tier Change</th><th>Proposed By</th><th>Submitted</th><th>Approved</th><th>Approved By</th></tr></thead>
+      <tbody>
+        ${approved.map(c => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;"><strong style="color:var(--mga-accent);">${c.id}</strong></td>
+          <td style="font-family:monospace; font-size:0.82rem; white-space:nowrap;">${c.rule_id}</td>
+          <td style="font-size:0.85rem;">${c.title}</td>
+          <td style="white-space:nowrap;">${badge(c.priority === 'High' ? 'red' : c.priority === 'Medium' ? 'amber' : 'gray', c.priority)}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${c.tier_from} → ${c.tier_to}</td>
+          <td style="white-space:nowrap;">${c.proposed_by}</td>
+          <td style="font-size:0.82rem; white-space:nowrap;">${c.submitted}</td>
+          <td style="font-size:0.82rem; white-space:nowrap; color:var(--status-green);">${c.approved}</td>
+          <td style="white-space:nowrap;">${c.approved_by}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+// ─── MGA · Delegated Claims Management ───
+function _mgaClaimSubNav(active) {
+  const tabs = [
+    { key: 'mga-claims',            label: 'Dashboard',      icon: '📊' },
+    { key: 'mga-claim-queue',       label: 'Adjuster Queue', icon: '📋' },
+    { key: 'mga-claim-intake',      label: 'FNOL Wizard',    icon: '📥' },
+    { key: 'mga-claim-approvals',   label: 'Approvals',      icon: '✅' },
+    { key: 'mga-claim-bordereau',   label: 'Carrier Bordereau', icon: '📤' },
+    { key: 'mga-claim-analytics',   label: 'Analytics',      icon: '📈' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _mgaClaimStatusBadge(claim) {
+  const s = claim.status || '';
+  const color = claim.statusColor || (s === 'Closed' || s === 'Paid' ? 'green' : s === 'Denied' ? 'gray' : s === 'Pending Approval' || s === 'Estimate Issued' || s === 'Reopened' ? 'amber' : s === 'Under Investigation' && claim.severity === 'Large' ? 'red' : 'blue');
+  return badge(color, s);
+}
+
+function _mgaClaimSeverityPill(sev) {
+  const map = { 'Small': { bg:'rgba(0,230,118,0.12)', color:'var(--status-green)' }, 'Medium': { bg:'rgba(255,171,0,0.12)', color:'var(--status-amber)' }, 'Large': { bg:'rgba(255,82,82,0.12)', color:'var(--status-red)' } };
+  const m = map[sev] || map['Medium'];
+  return `<span style="display:inline-block; padding:3px 10px; border-radius:999px; font-size:0.7rem; font-weight:700; background:${m.bg}; color:${m.color}; border:1px solid ${m.color}44;">${sev}</span>`;
+}
+
+function _mgaClaimFlagPills(c) {
+  const flags = [];
+  if (c.fraud_flag) flags.push(`<span style="display:inline-block; padding:2px 8px; border-radius:999px; font-size:0.68rem; font-weight:700; background:rgba(255,82,82,0.15); color:var(--status-red);">🚨 SIU</span>`);
+  if (c.litigation) flags.push(`<span style="display:inline-block; padding:2px 8px; border-radius:999px; font-size:0.68rem; font-weight:700; background:rgba(171,71,188,0.15); color:#ab47bc;">⚖ Litigation</span>`);
+  if (c.red_flags >= 2) flags.push(`<span style="display:inline-block; padding:2px 8px; border-radius:999px; font-size:0.68rem; font-weight:700; background:rgba(255,171,0,0.15); color:var(--status-amber);">🚩 ${c.red_flags}</span>`);
+  return flags.join(' ');
+}
+
+function renderMgaClaimsDashboard() {
+  const claims = D.mgaClaims;
+  const open = claims.filter(c => !['Closed','Denied','Paid'].includes(c.status));
+  const largeLoss = claims.filter(c => c.severity === 'Large' && !['Closed','Denied'].includes(c.status));
+  const fraudLitigation = claims.filter(c => c.fraud_flag || c.litigation);
+  const statusCounts = D.mgaClaimStatuses.map(s => ({ status: s, count: claims.filter(c => c.status === s).length })).filter(x => x.count > 0);
+  const aging = [
+    { bucket: '0–7 days',    count: open.filter(c => c.days_open <= 7).length,  color: 'var(--status-green)' },
+    { bucket: '8–14 days',   count: open.filter(c => c.days_open > 7 && c.days_open <= 14).length, color: 'var(--mga-accent)' },
+    { bucket: '15–30 days',  count: open.filter(c => c.days_open > 14 && c.days_open <= 30).length, color: 'var(--status-amber)' },
+    { bucket: '31–60 days',  count: open.filter(c => c.days_open > 30 && c.days_open <= 60).length, color: 'var(--status-amber)' },
+    { bucket: '60+ days',    count: open.filter(c => c.days_open > 60).length,  color: 'var(--status-red)' }
+  ];
+  const maxAge = Math.max(1, ...aging.map(a => a.count));
+  const fnolToday = claims.filter(c => (c.reported || '').startsWith('2026-04-18') || (c.reported || '').startsWith('2026-04-17')).slice(0, 5);
+  const incurredYTD = claims.reduce((s, c) => s + (c.paid || 0) + (c.outstanding || 0), 0);
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">Delegated Claims Management</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">End-to-end claims control · ${claims.length} claims on book · ${open.length} open · $${(incurredYTD/1e6).toFixed(2)}M incurred YTD · ${D.mgaAdjusters.length} adjusters</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-claim-approvals'})">✅ Approvals (${D.mgaReserveApprovals.filter(r => r.status === 'Pending').length + D.mgaPaymentApprovals.filter(p => p.status === 'Pending Approval').length})</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-claim-intake'})">📥 New FNOL</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.mgaClaimsKPIs, 6)}
+
+  ${_mgaClaimSubNav('mga-claims')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">📋 OPEN CLAIMS — RECENT ACTIVITY</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-claim-queue'})">View full queue →</button>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Claim #</th><th>Insured</th><th>Product / LOB</th><th>Status</th><th>Severity</th><th>Reserve</th><th>Paid</th><th>Adjuster</th><th>Days Open</th><th>Flags</th></tr></thead>
+        <tbody>
+          ${open.slice(0, 10).map(c => `
+          <tr onclick="window.setState({screen:'mga-claim-details', claimId:'${c.id}'})" style="cursor:pointer;">
+            <td style="white-space:nowrap;"><strong style="color:var(--mga-accent); font-family:monospace; font-size:0.82rem;">${c.id}</strong><div style="color:var(--text-muted); font-size:0.7rem; font-family:monospace;">${c.carrier_claim_no}</div></td>
+            <td style="white-space:nowrap;"><strong>${c.insured}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${c.loss_date}</div></td>
+            <td style="white-space:nowrap;">${c.product}<div style="color:var(--text-muted); font-size:0.72rem;">${c.lob}</div></td>
+            <td style="white-space:nowrap;">${_mgaClaimStatusBadge(c)}<div style="color:var(--text-muted); font-size:0.7rem; margin-top:3px;">${c.sub_status}</div></td>
+            <td style="white-space:nowrap;">${_mgaClaimSeverityPill(c.severity)}</td>
+            <td style="white-space:nowrap;"><strong>$${(c.current_reserve/1000).toFixed(1)}k</strong><div style="color:var(--text-muted); font-size:0.7rem;">Init $${(c.initial_reserve/1000).toFixed(1)}k</div></td>
+            <td style="white-space:nowrap;"><strong>$${(c.paid/1000).toFixed(1)}k</strong><div style="color:var(--text-muted); font-size:0.7rem;">OS $${(c.outstanding/1000).toFixed(1)}k</div></td>
+            <td style="white-space:nowrap;">${(D.mgaAdjusters.find(a => a.id === c.adjuster) || {name:c.adjuster}).name}</td>
+            <td style="white-space:nowrap;"><strong style="color:${c.days_open > 60 ? 'var(--status-red)' : c.days_open > 30 ? 'var(--status-amber)' : 'var(--text-primary)'};">${c.days_open}d</strong></td>
+            <td style="white-space:nowrap;">${_mgaClaimFlagPills(c)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">⏱ OPEN CLAIMS AGING</div>
+        ${aging.map(a => `
+          <div style="margin-bottom: var(--space-sm);">
+            <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:3px;">
+              <strong>${a.bucket}</strong>
+              <span><strong>${a.count}</strong> claims</span>
+            </div>
+            <div style="background:var(--bg-card); height:6px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${(a.count/maxAge)*100}%; background:${a.color};"></div></div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🚨 LARGE LOSS WATCH (${largeLoss.length})</div>
+        ${largeLoss.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No active large losses.</div>' : largeLoss.map(c => `
+          <div onclick="window.setState({screen:'mga-claim-details', claimId:'${c.id}'})" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+              <strong style="font-size:0.85rem; color:var(--status-red);">${c.insured}</strong>
+              <span style="font-size:0.78rem; font-weight:700;">$${(c.current_reserve/1000).toFixed(0)}k</span>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${c.id} · ${c.product} · ${c.days_open}d open</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📊 BY STATUS</div>
+      ${statusCounts.map(s => `
+        <div style="display:flex; justify-content:space-between; padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.82rem;">
+          <span>${s.status}</span><strong>${s.count}</strong>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">⚖ FRAUD / LITIGATION (${fraudLitigation.length})</div>
+      ${fraudLitigation.map(c => `
+        <div onclick="window.setState({screen:'mga-claim-details', claimId:'${c.id}'})" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+            <strong style="font-size:0.82rem;">${c.insured}</strong>
+            ${c.fraud_flag ? badge('red','🚨 SIU') : badge('amber','⚖ Litigation')}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${c.id} · $${(c.current_reserve/1000).toFixed(0)}k reserve</div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📥 RECENT FNOL</div>
+      ${(fnolToday.length ? fnolToday : D.mgaClaims.slice(0,5)).map(c => `
+        <div onclick="window.setState({screen:'mga-claim-details', claimId:'${c.id}'})" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+            <strong style="font-size:0.82rem;">${c.insured}</strong>
+            <span style="color:var(--text-muted); font-size:0.72rem;">${(c.reported || '').slice(5,10)}</span>
+          </div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${c.id} · ${c.lob}</div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">👥 ADJUSTER WORKLOAD</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Adjuster</th><th>Authority</th><th>Specialty</th><th>Active Claims</th><th>Avg Cycle</th><th>CSAT</th><th>Action</th></tr></thead>
+      <tbody>
+        ${D.mgaAdjusters.map(a => `
+        <tr>
+          <td style="white-space:nowrap;"><div style="display:flex; align-items:center; gap:var(--space-sm);"><div style="width:32px; height:32px; border-radius:50%; background:${a.avatar_color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.72rem;">${a.initials}</div><div><strong>${a.name}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${a.title}</div></div></div></td>
+          <td style="white-space:nowrap;"><strong>$${(a.authority/1000).toFixed(0)}k</strong></td>
+          <td style="white-space:nowrap;">${a.specialty.join(', ')}</td>
+          <td style="white-space:nowrap;"><strong>${a.wip}</strong></td>
+          <td style="white-space:nowrap;">${a.avg_cycle}d</td>
+          <td style="white-space:nowrap;">⭐ ${a.csat}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-claim-queue', adjusterFilter:'${a.id}'})">View Queue</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaClaimIntake() {
+  const step = state.fnolStep || 1;
+  const steps = [
+    { n: 1, title: 'Policy Lookup',       icon: '🔍' },
+    { n: 2, title: 'Loss Details',        icon: '💥' },
+    { n: 3, title: 'Parties & Witnesses', icon: '👥' },
+    { n: 4, title: 'Documents',           icon: '📎' },
+    { n: 5, title: 'Triage & Assign',     icon: '🎯' }
+  ];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📥 FNOL Wizard — New Claim Intake</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Capture first notice of loss · auto-reserve · auto-assign to adjuster</div>
+    </div>
+    <button class="btn btn-ghost" onclick="window.setState({screen:'mga-claims', fnolStep:null})">← Back to Dashboard</button>
+  </div>
+
+  ${_mgaClaimSubNav('mga-claim-intake')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:grid; grid-template-columns: repeat(${steps.length}, 1fr); gap:var(--space-xs); margin-bottom: var(--space-lg);">
+      ${steps.map(s => `
+        <div onclick="window.setState({fnolStep:${s.n}})" style="cursor:pointer; text-align:center; padding: var(--space-sm); border-radius: var(--radius-md); background:${step === s.n ? 'var(--mga-accent)22' : 'var(--bg-card)'}; border:2px solid ${step === s.n ? 'var(--mga-accent)' : step > s.n ? 'var(--status-green)' : 'var(--border-subtle)'};">
+          <div style="font-size:1.4rem;">${step > s.n ? '✓' : s.icon}</div>
+          <div style="font-size:0.72rem; color:${step === s.n ? 'var(--mga-accent)' : 'var(--text-secondary)'}; font-weight:${step === s.n ? '700' : '500'}; margin-top:3px;">Step ${s.n}</div>
+          <div style="font-size:0.78rem; font-weight:${step === s.n ? '700' : '500'};">${s.title}</div>
+        </div>`).join('')}
+    </div>
+
+    ${step === 1 ? `
+      <h3 style="margin-top:0;">🔍 Policy Lookup</h3>
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-md); margin-bottom: var(--space-md);">
+        <div>
+          <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Policy Number *</div>
+          <input class="form-input" placeholder="e.g. TRV-AUTO-2026-11445" value="TRV-AUTO-2026-11445" style="width:100%;"/>
+        </div>
+        <div>
+          <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Loss Date *</div>
+          <input class="form-input" type="date" value="2026-04-18" style="width:100%;"/>
+        </div>
+      </div>
+      <div style="padding: var(--space-md); background: rgba(108,92,231,0.08); border-left: 3px solid var(--mga-accent); border-radius: var(--radius-md); margin-bottom: var(--space-md);">
+        <strong>✓ Policy Found — In Force</strong>
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-sm); font-size:0.82rem; margin-top:8px;">
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Insured</div><strong>Westshore Logistics</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Product</div><strong>FleetSafe Auto</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Policy Period</div><strong>2026-01-01 → 2027-01-01</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Limits</div><strong>$1M / $2M CSL</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Deductible</div><strong>$1,000</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Carrier</div><strong>Travelers</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Agent</div><strong>Lockton (AGT-2041)</strong></div>
+          <div><div style="color:var(--text-muted); font-size:0.72rem;">Premium YTD</div><strong>$48,400</strong></div>
+        </div>
+      </div>
+      <div style="padding: var(--space-md); background: rgba(0,230,118,0.08); border-left: 3px solid var(--status-green); border-radius: var(--radius-md); font-size:0.85rem;">
+        <strong>✓ Coverage validation:</strong> Loss date is within policy period. Coverage appears to apply. No exclusions flagged from first pass.
+      </div>
+    ` : step === 2 ? `
+      <h3 style="margin-top:0;">💥 Loss Details</h3>
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-md);">
+        <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Cause of Loss *</div><select class="form-input" style="width:100%;"><option>Collision — rear impact</option><option>Collision — side</option><option>Theft</option><option>Vandalism</option><option>Weather</option><option>Fire</option></select></div>
+        <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Severity Estimate *</div><select class="form-input" style="width:100%;"><option>Small (&lt;$25k)</option><option selected>Medium ($25k-$250k)</option><option>Large (&gt;$250k)</option></select></div>
+        <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Injuries Reported</div><select class="form-input" style="width:100%;"><option>None</option><option>Minor (ER visit)</option><option>Major (hospitalization)</option><option>Fatality</option></select></div>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr; gap: var(--space-md); margin-bottom: var(--space-md);">
+        <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Loss Description *</div><textarea class="form-input" rows="4" style="width:100%;" placeholder="Describe the incident...">Rear-ended at stop light at Folsom Blvd &amp; 65th St. Insured vehicle was stationary when struck from behind by claimant vehicle.</textarea></div>
+      </div>
+      <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--space-md);">
+        <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Location</div><input class="form-input" value="Folsom Blvd &amp; 65th St, Sacramento CA 95819" style="width:100%;"/></div>
+        <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Police Report #</div><input class="form-input" value="CHP #2026-88421" style="width:100%;"/></div>
+        <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Weather</div><input class="form-input" value="Clear · 68°F" style="width:100%;"/></div>
+      </div>
+    ` : step === 3 ? `
+      <h3 style="margin-top:0;">👥 Parties &amp; Witnesses</h3>
+      <div class="table-scroll" style="margin-bottom: var(--space-md);">
+      <table class="data-table">
+        <thead><tr><th>Role</th><th>Name</th><th>Contact</th><th>Vehicle / Property</th><th>Injury</th><th></th></tr></thead>
+        <tbody>
+          <tr><td style="white-space:nowrap;">Insured driver</td><td style="white-space:nowrap;">James Reynolds</td><td style="white-space:nowrap;">james@westshore.com · 916-555-4421</td><td style="white-space:nowrap;">2024 Ford F-250 · Co. truck #8</td><td style="white-space:nowrap;">None</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+          <tr><td style="white-space:nowrap;">At-fault driver</td><td style="white-space:nowrap;">Robert Chen</td><td style="white-space:nowrap;">robert.chen@gmail.com · 916-555-2280</td><td style="white-space:nowrap;">2021 Honda Civic · Geico CAA-8842-X</td><td style="white-space:nowrap;">Neck pain</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+          <tr><td style="white-space:nowrap;">Witness</td><td style="white-space:nowrap;">Officer R. Martinez · CHP</td><td style="white-space:nowrap;">916-555-9900 · Badge #4421</td><td style="white-space:nowrap;">—</td><td style="white-space:nowrap;">—</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Would open modal to add another party or witness to this FNOL.')">+ Add Party</button>
+    ` : step === 4 ? `
+      <h3 style="margin-top:0;">📎 Documents &amp; Evidence</h3>
+      <div style="padding: var(--space-lg); border: 2px dashed var(--border-subtle); border-radius: var(--radius-md); text-align:center; margin-bottom: var(--space-md);">
+        <div style="font-size:2rem;">📤</div>
+        <div style="margin-top:8px;">Drag &amp; drop files or <a style="color:var(--mga-accent);">browse</a></div>
+        <div style="color:var(--text-muted); font-size:0.78rem; margin-top:4px;">Photos, police reports, estimates, medical docs</div>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>File</th><th>Type</th><th>Size</th><th>Source</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td style="white-space:nowrap;">FNOL Confirmation.pdf</td><td style="white-space:nowrap;">FNOL</td><td style="white-space:nowrap;">180 KB</td><td style="white-space:nowrap;">Insured</td><td style="white-space:nowrap;">${badge('green','Uploaded')}</td></tr>
+          <tr><td style="white-space:nowrap;">Dashcam clip.mp4</td><td style="white-space:nowrap;">Video</td><td style="white-space:nowrap;">12 MB</td><td style="white-space:nowrap;">Insured</td><td style="white-space:nowrap;">${badge('green','Uploaded')}</td></tr>
+          <tr><td style="white-space:nowrap;">Other driver insurance.pdf</td><td style="white-space:nowrap;">Third Party</td><td style="white-space:nowrap;">120 KB</td><td style="white-space:nowrap;">Insured</td><td style="white-space:nowrap;">${badge('green','Uploaded')}</td></tr>
+          <tr><td style="white-space:nowrap;">Police report.pdf</td><td style="white-space:nowrap;">Police Report</td><td style="white-space:nowrap;">—</td><td style="white-space:nowrap;">Pending</td><td style="white-space:nowrap;">${badge('amber','Awaiting')}</td></tr>
+        </tbody>
+      </table>
+      </div>
+    ` : `
+      <h3 style="margin-top:0;">🎯 Auto-Triage &amp; Assignment</h3>
+      <div style="padding: var(--space-md); background: rgba(108,92,231,0.08); border-left: 3px solid var(--mga-accent); border-radius: var(--radius-md); margin-bottom: var(--space-md);">
+        <strong>🤖 Auto-Triage Score: 42 / 100 (Medium Severity)</strong>
+        <div style="color:var(--text-muted); font-size:0.82rem; margin-top:6px;">
+          Factors: Rear-impact collision (medium cost) · No injuries reported · Property damage only · Third-party clearly at fault · Subrogation potential high.
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-md);">
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius: var(--radius-md);">
+          <div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Initial Reserve (auto)</div>
+          <div style="font-size:1.8rem; font-weight:800;">$8,500</div>
+          <div style="color:var(--text-muted); font-size:0.78rem;">Based on auto-triage + product curve</div>
+        </div>
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius: var(--radius-md);">
+          <div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Recommended Adjuster</div>
+          <div style="font-size:1.1rem; font-weight:700; margin-top:4px;">Jane Rodriguez (ADJ-01)</div>
+          <div style="color:var(--text-muted); font-size:0.78rem;">Senior Auto · WIP 18 · Avg cycle 32d · Authority $100k</div>
+        </div>
+      </div>
+      <div style="padding: var(--space-md); background: rgba(0,230,118,0.08); border-left: 3px solid var(--status-green); border-radius: var(--radius-md); font-size:0.85rem;">
+        <strong>Ready to file.</strong> This FNOL will create claim CLM-MGA-2026-0249 · auto-notify Travelers via SEMC bordereau · assign Jane Rodriguez · send acknowledgment to insured &amp; agent.
+      </div>
+    `}
+
+    <div style="display:flex; justify-content:space-between; margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle);">
+      <button class="btn btn-ghost" ${step === 1 ? 'disabled' : ''} onclick="window.setState({fnolStep:${Math.max(1, step-1)}})">← Back</button>
+      <div style="display:flex; gap:var(--space-sm);">
+        <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('FNOL saved as draft. You can resume from the Adjuster Queue.')">Save Draft</button>
+        ${step < 5 ? `<button class="btn btn-primary" onclick="window.setState({fnolStep:${step+1}})">Next →</button>` : `<button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('FNOL submitted. Claim CLM-MGA-2026-0249 created. Jane Rodriguez notified. Carrier bordereau queued.'); window.setState({screen:'mga-claims', fnolStep:null});">✓ File FNOL</button>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaClaimDetail() {
+  const claimId = state.claimId || 'CLM-MGA-2026-0248';
+  const c = D.mgaClaims.find(x => x.id === claimId) || D.mgaClaims[0];
+  const isCanonical = claimId === 'CLM-MGA-2026-0248';
+  const detail = isCanonical ? D.mgaClaimDetail : {
+    id: c.id,
+    header: { claim_number_mga: c.id, claim_number_carrier: c.carrier_claim_no, policy_number: c.policy_id, product: c.product, carrier: c.product.includes('WC')?'Liberty':c.product.includes('BOP')?'Hartford':c.product.includes('Cyber')?'CNA':c.product.includes('D&O')?'Chubb':c.product.includes('GL')?'CNA':'Travelers', loss_date: c.loss_date, reported_date: c.reported, status: c.status, severity: c.severity, insured: c.insured, agent: 'Agent ' + (c.agent_id || '') },
+    loss_details: { description: `${c.sub_status}. Loss reported on ${c.reported}. Investigation ongoing.`, location: 'Address on file', cause_of_loss: c.lob + ' event', police_report: '—', officer: '—', weather: '—', involved_parties: [{ name: c.insured, role: 'Insured', vehicle: '—', injury: '—' }] },
+    financials: { initial_reserve: c.initial_reserve, current_reserve: c.current_reserve, paid: c.paid, outstanding: c.outstanding, incurred: c.current_reserve, reserve_history: [{ ts: c.reported, amount: c.initial_reserve, reason: 'Initial reserve based on FNOL', actor: 'System' }], payments: [], expenses: [{ k:'Adjuster time', v: 240 }], subrogation: { potential: 0, pursuing: false, third_party_carrier: '—', status: c.status === 'Subrogating' ? 'In pursuit' : 'Not applicable' } },
+    documents: [ { name: 'FNOL Confirmation.pdf', type:'FNOL', size:'180 KB', uploaded: c.reported, source:'Insured' } ],
+    timeline: [ { ts: c.reported, event: 'FNOL filed · claim number assigned', actor: 'System', category: 'Intake' } ],
+    audit_trail: [ { ts: c.reported, actor:'System', action:`Claim ${c.id} created · reserve $${c.initial_reserve}`, auth_level: '—', authority_used: 'Auto' } ],
+    messages: []
+  };
+  const tab = state.claimDetailTab || 'overview';
+  const tabs = [
+    { key: 'overview',   label: 'Overview',    icon: '📋' },
+    { key: 'financials', label: 'Financials',  icon: '💰' },
+    { key: 'timeline',   label: 'Timeline',    icon: '📅' },
+    { key: 'documents',  label: 'Documents',   icon: '📎' },
+    { key: 'messages',   label: 'Messages',    icon: '💬' },
+    { key: 'audit',      label: 'Audit Trail', icon: '🔒' }
+  ];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <div style="color:var(--text-muted); font-size:0.78rem; margin-bottom:4px;"><a style="cursor:pointer; color:var(--mga-accent);" onclick="window.setState({screen:'mga-claims'})">← All Claims</a></div>
+      <h2 style="margin:0;">${detail.header.claim_number_mga}</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${detail.header.insured} · ${detail.header.product} · Policy ${detail.header.policy_number}</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-ghost" onclick="window.showAlert &amp;&amp; window.showAlert('Export claim file (PDF): full timeline, documents, financials, audit trail for ${detail.header.claim_number_mga}.')">📄 Export File</button>
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Open message thread with insured + agent.'); window.setState({claimDetailTab:'messages'})">💬 Message</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-claim-approvals'})">Request Reserve Change</button>
+    </div>
+  </div>
+
+  ${_mgaClaimSubNav('')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:var(--space-md);">
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Status</div><div style="margin-top:6px;">${_mgaClaimStatusBadge(c)}</div><div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">${c.sub_status}</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Severity</div><div style="margin-top:6px;">${_mgaClaimSeverityPill(c.severity)}</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Loss Date</div><strong style="font-size:0.95rem;">${detail.header.loss_date}</strong><div style="color:var(--text-muted); font-size:0.72rem;">Reported ${detail.header.reported_date}</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Adjuster</div><strong style="font-size:0.95rem;">${(D.mgaAdjusters.find(a => a.id === c.adjuster) || {name:c.adjuster}).name}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${c.adjuster}</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Carrier</div><strong style="font-size:0.95rem;">${detail.header.carrier}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${detail.header.claim_number_carrier}</div></div>
+      <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Days Open</div><strong style="font-size:1.2rem; color:${c.days_open > 60 ? 'var(--status-red)' : c.days_open > 30 ? 'var(--status-amber)' : 'var(--text-primary)'};">${c.days_open}d</strong></div>
+    </div>
+    ${(c.fraud_flag || c.litigation) ? `<div style="margin-top: var(--space-md); padding: var(--space-sm); background: ${c.fraud_flag?'rgba(255,82,82,0.08)':'rgba(171,71,188,0.08)'}; border-left: 3px solid ${c.fraud_flag?'var(--status-red)':'#ab47bc'}; border-radius: var(--radius-sm); font-size:0.85rem;"><strong>${c.fraud_flag?'🚨 SIU Investigation Active':'⚖ Litigation — Attorney Represented'}</strong> · ${c.sub_status}</div>` : ''}
+  </div>
+
+  <div style="display:flex; gap: var(--space-xs); border-bottom: 1px solid var(--border-subtle); margin-bottom: var(--space-lg);">
+    ${tabs.map(t => `
+      <div onclick="window.setState({claimDetailTab:'${t.key}'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === t.key ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === t.key ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === t.key ? '700' : '500'}; font-size:0.88rem;">
+        ${t.icon} ${t.label}
+      </div>`).join('')}
+  </div>
+
+  ${tab === 'overview' ? `
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+      <div style="display:flex; flex-direction:column; gap:var(--space-lg);">
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">💥 LOSS DETAILS</div>
+          <div style="font-size:0.9rem; line-height:1.6;">${detail.loss_details.description}</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); margin-top: var(--space-md); font-size:0.82rem;">
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Location</div><strong>${detail.loss_details.location}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Cause of Loss</div><strong>${detail.loss_details.cause_of_loss}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Weather</div><strong>${detail.loss_details.weather}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Police Report</div><strong>${detail.loss_details.police_report}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Officer</div><strong>${detail.loss_details.officer}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Next Action</div><strong>${c.next_action}</strong></div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">👥 INVOLVED PARTIES</div>
+          <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>Role</th><th>Name</th><th>Vehicle / Property</th><th>Injury</th></tr></thead>
+            <tbody>
+              ${detail.loss_details.involved_parties.map(p => `
+                <tr><td style="white-space:nowrap;"><strong>${p.role}</strong></td><td style="white-space:nowrap;">${p.name}</td><td style="white-space:nowrap;">${p.vehicle}</td><td style="white-space:nowrap;">${p.injury}</td></tr>`).join('')}
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">💰 FINANCIAL SNAPSHOT</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm);">
+            <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">Current Reserve</div><strong style="font-size:1.2rem;">$${(detail.financials.current_reserve/1000).toFixed(1)}k</strong></div>
+            <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">Paid</div><strong style="font-size:1.2rem;">$${(detail.financials.paid/1000).toFixed(1)}k</strong></div>
+            <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">Outstanding</div><strong style="font-size:1.2rem; color:var(--status-amber);">$${(detail.financials.outstanding/1000).toFixed(1)}k</strong></div>
+            <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><div style="color:var(--text-muted); font-size:0.7rem;">Incurred</div><strong style="font-size:1.2rem;">$${(detail.financials.incurred/1000).toFixed(1)}k</strong></div>
+          </div>
+          <div style="margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border-subtle); font-size:0.82rem;">
+            <div><span style="color:var(--text-muted);">Initial reserve:</span> <strong>$${(detail.financials.initial_reserve/1000).toFixed(1)}k</strong></div>
+            <div style="margin-top:4px;"><span style="color:var(--text-muted);">Authority used:</span> <strong>${c.authority_used}</strong></div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">🔁 SUBROGATION</div>
+          <div style="font-size:0.85rem;">
+            <div><span style="color:var(--text-muted);">Status:</span> <strong>${detail.financials.subrogation.status}</strong></div>
+            <div style="margin-top:4px;"><span style="color:var(--text-muted);">Potential Recovery:</span> <strong style="color:var(--status-green);">$${(detail.financials.subrogation.potential/1000).toFixed(1)}k</strong></div>
+            <div style="margin-top:4px;"><span style="color:var(--text-muted);">Third-party Carrier:</span> <strong>${detail.financials.subrogation.third_party_carrier}</strong></div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title">📅 RECENT ACTIVITY</div>
+          ${detail.timeline.slice(0, 4).map(e => `
+            <div style="padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.82rem;">
+              <strong>${e.event}</strong>
+              <div style="color:var(--text-muted); font-size:0.7rem; margin-top:2px;">${e.actor} · ${e.ts}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  ` : tab === 'financials' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">💰 FINANCIAL WATERFALL</div>
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md);">
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); border-left: 4px solid var(--mga-accent);"><div style="color:var(--text-muted); font-size:0.72rem;">Initial Reserve</div><strong style="font-size:1.4rem;">$${(detail.financials.initial_reserve).toLocaleString()}</strong></div>
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); border-left: 4px solid var(--status-amber);"><div style="color:var(--text-muted); font-size:0.72rem;">Current Reserve</div><strong style="font-size:1.4rem;">$${(detail.financials.current_reserve).toLocaleString()}</strong></div>
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); border-left: 4px solid var(--status-green);"><div style="color:var(--text-muted); font-size:0.72rem;">Paid to Date</div><strong style="font-size:1.4rem;">$${(detail.financials.paid).toLocaleString()}</strong></div>
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); border-left: 4px solid var(--status-red);"><div style="color:var(--text-muted); font-size:0.72rem;">Outstanding</div><strong style="font-size:1.4rem;">$${(detail.financials.outstanding).toLocaleString()}</strong></div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title">📈 RESERVE HISTORY</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Timestamp</th><th>Amount</th><th>Reason</th><th>Actor</th></tr></thead>
+        <tbody>
+          ${detail.financials.reserve_history.map(r => `
+            <tr><td style="white-space:nowrap;">${r.ts}</td><td style="white-space:nowrap;"><strong>$${r.amount.toLocaleString()}</strong></td><td>${r.reason}</td><td style="white-space:nowrap;">${r.actor}</td></tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💸 PAYMENTS</div>
+        ${detail.financials.payments.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No payments issued yet.</div>' : detail.financials.payments.map(p => `<div>${p.ts} · $${p.amount} · ${p.payee}</div>`).join('')}
+      </div>
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🧾 ALLOCATED EXPENSES</div>
+        ${detail.financials.expenses.map(e => `<div style="display:flex; justify-content:space-between; padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.85rem;"><span>${e.k}</span><strong>$${e.v.toLocaleString()}</strong></div>`).join('')}
+      </div>
+    </div>
+  ` : tab === 'timeline' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📅 CLAIM TIMELINE</div>
+      <div style="position:relative;">
+        ${detail.timeline.map((e, i) => {
+          const catColor = { 'Intake': 'var(--mga-accent)', 'Investigation': 'var(--status-amber)', 'Reserve': '#ff9800', 'Documentation': 'var(--status-green)', 'Workflow': 'var(--text-secondary)', 'Payment': 'var(--status-green)' }[e.category] || 'var(--text-secondary)';
+          return `
+          <div style="display:flex; gap:var(--space-md); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+            <div style="flex-shrink:0; width:12px; height:12px; border-radius:50%; background:${catColor}; margin-top:6px;"></div>
+            <div style="flex:1;">
+              <div style="display:flex; justify-content:space-between; gap:var(--space-sm);">
+                <strong>${e.event}</strong>
+                <span style="color:var(--text-muted); font-size:0.78rem; white-space:nowrap;">${e.ts}</span>
+              </div>
+              <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${e.actor} · <span style="color:${catColor};">${e.category}</span></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  ` : tab === 'documents' ? `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">📎 DOCUMENTS &amp; EVIDENCE (${detail.documents.length})</div>
+      <button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Upload document modal · attach to claim ${detail.header.claim_number_mga}')">📤 Upload</button>
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>File</th><th>Type</th><th>Size</th><th>Uploaded</th><th>Source</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${detail.documents.map(d => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${d.name}</strong></td>
+            <td style="white-space:nowrap;">${badge('gray', d.type)}</td>
+            <td style="white-space:nowrap;">${d.size}</td>
+            <td style="white-space:nowrap;">${d.uploaded}</td>
+            <td style="white-space:nowrap;">${d.source}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Preview ${d.name}')">👁 View</button> <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Download ${d.name}')">⬇</button></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  ` : tab === 'messages' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">💬 MESSAGE THREAD</div>
+      ${detail.messages.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No messages yet on this claim.</div>' : detail.messages.map(m => `
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius: var(--radius-md); margin-bottom: var(--space-sm); border-left: 3px solid var(--mga-accent);">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); margin-bottom:6px;">
+            <div><strong>${m.from}</strong> → ${m.to} · <span style="color:var(--text-muted); font-size:0.78rem;">${m.channel}</span></div>
+            <span style="color:var(--text-muted); font-size:0.78rem;">${m.ts}</span>
+          </div>
+          <div style="font-size:0.88rem; line-height:1.5;">${m.text}</div>
+        </div>`).join('')}
+      <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle);">
+        <textarea class="form-input" rows="3" placeholder="Compose message to insured or agent..." style="width:100%;"></textarea>
+        <div style="display:flex; justify-content:flex-end; gap:var(--space-sm); margin-top: var(--space-sm);">
+          <select class="form-input" style="width:180px;"><option>Portal + Email</option><option>Portal only</option><option>Email only</option></select>
+          <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Message sent to insured and agent.')">Send</button>
+        </div>
+      </div>
+    </div>
+  ` : `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔒 AUDIT TRAIL</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Timestamp</th><th>Actor</th><th>Action</th><th>Authority Level</th><th>Authority Used</th></tr></thead>
+        <tbody>
+          ${detail.audit_trail.map(a => `
+            <tr><td style="white-space:nowrap;">${a.ts}</td><td style="white-space:nowrap;"><strong>${a.actor}</strong></td><td>${a.action}</td><td style="white-space:nowrap;">${a.auth_level}</td><td style="white-space:nowrap;">${a.authority_used}</td></tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  `}`;
+}
+
+function renderMgaClaimQueue() {
+  const adjF = state.adjusterFilter || 'all';
+  const statusF = state.claimStatusFilter || 'all';
+  const sevF = state.claimSeverityFilter || 'all';
+  const q = (state.claimQuery || '').toLowerCase();
+  let rows = D.mgaClaims;
+  if (adjF !== 'all') rows = rows.filter(c => c.adjuster === adjF);
+  if (statusF !== 'all') rows = rows.filter(c => c.status === statusF);
+  if (sevF !== 'all') rows = rows.filter(c => c.severity === sevF);
+  if (q) rows = rows.filter(c => c.id.toLowerCase().includes(q) || c.insured.toLowerCase().includes(q) || c.product.toLowerCase().includes(q));
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📋 Adjuster Work Queue</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${rows.length} claims · sortable by status, severity, days open, priority</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.setState({screen:'mga-claim-intake', fnolStep:1})">📥 New FNOL</button>
+  </div>
+
+  ${_mgaClaimSubNav('mga-claim-queue')}
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <input class="form-input" placeholder="🔍 Search by claim, insured, product..." value="${state.claimQuery || ''}" oninput="window.setState({claimQuery:this.value})"/>
+    <select class="form-input" onchange="window.setState({adjusterFilter:this.value})">
+      <option value="all"${adjF==='all'?' selected':''}>All Adjusters</option>
+      ${D.mgaAdjusters.map(a => `<option value="${a.id}"${adjF===a.id?' selected':''}>${a.name}</option>`).join('')}
+    </select>
+    <select class="form-input" onchange="window.setState({claimStatusFilter:this.value})">
+      <option value="all"${statusF==='all'?' selected':''}>All Statuses</option>
+      ${D.mgaClaimStatuses.map(s => `<option value="${s}"${statusF===s?' selected':''}>${s}</option>`).join('')}
+    </select>
+    <select class="form-input" onchange="window.setState({claimSeverityFilter:this.value})">
+      <option value="all"${sevF==='all'?' selected':''}>All Severity</option>
+      <option value="Small"${sevF==='Small'?' selected':''}>Small</option>
+      <option value="Medium"${sevF==='Medium'?' selected':''}>Medium</option>
+      <option value="Large"${sevF==='Large'?' selected':''}>Large</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({adjusterFilter:'all', claimStatusFilter:'all', claimSeverityFilter:'all', claimQuery:''})">Clear</button>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Claim #</th><th>Insured</th><th>LOB</th><th>Loss Date</th><th>Reported</th><th>Status</th><th>Severity</th><th>Reserve</th><th>Paid</th><th>Outstanding</th><th>Adjuster</th><th>Days Open</th><th>Priority</th><th>Flags</th><th>Next Action</th><th></th></tr></thead>
+      <tbody>
+        ${rows.map(c => `
+          <tr onclick="window.setState({screen:'mga-claim-details', claimId:'${c.id}'})" style="cursor:pointer;">
+            <td style="white-space:nowrap;"><strong style="color:var(--mga-accent); font-family:monospace; font-size:0.8rem;">${c.id}</strong><div style="color:var(--text-muted); font-size:0.7rem; font-family:monospace;">${c.carrier_claim_no}</div></td>
+            <td style="white-space:nowrap;"><strong>${c.insured}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${c.product}</div></td>
+            <td style="white-space:nowrap;">${c.lob}</td>
+            <td style="white-space:nowrap;">${c.loss_date}</td>
+            <td style="white-space:nowrap;">${(c.reported || '').slice(0,10)}</td>
+            <td style="white-space:nowrap;">${_mgaClaimStatusBadge(c)}</td>
+            <td style="white-space:nowrap;">${_mgaClaimSeverityPill(c.severity)}</td>
+            <td style="white-space:nowrap;"><strong>$${c.current_reserve.toLocaleString()}</strong></td>
+            <td style="white-space:nowrap;">$${c.paid.toLocaleString()}</td>
+            <td style="white-space:nowrap;"><strong style="color:${c.outstanding>0?'var(--status-amber)':'var(--text-muted)'};">$${c.outstanding.toLocaleString()}</strong></td>
+            <td style="white-space:nowrap;">${(D.mgaAdjusters.find(a => a.id === c.adjuster) || {name:c.adjuster}).name}</td>
+            <td style="white-space:nowrap;"><strong style="color:${c.days_open > 60 ? 'var(--status-red)' : c.days_open > 30 ? 'var(--status-amber)' : 'var(--text-primary)'};">${c.days_open}d</strong></td>
+            <td style="white-space:nowrap;">${badge(c.priority === 'High' ? 'red' : c.priority === 'Medium' ? 'amber' : 'gray', c.priority)}</td>
+            <td style="white-space:nowrap;">${_mgaClaimFlagPills(c)}</td>
+            <td style="font-size:0.78rem;">${c.next_action}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); window.setState({screen:'mga-claim-details', claimId:'${c.id}'})">Open</button></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaClaimApprovals() {
+  const tab = state.approvalsTab || 'reserves';
+  const resPending = D.mgaReserveApprovals.filter(r => r.status === 'Pending');
+  const resApproved = D.mgaReserveApprovals.filter(r => r.status === 'Approved');
+  const pmtPending = D.mgaPaymentApprovals.filter(p => p.status === 'Pending Approval');
+  const pmtProcessed = D.mgaPaymentApprovals.filter(p => p.status !== 'Pending Approval');
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">✅ Reserve &amp; Payment Approvals</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${resPending.length} reserve + ${pmtPending.length} payment awaiting approval · authority-aware routing</div>
+    </div>
+    <button class="btn btn-ghost" onclick="window.setState({screen:'mga-claims'})">← Back to Dashboard</button>
+  </div>
+
+  ${_mgaClaimSubNav('mga-claim-approvals')}
+
+  <div style="display:flex; gap: var(--space-xs); border-bottom: 1px solid var(--border-subtle); margin-bottom: var(--space-lg);">
+    <div onclick="window.setState({approvalsTab:'reserves'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'reserves' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'reserves' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'reserves' ? '700' : '500'}; font-size:0.9rem;">
+      📈 Reserve Changes (${resPending.length})
+    </div>
+    <div onclick="window.setState({approvalsTab:'payments'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'payments' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'payments' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'payments' ? '700' : '500'}; font-size:0.9rem;">
+      💸 Payment Approvals (${pmtPending.length})
+    </div>
+  </div>
+
+  ${tab === 'reserves' ? `
+    ${resPending.length > 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--status-amber); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title" style="color:var(--status-amber);">⏳ PENDING RESERVE APPROVALS (${resPending.length})</div>
+      ${resPending.map(r => `
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius: var(--radius-md); margin-bottom: var(--space-sm); border-left: 3px solid ${r.priority === 'High' ? 'var(--status-red)' : 'var(--status-amber)'};">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center; margin-bottom: var(--space-sm);">
+            <div>
+              <strong style="font-size:1rem;">${r.insured}</strong>
+              <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${r.id} · Claim <a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'mga-claim-details', claimId:'${r.claim_id}'})">${r.claim_id}</a></div>
+            </div>
+            <div style="display:flex; gap:var(--space-sm); align-items:center;">
+              ${badge(r.priority === 'High' ? 'red' : 'amber', r.priority)}
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Decline reserve change ${r.id}. Reason required.')">Decline</button>
+              <button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Approve reserve change ${r.id} · ${r.insured} · new reserve $${r.proposed_reserve.toLocaleString()}')">✓ Approve</button>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-sm); font-size:0.82rem; margin-bottom: var(--space-sm);">
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Current Reserve</div><strong>$${r.current_reserve.toLocaleString()}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Proposed</div><strong style="color:var(--status-amber);">$${r.proposed_reserve.toLocaleString()}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Δ</div><strong style="color:${r.delta > 0 ? 'var(--status-red)' : 'var(--status-green)'};">${r.delta > 0 ? '+' : ''}$${r.delta.toLocaleString()}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Proposed By</div><strong>${r.proposed_by}</strong></div>
+          </div>
+          <div style="padding: var(--space-sm); background: rgba(108,92,231,0.08); border-radius:var(--radius-sm); font-size:0.82rem;">
+            <strong>Reason:</strong> ${r.reason}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:6px;">Submitted ${r.submitted}</div>
+        </div>`).join('')}
+    </div>
+    ` : ''}
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">✓ APPROVED RESERVES (last 30 days)</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Change #</th><th>Claim</th><th>Insured</th><th>Current</th><th>Proposed</th><th>Δ</th><th>Proposed By</th><th>Approved By</th><th>Approved</th></tr></thead>
+        <tbody>
+          ${resApproved.map(r => `
+          <tr>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${r.id}</strong></td>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'mga-claim-details', claimId:'${r.claim_id}'})">${r.claim_id}</a></td>
+            <td style="white-space:nowrap;">${r.insured}</td>
+            <td style="white-space:nowrap;">$${r.current_reserve.toLocaleString()}</td>
+            <td style="white-space:nowrap;"><strong>$${r.proposed_reserve.toLocaleString()}</strong></td>
+            <td style="white-space:nowrap;"><strong style="color:${r.delta > 0 ? 'var(--status-red)' : 'var(--status-green)'};">${r.delta > 0 ? '+' : ''}$${r.delta.toLocaleString()}</strong></td>
+            <td style="white-space:nowrap;">${r.proposed_by}</td>
+            <td style="white-space:nowrap;">${r.approved_by}</td>
+            <td style="white-space:nowrap; font-size:0.82rem; color:var(--status-green);">${r.approved}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  ` : `
+    ${pmtPending.length > 0 ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--status-amber); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title" style="color:var(--status-amber);">⏳ PENDING PAYMENT APPROVALS (${pmtPending.length})</div>
+      ${pmtPending.map(p => `
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius: var(--radius-md); margin-bottom: var(--space-sm); border-left: 3px solid var(--status-amber);">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center; margin-bottom: var(--space-sm);">
+            <div>
+              <strong style="font-size:1rem;">${p.payee}</strong>
+              <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${p.id} · ${p.insured} · Claim <a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'mga-claim-details', claimId:'${p.claim_id}'})">${p.claim_id}</a></div>
+            </div>
+            <div style="display:flex; gap:var(--space-sm); align-items:center;">
+              ${badge('amber', p.priority)}
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Reject payment ${p.id} · reason required')">Reject</button>
+              <button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Approve payment ${p.id} · $${p.amount.toLocaleString()} ${p.method} to ${p.payee}')">✓ Approve</button>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-sm); font-size:0.82rem;">
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Amount</div><strong style="font-size:1.1rem;">$${p.amount.toLocaleString()}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Type</div><strong>${p.payment_type}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Method</div><strong>${p.method}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Proposed By</div><strong>${p.proposed_by}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Authority Cap</div><strong>$${p.auth_cap.toLocaleString()}</strong></div>
+          </div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:6px;">Submitted ${p.submitted}</div>
+        </div>`).join('')}
+    </div>
+    ` : ''}
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">✓ PROCESSED PAYMENTS</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Payment #</th><th>Claim</th><th>Insured</th><th>Payee</th><th>Amount</th><th>Type</th><th>Method</th><th>Status</th><th>Approved By</th><th>Approved</th></tr></thead>
+        <tbody>
+          ${pmtProcessed.map(p => `
+          <tr>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${p.id}</strong></td>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'mga-claim-details', claimId:'${p.claim_id}'})">${p.claim_id}</a></td>
+            <td style="white-space:nowrap;">${p.insured}</td>
+            <td style="white-space:nowrap;">${p.payee}</td>
+            <td style="white-space:nowrap;"><strong>$${p.amount.toLocaleString()}</strong></td>
+            <td style="white-space:nowrap;">${p.payment_type}</td>
+            <td style="white-space:nowrap;">${p.method}</td>
+            <td style="white-space:nowrap;">${badge(p.status === 'Paid' ? 'green' : 'blue', p.status)}</td>
+            <td style="white-space:nowrap;">${p.approved_by || '—'}</td>
+            <td style="white-space:nowrap; font-size:0.82rem; color:var(--status-green);">${p.approved || '—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  `}`;
+}
+
+function renderMgaClaimBordereau() {
+  const rows = D.mgaCarrierBordereau;
+  const byCarrier = {};
+  rows.forEach(r => { byCarrier[r.carrier] = (byCarrier[r.carrier] || 0) + r.claims; });
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📤 Carrier Bordereau &amp; Reporting</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Automated claims reporting to carriers · ${rows.length} bordereau in last 7 days · ${rows.filter(r => r.status === 'Delivered').length} acknowledged</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Configure bordereau schedule · per-carrier frequency, format (CSV/SEMC/API), delivery channel.')">⚙ Settings</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Generate ad-hoc bordereau · select carrier, date range, claim types.')">+ Generate</button>
+    </div>
+  </div>
+
+  ${_mgaClaimSubNav('mga-claim-bordereau')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Bordereau Sent (7d)</div><div class="kpi-value">${rows.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Claims Reported</div><div class="kpi-value">${rows.reduce((s,r) => s + r.claims, 0)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Paid (in period)</div><div class="kpi-value">$${(rows.reduce((s,r) => s + r.paid_amount, 0)/1000).toFixed(0)}k</div></div>
+    <div class="kpi-card"><div class="kpi-label">Queued</div><div class="kpi-value${rows.filter(r => r.status === 'Queued').length > 0 ? ' warning' : ''}">${rows.filter(r => r.status === 'Queued').length}</div></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">📤 BORDEREAU SCHEDULE</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Bordereau #</th><th>Carrier</th><th>Type</th><th>Period</th><th>Claims</th><th>Paid Amount</th><th>Reserve Δ</th><th>Status</th><th>Ack ID</th><th>Sent</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(r => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${r.id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${r.carrier}</strong></td>
+          <td style="white-space:nowrap;">${r.type}</td>
+          <td style="white-space:nowrap;">${r.period}</td>
+          <td style="white-space:nowrap;"><strong>${r.claims}</strong></td>
+          <td style="white-space:nowrap;">$${r.paid_amount.toLocaleString()}</td>
+          <td style="white-space:nowrap;">$${r.reserve_movement.toLocaleString()}</td>
+          <td style="white-space:nowrap;">${badge(r.statusColor, r.status)}</td>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;">${r.ack || '—'}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${r.sent || '—'}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('View ${r.id} · ${r.claims} claims · delivered to ${r.carrier}')">View</button>
+            ${r.status === 'Queued' ? `<button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Send ${r.id} now to ${r.carrier}')">Send Now</button>` : `<button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Download ${r.id} CSV + XML')">⬇</button>`}
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📊 CLAIMS BY CARRIER (7d)</div>
+      ${Object.entries(byCarrier).map(([carrier, n]) => `
+        <div style="margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px;">
+            <strong>${carrier}</strong>
+            <span><strong>${n}</strong> claims reported</span>
+          </div>
+          <div style="background:var(--bg-card); height:6px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${(n/Math.max(...Object.values(byCarrier)))*100}%; background:var(--mga-accent);"></div></div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🚨 LARGE LOSS NOTIFICATIONS</div>
+      <div style="font-size:0.85rem;">
+        <div style="padding: var(--space-sm); background:var(--bg-card); border-left: 3px solid var(--status-red); border-radius: var(--radius-sm); margin-bottom: var(--space-sm);">
+          <strong>Chubb — CLM-MGA-2026-0236</strong>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">D&amp;O class action · $850k reserve · reported 2026-02-10 · Defense counsel engaged</div>
+        </div>
+        <div style="padding: var(--space-sm); background:var(--bg-card); border-left: 3px solid var(--status-red); border-radius: var(--radius-sm); margin-bottom: var(--space-sm);">
+          <strong>CNA — CLM-MGA-2026-0237</strong>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">Ridge Builders GL · $520k reserve (revised) · litigation · deposition 2026-05-12</div>
+        </div>
+        <div style="padding: var(--space-sm); background:var(--bg-card); border-left: 3px solid var(--status-amber); border-radius: var(--radius-sm);">
+          <strong>Zurich — CLM-MGA-2026-0238</strong>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">Peninsula Mfg Property · $284k · SIU fraud flag · carrier aware</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaClaimAnalytics() {
+  const A = D.mgaClaimsAnalytics;
+  const maxWritten = Math.max(...A.loss_ratio_by_product.map(p => p.written));
+  const maxSev = Math.max(...A.severity_trend.map(m => m.small + m.medium + m.large));
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📈 Claims Analytics Studio</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Cycle time · loss ratio · severity · adjuster performance · subrogation recovery</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <select class="form-input" style="width:160px;"><option>Last 12 months</option><option>YTD</option><option>Last 90 days</option></select>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Export analytics pack · CSV + PDF with all charts and raw data')">📥 Export</button>
+    </div>
+  </div>
+
+  ${_mgaClaimSubNav('mga-claim-analytics')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">⏱ AVERAGE CYCLE TIME BY LOB (days to close · vs. target)</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>LOB</th><th>Avg Days</th><th>Target</th><th>Variance</th><th>Closed ≤30d</th><th>Closed ≤45d</th><th>Closed ≤60d</th></tr></thead>
+      <tbody>
+        ${A.cycle_time_by_lob.map(l => {
+          const variance = l.avg_days - l.target;
+          const color = variance <= 0 ? 'var(--status-green)' : variance <= 10 ? 'var(--status-amber)' : 'var(--status-red)';
+          return `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${l.lob}</strong></td>
+            <td style="white-space:nowrap;"><strong>${l.avg_days}d</strong></td>
+            <td style="white-space:nowrap;">${l.target}d</td>
+            <td style="white-space:nowrap;"><strong style="color:${color};">${variance > 0 ? '+' : ''}${variance}d</strong></td>
+            <td style="white-space:nowrap;">${l.closed_30d}%</td>
+            <td style="white-space:nowrap;">${l.closed_45d}%</td>
+            <td style="white-space:nowrap;">${l.closed_60d}%</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">📊 LOSS RATIO BY PRODUCT (written vs. incurred)</div>
+    ${A.loss_ratio_by_product.map(p => `
+      <div style="margin-bottom: var(--space-sm);">
+        <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px;">
+          <strong>${p.product}</strong>
+          <span><strong style="color:${p.loss_ratio <= 30 ? 'var(--status-green)' : p.loss_ratio <= 50 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${p.loss_ratio}%</strong> LR · $${(p.written/1e6).toFixed(2)}M written · $${(p.incurred/1e6).toFixed(2)}M incurred</span>
+        </div>
+        <div style="background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden; display:flex;">
+          <div style="height:100%; width:${(p.written/maxWritten)*100}%; background:linear-gradient(90deg, var(--mga-accent) 0%, var(--mga-accent) ${100-p.loss_ratio}%, var(--status-amber) ${100-p.loss_ratio}%, var(--status-amber) 100%);"></div>
+        </div>
+      </div>`).join('')}
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📉 SEVERITY TREND (6 months · FNOL counts)</div>
+      <div style="display:flex; align-items:flex-end; gap: var(--space-sm); height: 220px; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+        ${A.severity_trend.map(m => {
+          const total = m.small + m.medium + m.large;
+          const h = (total / maxSev) * 100;
+          return `
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap: 4px;">
+            <div style="width:100%; height:${h}%; display:flex; flex-direction:column; justify-content:flex-end; border-radius: 4px 4px 0 0; overflow:hidden; position:relative;">
+              <div style="background:var(--status-red); height:${(m.large/total)*100}%;" title="Large: ${m.large}"></div>
+              <div style="background:var(--status-amber); height:${(m.medium/total)*100}%;" title="Medium: ${m.medium}"></div>
+              <div style="background:var(--status-green); height:${(m.small/total)*100}%;" title="Small: ${m.small}"></div>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${m.month}</div>
+            <div style="font-size:0.78rem; font-weight:700;">${total}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex; gap:var(--space-md); justify-content:center; margin-top: var(--space-sm); font-size:0.78rem;">
+        <span><span style="display:inline-block; width:10px; height:10px; background:var(--status-green); border-radius:2px; margin-right:4px;"></span>Small</span>
+        <span><span style="display:inline-block; width:10px; height:10px; background:var(--status-amber); border-radius:2px; margin-right:4px;"></span>Medium</span>
+        <span><span style="display:inline-block; width:10px; height:10px; background:var(--status-red); border-radius:2px; margin-right:4px;"></span>Large</span>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔁 SUBROGATION RECOVERY (30d)</div>
+      <div style="text-align:center; padding: var(--space-md);">
+        <div style="font-size:3rem; font-weight:800; color:var(--status-green);">${A.subro_recovery.rate}%</div>
+        <div style="color:var(--text-muted); font-size:0.85rem;">Recovery rate</div>
+        <div style="margin-top: var(--space-md); padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); font-size:0.85rem;">
+          <div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">Pursued</span><strong>$${(A.subro_recovery.pursued_30d/1000).toFixed(0)}k</strong></div>
+          <div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">Recovered</span><strong style="color:var(--status-green);">$${(A.subro_recovery.recovered_30d/1000).toFixed(0)}k</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">👥 ADJUSTER PERFORMANCE SCORECARD</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Adjuster</th><th>Active WIP</th><th>Closed (30d)</th><th>Avg Cycle</th><th>CSAT</th><th>Reserve Accuracy</th></tr></thead>
+      <tbody>
+        ${A.adjuster_performance.map(a => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${a.name}</strong></td>
+            <td style="white-space:nowrap;"><strong>${a.wip}</strong></td>
+            <td style="white-space:nowrap;">${a.closed_30d}</td>
+            <td style="white-space:nowrap;">${a.avg_cycle}d</td>
+            <td style="white-space:nowrap;">⭐ ${a.csat}</td>
+            <td style="white-space:nowrap;">
+              <div style="display:flex; align-items:center; gap: var(--space-sm);">
+                <div class="market-fit-bar" style="width:100px;"><div class="market-fit-fill" style="width:${a.accuracy}%; background:${a.accuracy >= 92 ? 'var(--status-green)' : a.accuracy >= 85 ? 'var(--mga-accent)' : 'var(--status-amber)'};"></div></div>
+                <strong>${a.accuracy}%</strong>
+              </div>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+// ─── MGA · Compliance & Administration ───
+function _mgaComplianceSubNav(active) {
+  const tabs = [
+    { key: 'mga-compliance',          label: 'Dashboard',     icon: '📊' },
+    { key: 'mga-compliance-calendar', label: 'Calendar',      icon: '📅' },
+    { key: 'mga-compliance-filings',  label: 'Filings',       icon: '🏛' },
+    { key: 'mga-compliance-users',    label: 'Users & Roles', icon: '👥' },
+    { key: 'mga-compliance-audit',    label: 'Audit Trail',   icon: '🔒' },
+    { key: 'mga-compliance-contracts',label: 'Contracts',     icon: '📜' },
+    { key: 'mga-compliance-settings', label: 'System',        icon: '⚙' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _mgaCompliancePriorityBadge(p) {
+  return badge(p === 'High' ? 'red' : p === 'Medium' ? 'amber' : 'gray', p);
+}
+
+function _mgaComplianceStatusBadge(s) {
+  const map = { 'Open': 'gray', 'In Progress': 'blue', 'Review': 'amber', 'Filed': 'green', 'In Preparation': 'amber', 'Overdue': 'red', 'Done': 'green' };
+  return badge(map[s] || 'gray', s);
+}
+
+function renderMgaComplianceDashboard() {
+  const items = D.mgaComplianceItems;
+  const open = items.filter(i => i.status !== 'Filed' && i.status !== 'Done');
+  const dueThisWeek = open.filter(i => i.days_to_due <= 7);
+  const overdue = open.filter(i => i.days_to_due < 0);
+  const byCategory = {};
+  items.forEach(i => { byCategory[i.category] = (byCategory[i.category] || 0) + 1; });
+  const licensesDue = D.mgaLicenses.filter(l => l.renewal_days <= 90);
+  const contractsExpiring = D.mgaContracts.filter(c => c.status === 'Expiring' || ((new Date(c.expiry) - new Date('2026-04-18')) / (1000 * 60 * 60 * 24)) <= 90);
+  const trend = D.mgaComplianceTrend;
+  const maxOpen = Math.max(...trend.map(t => t.open));
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">⚖ Compliance &amp; Administration</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Regulatory + audit + administration hub · ${open.length} open items · ${overdue.length} overdue · ${licensesDue.length} licenses renewing · ${contractsExpiring.length} contracts expiring</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-compliance-audit'})">🔒 Audit Trail</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Open New Compliance Task modal · assign owner, category, due date')">+ New Task</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.mgaComplianceKPIs, 6)}
+
+  ${_mgaComplianceSubNav('mga-compliance')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">⏳ COMPLIANCE ITEMS DUE THIS WEEK</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-compliance-calendar'})">Full calendar →</button>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Task</th><th>Regulatory Body</th><th>Category</th><th>Due</th><th>Owner</th><th>Status</th><th>Priority</th><th></th></tr></thead>
+        <tbody>
+          ${dueThisWeek.map(i => `
+          <tr style="cursor:pointer;" onclick="window.setState({screen:'mga-compliance-calendar'})">
+            <td><strong>${i.task}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${i.id}</div></td>
+            <td style="white-space:nowrap;">${i.regulatory_body}</td>
+            <td style="white-space:nowrap;">${i.category}</td>
+            <td style="white-space:nowrap;"><strong style="color:${i.days_to_due <= 0 ? 'var(--status-red)' : i.days_to_due <= 3 ? 'var(--status-amber)' : 'var(--text-primary)'};">${i.due}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${i.days_to_due <= 0 ? 'Overdue ' + Math.abs(i.days_to_due) + 'd' : i.days_to_due + 'd left'}</div></td>
+            <td style="white-space:nowrap;">${i.owner}</td>
+            <td style="white-space:nowrap;">${_mgaComplianceStatusBadge(i.status)}</td>
+            <td style="white-space:nowrap;">${_mgaCompliancePriorityBadge(i.priority)}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); window.showAlert &amp;&amp; window.showAlert('Open task ${i.id} detail')">Open</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📈 COMPLIANCE SCORE TREND</div>
+        <div style="display:flex; align-items:flex-end; gap: 6px; height: 120px; margin-top: var(--space-sm);">
+          ${trend.map(t => `
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
+              <div style="width:100%; background:linear-gradient(180deg, var(--mga-accent), #a67dff); height:${t.score}%; border-radius: 4px 4px 0 0;"></div>
+              <div style="color:var(--text-muted); font-size:0.7rem;">${t.month.slice(0,3)}</div>
+              <div style="font-size:0.78rem; font-weight:700;">${t.score}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🏛 LICENSES RENEWING SOON</div>
+        ${licensesDue.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">All licenses healthy.</div>' : licensesDue.map(l => `
+          <div onclick="window.setState({screen:'mga-compliance-filings'})" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+              <strong style="font-size:0.85rem;">${l.state} — ${l.license_type}</strong>
+              ${badge(l.renewal_days <= 14 ? 'red' : l.renewal_days <= 60 ? 'amber' : 'gray', l.renewal_days + 'd')}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${l.license_no} · Expires ${l.expires}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📊 BY CATEGORY</div>
+      ${Object.entries(byCategory).map(([cat, n]) => `
+        <div style="display:flex; justify-content:space-between; padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.82rem;">
+          <span>${cat}</span><strong>${n}</strong>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📜 CONTRACTS EXPIRING (90d)</div>
+      ${contractsExpiring.length === 0 ? '<div style="color:var(--text-muted); font-size:0.85rem;">No imminent expirations.</div>' : contractsExpiring.slice(0,5).map(c => `
+        <div onclick="window.setState({screen:'mga-compliance-contracts'})" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+            <strong style="font-size:0.82rem;">${c.party}</strong>
+            ${badge(c.status === 'Expiring' ? 'red' : 'amber', c.status)}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${c.type} · Exp ${c.expiry}</div>
+        </div>`).join('')}
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">👥 USER HEALTH</div>
+      <div style="font-size:0.85rem;">
+        <div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">Active Users</span><strong>${D.mgaComplianceUsers.filter(u => u.status === 'Active').length}</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">MFA Enrolled</span><strong>${D.mgaComplianceUsers.filter(u => u.mfa).length} / ${D.mgaComplianceUsers.length}</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">MFA Missing</span><strong style="color:var(--status-amber);">${D.mgaComplianceUsers.filter(u => !u.mfa && u.status === 'Active').length}</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">Offboarded (pending cleanup)</span><strong>${D.mgaComplianceUsers.filter(u => u.status === 'Offboarded').length}</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">External Auditors (active)</span><strong>${D.mgaComplianceUsers.filter(u => u.role === 'Read-Only / Auditor' && u.status === 'Active').length}</strong></div>
+        <button class="btn btn-ghost btn-sm" style="margin-top: var(--space-sm); width:100%;" onclick="window.setState({screen:'mga-compliance-users'})">Manage Users →</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">🔒 RECENT AUDIT ACTIVITY (last 24h)</div>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-compliance-audit'})">Full log →</button>
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Timestamp</th><th>User</th><th>Module</th><th>Action</th><th>Severity</th></tr></thead>
+      <tbody>
+        ${D.mgaAuditLogs.slice(0, 8).map(l => `
+          <tr>
+            <td style="white-space:nowrap; font-size:0.82rem;">${l.ts}</td>
+            <td style="white-space:nowrap;"><strong>${l.actor}</strong></td>
+            <td style="white-space:nowrap;">${l.module}</td>
+            <td>${l.action}</td>
+            <td style="white-space:nowrap;">${badge(l.severity === 'Warning' ? 'amber' : l.severity === 'Critical' ? 'red' : 'gray', l.severity)}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaComplianceUsers() {
+  const tab = state.usersTab || 'users';
+  const roleF = state.userRoleFilter || 'all';
+  const statusF = state.userStatusFilter || 'all';
+  const q = (state.userQuery || '').toLowerCase();
+  let users = D.mgaComplianceUsers;
+  if (roleF !== 'all') users = users.filter(u => u.role === roleF);
+  if (statusF !== 'all') users = users.filter(u => u.status === statusF);
+  if (q) users = users.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">👥 Users &amp; Role Management</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${D.mgaComplianceUsers.length} user accounts · ${D.mgaRoles.length} roles · RBAC + MFA enforcement · SSO integrated</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Export user access report · CSV with permissions, MFA status, last login for all ' + ${D.mgaComplianceUsers.length} + ' users')">📥 Export Access Report</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Invite new user modal · email, role, department, MFA requirement')">+ Invite User</button>
+    </div>
+  </div>
+
+  ${_mgaComplianceSubNav('mga-compliance-users')}
+
+  <div style="display:flex; gap: var(--space-xs); border-bottom: 1px solid var(--border-subtle); margin-bottom: var(--space-lg);">
+    <div onclick="window.setState({usersTab:'users'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'users' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'users' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'users' ? '700' : '500'}; font-size:0.9rem;">
+      👤 Users (${D.mgaComplianceUsers.length})
+    </div>
+    <div onclick="window.setState({usersTab:'roles'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'roles' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'roles' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'roles' ? '700' : '500'}; font-size:0.9rem;">
+      🛡 Roles &amp; Permissions (${D.mgaRoles.length})
+    </div>
+  </div>
+
+  ${tab === 'users' ? `
+    <div class="filter-bar" style="margin-bottom: var(--space-md);">
+      <input class="form-input" placeholder="🔍 Search name or email..." value="${state.userQuery || ''}" oninput="window.setState({userQuery:this.value})"/>
+      <select class="form-input" onchange="window.setState({userRoleFilter:this.value})">
+        <option value="all"${roleF==='all'?' selected':''}>All Roles</option>
+        ${D.mgaRoles.map(r => `<option value="${r.name}"${roleF===r.name?' selected':''}>${r.name}</option>`).join('')}
+      </select>
+      <select class="form-input" onchange="window.setState({userStatusFilter:this.value})">
+        <option value="all"${statusF==='all'?' selected':''}>All Statuses</option>
+        <option value="Active"${statusF==='Active'?' selected':''}>Active</option>
+        <option value="Offboarded"${statusF==='Offboarded'?' selected':''}>Offboarded</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({userRoleFilter:'all', userStatusFilter:'all', userQuery:''})">Clear</button>
+    </div>
+
+    <div class="data-table-wrapper">
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>User</th><th>Role</th><th>Department</th><th>Last Login</th><th>MFA</th><th>SSO</th><th>Status</th><th>Training</th><th>Flags</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${users.map(u => `
+            <tr>
+              <td style="white-space:nowrap;"><strong>${u.name}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${u.email}</div><div style="color:var(--text-muted); font-size:0.7rem; font-family:monospace;">${u.id}</div></td>
+              <td style="white-space:nowrap;">${u.role}</td>
+              <td style="white-space:nowrap;">${u.dept}</td>
+              <td style="white-space:nowrap; font-size:0.82rem;">${u.last_login}</td>
+              <td style="white-space:nowrap;">${u.mfa ? badge('green','✓ Enrolled') : badge('red','✗ Missing')}</td>
+              <td style="white-space:nowrap;">${u.sso ? '🔐' : '—'}</td>
+              <td style="white-space:nowrap;">${badge(u.status === 'Active' ? 'green' : 'gray', u.status)}</td>
+              <td style="white-space:nowrap; font-size:0.78rem;">${u.training.length} courses</td>
+              <td style="white-space:nowrap;">${(u.flags || []).map(f => `<span style="display:inline-block; padding:2px 8px; border-radius:999px; font-size:0.68rem; font-weight:700; background:rgba(255,171,0,0.15); color:var(--status-amber); margin-right:3px;">⚠ ${f}</span>`).join('')}</td>
+              <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Edit ${u.name} · change role, reset MFA, view permissions')">Edit</button> ${u.status === 'Active' ? `<button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Offboard ${u.name} · disable login, revoke access, schedule deletion')">Offboard</button>` : `<button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Delete ${u.name} permanently')">Delete</button>`}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  ` : `
+    <div class="data-table-wrapper">
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Role</th><th>Tier</th><th>Users</th><th>Description</th><th>Authority Limit</th><th>MFA Required</th><th>Key Permissions</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${D.mgaRoles.map(r => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${r.name}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${r.id}</div></td>
+            <td style="white-space:nowrap;">${badge(r.tier === 1 ? 'red' : r.tier === 2 ? 'amber' : r.tier === 3 ? 'blue' : 'gray', 'T' + r.tier)}</td>
+            <td style="white-space:nowrap;"><strong>${r.users}</strong></td>
+            <td style="font-size:0.82rem;">${r.description}</td>
+            <td style="white-space:nowrap;">${r.authority_limit ? '$' + r.authority_limit.toLocaleString() : '—'}</td>
+            <td style="white-space:nowrap;">${r.mfa_required ? badge('green','Required') : badge('gray','Optional')}</td>
+            <td style="font-size:0.78rem;">${r.perms.map(p => `<span style="display:inline-block; padding:2px 6px; border-radius:4px; font-family:monospace; background:var(--bg-card); margin:2px;">${p}</span>`).join('')}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Edit role ${r.name} · change permissions, authority limits, MFA policy')">Edit</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  `}`;
+}
+
+function renderMgaComplianceAudit() {
+  const sevF = state.auditSevFilter || 'all';
+  const modF = state.auditModFilter || 'all';
+  const q = (state.auditQuery || '').toLowerCase();
+  let rows = D.mgaAuditLogs;
+  if (sevF !== 'all') rows = rows.filter(l => l.severity === sevF);
+  if (modF !== 'all') rows = rows.filter(l => l.module === modF);
+  if (q) rows = rows.filter(l => l.actor.toLowerCase().includes(q) || l.action.toLowerCase().includes(q));
+  const modules = [...new Set(D.mgaAuditLogs.map(l => l.module))];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🔒 Audit Trail Explorer</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Immutable system-wide activity log · 7-year retention · SOC2 + NAIC + SOX compliant</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('eDiscovery export · CSV + JSON · cryptographically signed for legal hold')">📥 Export</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Advanced search · filter by user, IP, before/after, time range. Supports regex.')">🔍 Advanced Search</button>
+    </div>
+  </div>
+
+  ${_mgaComplianceSubNav('mga-compliance-audit')}
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <input class="form-input" placeholder="🔍 Search actor or action..." value="${state.auditQuery || ''}" oninput="window.setState({auditQuery:this.value})"/>
+    <select class="form-input" onchange="window.setState({auditSevFilter:this.value})">
+      <option value="all"${sevF==='all'?' selected':''}>All Severities</option>
+      <option value="Info"${sevF==='Info'?' selected':''}>Info</option>
+      <option value="Warning"${sevF==='Warning'?' selected':''}>Warning</option>
+      <option value="Critical"${sevF==='Critical'?' selected':''}>Critical</option>
+    </select>
+    <select class="form-input" onchange="window.setState({auditModFilter:this.value})">
+      <option value="all"${modF==='all'?' selected':''}>All Modules</option>
+      ${modules.map(m => `<option value="${m}"${modF===m?' selected':''}>${m}</option>`).join('')}
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({auditSevFilter:'all', auditModFilter:'all', auditQuery:''})">Clear</button>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Timestamp</th><th>User</th><th>Module</th><th>Action</th><th>Before</th><th>After</th><th>IP</th><th>Severity</th></tr></thead>
+      <tbody>
+        ${rows.map(l => `
+          <tr>
+            <td style="white-space:nowrap; font-size:0.82rem; font-family:monospace;">${l.ts}</td>
+            <td style="white-space:nowrap;"><strong>${l.actor}</strong></td>
+            <td style="white-space:nowrap;">${badge('gray', l.module)}</td>
+            <td>${l.action}</td>
+            <td style="white-space:nowrap; font-size:0.78rem; color:var(--text-muted);">${l.before}</td>
+            <td style="white-space:nowrap; font-size:0.78rem;"><strong>${l.after}</strong></td>
+            <td style="white-space:nowrap; font-size:0.78rem; font-family:monospace; color:var(--text-muted);">${l.ip}</td>
+            <td style="white-space:nowrap;">${badge(l.severity === 'Warning' ? 'amber' : l.severity === 'Critical' ? 'red' : 'gray', l.severity)}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaComplianceCalendar() {
+  const items = D.mgaComplianceItems;
+  const overdue = items.filter(i => i.days_to_due < 0 && i.status !== 'Filed' && i.status !== 'Done');
+  const thisWeek = items.filter(i => i.days_to_due >= 0 && i.days_to_due <= 7 && i.status !== 'Filed' && i.status !== 'Done');
+  const next30 = items.filter(i => i.days_to_due > 7 && i.days_to_due <= 30 && i.status !== 'Filed' && i.status !== 'Done');
+  const next90 = items.filter(i => i.days_to_due > 30 && i.days_to_due <= 90 && i.status !== 'Filed' && i.status !== 'Done');
+  const beyond = items.filter(i => i.days_to_due > 90 && i.status !== 'Filed' && i.status !== 'Done');
+  const completed = items.filter(i => i.status === 'Filed' || i.status === 'Done');
+
+  const renderSection = (title, color, list) => list.length === 0 ? '' : `
+    <div style="background:var(--bg-secondary); border:1px solid ${color}44; border-left: 4px solid ${color}; border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+      <div class="section-title" style="color:${color};">${title} (${list.length})</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Task</th><th>Regulatory Body</th><th>Category</th><th>Due</th><th>Owner</th><th>Status</th><th>Priority</th><th>Notes</th><th></th></tr></thead>
+        <tbody>
+          ${list.map(i => `
+          <tr>
+            <td><strong>${i.task}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${i.id}</div></td>
+            <td style="white-space:nowrap; font-size:0.82rem;">${i.regulatory_body}</td>
+            <td style="white-space:nowrap;">${badge('gray', i.category)}</td>
+            <td style="white-space:nowrap;"><strong>${i.due}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${i.days_to_due < 0 ? 'Overdue ' + Math.abs(i.days_to_due) + 'd' : i.days_to_due + 'd left'}</div></td>
+            <td style="white-space:nowrap;">${i.owner}</td>
+            <td style="white-space:nowrap;">${_mgaComplianceStatusBadge(i.status)}</td>
+            <td style="white-space:nowrap;">${_mgaCompliancePriorityBadge(i.priority)}</td>
+            <td style="font-size:0.78rem;">${i.notes}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Open task ${i.id} · ${i.task}')">Open</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>`;
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📅 Compliance Calendar &amp; Task Manager</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${items.length} tasks tracked · ${overdue.length} overdue · ${thisWeek.length} this week · ${completed.length} completed</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Subscribe to calendar feed · iCal / Google Calendar link')">📆 Subscribe</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Open New Compliance Task modal · assign regulatory body, category, due date')">+ New Task</button>
+    </div>
+  </div>
+
+  ${_mgaComplianceSubNav('mga-compliance-calendar')}
+
+  ${renderSection('🚨 OVERDUE', 'var(--status-red)', overdue)}
+  ${renderSection('⏳ DUE THIS WEEK', 'var(--status-amber)', thisWeek)}
+  ${renderSection('📅 DUE IN NEXT 30 DAYS', 'var(--mga-accent)', next30)}
+  ${renderSection('🗓 DUE IN 31–90 DAYS', '#4fc3f7', next90)}
+  ${renderSection('📋 LATER THAN 90 DAYS', 'var(--text-secondary)', beyond)}
+  ${renderSection('✓ COMPLETED (last 90d)', 'var(--status-green)', completed)}`;
+}
+
+function renderMgaComplianceContracts() {
+  const typeF = state.contractTypeFilter || 'all';
+  const statusF = state.contractStatusFilter || 'all';
+  const q = (state.contractQuery || '').toLowerCase();
+  let rows = D.mgaContracts;
+  if (typeF !== 'all') rows = rows.filter(c => c.type === typeF);
+  if (statusF !== 'all') rows = rows.filter(c => c.status === statusF);
+  if (q) rows = rows.filter(c => c.party.toLowerCase().includes(q) || c.id.toLowerCase().includes(q));
+  const types = [...new Set(D.mgaContracts.map(c => c.type))];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📜 Contract Repository</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${D.mgaContracts.length} active contracts · carrier agreements · agent appointments · reinsurance treaties · vendor contracts</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Export contract register · CSV with all metadata + expiry + signer info')">📥 Export</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Upload new contract · metadata + PDF · trigger legal review workflow')">+ New Contract</button>
+    </div>
+  </div>
+
+  ${_mgaComplianceSubNav('mga-compliance-contracts')}
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <input class="form-input" placeholder="🔍 Search contracts..." value="${state.contractQuery || ''}" oninput="window.setState({contractQuery:this.value})"/>
+    <select class="form-input" onchange="window.setState({contractTypeFilter:this.value})">
+      <option value="all"${typeF==='all'?' selected':''}>All Types</option>
+      ${types.map(t => `<option value="${t}"${typeF===t?' selected':''}>${t}</option>`).join('')}
+    </select>
+    <select class="form-input" onchange="window.setState({contractStatusFilter:this.value})">
+      <option value="all"${statusF==='all'?' selected':''}>All Statuses</option>
+      <option value="Active"${statusF==='Active'?' selected':''}>Active</option>
+      <option value="Expiring"${statusF==='Expiring'?' selected':''}>Expiring</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({contractTypeFilter:'all', contractStatusFilter:'all', contractQuery:''})">Clear</button>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Contract #</th><th>Party</th><th>Type</th><th>Effective</th><th>Expiry</th><th>Status</th><th>Version</th><th>Signer (MGA)</th><th>Signer (Counter)</th><th>Premium Cap</th><th>Notes</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(c => {
+          const daysToExpiry = Math.round((new Date(c.expiry) - new Date('2026-04-18')) / (1000 * 60 * 60 * 24));
+          const expColor = daysToExpiry <= 60 ? 'var(--status-red)' : daysToExpiry <= 180 ? 'var(--status-amber)' : 'var(--text-primary)';
+          return `
+          <tr>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${c.id}</strong></td>
+            <td style="white-space:nowrap;"><strong>${c.party}</strong></td>
+            <td style="white-space:nowrap;">${badge('gray', c.type)}</td>
+            <td style="white-space:nowrap;">${c.effective}</td>
+            <td style="white-space:nowrap;"><strong style="color:${expColor};">${c.expiry}</strong><div style="color:var(--text-muted); font-size:0.72rem;">${daysToExpiry}d</div></td>
+            <td style="white-space:nowrap;">${badge(c.status === 'Active' ? 'green' : c.status === 'Expiring' ? 'red' : 'amber', c.status)}</td>
+            <td style="white-space:nowrap;">${c.version}</td>
+            <td style="white-space:nowrap; font-size:0.82rem;">${c.signer_mga}</td>
+            <td style="white-space:nowrap; font-size:0.82rem;">${c.signer_carrier}</td>
+            <td style="white-space:nowrap;">${c.premium_cap ? '$' + (Number(c.premium_cap)/1e6).toFixed(1) + 'M' : '—'}</td>
+            <td style="font-size:0.78rem;">${c.notes}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('View ${c.id} · full contract + versions + signature audit trail')">View</button> <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Download ${c.id} PDF')">⬇</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaComplianceFilings() {
+  const tab = state.filingsTab || 'filings';
+  const stateF = state.filingStateFilter || 'all';
+  const statusF = state.filingStatusFilter || 'all';
+  let rows = D.mgaRegulatoryFilings;
+  if (stateF !== 'all') rows = rows.filter(r => r.state === stateF);
+  if (statusF !== 'all') rows = rows.filter(r => r.status === statusF);
+  const states = [...new Set(D.mgaRegulatoryFilings.map(f => f.state))];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🏛 Regulatory Filings &amp; Licenses</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${D.mgaRegulatoryFilings.length} filings tracked · ${D.mgaLicenses.length} active MGA licenses across states</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Download current-period filings pack · all open forms + supporting data')">📥 Pack</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('File a new regulatory submission · select state + form type')">+ New Filing</button>
+    </div>
+  </div>
+
+  ${_mgaComplianceSubNav('mga-compliance-filings')}
+
+  <div style="display:flex; gap: var(--space-xs); border-bottom: 1px solid var(--border-subtle); margin-bottom: var(--space-lg);">
+    <div onclick="window.setState({filingsTab:'filings'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'filings' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'filings' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'filings' ? '700' : '500'}; font-size:0.9rem;">
+      📋 Filings (${D.mgaRegulatoryFilings.length})
+    </div>
+    <div onclick="window.setState({filingsTab:'licenses'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'licenses' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'licenses' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'licenses' ? '700' : '500'}; font-size:0.9rem;">
+      🏛 MGA Licenses (${D.mgaLicenses.length})
+    </div>
+  </div>
+
+  ${tab === 'filings' ? `
+    <div class="filter-bar" style="margin-bottom: var(--space-md);">
+      <select class="form-input" onchange="window.setState({filingStateFilter:this.value})">
+        <option value="all"${stateF==='all'?' selected':''}>All States</option>
+        ${states.map(s => `<option value="${s}"${stateF===s?' selected':''}>${s}</option>`).join('')}
+      </select>
+      <select class="form-input" onchange="window.setState({filingStatusFilter:this.value})">
+        <option value="all"${statusF==='all'?' selected':''}>All Statuses</option>
+        <option value="Filed"${statusF==='Filed'?' selected':''}>Filed</option>
+        <option value="In Preparation"${statusF==='In Preparation'?' selected':''}>In Preparation</option>
+        <option value="Review"${statusF==='Review'?' selected':''}>Review</option>
+        <option value="Open"${statusF==='Open'?' selected':''}>Open</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({filingStateFilter:'all', filingStatusFilter:'all'})">Clear</button>
+    </div>
+
+    <div class="data-table-wrapper">
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Filing #</th><th>Type</th><th>State</th><th>Period</th><th>Form</th><th>Due</th><th>Filed</th><th>Amount Reported</th><th>Tax Due</th><th>Status</th><th>Owner</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${rows.map(r => `
+          <tr>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${r.id}</strong></td>
+            <td style="white-space:nowrap;">${r.filing_type}</td>
+            <td style="white-space:nowrap;"><strong>${r.state}</strong></td>
+            <td style="white-space:nowrap;">${r.period}</td>
+            <td style="white-space:nowrap; font-family:monospace;">${r.form}</td>
+            <td style="white-space:nowrap;">${r.due}</td>
+            <td style="white-space:nowrap; font-size:0.82rem; color:var(--status-green);">${r.filed || '—'}</td>
+            <td style="white-space:nowrap;">${r.amount_reported ? '$' + r.amount_reported.toLocaleString() : '—'}</td>
+            <td style="white-space:nowrap;"><strong>${r.tax_due ? '$' + r.tax_due.toLocaleString() : '—'}</strong></td>
+            <td style="white-space:nowrap;">${_mgaComplianceStatusBadge(r.status)}</td>
+            <td style="white-space:nowrap;">${r.owner}</td>
+            <td style="white-space:nowrap;">${r.status === 'Filed' ? `<button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('View confirmation + receipt for ${r.id}')">Receipt</button>` : `<button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Submit ${r.id} · ${r.filing_type} to ${r.state}')">File</button>`}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  ` : `
+    <div class="data-table-wrapper">
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>License #</th><th>State</th><th>Type</th><th>License Number</th><th>Issued</th><th>Expires</th><th>Renewal</th><th>Status</th><th>Designated RO</th><th>Filing Cycle</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${D.mgaLicenses.map(l => `
+          <tr>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${l.id}</strong></td>
+            <td style="white-space:nowrap;"><strong>${l.state}</strong></td>
+            <td style="white-space:nowrap;">${l.license_type}</td>
+            <td style="white-space:nowrap; font-family:monospace;">${l.license_no}</td>
+            <td style="white-space:nowrap;">${l.issued}</td>
+            <td style="white-space:nowrap;"><strong style="color:${l.renewal_days <= 30 ? 'var(--status-red)' : l.renewal_days <= 90 ? 'var(--status-amber)' : 'var(--text-primary)'};">${l.expires}</strong></td>
+            <td style="white-space:nowrap;"><strong>${l.renewal_days}d</strong></td>
+            <td style="white-space:nowrap;">${badge(l.status === 'Active' ? 'green' : 'amber', l.status)}</td>
+            <td style="white-space:nowrap;">${l.designated_ro}</td>
+            <td style="white-space:nowrap;">${l.filing_required}</td>
+            <td style="white-space:nowrap;">${l.renewal_days <= 90 ? `<button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Start renewal for ${l.state} license ${l.license_no}')">Renew</button>` : `<button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('View ${l.state} license details, CE credits, officer info')">View</button>`}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  `}`;
+}
+
+function renderMgaComplianceSettings() {
+  const catF = state.settingsCatFilter || 'all';
+  let rows = D.mgaSystemSettings;
+  if (catF !== 'all') rows = rows.filter(s => s.category === catF);
+  const cats = [...new Set(D.mgaSystemSettings.map(s => s.category))];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">⚙ System Settings Hub</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Central administration · ${D.mgaSystemSettings.length} configuration keys across ${cats.length} categories · all changes audit-logged</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('System health check · integrations · data sync · backups · SOC2 controls')">🩺 Health Check</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Backup + restore configuration · export all settings as versioned JSON')">💾 Backup Config</button>
+    </div>
+  </div>
+
+  ${_mgaComplianceSubNav('mga-compliance-settings')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Configuration Keys</div><div class="kpi-value">${D.mgaSystemSettings.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Active Integrations</div><div class="kpi-value">3</div></div>
+    <div class="kpi-card"><div class="kpi-label">System Uptime (30d)</div><div class="kpi-value">99.98%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Last Backup</div><div class="kpi-value" style="font-size:1rem;">2026-04-18 04:00</div></div>
+  </div>
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <select class="form-input" onchange="window.setState({settingsCatFilter:this.value})" style="max-width:320px;">
+      <option value="all"${catF==='all'?' selected':''}>All Categories</option>
+      ${cats.map(c => `<option value="${c}"${catF===c?' selected':''}>${c}</option>`).join('')}
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({settingsCatFilter:'all'})">Clear</button>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Category</th><th>Setting</th><th>Value</th><th>Description</th><th>Last Modified</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(s => `
+        <tr>
+          <td style="white-space:nowrap;">${badge('gray', s.category)}</td>
+          <td style="white-space:nowrap;"><strong>${s.key}</strong></td>
+          <td style="white-space:nowrap;"><code style="background:var(--bg-card); padding:2px 8px; border-radius:4px;">${s.value}</code></td>
+          <td style="font-size:0.82rem;">${s.description}</td>
+          <td style="white-space:nowrap; font-size:0.78rem; color:var(--text-muted);">${s.last_modified}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Edit setting: ${s.key} · current value: ${s.value}. Change will be audit-logged.')">Edit</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-top: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔌 INTEGRATIONS</div>
+      <div style="font-size:0.85rem;">
+        <div style="display:flex; justify-content:space-between; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><div><strong>SEMC</strong><div style="color:var(--text-muted); font-size:0.72rem;">Carrier integration · 6 carriers</div></div>${badge('green','✓ Healthy')}</div>
+        <div style="display:flex; justify-content:space-between; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><div><strong>NetSuite</strong><div style="color:var(--text-muted); font-size:0.72rem;">Accounting · Last sync 04:00 UTC</div></div>${badge('green','✓ Healthy')}</div>
+        <div style="display:flex; justify-content:space-between; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><div><strong>DocuSign</strong><div style="color:var(--text-muted); font-size:0.72rem;">E-signature · 14,224 envelopes</div></div>${badge('green','✓ Healthy')}</div>
+        <div style="display:flex; justify-content:space-between; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><div><strong>LexisNexis ThreatMetrix</strong><div style="color:var(--text-muted); font-size:0.72rem;">Risk scoring API</div></div>${badge('green','✓ Healthy')}</div>
+        <div style="display:flex; justify-content:space-between; padding: var(--space-sm) 0;"><div><strong>Snowflake</strong><div style="color:var(--text-muted); font-size:0.72rem;">Analytics warehouse</div></div>${badge('green','✓ Healthy')}</div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🩺 SYSTEM HEALTH</div>
+      <div style="font-size:0.85rem;">
+        <div style="display:flex; justify-content:space-between; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span>API Latency (p95)</span><strong style="color:var(--status-green);">142ms</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span>Database Size</span><strong>284 GB</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span>Active Sessions</span><strong>62</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span>Background Jobs (running)</span><strong>4</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span>Failed Jobs (24h)</span><strong style="color:var(--status-green);">0</strong></div>
+        <div style="display:flex; justify-content:space-between; padding: var(--space-sm) 0;"><span>Disaster Recovery (last test)</span><strong>2026-03-15 · Passed</strong></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── MGA · Reports & Analytics ───
+function _mgaReportsSubNav(active) {
+  const tabs = [
+    { key: 'mga-reports',          label: 'Executive',      icon: '👔' },
+    { key: 'mga-reports-ops',      label: 'Operational',    icon: '⚙' },
+    { key: 'mga-reports-library',  label: 'Library',        icon: '📚' },
+    { key: 'mga-reports-builder',  label: 'Builder',        icon: '🛠' },
+    { key: 'mga-reports-kpis',     label: 'Live KPIs',      icon: '📟' },
+    { key: 'mga-reports-heatmap',  label: 'Heat Maps',      icon: '🗺' },
+    { key: 'mga-reports-schedule', label: 'Schedule',       icon: '📤' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _mgaAISeverityBadge(s) {
+  const map = { 'High': 'red', 'Medium': 'amber', 'Low': 'gray' };
+  return badge(map[s] || 'gray', s);
+}
+
+function renderMgaReportsExec() {
+  const E = D.mgaExecMetrics;
+  const carriers = D.mgaCarriersEnhanced;
+  const topCarriers = [...carriers].sort((a,b) => b.premium_ytd - a.premium_ytd).slice(0, 5);
+  const insights = D.mgaAIInsights.filter(i => i.severity === 'High').slice(0, 3);
+  const maxMonthly = Math.max(...E.monthly_trend.map(m => m.premium));
+  const maxYoY = Math.max(...E.yoy_growth.map(y => y.premium));
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">👔 Executive Overview Dashboard</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Single source of truth · MGA health across production · profitability · retention · capacity · risk quality</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-reports-schedule'})">📤 Distribution</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Export C-Suite briefing pack · PDF · all executive dashboards + commentary')">📥 Briefing Pack</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.mgaReportsKPIs, 6)}
+
+  ${_mgaReportsSubNav('mga-reports')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📈 MONTHLY PREMIUM TREND (last 6 months)</div>
+      <div style="display:flex; align-items:flex-end; gap: var(--space-sm); height: 220px; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+        ${E.monthly_trend.map(m => `
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap: 4px;">
+            <div style="width:100%; background:linear-gradient(180deg, var(--mga-accent), #a67dff); height:${(m.premium/maxMonthly)*100}%; border-radius: 4px 4px 0 0; min-height: 4px;"></div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${m.month}</div>
+            <div style="font-size:0.8rem; font-weight:700;">$${(m.premium/1e6).toFixed(1)}M</div>
+            <div style="color:var(--text-muted); font-size:0.7rem;">LR ${m.loss_ratio}%</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">💰 COMMISSION INCOME (YTD)</div>
+        <div style="text-align:center; padding: var(--space-md) 0;">
+          <div style="font-size:2.2rem; font-weight:800; color:var(--mga-accent);">$${(E.commission_income_ytd/1e6).toFixed(2)}M</div>
+          <div style="color:var(--text-muted); font-size:0.82rem; margin-top:4px;">${Math.round(E.commission_income_ytd/E.written_premium_ytd*100*10)/10}% of premium</div>
+        </div>
+        <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem;">
+          <div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">Base Commission</span><strong>$${((E.commission_income_ytd - carriers.reduce((s,c) => s + c.profit_share_earned_ytd, 0))/1e6).toFixed(2)}M</strong></div>
+          <div style="display:flex; justify-content:space-between; padding: 4px 0;"><span style="color:var(--text-muted);">Profit Share (YTD)</span><strong style="color:var(--status-green);">$${(carriers.reduce((s,c) => s + c.profit_share_earned_ytd, 0)/1e6).toFixed(2)}M</strong></div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🎯 CAPACITY UTILIZATION</div>
+        <div style="text-align:center; padding: var(--space-sm) 0;">
+          <div style="font-size:2.2rem; font-weight:800; color:${E.capacity_utilization >= 80 ? 'var(--status-amber)' : 'var(--status-green)'};">${E.capacity_utilization}%</div>
+          <div style="color:var(--text-muted); font-size:0.82rem;">$${(carriers.reduce((s,c) => s + c.capacity_used, 0)/1e6).toFixed(0)}M of $${(carriers.reduce((s,c) => s + c.capacity_treaty, 0)/1e6).toFixed(0)}M</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📊 YoY GROWTH</div>
+      <div style="display:flex; align-items:flex-end; gap: var(--space-md); height: 180px; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+        ${E.yoy_growth.map(y => `
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap: 4px;">
+            <div style="width:100%; background:linear-gradient(180deg, #4fc3f7, var(--mga-accent)); height:${(y.premium/maxYoY)*100}%; border-radius: 4px 4px 0 0;"></div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${y.year}</div>
+            <div style="font-size:0.85rem; font-weight:700;">$${(y.premium/1e6).toFixed(1)}M</div>
+            ${y.growth !== null ? `<div style="color:var(--status-green); font-size:0.72rem;">+${y.growth}%</div>` : '<div></div>'}
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🏢 TOP CARRIERS BY PREMIUM</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Carrier</th><th>Premium YTD</th><th>LR</th><th>Score</th></tr></thead>
+        <tbody>
+          ${topCarriers.map(c => `
+          <tr onclick="window.setState({screen:'mga-carrier-profile', carrierId:'${c.id}'})" style="cursor:pointer;">
+            <td style="white-space:nowrap;"><strong>${c.name}</strong></td>
+            <td style="white-space:nowrap;"><strong>$${(c.premium_ytd/1e6).toFixed(2)}M</strong></td>
+            <td style="white-space:nowrap;"><strong style="color:${c.loss_ratio_ytd <= 40 ? 'var(--status-green)' : c.loss_ratio_ytd <= 55 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${c.loss_ratio_ytd}%</strong></td>
+            <td style="white-space:nowrap;"><strong>${c.performance_score}</strong></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--mga-accent); border-left: 4px solid var(--mga-accent); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="color:var(--mga-accent); margin:0;">🤖 AI-POWERED STRATEGIC INSIGHTS</div>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-reports-kpis'})">All insights →</button>
+    </div>
+    ${insights.map(i => `
+      <div style="padding: var(--space-md); background:var(--bg-card); border-radius: var(--radius-md); margin-bottom: var(--space-sm);">
+        <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center; margin-bottom: var(--space-sm);">
+          <strong style="font-size:0.95rem;">${i.insight}</strong>
+          <div style="display:flex; gap:var(--space-sm); align-items:center;">${_mgaAISeverityBadge(i.severity)}<span style="color:var(--text-muted); font-size:0.72rem;">${i.confidence}% conf</span></div>
+        </div>
+        <div style="color:var(--text-secondary); font-size:0.82rem; margin-bottom: var(--space-sm);">${i.analysis}</div>
+        <div style="padding: var(--space-sm); background:rgba(108,92,231,0.08); border-radius:var(--radius-sm); font-size:0.82rem;">
+          <strong>Recommendation:</strong> ${i.recommendation}
+          <div style="margin-top:4px;"><span style="color:var(--text-muted);">Impact:</span> <strong style="color:var(--status-green);">${i.impact}</strong></div>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderMgaReportsOps() {
+  const F = D.mgaSubmissionFunnel;
+  const lb = D.mgaAgentLeaderboard;
+  const claims = D.mgaClaimsAnalytics;
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">⚙ Operational Analytics Hub</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Submissions · underwriting · claims performance · agent leaderboard · all in one operating dashboard</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Export operational ops pack · Weekly Operational Review deck')">📥 Export Pack</button>
+  </div>
+
+  ${_mgaReportsSubNav('mga-reports-ops')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📊 SUBMISSION FUNNEL (YTD)</div>
+      <div style="padding: var(--space-sm) 0;">
+        ${F.stages.map((s, i) => `
+          <div style="display:flex; align-items:center; gap: var(--space-md); margin-bottom: var(--space-sm);">
+            <div style="width:200px; font-weight:700; font-size:0.9rem;">${s.stage}</div>
+            <div style="flex:1; position:relative; background:var(--bg-card); border-radius:4px; overflow:hidden; height:32px;">
+              <div style="position:absolute; inset:0; width:${s.pct}%; background:linear-gradient(90deg, var(--mga-accent), #a67dff); display:flex; align-items:center; padding-left: var(--space-sm);"><strong style="color:white;">${s.count.toLocaleString()}</strong></div>
+            </div>
+            <div style="width:80px; text-align:right; font-weight:700;">${s.pct}%</div>
+            ${s.drop ? `<div style="width:100px; text-align:right; color:var(--status-amber); font-size:0.78rem;">-${s.drop}</div>` : '<div style="width:100px;"></div>'}
+          </div>`).join('')}
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle); margin-top: var(--space-md);">
+        <div style="text-align:center;"><div style="color:var(--text-muted); font-size:0.72rem;">Overall Bind Ratio</div><strong style="font-size:1.4rem; color:var(--status-green);">${F.overall_bind_ratio}%</strong></div>
+        <div style="text-align:center;"><div style="color:var(--text-muted); font-size:0.72rem;">Avg Days to Quote</div><strong style="font-size:1.4rem;">${F.avg_days_to_quote}d</strong></div>
+        <div style="text-align:center;"><div style="color:var(--text-muted); font-size:0.72rem;">Avg Days to Bind</div><strong style="font-size:1.4rem;">${F.avg_days_to_bind}d</strong></div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">❌ TOP DECLINE REASONS</div>
+      ${F.top_decline_reasons.map(r => `
+        <div style="margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px;">
+            <strong>${r.reason}</strong>
+            <span><strong>${r.count}</strong> (${r.pct}%)</span>
+          </div>
+          <div style="background:var(--bg-card); height:6px; border-radius:3px; overflow:hidden;"><div style="height:100%; width:${r.pct}%; background:${r.pct >= 50 ? 'var(--status-red)' : 'var(--status-amber)'};"></div></div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🏆 TOP AGENT PERFORMERS (YTD)</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>#</th><th>Agent</th><th>Premium</th><th>Bind %</th><th>LR</th><th>Score</th></tr></thead>
+        <tbody>
+          ${lb.top_performers.map(a => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${a.rank}</strong></td>
+            <td style="white-space:nowrap;"><strong>${a.agent}</strong><div style="color:var(--text-muted); font-size:0.7rem; font-family:monospace;">${a.id}</div></td>
+            <td style="white-space:nowrap;"><strong>$${(a.premium_ytd/1e6).toFixed(1)}M</strong></td>
+            <td style="white-space:nowrap;">${a.bind_ratio}%</td>
+            <td style="white-space:nowrap;"><strong style="color:${a.loss_ratio <= 40 ? 'var(--status-green)' : 'var(--mga-accent)'};">${a.loss_ratio}%</strong></td>
+            <td style="white-space:nowrap;"><strong style="color:${a.score >= 90 ? 'var(--status-green)' : 'var(--mga-accent)'};">${a.score}</strong></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--status-amber); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title" style="color:var(--status-amber);">⚠ UNDERPERFORMING AGENTS (PIP Candidates)</div>
+      ${lb.bottom_performers.map(a => `
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius: var(--radius-md); margin-bottom: var(--space-sm);">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center; margin-bottom: 4px;">
+            <strong>${a.agent}</strong>
+            <span><strong style="color:var(--status-red);">Score ${a.score}</strong></span>
+          </div>
+          <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:4px;">${a.id} · Premium $${(a.premium_ytd/1000).toFixed(0)}k · Bind ${a.bind_ratio}% · LR ${a.loss_ratio}%</div>
+          <div style="font-size:0.8rem; padding: var(--space-sm); background: rgba(255,171,0,0.08); border-radius:var(--radius-sm);">${a.issue}</div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">⏱ CLAIMS CYCLE TIME BY LOB</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>LOB</th><th>Avg Days</th><th>Target</th><th>Variance</th><th>Closed ≤30d</th><th>Closed ≤60d</th></tr></thead>
+      <tbody>
+        ${claims.cycle_time_by_lob.map(l => {
+          const variance = l.avg_days - l.target;
+          return `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${l.lob}</strong></td>
+            <td style="white-space:nowrap;"><strong>${l.avg_days}d</strong></td>
+            <td style="white-space:nowrap;">${l.target}d</td>
+            <td style="white-space:nowrap;"><strong style="color:${variance <= 0 ? 'var(--status-green)' : variance <= 10 ? 'var(--status-amber)' : 'var(--status-red)'};">${variance > 0 ? '+' : ''}${variance}d</strong></td>
+            <td style="white-space:nowrap;">${l.closed_30d}%</td>
+            <td style="white-space:nowrap;">${l.closed_60d}%</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaReportsLibrary() {
+  const catF = state.reportCatFilter || 'all';
+  const q = (state.reportQuery || '').toLowerCase();
+  let rows = D.mgaReportCatalog;
+  if (catF !== 'all') rows = rows.filter(r => r.category === catF);
+  if (q) rows = rows.filter(r => r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q));
+  const cats = [...new Set(D.mgaReportCatalog.map(r => r.category))];
+  const counts = cats.map(c => ({ cat: c, n: D.mgaReportCatalog.filter(r => r.category === c).length }));
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📚 Report Library &amp; Catalog</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${D.mgaReportCatalog.length} pre-built reports across ${cats.length} categories · PDF · Excel · interactive dashboards</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.setState({screen:'mga-reports-builder'})">🛠 Custom Report Builder</button>
+  </div>
+
+  ${_mgaReportsSubNav('mga-reports-library')}
+
+  <div style="display:grid; grid-template-columns: repeat(${counts.length}, 1fr); gap: var(--space-sm); margin-bottom: var(--space-lg);">
+    ${counts.map(c => `
+      <div onclick="window.setState({reportCatFilter:'${c.cat}'})" style="cursor:pointer; padding: var(--space-md); background:${catF === c.cat ? 'var(--mga-accent)22' : 'var(--bg-card)'}; border:2px solid ${catF === c.cat ? 'var(--mga-accent)' : 'var(--border-subtle)'}; border-radius:var(--radius-md); text-align:center;">
+        <div style="font-size:1.6rem; font-weight:800; color:${catF === c.cat ? 'var(--mga-accent)' : 'var(--text-primary)'};">${c.n}</div>
+        <div style="color:var(--text-secondary); font-size:0.82rem; margin-top:4px;">${c.cat}</div>
+      </div>`).join('')}
+  </div>
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <input class="form-input" placeholder="🔍 Search reports..." value="${state.reportQuery || ''}" oninput="window.setState({reportQuery:this.value})"/>
+    <select class="form-input" onchange="window.setState({reportCatFilter:this.value})">
+      <option value="all"${catF==='all'?' selected':''}>All Categories</option>
+      ${cats.map(c => `<option value="${c}"${catF===c?' selected':''}>${c}</option>`).join('')}
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({reportCatFilter:'all', reportQuery:''})">Clear</button>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Report #</th><th>Name</th><th>Category</th><th>Format</th><th>Frequency</th><th>Owner</th><th>Last Generated</th><th>Distribution</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(r => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${r.id}</strong></td>
+          <td><strong>${r.name}</strong><div style="color:var(--text-muted); font-size:0.78rem;">${r.description}</div></td>
+          <td style="white-space:nowrap;">${badge('gray', r.category)}</td>
+          <td style="white-space:nowrap;">${r.format}</td>
+          <td style="white-space:nowrap;">${r.frequency}</td>
+          <td style="white-space:nowrap;">${r.owner}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${r.last_generated}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${r.distribution}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Generate ${r.name} now · ${r.format}')">▶ Run</button> <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-reports-schedule'})">📅 Schedule</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaReportsBuilder() {
+  const step = state.builderStep || 1;
+  const templates = D.mgaCustomReportBuilderTemplates;
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🛠 Custom Report Builder</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">No-code report designer · pick data · build pivot · preview · save or schedule · all without IT</div>
+    </div>
+    <button class="btn btn-secondary" onclick="window.setState({screen:'mga-reports-library', builderStep:null})">← Report Library</button>
+  </div>
+
+  ${_mgaReportsSubNav('mga-reports-builder')}
+
+  <div style="display:grid; grid-template-columns: 3fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:var(--space-xs); margin-bottom: var(--space-lg);">
+        ${[{n:1,l:'Data Sources',i:'🗄'},{n:2,l:'Dimensions',i:'📐'},{n:3,l:'Metrics',i:'📏'},{n:4,l:'Filters',i:'🔍'},{n:5,l:'Preview',i:'👁'}].map(s => `
+          <div onclick="window.setState({builderStep:${s.n}})" style="cursor:pointer; text-align:center; padding: var(--space-sm); border-radius: var(--radius-md); background:${step === s.n ? 'var(--mga-accent)22' : 'var(--bg-card)'}; border:2px solid ${step === s.n ? 'var(--mga-accent)' : step > s.n ? 'var(--status-green)' : 'var(--border-subtle)'};">
+            <div style="font-size:1.4rem;">${step > s.n ? '✓' : s.i}</div>
+            <div style="font-size:0.72rem; margin-top:3px;">Step ${s.n}</div>
+            <div style="font-size:0.78rem; font-weight:${step === s.n ? '700' : '500'};">${s.l}</div>
+          </div>`).join('')}
+      </div>
+
+      ${step === 1 ? `
+        <h3 style="margin-top:0;">🗄 Pick Data Sources</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem;">Select which systems to pull data from. The builder joins matching keys automatically.</p>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm);">
+          ${['Submissions & Underwriting','Policy Administration','Claims System','Rating Engine','Commissions & Finance','Agent Portal Activity','Carrier Bordereau','Compliance Calendar'].map((s, i) => `
+            <label style="display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); cursor:pointer;">
+              <input type="checkbox" ${i < 3 ? 'checked' : ''}/>
+              <span>${s}</span>
+            </label>`).join('')}
+        </div>
+      ` : step === 2 ? `
+        <h3 style="margin-top:0;">📐 Choose Dimensions</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem;">Dimensions are what you'll group by (rows/columns of the pivot).</p>
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-sm);">
+          ${['Agent','Carrier','Product','LOB','State','Month','Quarter','Year','Underwriter','Adjuster','Coverage Type'].map((d, i) => `
+            <label style="display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); cursor:pointer;">
+              <input type="checkbox" ${[0,1,5].includes(i) ? 'checked' : ''}/>
+              <span>${d}</span>
+            </label>`).join('')}
+        </div>
+      ` : step === 3 ? `
+        <h3 style="margin-top:0;">📏 Pick Metrics</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem;">Metrics are the numbers (sum/avg/ratio) you want to see in the cells.</p>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm);">
+          ${[{m:'Written Premium',a:'SUM'},{m:'Earned Premium',a:'SUM'},{m:'Loss Ratio',a:'WEIGHTED'},{m:'Combined Ratio',a:'WEIGHTED'},{m:'Bind Ratio',a:'RATIO'},{m:'Commission Earned',a:'SUM'},{m:'Profit Share',a:'SUM'},{m:'Policies In Force',a:'COUNT'},{m:'Submissions',a:'COUNT'},{m:'Claims Count',a:'COUNT'},{m:'Avg Cycle Days',a:'AVG'},{m:'Retention %',a:'PCT'}].map((x,i) => `
+            <label style="display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); cursor:pointer;">
+              <input type="checkbox" ${[0,2,4].includes(i) ? 'checked' : ''}/>
+              <span>${x.m}</span>
+              <span style="color:var(--text-muted); font-size:0.72rem; margin-left:auto; padding:2px 6px; background:var(--bg-secondary); border-radius:3px;">${x.a}</span>
+            </label>`).join('')}
+        </div>
+      ` : step === 4 ? `
+        <h3 style="margin-top:0;">🔍 Add Filters</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem;">Limit the rows included before aggregation.</p>
+        <div style="display:grid; grid-template-columns: 2fr 1fr 2fr; gap: var(--space-sm); align-items:center; margin-bottom: var(--space-sm);">
+          <select class="form-input"><option>Period</option></select>
+          <select class="form-input"><option>is</option></select>
+          <select class="form-input"><option>YTD 2026</option><option>Last 12 months</option><option>Q1 2026</option></select>
+        </div>
+        <div style="display:grid; grid-template-columns: 2fr 1fr 2fr; gap: var(--space-sm); align-items:center; margin-bottom: var(--space-sm);">
+          <select class="form-input"><option>LOB</option></select>
+          <select class="form-input"><option>in</option></select>
+          <select class="form-input"><option>Commercial Auto, BOP</option></select>
+        </div>
+        <div style="display:grid; grid-template-columns: 2fr 1fr 2fr; gap: var(--space-sm); align-items:center;">
+          <select class="form-input"><option>Loss Ratio</option></select>
+          <select class="form-input"><option>&gt;=</option></select>
+          <input class="form-input" value="40" />
+        </div>
+        <button class="btn btn-ghost btn-sm" style="margin-top: var(--space-sm);" onclick="window.showAlert &amp;&amp; window.showAlert('Add filter')">+ Add Filter</button>
+      ` : `
+        <h3 style="margin-top:0;">👁 Preview</h3>
+        <div style="padding: var(--space-md); background: rgba(108,92,231,0.08); border-radius: var(--radius-md); margin-bottom: var(--space-md); font-size:0.85rem;">
+          <strong>Report Config:</strong> Submissions, Policies, Claims · Rows by Agent + Month · Columns by Carrier · Metrics: Premium (SUM), Loss Ratio (WEIGHTED), Bind Ratio · Filter: YTD 2026, LOB in [Commercial Auto, BOP], LR >= 40%
+        </div>
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Agent</th><th>Month</th><th>Travelers</th><th>SEMC / Liberty</th><th>CNA</th><th>Hartford</th><th>Total Premium</th><th>LR</th></tr></thead>
+          <tbody>
+            ${[{a:'Lockton',m:'Mar 26',t:820,l:420,c:380,h:180,total:1800,lr:42},{a:'Marsh',m:'Mar 26',t:620,l:280,c:240,h:140,total:1280,lr:48},{a:'Apex',m:'Mar 26',t:420,l:180,c:180,h:80,total:860,lr:52},{a:'Lockton',m:'Feb 26',t:780,l:400,c:340,h:160,total:1680,lr:44},{a:'Marsh',m:'Feb 26',t:580,l:240,c:200,h:120,total:1140,lr:46}].map(r => `
+              <tr>
+                <td style="white-space:nowrap;"><strong>${r.a}</strong></td>
+                <td style="white-space:nowrap;">${r.m}</td>
+                <td style="white-space:nowrap;">$${r.t}k</td>
+                <td style="white-space:nowrap;">$${r.l}k</td>
+                <td style="white-space:nowrap;">$${r.c}k</td>
+                <td style="white-space:nowrap;">$${r.h}k</td>
+                <td style="white-space:nowrap;"><strong>$${r.total}k</strong></td>
+                <td style="white-space:nowrap;"><strong style="color:${r.lr <= 45 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${r.lr}%</strong></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+        </div>
+      `}
+
+      <div style="display:flex; justify-content:space-between; margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle);">
+        <button class="btn btn-ghost" ${step === 1 ? 'disabled' : ''} onclick="window.setState({builderStep:${Math.max(1, step-1)}})">← Back</button>
+        <div style="display:flex; gap:var(--space-sm);">
+          <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Save report template · name + description · available in catalog')">💾 Save Template</button>
+          ${step < 5 ? `<button class="btn btn-primary" onclick="window.setState({builderStep:${step+1}})">Next →</button>` : `<button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Export report now · PDF + Excel · email recipients optional')">📥 Export</button>`}
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">💾 SAVED TEMPLATES</div>
+      ${templates.map(t => `
+        <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;" onclick="window.showAlert &amp;&amp; window.showAlert('Load template: ${t.name}')">
+          <strong style="font-size:0.85rem;">${t.name}</strong>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${t.description}</div>
+          <div style="color:var(--text-muted); font-size:0.7rem; margin-top:4px;">By ${t.saved_by} · last run ${t.last_run}</div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderMgaReportsKpis() {
+  const insights = D.mgaAIInsights;
+  const E = D.mgaExecMetrics;
+  const sevF = state.aiSevFilter || 'all';
+  const statF = state.aiStatFilter || 'all';
+  let rows = insights;
+  if (sevF !== 'all') rows = rows.filter(i => i.severity === sevF);
+  if (statF !== 'all') rows = rows.filter(i => i.status === statF);
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📟 Real-Time KPIs &amp; AI Anomaly Detection</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Live operational KPIs + AI-detected anomalies + predictive alerts · refresh every 60s</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Configure KPI widget dashboard · pin-to-top · threshold alerts · Slack/email notifications')">⚙ Configure</button>
+  </div>
+
+  ${_mgaReportsSubNav('mga-reports-kpis')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--mga-accent); border-left: 4px solid var(--mga-accent); border-radius:var(--radius-lg); padding:var(--space-md);">
+      <div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Submissions Today</div>
+      <div style="font-size:2rem; font-weight:800; color:var(--mga-accent);">42</div>
+      <div style="color:var(--status-green); font-size:0.78rem;">↑ 12% vs. avg</div>
+    </div>
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-left: 4px solid var(--status-green); border-radius:var(--radius-lg); padding:var(--space-md);">
+      <div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Bind Ratio (24h)</div>
+      <div style="font-size:2rem; font-weight:800;">58%</div>
+      <div style="color:var(--status-green); font-size:0.78rem;">↑ 6pp vs. avg</div>
+    </div>
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-left: 4px solid var(--status-amber); border-radius:var(--radius-lg); padding:var(--space-md);">
+      <div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Claims Opened Today</div>
+      <div style="font-size:2rem; font-weight:800;">4</div>
+      <div style="color:var(--text-muted); font-size:0.78rem;">— steady</div>
+    </div>
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-left: 4px solid var(--status-red); border-radius:var(--radius-lg); padding:var(--space-md);">
+      <div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">High-Severity Alerts</div>
+      <div style="font-size:2rem; font-weight:800; color:var(--status-red);">${insights.filter(i => i.severity === 'High' && i.status !== 'Actioned').length}</div>
+      <div style="color:var(--status-red); font-size:0.78rem;">Review now</div>
+    </div>
+  </div>
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <select class="form-input" onchange="window.setState({aiSevFilter:this.value})">
+      <option value="all"${sevF==='all'?' selected':''}>All Severities</option>
+      <option value="High"${sevF==='High'?' selected':''}>High</option>
+      <option value="Medium"${sevF==='Medium'?' selected':''}>Medium</option>
+      <option value="Low"${sevF==='Low'?' selected':''}>Low</option>
+    </select>
+    <select class="form-input" onchange="window.setState({aiStatFilter:this.value})">
+      <option value="all"${statF==='all'?' selected':''}>All Statuses</option>
+      <option value="Open"${statF==='Open'?' selected':''}>Open</option>
+      <option value="Under Review"${statF==='Under Review'?' selected':''}>Under Review</option>
+      <option value="Actioned"${statF==='Actioned'?' selected':''}>Actioned</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({aiSevFilter:'all', aiStatFilter:'all'})">Clear</button>
+  </div>
+
+  <div class="section-title">🤖 AI INSIGHTS &amp; ANOMALY DETECTION (${rows.length})</div>
+  ${rows.map(i => `
+    <div style="background:var(--bg-secondary); border:1px solid ${i.severity === 'High' ? 'var(--status-red)' : i.severity === 'Medium' ? 'var(--status-amber)' : 'var(--border-subtle)'}; border-left: 4px solid ${i.severity === 'High' ? 'var(--status-red)' : i.severity === 'Medium' ? 'var(--status-amber)' : 'var(--text-muted)'}; border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-sm);">
+      <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center; margin-bottom: var(--space-sm);">
+        <div>
+          <strong style="font-size:1rem;">${i.insight}</strong>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px; font-family:monospace;">${i.id} · ${i.category} · detected ${i.detected}</div>
+        </div>
+        <div style="display:flex; gap:var(--space-sm); align-items:center;">
+          ${_mgaAISeverityBadge(i.severity)}
+          ${badge(i.status === 'Actioned' ? 'green' : i.status === 'Under Review' ? 'amber' : 'gray', i.status)}
+          <span style="color:var(--text-muted); font-size:0.78rem;">${i.confidence}% confidence</span>
+        </div>
+      </div>
+      <div style="color:var(--text-secondary); font-size:0.88rem; margin-bottom: var(--space-sm); line-height:1.5;">${i.analysis}</div>
+      <div style="padding: var(--space-sm); background: rgba(108,92,231,0.08); border-radius: var(--radius-sm); font-size:0.85rem; margin-bottom: var(--space-sm);">
+        <strong>🎯 Recommendation:</strong> ${i.recommendation}
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.82rem;">
+        <div><span style="color:var(--text-muted);">Impact:</span> <strong style="color:var(--status-green);">${i.impact}</strong> · <span style="color:var(--text-muted);">Owner:</span> <strong>${i.owner}</strong></div>
+        <div style="display:flex; gap:var(--space-sm);">
+          <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Dismiss insight ${i.id} · record as false positive')">Dismiss</button>
+          ${i.status !== 'Actioned' ? `<button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Take recommended action for ${i.id}')">Take Action</button>` : ''}
+        </div>
+      </div>
+    </div>`).join('')}`;
+}
+
+function renderMgaReportsHeatmap() {
+  const H = D.mgaProfitHeatmap;
+  const view = state.heatmapView || 'lr';
+
+  const cell = (lob, st) => {
+    const c = H.cells.find(x => x.lob === lob && x.state === st);
+    if (!c) return '<td></td>';
+    if (c.lr === null || c.premium === 0) return '<td style="text-align:center; background:var(--bg-card); color:var(--text-muted);">—</td>';
+    const val = view === 'lr' ? c.lr : c.premium;
+    const color = view === 'lr'
+      ? (c.lr <= 30 ? '#00c853' : c.lr <= 45 ? '#66bb6a' : c.lr <= 55 ? '#fbc02d' : c.lr <= 65 ? '#ff9800' : '#e53935')
+      : (c.premium >= 2000000 ? '#00c853' : c.premium >= 1000000 ? '#66bb6a' : c.premium >= 500000 ? '#fbc02d' : c.premium >= 200000 ? '#ff9800' : '#e0e0e0');
+    const display = view === 'lr' ? c.lr + '%' : '$' + (c.premium/1e6).toFixed(1) + 'M';
+    return `<td style="text-align:center; background:${color}22; color:${color}; font-weight:700; border: 1px solid ${color}44; cursor:pointer;" onclick="window.showAlert &amp;&amp; window.showAlert('${lob} × ${st}: LR ${c.lr}% · Premium $' + ${c.premium} + ' · Drill down')">${display}</td>`;
+  };
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🗺 Portfolio Heat Maps</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Profitability and volume heat map · LOB × State · drill-down to line level</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <div style="display:inline-flex; background:var(--bg-card); border-radius:var(--radius-md); padding:3px;">
+        <button onclick="window.setState({heatmapView:'lr'})" style="padding:6px 14px; border:none; background:${view === 'lr' ? 'var(--mga-accent)' : 'transparent'}; color:${view === 'lr' ? 'white' : 'var(--text-primary)'}; border-radius:var(--radius-sm); cursor:pointer; font-weight:600; font-size:0.82rem;">Loss Ratio</button>
+        <button onclick="window.setState({heatmapView:'premium'})" style="padding:6px 14px; border:none; background:${view === 'premium' ? 'var(--mga-accent)' : 'transparent'}; color:${view === 'premium' ? 'white' : 'var(--text-primary)'}; border-radius:var(--radius-sm); cursor:pointer; font-weight:600; font-size:0.82rem;">Premium</button>
+      </div>
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Export heat map · PDF with commentary · Excel with raw data')">📥 Export</button>
+    </div>
+  </div>
+
+  ${_mgaReportsSubNav('mga-reports-heatmap')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">${view === 'lr' ? '📊 LOSS RATIO HEAT MAP — LOB × STATE' : '💰 PREMIUM HEAT MAP — LOB × STATE'}</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr><th>LOB / State</th>${H.states.map(s => `<th style="text-align:center;">${s}</th>`).join('')}<th style="text-align:center;">TOTAL</th></tr>
+      </thead>
+      <tbody>
+        ${H.dimensions.map(lob => {
+          const lobCells = H.cells.filter(c => c.lob === lob);
+          const totalPrem = lobCells.reduce((s,c) => s + c.premium, 0);
+          const weightedLR = lobCells.filter(c => c.lr !== null && c.premium > 0).reduce((s,c) => s + (c.lr * c.premium), 0) / Math.max(1, lobCells.filter(c => c.lr !== null && c.premium > 0).reduce((s,c) => s + c.premium, 0));
+          const totalDisplay = view === 'lr' ? weightedLR.toFixed(0) + '%' : '$' + (totalPrem/1e6).toFixed(1) + 'M';
+          return `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${lob}</strong></td>
+            ${H.states.map(s => cell(lob, s)).join('')}
+            <td style="text-align:center; font-weight:800;">${totalDisplay}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+    <div style="margin-top: var(--space-md); display:flex; gap:var(--space-md); font-size:0.78rem; justify-content:center;">
+      ${view === 'lr' ? `
+        <span><span style="display:inline-block; width:12px; height:12px; background:#00c85322; border:1px solid #00c85344; border-radius:2px; margin-right:4px;"></span>≤30% (Excellent)</span>
+        <span><span style="display:inline-block; width:12px; height:12px; background:#66bb6a22; border:1px solid #66bb6a44; border-radius:2px; margin-right:4px;"></span>30–45% (Strong)</span>
+        <span><span style="display:inline-block; width:12px; height:12px; background:#fbc02d22; border:1px solid #fbc02d44; border-radius:2px; margin-right:4px;"></span>45–55% (Acceptable)</span>
+        <span><span style="display:inline-block; width:12px; height:12px; background:#ff980022; border:1px solid #ff980044; border-radius:2px; margin-right:4px;"></span>55–65% (Monitor)</span>
+        <span><span style="display:inline-block; width:12px; height:12px; background:#e5393522; border:1px solid #e5393544; border-radius:2px; margin-right:4px;"></span>>65% (Hot)</span>
+      ` : `
+        <span>Darker = higher premium volume · cells are drillable</span>
+      `}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔥 HOTTEST CELLS</div>
+      ${[...H.cells].filter(c => c.lr !== null).sort((a,b) => b.lr - a.lr).slice(0, 5).map(c => `
+        <div style="display:flex; justify-content:space-between; padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.85rem;">
+          <span><strong>${c.lob}</strong> × ${c.state}</span>
+          <span><strong style="color:var(--status-red);">${c.lr}%</strong> · $${(c.premium/1e6).toFixed(2)}M</span>
+        </div>`).join('')}
+    </div>
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">💎 BEST PERFORMING CELLS</div>
+      ${[...H.cells].filter(c => c.lr !== null && c.premium > 100000).sort((a,b) => a.lr - b.lr).slice(0, 5).map(c => `
+        <div style="display:flex; justify-content:space-between; padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.85rem;">
+          <span><strong>${c.lob}</strong> × ${c.state}</span>
+          <span><strong style="color:var(--status-green);">${c.lr}%</strong> · $${(c.premium/1e6).toFixed(2)}M</span>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderMgaReportsSchedule() {
+  const rows = D.mgaScheduledReports;
+  const active = rows.filter(r => r.status === 'Active');
+  const paused = rows.filter(r => r.status === 'Paused');
+  const totalRecipients = rows.reduce((s, r) => s + r.recipients, 0);
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📤 Export &amp; Scheduling Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${active.length} active schedules · ${paused.length} paused · ${totalRecipients} total recipients across all schedules</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Export run history log · all report executions · success/failure · download links')">📋 Run History</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Schedule new automated report · pick report · frequency · recipients · format')">+ New Schedule</button>
+    </div>
+  </div>
+
+  ${_mgaReportsSubNav('mga-reports-schedule')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Active Schedules</div><div class="kpi-value">${active.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Paused</div><div class="kpi-value${paused.length > 0 ? ' warning' : ''}">${paused.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Recipients</div><div class="kpi-value">${totalRecipients}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Success Rate (30d)</div><div class="kpi-value">99.2%</div></div>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Schedule #</th><th>Report Name</th><th>Schedule</th><th>Next Run</th><th>Last Sent</th><th>Recipients</th><th>Format</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(r => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${r.id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${r.name}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${r.report_id}</div></td>
+          <td style="white-space:nowrap;">${r.schedule}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${r.next_run}</td>
+          <td style="white-space:nowrap; font-size:0.82rem; color:var(--status-green);">${r.last_sent}</td>
+          <td style="white-space:nowrap;"><strong>${r.recipients}</strong></td>
+          <td style="white-space:nowrap;">${r.format}</td>
+          <td style="white-space:nowrap;">${badge(r.status === 'Active' ? 'green' : 'amber', r.status)}${r.paused_reason ? `<div style="color:var(--text-muted); font-size:0.7rem; margin-top:2px;">${r.paused_reason}</div>` : ''}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Run ${r.name} now · ${r.format} · email to ${r.recipients} recipients')">▶ Run Now</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Edit schedule ${r.id}')">Edit</button>
+            ${r.status === 'Active' ? `<button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Pause schedule ${r.id}')">⏸</button>` : `<button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Resume schedule ${r.id}')">▶</button>`}
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="margin-top: var(--space-lg); padding: var(--space-md); background: rgba(108,92,231,0.08); border-left: 3px solid var(--mga-accent); border-radius: var(--radius-md);">
+    <strong>💡 Delivery Channels Supported</strong>
+    <div style="color:var(--text-muted); font-size:0.82rem; margin-top:6px;">
+      Email (PDF/Excel attachment) · Shared SFTP (carrier-ready) · S3 bucket (data lake) · Slack webhook · Dashboard URL (signed 24h link) · API webhook to BI tool
+    </div>
+  </div>`;
+}
+
+// ─── MGA · Documents Management ───
+function _mgaDocsSubNav(active) {
+  const tabs = [
+    { key: 'mga-docs',          label: 'Dashboard',   icon: '📊' },
+    { key: 'mga-docs-explorer', label: 'Explorer',    icon: '🔍' },
+    { key: 'mga-docs-vault',    label: 'Vault',       icon: '🗄' },
+    { key: 'mga-docs-upload',   label: 'Upload',      icon: '📤' },
+    { key: 'mga-docs-viewer',   label: 'Viewer & e-Sign', icon: '✒' },
+    { key: 'mga-docs-versions', label: 'Versions',    icon: '📜' },
+    { key: 'mga-docs-bulk',     label: 'Bulk',        icon: '📦' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function _mgaDocStatusBadge(s) {
+  const map = { 'Final': 'green', 'Draft': 'gray', 'Under Review': 'amber', 'Pending Signature': 'amber', 'Approved': 'green', 'Expiring': 'red', 'Archived': 'gray' };
+  return badge(map[s] || 'gray', s);
+}
+
+function _mgaDocFileSize(kb) {
+  if (kb < 1024) return kb + ' KB';
+  return (kb/1024).toFixed(1) + ' MB';
+}
+
+function _mgaDocIcon(cat) {
+  const map = { 'policy': '📋', 'claims': '🛡', 'submission': '📝', 'agent': '👥', 'carrier': '🏢', 'financial': '💰', 'legal': '⚖' };
+  return map[cat] || '📄';
+}
+
+function renderMgaDocsDashboard() {
+  const docs = D.mgaDocs;
+  const recent = [...docs].sort((a,b) => (b.uploaded || '').localeCompare(a.uploaded || '')).slice(0, 8);
+  const expiring = D.mgaDocExpiring;
+  const esigQueue = D.mgaDocEsigQueue;
+  const cats = D.mgaDocCategories;
+  const recentActivity = D.mgaDocAuditLogs.slice(0, 8);
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📄 Documents Management</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Central document vault · ${cats.reduce((s,c) => s + c.count, 0).toLocaleString()} docs across ${cats.length} categories · ${esigQueue.length} pending e-signature · ${expiring.length} expiring in 90d</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-docs-explorer'})">🔍 Search</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'mga-docs-upload'})">📤 Upload</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.mgaDocsKPIs, 6)}
+
+  ${_mgaDocsSubNav('mga-docs')}
+
+  <div style="display:grid; grid-template-columns: repeat(${cats.length}, 1fr); gap: var(--space-sm); margin-bottom: var(--space-lg);">
+    ${cats.map(c => `
+      <div onclick="window.setState({screen:'mga-docs-explorer', docCategory:'${c.key}'})" style="cursor:pointer; padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); text-align:center; border:1px solid var(--border-subtle);">
+        <div style="font-size:1.8rem;">${c.icon}</div>
+        <div style="font-size:1.4rem; font-weight:800; color:var(--mga-accent); margin-top:4px;">${c.count.toLocaleString()}</div>
+        <div style="color:var(--text-secondary); font-size:0.75rem;">${c.label}</div>
+      </div>`).join('')}
+  </div>
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+        <div class="section-title" style="margin:0;">🕑 RECENT DOCUMENTS</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-docs-explorer'})">View all →</button>
+      </div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Document</th><th>Category</th><th>Linked To</th><th>Uploaded By</th><th>When</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${recent.map(d => `
+          <tr onclick="window.setState({screen:'mga-docs-viewer', docId:'${d.id}'})" style="cursor:pointer;">
+            <td style="white-space:nowrap;">${_mgaDocIcon(d.category)} <strong>${d.name}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${d.id} · ${_mgaDocFileSize(d.size_kb)}</div></td>
+            <td style="white-space:nowrap;">${badge('gray', d.sub)}</td>
+            <td style="white-space:nowrap; font-size:0.78rem;">${d.linked_label}</td>
+            <td style="white-space:nowrap;">${d.uploaded_by}</td>
+            <td style="white-space:nowrap; font-size:0.78rem;">${d.uploaded}</td>
+            <td style="white-space:nowrap;">${_mgaDocStatusBadge(d.status)}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); window.setState({screen:'mga-docs-viewer', docId:'${d.id}'})">👁</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--status-amber); border-left: 4px solid var(--status-amber); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title" style="color:var(--status-amber);">⚠ EXPIRING SOON (${expiring.length})</div>
+        ${expiring.map(e => `
+          <div onclick="window.setState({screen:'mga-docs-viewer', docId:'${e.id}'})" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+              <strong style="font-size:0.85rem;">${e.name.slice(0, 38)}${e.name.length > 38 ? '...' : ''}</strong>
+              ${badge(e.days_to_expire <= 14 ? 'red' : e.days_to_expire <= 60 ? 'amber' : 'gray', e.days_to_expire + 'd')}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${e.type} · ${e.action}</div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">✒ PENDING E-SIGNATURE (${esigQueue.length})</div>
+        ${esigQueue.map(s => `
+          <div onclick="window.setState({screen:'mga-docs-viewer', docId:'${s.doc_id}'})" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); cursor:pointer;">
+            <strong style="font-size:0.85rem;">${s.doc_name.slice(0, 38)}${s.doc_name.length > 38 ? '...' : ''}</strong>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${s.status} · ${s.signed}/${s.signers} signers · ${s.expires_in_days}d to expire</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+      <div class="section-title" style="margin:0;">🔒 RECENT DOCUMENT ACTIVITY</div>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-compliance-audit'})">Full audit log →</button>
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Time</th><th>Action</th><th>Document</th><th>Actor</th><th>IP</th><th>Details</th></tr></thead>
+      <tbody>
+        ${recentActivity.map(a => `
+          <tr>
+            <td style="white-space:nowrap; font-size:0.82rem;">${a.ts}</td>
+            <td style="white-space:nowrap;">${badge(a.severity === 'Warning' ? 'amber' : 'gray', a.action)}</td>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;"><strong style="color:var(--mga-accent);">${a.doc_id}</strong></td>
+            <td style="white-space:nowrap;"><strong>${a.actor}</strong></td>
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem; color:var(--text-muted);">${a.ip}</td>
+            <td style="font-size:0.78rem;">${a.metadata}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaDocsExplorer() {
+  const catF = state.docCategory || 'all';
+  const statF = state.docStatusFilter || 'all';
+  const linkedTypeF = state.docLinkedTypeFilter || 'all';
+  const q = (state.docQuery || '').toLowerCase();
+  let rows = D.mgaDocs;
+  if (catF !== 'all') rows = rows.filter(d => d.category === catF);
+  if (statF !== 'all') rows = rows.filter(d => d.status === statF);
+  if (linkedTypeF !== 'all') rows = rows.filter(d => d.linked_type === linkedTypeF);
+  if (q) rows = rows.filter(d => d.name.toLowerCase().includes(q) || d.id.toLowerCase().includes(q) || (d.tags || []).join(' ').toLowerCase().includes(q) || (d.linked_entity || '').toLowerCase().includes(q));
+  const cats = D.mgaDocCategories;
+  const linkedTypes = [...new Set(D.mgaDocs.map(d => d.linked_type))];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🔍 Global Document Explorer</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${rows.length} of ${D.mgaDocs.length} documents shown · full-text + metadata search · &lt;1.2s retrieval</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.setState({screen:'mga-docs-upload'})">📤 Upload</button>
+  </div>
+
+  ${_mgaDocsSubNav('mga-docs-explorer')}
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <input class="form-input" placeholder="🔍 Search by name, ID, tags, linked entity..." value="${state.docQuery || ''}" oninput="window.setState({docQuery:this.value})"/>
+    <select class="form-input" onchange="window.setState({docCategory:this.value})">
+      <option value="all"${catF==='all'?' selected':''}>All Categories</option>
+      ${cats.map(c => `<option value="${c.key}"${catF===c.key?' selected':''}>${c.icon} ${c.label}</option>`).join('')}
+    </select>
+    <select class="form-input" onchange="window.setState({docStatusFilter:this.value})">
+      <option value="all"${statF==='all'?' selected':''}>All Statuses</option>
+      <option value="Final"${statF==='Final'?' selected':''}>Final</option>
+      <option value="Under Review"${statF==='Under Review'?' selected':''}>Under Review</option>
+      <option value="Pending Signature"${statF==='Pending Signature'?' selected':''}>Pending Signature</option>
+      <option value="Expiring"${statF==='Expiring'?' selected':''}>Expiring</option>
+    </select>
+    <select class="form-input" onchange="window.setState({docLinkedTypeFilter:this.value})">
+      <option value="all"${linkedTypeF==='all'?' selected':''}>All Linked Types</option>
+      ${linkedTypes.map(t => `<option value="${t}"${linkedTypeF===t?' selected':''}>${t}</option>`).join('')}
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({docCategory:'all', docStatusFilter:'all', docLinkedTypeFilter:'all', docQuery:''})">Clear</button>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th><input type="checkbox"/></th><th>Doc #</th><th>Name</th><th>Category</th><th>Sub</th><th>Linked To</th><th>Size</th><th>Uploaded</th><th>By</th><th>v</th><th>Status</th><th>Expires</th><th>Tags</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(d => `
+        <tr>
+          <td><input type="checkbox"/></td>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${d.id}</strong></td>
+          <td style="white-space:nowrap;"><span style="font-size:0.9rem; margin-right:6px;">${_mgaDocIcon(d.category)}</span><strong>${d.name}</strong></td>
+          <td style="white-space:nowrap;">${badge('gray', cats.find(c => c.key === d.category).label.split(' ')[0])}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${d.sub}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;"><a style="color:var(--mga-accent); cursor:pointer;" onclick="window.setState({screen:'mga-docs-vault', vaultEntity:'${d.linked_entity}', vaultType:'${d.linked_type}'})">${d.linked_label}</a></td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${_mgaDocFileSize(d.size_kb)}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${d.uploaded}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${d.uploaded_by}</td>
+          <td style="white-space:nowrap;">v${d.version}</td>
+          <td style="white-space:nowrap;">${_mgaDocStatusBadge(d.status)}</td>
+          <td style="white-space:nowrap; font-size:0.78rem; color:${d.expires ? 'var(--status-amber)' : 'var(--text-muted)'};">${d.expires || '—'}</td>
+          <td style="white-space:nowrap;">${(d.tags || []).slice(0,2).map(t => `<span style="display:inline-block; padding:2px 6px; border-radius:999px; font-size:0.68rem; font-weight:600; background:var(--bg-card); margin:1px;">${t}</span>`).join('')}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-primary btn-sm" onclick="window.setState({screen:'mga-docs-viewer', docId:'${d.id}'})">👁 View</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaDocsVault() {
+  const entity = state.vaultEntity || 'CLM-MGA-2026-0248';
+  const type = state.vaultType || 'claim';
+  const docs = D.mgaDocs.filter(d => d.linked_entity === entity);
+  const entityLabel = docs[0]?.linked_label || 'Entity ' + entity;
+
+  const entitySamples = [
+    { label: 'Policy: TRV-AUTO-2026-11445 (Westshore)',   id: 'TRV-AUTO-2026-11445',    type: 'policy' },
+    { label: 'Claim: CLM-MGA-2026-0248 (Westshore)',        id: 'CLM-MGA-2026-0248',      type: 'claim' },
+    { label: 'Claim: CLM-MGA-2026-0245 (TechCorp)',         id: 'CLM-MGA-2026-0245',      type: 'claim' },
+    { label: 'Submission: SUB-92104 (Magnolia)',            id: 'SUB-92104',              type: 'submission' },
+    { label: 'Agent: AGT-2038 (Lockton)',                    id: 'AGT-2038',               type: 'agent' },
+    { label: 'Carrier: CAR-01 (Travelers)',                 id: 'CAR-01',                 type: 'carrier' }
+  ];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🗄 Contextual Document Vault</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Viewing all documents linked to <strong>${entityLabel}</strong> · ${docs.length} docs · auto-linked by entity relationship</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.setState({screen:'mga-docs-upload', uploadLinkedEntity:'${entity}', uploadLinkedType:'${type}'})">📤 Upload to This Entity</button>
+  </div>
+
+  ${_mgaDocsSubNav('mga-docs-vault')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">🔗 PICK AN ENTITY TO VIEW ITS VAULT</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm);">
+      ${entitySamples.map(e => `
+        <button class="btn ${entity === e.id ? 'btn-primary' : 'btn-ghost'}" style="justify-content:flex-start;" onclick="window.setState({vaultEntity:'${e.id}', vaultType:'${e.type}'})">${e.label}</button>`).join('')}
+    </div>
+  </div>
+
+  ${docs.length === 0 ? `
+    <div style="padding: var(--space-lg); background:var(--bg-secondary); border:1px dashed var(--border-subtle); border-radius:var(--radius-lg); text-align:center;">
+      <div style="color:var(--text-muted);">No documents linked to this entity yet.</div>
+      <button class="btn btn-primary btn-sm" style="margin-top: var(--space-sm);" onclick="window.setState({screen:'mga-docs-upload', uploadLinkedEntity:'${entity}', uploadLinkedType:'${type}'})">📤 Upload First Document</button>
+    </div>
+  ` : `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📎 DOCUMENTS (${docs.length})</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Doc #</th><th>Name</th><th>Sub-Category</th><th>Size</th><th>Version</th><th>Uploaded</th><th>By</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${docs.map(d => `
+          <tr onclick="window.setState({screen:'mga-docs-viewer', docId:'${d.id}'})" style="cursor:pointer;">
+            <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${d.id}</strong></td>
+            <td style="white-space:nowrap;">${_mgaDocIcon(d.category)} <strong>${d.name}</strong></td>
+            <td style="white-space:nowrap;">${badge('gray', d.sub)}</td>
+            <td style="white-space:nowrap;">${_mgaDocFileSize(d.size_kb)}</td>
+            <td style="white-space:nowrap;">v${d.version}</td>
+            <td style="white-space:nowrap; font-size:0.82rem;">${d.uploaded}</td>
+            <td style="white-space:nowrap;">${d.uploaded_by}</td>
+            <td style="white-space:nowrap;">${_mgaDocStatusBadge(d.status)}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); window.showAlert &amp;&amp; window.showAlert('View ${d.name}')">👁</button> <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); window.showAlert &amp;&amp; window.showAlert('Download ${d.name}')">⬇</button> <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); window.showAlert &amp;&amp; window.showAlert('Share secure link for ${d.name} · watermarked · expires 7d')">🔗</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  `}`;
+}
+
+function renderMgaDocsUpload() {
+  const step = state.uploadStep || 1;
+  const linkedEntity = state.uploadLinkedEntity || '';
+  const linkedType = state.uploadLinkedType || '';
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📤 Upload Center</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Drag &amp; drop · AI auto-categorization · OCR indexing · automatic entity linking</div>
+    </div>
+    <button class="btn btn-ghost" onclick="window.setState({screen:'mga-docs', uploadStep:null, uploadLinkedEntity:null, uploadLinkedType:null})">← Back</button>
+  </div>
+
+  ${_mgaDocsSubNav('mga-docs-upload')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-xs); margin-bottom: var(--space-lg);">
+        ${[{n:1,l:'Upload Files',i:'📤'},{n:2,l:'AI Classify',i:'🤖'},{n:3,l:'Metadata',i:'🏷'},{n:4,l:'Confirm'}].map(s => `
+          <div onclick="window.setState({uploadStep:${s.n}})" style="cursor:pointer; text-align:center; padding: var(--space-sm); border-radius: var(--radius-md); background:${step === s.n ? 'var(--mga-accent)22' : 'var(--bg-card)'}; border:2px solid ${step === s.n ? 'var(--mga-accent)' : step > s.n ? 'var(--status-green)' : 'var(--border-subtle)'};">
+            <div style="font-size:1.4rem;">${step > s.n ? '✓' : (s.i || '✓')}</div>
+            <div style="font-size:0.72rem; margin-top:3px;">Step ${s.n}</div>
+            <div style="font-size:0.78rem; font-weight:${step === s.n ? '700' : '500'};">${s.l}</div>
+          </div>`).join('')}
+      </div>
+
+      ${step === 1 ? `
+        <div style="padding: var(--space-xl); border: 2px dashed var(--mga-accent); border-radius: var(--radius-md); text-align:center;">
+          <div style="font-size:3rem;">📤</div>
+          <div style="margin-top: var(--space-sm); font-size:1rem;"><strong>Drag &amp; drop files here</strong> or <a style="color:var(--mga-accent); cursor:pointer;">browse</a></div>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-top:4px;">PDF · Word · Excel · images · ZIP · video · max 100MB per file · virus-scanned on upload</div>
+        </div>
+        <div style="margin-top: var(--space-md);">
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:var(--space-sm);">Sample files (simulated for demo):</div>
+          <div class="table-scroll">
+          <table class="data-table">
+            <tbody>
+              <tr><td>📄 Magnolia_Application_ACORD130.pdf</td><td style="white-space:nowrap;">480 KB</td><td style="white-space:nowrap;">${badge('green','✓ Ready')}</td></tr>
+              <tr><td>📸 Loss_photos_04-17.zip</td><td style="white-space:nowrap;">12 MB</td><td style="white-space:nowrap;">${badge('green','✓ Ready')}</td></tr>
+              <tr><td>📄 Ridge_Endorsement_4.pdf</td><td style="white-space:nowrap;">340 KB</td><td style="white-space:nowrap;">${badge('green','✓ Ready')}</td></tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      ` : step === 2 ? `
+        <h3 style="margin-top:0;">🤖 AI Classification Results</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem;">AI analyzed each file and suggests the category, sub-category, and entity link. Review and override if needed.</p>
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>File</th><th>Suggested Category</th><th>Sub-Category</th><th>Suggested Link</th><th>Confidence</th></tr></thead>
+          <tbody>
+            <tr><td>📄 Magnolia_Application_ACORD130.pdf</td><td>${badge('blue','📝 Submission')}</td><td>ACORD</td><td style="font-size:0.78rem;"><a style="color:var(--mga-accent); cursor:pointer;">Auto-link: SUB-92104 Magnolia</a></td><td style="white-space:nowrap;"><strong style="color:var(--status-green);">98%</strong></td></tr>
+            <tr><td>📸 Loss_photos_04-17.zip</td><td>${badge('blue','🛡 Claims')}</td><td>Photos</td><td style="font-size:0.78rem;"><a style="color:var(--mga-accent); cursor:pointer;">Auto-link: CLM-MGA-2026-0248</a></td><td style="white-space:nowrap;"><strong style="color:var(--status-green);">94%</strong></td></tr>
+            <tr><td>📄 Ridge_Endorsement_4.pdf</td><td>${badge('blue','📋 Policy')}</td><td>Endorsements</td><td style="font-size:0.78rem;"><a style="color:var(--mga-accent); cursor:pointer;">Auto-link: CNA-GL-2025-33102</a></td><td style="white-space:nowrap;"><strong style="color:var(--status-green);">96%</strong></td></tr>
+          </tbody>
+        </table>
+        </div>
+      ` : step === 3 ? `
+        <h3 style="margin-top:0;">🏷 Metadata &amp; Tags</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem;">Add tags, set expiration (if applicable), and choose retention policy. Most fields are auto-filled from AI.</p>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+          <div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Tags</div>
+            <input class="form-input" value="submission, ACORD, WC" style="width:100%;"/>
+          </div>
+          <div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Status</div>
+            <select class="form-input" style="width:100%;"><option>Final</option><option>Draft</option><option>Under Review</option></select>
+          </div>
+          <div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Expiration Date (optional)</div>
+            <input class="form-input" type="date" style="width:100%;"/>
+          </div>
+          <div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Retention Policy</div>
+            <select class="form-input" style="width:100%;"><option>7 years (submission)</option><option>10 years (policy)</option><option>10 years (claims)</option></select>
+          </div>
+          <div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Visibility</div>
+            <select class="form-input" style="width:100%;"><option>Internal + Agent</option><option>Internal only</option><option>Insured access</option></select>
+          </div>
+          <div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Require e-Signature</div>
+            <select class="form-input" style="width:100%;"><option>No</option><option>Yes — 1 signer</option><option>Yes — 2 signers sequential</option></select>
+          </div>
+        </div>
+      ` : `
+        <h3 style="margin-top:0;">✓ Confirm Upload</h3>
+        <div style="padding: var(--space-md); background: rgba(0,230,118,0.08); border-left: 3px solid var(--status-green); border-radius:var(--radius-md); margin-bottom: var(--space-md);">
+          <strong>Ready to upload 3 files</strong>
+          <div style="color:var(--text-secondary); font-size:0.82rem; margin-top:6px;">
+            • Virus scan passed · 3/3<br/>
+            • OCR completed · full-text indexed<br/>
+            • Auto-linked to 3 entities<br/>
+            • Audit log entry will be created
+          </div>
+        </div>
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>File</th><th>Category</th><th>Linked To</th><th>Retention</th><th>Size</th></tr></thead>
+          <tbody>
+            <tr><td style="white-space:nowrap;">Magnolia_Application_ACORD130.pdf</td><td style="white-space:nowrap;">Submission/ACORD</td><td style="white-space:nowrap;">SUB-92104</td><td style="white-space:nowrap;">7 years</td><td style="white-space:nowrap;">480 KB</td></tr>
+            <tr><td style="white-space:nowrap;">Loss_photos_04-17.zip</td><td style="white-space:nowrap;">Claims/Photos</td><td style="white-space:nowrap;">CLM-MGA-2026-0248</td><td style="white-space:nowrap;">10 years</td><td style="white-space:nowrap;">12 MB</td></tr>
+            <tr><td style="white-space:nowrap;">Ridge_Endorsement_4.pdf</td><td style="white-space:nowrap;">Policy/Endorsements</td><td style="white-space:nowrap;">CNA-GL-2025-33102</td><td style="white-space:nowrap;">10 years</td><td style="white-space:nowrap;">340 KB</td></tr>
+          </tbody>
+        </table>
+        </div>
+      `}
+
+      <div style="display:flex; justify-content:space-between; margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle);">
+        <button class="btn btn-ghost" ${step === 1 ? 'disabled' : ''} onclick="window.setState({uploadStep:${Math.max(1, step-1)}})">← Back</button>
+        ${step < 4 ? `<button class="btn btn-primary" onclick="window.setState({uploadStep:${step+1}})">Next →</button>` : `<button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Uploaded 3 files · auto-linked · audit log created. Documents now available in Explorer.'); window.setState({screen:'mga-docs', uploadStep:null});">✓ Upload 3 Files</button>`}
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📥 OTHER INTAKE CHANNELS</div>
+        <div style="font-size:0.85rem;">
+          <div style="padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle);">📧 Email: docs@singlepoint-mga.com</div>
+          <div style="padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle);">📱 Agent/Insured portal uploads</div>
+          <div style="padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle);">🔌 REST API · /api/v2/documents</div>
+          <div style="padding: var(--space-xs) 0;">📁 SFTP · sftp.singlepoint-mga.com</div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🔒 SECURITY</div>
+        <div style="font-size:0.82rem;">
+          <div style="padding: 4px 0;">✓ Virus scan (ClamAV)</div>
+          <div style="padding: 4px 0;">✓ Encrypted at rest (AES-256)</div>
+          <div style="padding: 4px 0;">✓ TLS 1.3 in transit</div>
+          <div style="padding: 4px 0;">✓ PII auto-detection + redaction</div>
+          <div style="padding: 4px 0;">✓ Immutable audit logs</div>
+          <div style="padding: 4px 0;">✓ SOC2 Type II compliant</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaDocsViewer() {
+  const docId = state.docId || 'DOC-54201';
+  const doc = D.mgaDocs.find(d => d.id === docId) || D.mgaDocs[0];
+  const esig = D.mgaDocEsigQueue.find(s => s.doc_id === doc.id);
+  const versions = (D.mgaDocVersions.find(v => v.doc_id === doc.id) || { versions: [{ v: doc.version, ts: doc.uploaded, by: doc.uploaded_by, change: 'Current version', size_kb: doc.size_kb }] }).versions;
+  const audit = D.mgaDocAuditLogs.filter(a => a.doc_id === doc.id);
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <div style="color:var(--text-muted); font-size:0.78rem; margin-bottom:4px;"><a style="cursor:pointer; color:var(--mga-accent);" onclick="window.setState({screen:'mga-docs-explorer'})">← Explorer</a></div>
+      <h2 style="margin:0;">${_mgaDocIcon(doc.category)} ${doc.name}</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${doc.id} · v${doc.version} · ${_mgaDocFileSize(doc.size_kb)} · Linked to ${doc.linked_label}</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-ghost" onclick="window.showAlert &amp;&amp; window.showAlert('Download ' + '${doc.name}')">⬇ Download</button>
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Create secure shareable link · watermarked · expires 7d · tracked views')">🔗 Share Link</button>
+      ${doc.status === 'Pending Signature' ? `<button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Remind signers · DocuSign envelope ' + '${esig?.id || 'SIG-XXX'}')">📧 Remind Signers</button>` : `<button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Request e-signature · DocuSign workflow')">✒ Send for e-Sign</button>`}
+    </div>
+  </div>
+
+  ${_mgaDocsSubNav('')}
+
+  <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+    <div>
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+        <div style="padding: var(--space-xl); background:var(--bg-card); border-radius:var(--radius-md); text-align:center; min-height:400px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+          <div style="font-size:5rem;">${_mgaDocIcon(doc.category)}</div>
+          <div style="margin-top:var(--space-md); font-size:1rem;"><strong>${doc.name}</strong></div>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-top:4px;">${_mgaDocFileSize(doc.size_kb)} · preview simulated</div>
+          <button class="btn btn-primary btn-sm" style="margin-top: var(--space-md);" onclick="window.showAlert &amp;&amp; window.showAlert('Open ' + '${doc.name}' + ' in full-screen viewer with annotations')">Open Full Viewer</button>
+        </div>
+      </div>
+
+      ${esig ? `
+        <div style="background:var(--bg-secondary); border:1px solid var(--status-amber); border-left: 4px solid var(--status-amber); border-radius:var(--radius-lg); padding:var(--space-lg);">
+          <div class="section-title" style="color:var(--status-amber);">✒ E-SIGNATURE WORKFLOW</div>
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:var(--space-md); margin-bottom: var(--space-md); font-size:0.85rem;">
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Envelope</div><strong style="font-family:monospace;">${esig.id}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Status</div><strong>${esig.status}</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Progress</div><strong>${esig.signed}/${esig.signers} signed</strong></div>
+            <div><div style="color:var(--text-muted); font-size:0.72rem;">Expires</div><strong>${esig.expires_in_days}d</strong></div>
+          </div>
+          <div style="padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem;">
+            <strong>Workflow:</strong> ${esig.workflow}
+            <div style="margin-top:4px;"><strong>Next Signer:</strong> ${esig.next_signer}</div>
+          </div>
+        </div>
+      ` : ''}
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📋 METADATA</div>
+        <div style="font-size:0.85rem;">
+          <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Doc #:</span> <strong style="font-family:monospace;">${doc.id}</strong></div>
+          <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Category:</span> <strong>${D.mgaDocCategories.find(c => c.key === doc.category).label}</strong></div>
+          <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Sub-category:</span> <strong>${doc.sub}</strong></div>
+          <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Version:</span> <strong>v${doc.version}</strong></div>
+          <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Uploaded:</span> <strong>${doc.uploaded}</strong></div>
+          <div style="padding: 4px 0;"><span style="color:var(--text-muted);">By:</span> <strong>${doc.uploaded_by}</strong></div>
+          <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Status:</span> ${_mgaDocStatusBadge(doc.status)}</div>
+          ${doc.expires ? `<div style="padding: 4px 0;"><span style="color:var(--text-muted);">Expires:</span> <strong style="color:var(--status-amber);">${doc.expires}</strong></div>` : ''}
+          <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Retention:</span> <strong>${doc.retention_yrs} years</strong></div>
+          <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Views:</span> <strong>${doc.views}</strong></div>
+          <div style="padding: 4px 0;"><span style="color:var(--text-muted);">Downloads:</span> <strong>${doc.downloads}</strong></div>
+        </div>
+        <div style="margin-top: var(--space-sm);">
+          ${(doc.tags || []).map(t => `<span style="display:inline-block; padding:2px 8px; border-radius:999px; font-size:0.72rem; font-weight:600; background:var(--bg-card); margin:2px;">${t}</span>`).join('')}
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-sm);">
+          <div class="section-title" style="margin:0;">📜 VERSIONS (${versions.length})</div>
+          <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'mga-docs-versions', docId:'${doc.id}'})">All →</button>
+        </div>
+        ${versions.map(v => `
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.82rem;">
+            <div style="display:flex; justify-content:space-between;">
+              <strong>v${v.v}</strong>
+              <span style="color:var(--text-muted);">${v.ts}</span>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">${v.by}</div>
+            <div style="margin-top:2px;">${v.change}</div>
+          </div>`).join('')}
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🔒 ACCESS LOG</div>
+        ${audit.length === 0 ? '<div style="color:var(--text-muted); font-size:0.82rem;">No recent activity.</div>' : audit.map(a => `
+          <div style="padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.78rem;">
+            <div style="display:flex; justify-content:space-between;">
+              <strong>${a.action}</strong>
+              <span style="color:var(--text-muted);">${a.ts}</span>
+            </div>
+            <div style="color:var(--text-muted);">${a.actor} · ${a.ip}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMgaDocsVersions() {
+  const docId = state.docId || 'DOC-54201';
+  const doc = D.mgaDocs.find(d => d.id === docId) || D.mgaDocs[0];
+  const versionsEntry = D.mgaDocVersions.find(v => v.doc_id === doc.id);
+  const versions = versionsEntry ? versionsEntry.versions : [{ v: doc.version, ts: doc.uploaded, by: doc.uploaded_by, change: 'Current version only · no prior versions', size_kb: doc.size_kb }];
+  const audit = D.mgaDocAuditLogs.filter(a => a.doc_id === doc.id);
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <div style="color:var(--text-muted); font-size:0.78rem; margin-bottom:4px;"><a style="cursor:pointer; color:var(--mga-accent);" onclick="window.setState({screen:'mga-docs-viewer', docId:'${doc.id}'})">← Viewer</a></div>
+      <h2 style="margin:0;">📜 Version History &amp; Audit</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${doc.name} · ${versions.length} versions · ${audit.length} audit events</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Export full audit trail for ${doc.id} · signed PDF for legal hold')">📄 Export Audit</button>
+  </div>
+
+  ${_mgaDocsSubNav('mga-docs-versions')}
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">📜 VERSION HISTORY</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Version</th><th>Timestamp</th><th>Uploaded By</th><th>Size</th><th>Change Description</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${versions.map((v, i) => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>v${v.v}</strong> ${i === 0 ? badge('green','Current') : ''}</td>
+          <td style="white-space:nowrap;">${v.ts}</td>
+          <td style="white-space:nowrap;">${v.by}</td>
+          <td style="white-space:nowrap;">${_mgaDocFileSize(v.size_kb)}</td>
+          <td>${v.change}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Preview version ' + '${v.v}' + ' of ${doc.name}')">👁 View</button> <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Download version ' + '${v.v}')">⬇</button>${i > 0 ? ` <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Compare v' + '${v.v}' + ' to current version · highlighted diff')">↔ Diff</button>` : ''}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+    <div class="section-title">🔒 FULL AUDIT TRAIL (${audit.length} events)</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Timestamp</th><th>Action</th><th>Actor</th><th>IP</th><th>Details</th><th>Severity</th></tr></thead>
+      <tbody>
+        ${audit.length === 0 ? '<tr><td colspan="6" style="color:var(--text-muted); text-align:center;">No audit events for this document</td></tr>' : audit.map(a => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;">${a.ts}</td>
+          <td style="white-space:nowrap;"><strong>${a.action}</strong></td>
+          <td style="white-space:nowrap;">${a.actor}</td>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;">${a.ip}</td>
+          <td style="font-size:0.82rem;">${a.metadata}</td>
+          <td style="white-space:nowrap;">${badge(a.severity === 'Warning' ? 'amber' : 'gray', a.severity)}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaDocsBulk() {
+  const tab = state.bulkTab || 'manager';
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📦 Bulk Document Manager</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Bulk upload · bulk download · bulk share · retention policy enforcement · OCR re-run</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Start bulk upload · ZIP or folder · auto-classification for all files')">📤 Bulk Upload</button>
+  </div>
+
+  ${_mgaDocsSubNav('mga-docs-bulk')}
+
+  <div style="display:flex; gap: var(--space-xs); border-bottom: 1px solid var(--border-subtle); margin-bottom: var(--space-lg);">
+    <div onclick="window.setState({bulkTab:'manager'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'manager' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'manager' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'manager' ? '700' : '500'}; font-size:0.9rem;">
+      📦 Bulk Actions
+    </div>
+    <div onclick="window.setState({bulkTab:'retention'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'retention' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'retention' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'retention' ? '700' : '500'}; font-size:0.9rem;">
+      🗓 Retention Policies
+    </div>
+    <div onclick="window.setState({bulkTab:'archive'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === 'archive' ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === 'archive' ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === 'archive' ? '700' : '500'}; font-size:0.9rem;">
+      📁 Archive &amp; Purge Queue
+    </div>
+  </div>
+
+  ${tab === 'manager' ? `
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); text-align:center;">
+        <div style="font-size:2.5rem;">📤</div>
+        <h3 style="margin: var(--space-sm) 0 4px;">Bulk Upload</h3>
+        <p style="color:var(--text-muted); font-size:0.82rem;">Upload ZIP or multi-file · AI classification applied to all files · auto-linking</p>
+        <button class="btn btn-primary btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.showAlert &amp;&amp; window.showAlert('Open bulk upload modal · ZIP support · folder support · max 500MB')">Start Upload</button>
+      </div>
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); text-align:center;">
+        <div style="font-size:2.5rem;">⬇</div>
+        <h3 style="margin: var(--space-sm) 0 4px;">Bulk Download</h3>
+        <p style="color:var(--text-muted); font-size:0.82rem;">Select documents (e.g. all from SUB-92104) · download as ZIP with manifest</p>
+        <button class="btn btn-primary btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.showAlert &amp;&amp; window.showAlert('Select documents to bundle · ZIP download with folder structure + manifest')">Select &amp; Download</button>
+      </div>
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); text-align:center;">
+        <div style="font-size:2.5rem;">🔗</div>
+        <h3 style="margin: var(--space-sm) 0 4px;">Bulk Share</h3>
+        <p style="color:var(--text-muted); font-size:0.82rem;">Create watermarked, time-limited share link for 1–500 documents in one step</p>
+        <button class="btn btn-primary btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.showAlert &amp;&amp; window.showAlert('Select documents · generate shareable link · expires in N days · watermark with recipient name')">Share</button>
+      </div>
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); text-align:center;">
+        <div style="font-size:2.5rem;">🏷</div>
+        <h3 style="margin: var(--space-sm) 0 4px;">Bulk Re-tag</h3>
+        <p style="color:var(--text-muted); font-size:0.82rem;">Apply or remove tags across selected documents (e.g. for reclassification)</p>
+        <button class="btn btn-primary btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.showAlert &amp;&amp; window.showAlert('Select documents · add/remove tags · change visibility · update retention')">Re-tag</button>
+      </div>
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); text-align:center;">
+        <div style="font-size:2.5rem;">🔄</div>
+        <h3 style="margin: var(--space-sm) 0 4px;">Re-run OCR</h3>
+        <p style="color:var(--text-muted); font-size:0.82rem;">Re-run OCR + AI classification on older documents (often improves accuracy)</p>
+        <button class="btn btn-primary btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.showAlert &amp;&amp; window.showAlert('Queue OCR re-run · background job · notifies when complete')">Re-run OCR</button>
+      </div>
+      <div style="background:var(--bg-secondary); border:1px solid var(--status-red); border-radius:var(--radius-lg); padding:var(--space-lg); text-align:center;">
+        <div style="font-size:2.5rem;">🗑</div>
+        <h3 style="margin: var(--space-sm) 0 4px;">Bulk Delete</h3>
+        <p style="color:var(--text-muted); font-size:0.82rem;">Permanently delete selected documents · requires admin + audit log reason</p>
+        <button class="btn btn-danger btn-sm" style="width:100%; margin-top: var(--space-sm);" onclick="window.showAlert &amp;&amp; window.showAlert('⚠ Bulk delete · requires admin role + mandatory reason · audit-logged · cannot be undone')">Delete</button>
+      </div>
+    </div>
+
+    <div style="padding: var(--space-md); background: rgba(108,92,231,0.08); border-left: 3px solid var(--mga-accent); border-radius: var(--radius-md);">
+      <strong>💡 Tip:</strong> <span style="color:var(--text-muted); font-size:0.85rem;">For recurring bulk operations (e.g. monthly carrier audit packs), save as a template in Report Builder with document filters. Schedule via Export Center.</span>
+    </div>
+  ` : tab === 'retention' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🗓 RETENTION POLICIES</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Category</th><th>Retention Period</th><th>Regulatory Basis</th><th>Auto-Archive</th><th>Auto-Delete</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${D.mgaDocRetentionRules.map(r => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${r.category}</strong></td>
+            <td style="white-space:nowrap;"><strong>${r.retention}</strong></td>
+            <td style="font-size:0.82rem;">${r.reg}</td>
+            <td style="white-space:nowrap;">${r.auto_archive ? badge('green','✓ Enabled') : badge('gray','Disabled')}</td>
+            <td style="white-space:nowrap;">${r.auto_delete ? badge('amber','⚠ Auto-Delete') : badge('gray','Manual')}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Edit retention policy for ' + '${r.category}' + ' · changes affect future docs only')">Edit</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  ` : `
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📁 ARCHIVE QUEUE (auto-archive candidates)</div>
+        <div style="font-size:0.85rem;">
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+            <strong>Policy Documents (2016 expiries)</strong>
+            <div style="color:var(--text-muted); font-size:0.78rem;">284 docs · 10-year retention · ready for cold storage archive</div>
+            <button class="btn btn-ghost btn-sm" style="margin-top:4px;" onclick="window.showAlert &amp;&amp; window.showAlert('Archive 284 policy docs to S3 Glacier · SHA-256 verified · audit-logged')">Archive Now</button>
+          </div>
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+            <strong>Submission Records (2019 close)</strong>
+            <div style="color:var(--text-muted); font-size:0.78rem;">128 docs · 7-year retention · moving to archive</div>
+            <button class="btn btn-ghost btn-sm" style="margin-top:4px;" onclick="window.showAlert &amp;&amp; window.showAlert('Archive 128 submission docs')">Archive Now</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--status-red); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title" style="color:var(--status-red);">🗑 PURGE QUEUE (expired beyond retention)</div>
+        <div style="font-size:0.85rem;">
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);">
+            <strong>PII / Temporary Documents (>90d unlinked)</strong>
+            <div style="color:var(--text-muted); font-size:0.78rem;">42 docs · auto-delete eligible · GDPR + CCPA compliance</div>
+            <button class="btn btn-danger btn-sm" style="margin-top:4px;" onclick="window.showAlert &amp;&amp; window.showAlert('⚠ Purge 42 PII docs · cryptographic erase · audit-logged · requires admin approval')">Purge</button>
+          </div>
+          <div style="padding: var(--space-sm) 0;">
+            <strong>Duplicate Detection</strong>
+            <div style="color:var(--text-muted); font-size:0.78rem;">12 exact duplicates detected across 3 categories</div>
+            <button class="btn btn-ghost btn-sm" style="margin-top:4px;" onclick="window.showAlert &amp;&amp; window.showAlert('Review duplicate detection · merge or delete redundant copies')">Review</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `}`;
+}
+
+// ─── MGA · Settings & Administration ───
+function _mgaSettingsSubNav(active) {
+  const tabs = [
+    { key: 'mga-settings',              label: 'Dashboard',    icon: '📊' },
+    { key: 'mga-settings-workflows',    label: 'Workflows',    icon: '🧩' },
+    { key: 'mga-settings-integrations', label: 'Integrations', icon: '🔌' },
+    { key: 'mga-settings-global',       label: 'Global Config',icon: '⚙' },
+    { key: 'mga-settings-security',     label: 'Security',     icon: '🔒' },
+    { key: 'mga-settings-logs',         label: 'System Logs',  icon: '📜' },
+    { key: 'mga-settings-maintenance',  label: 'Maintenance',  icon: '🛠' }
+  ];
+  return `
+  <div class="doc-subnav">
+    ${tabs.map(t => `
+      <div class="doc-subnav-tab${active === t.key ? ' active' : ''}" onclick="window.setState({screen:'${t.key}'})">
+        <span>${t.icon}</span><span>${t.label}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderMgaSettingsDashboard() {
+  const integrations = D.mgaIntegrations;
+  const healthyInt = integrations.filter(i => i.status === 'Healthy').length;
+  const watchInt = integrations.filter(i => i.status === 'Watch').length;
+  const envs = D.mgaEnvironments;
+  const recent = D.mgaConfigChangeLog.slice(0, 5);
+
+  const tiles = [
+    { title: 'Users & Roles',       icon: '👥', desc: '84 users · 10 roles · MFA + SSO',                         screen: 'mga-compliance-users',    section: 'Access' },
+    { title: 'Workflows',            icon: '🧩', desc: '42 active workflows · 99.2% success',                     screen: 'mga-settings-workflows',  section: 'Automation' },
+    { title: 'Integrations',         icon: '🔌', desc: integrations.length + ' connections · ' + healthyInt + ' healthy' + (watchInt ? ', ' + watchInt + ' watch' : ''), screen: 'mga-settings-integrations', section: 'Connectivity' },
+    { title: 'Global Config',        icon: '⚙', desc: 'Company · localization · notifications',                   screen: 'mga-settings-global',     section: 'General' },
+    { title: 'Security',             icon: '🔒', desc: 'Password · MFA · encryption · IP allowlist',                screen: 'mga-settings-security',   section: 'Security' },
+    { title: 'Audit Trail',          icon: '🗒', desc: '7-year immutable log · SOC2 compliant',                     screen: 'mga-compliance-audit',    section: 'Governance' },
+    { title: 'Compliance Calendar',  icon: '📅', desc: '15 open items · state filings · DOI',                       screen: 'mga-compliance-calendar', section: 'Governance' },
+    { title: 'Contract Repository',  icon: '📜', desc: '14 contracts · 1 expiring',                                 screen: 'mga-compliance-contracts',section: 'Governance' },
+    { title: 'Rating Engine Config', icon: '🧮', desc: 'Product catalog · rate tables · factors',                    screen: 'mga-products',            section: 'Products' },
+    { title: 'Appetite Rules',       icon: '🎯', desc: 'Risk appetite matrix · rule builder',                        screen: 'mga-appetite-rules',      section: 'Products' },
+    { title: 'System Logs',          icon: '📜', desc: 'Application logs · errors · warnings',                      screen: 'mga-settings-logs',       section: 'Monitoring' },
+    { title: 'Maintenance',          icon: '🛠', desc: 'Backup · upgrade · DR · health',                             screen: 'mga-settings-maintenance',section: 'Maintenance' }
+  ];
+  const sections = [...new Set(tiles.map(t => t.section))];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">⚙ Settings &amp; Administration</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Command center for all platform configuration · workflows · integrations · security · maintenance</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Switch environment · Production / Staging / Sandbox')">🌐 Environment</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Platform upgrade window · scheduled via Maintenance module')">⬆ Upgrade</button>
+    </div>
+  </div>
+
+  ${kpiCards(D.mgaSettingsKPIs, 6)}
+
+  ${_mgaSettingsSubNav('mga-settings')}
+
+  ${sections.map(section => `
+    <div style="margin-bottom: var(--space-lg);">
+      <div class="section-title">${section.toUpperCase()}</div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-md);">
+        ${tiles.filter(t => t.section === section).map(t => `
+          <div onclick="window.setState({screen:'${t.screen}'})" style="cursor:pointer; padding: var(--space-lg); background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); transition:all 0.2s;" onmouseover="this.style.borderColor='var(--mga-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: var(--space-sm);">
+              <div style="font-size:1.8rem;">${t.icon}</div>
+              <div style="color:var(--text-muted); font-size:1.2rem;">→</div>
+            </div>
+            <strong style="font-size:1rem; display:block;">${t.title}</strong>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-top:4px; line-height:1.4;">${t.desc}</div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('')}
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🌐 ENVIRONMENTS</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Env</th><th>Version</th><th>Users (24h)</th><th>Latency p95</th><th>Uptime 30d</th><th>Status</th></tr></thead>
+        <tbody>
+          ${envs.map(e => `
+          <tr>
+            <td style="white-space:nowrap;"><strong>${e.env}</strong></td>
+            <td style="white-space:nowrap; font-family:monospace;">${e.version}</td>
+            <td style="white-space:nowrap;">${e.users_24h}</td>
+            <td style="white-space:nowrap;">${e.latency_p95}</td>
+            <td style="white-space:nowrap;">${e.uptime_30d}%</td>
+            <td style="white-space:nowrap;">${badge(e.status === 'Healthy' ? 'green' : 'amber', e.status)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📝 RECENT CONFIG CHANGES</div>
+      ${recent.map(c => `
+        <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); font-size:0.82rem;">
+          <div style="display:flex; justify-content:space-between; gap:var(--space-sm); align-items:center;">
+            <strong>${c.key}</strong>
+            ${badge(c.severity === 'Critical' ? 'red' : c.severity === 'High' ? 'amber' : 'gray', c.severity)}
+          </div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">${c.before} → <strong style="color:var(--text-primary);">${c.after}</strong></div>
+          <div style="color:var(--text-muted); font-size:0.7rem; margin-top:2px;">${c.actor} · ${c.ts} · Approved: ${c.approval}</div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderMgaSettingsWorkflows() {
+  const wfs = D.mgaWorkflows;
+  const moduleF = state.wfModuleFilter || 'all';
+  const statusF = state.wfStatusFilter || 'all';
+  const q = (state.wfQuery || '').toLowerCase();
+  let rows = wfs;
+  if (moduleF !== 'all') rows = rows.filter(w => w.module === moduleF);
+  if (statusF !== 'all') rows = rows.filter(w => w.status === statusF);
+  if (q) rows = rows.filter(w => w.name.toLowerCase().includes(q) || (w.actions || []).join(' ').toLowerCase().includes(q));
+  const modules = [...new Set(wfs.map(w => w.module))];
+  const totalRuns = wfs.reduce((s, w) => s + w.runs_30d, 0);
+  const avgSuccess = wfs.filter(w => w.success_rate !== null).reduce((s, w) => s + w.success_rate, 0) / wfs.filter(w => w.success_rate !== null).length;
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🧩 Workflow &amp; Automation Builder</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${wfs.filter(w => w.status === 'Active').length} active workflows · ${totalRuns.toLocaleString()} runs (30d) · ${avgSuccess.toFixed(1)}% success rate · no-code designer</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Import workflow template · pre-built for common use cases')">📥 Import</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Open visual workflow designer · pick trigger → add conditions → add actions → save + test')">+ New Workflow</button>
+    </div>
+  </div>
+
+  ${_mgaSettingsSubNav('mga-settings-workflows')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Active</div><div class="kpi-value">${wfs.filter(w => w.status === 'Active').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Draft</div><div class="kpi-value">${wfs.filter(w => w.status === 'Draft').length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Runs (30d)</div><div class="kpi-value">${totalRuns.toLocaleString()}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Success Rate</div><div class="kpi-value">${avgSuccess.toFixed(1)}%</div></div>
+  </div>
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <input class="form-input" placeholder="🔍 Search workflows..." value="${state.wfQuery || ''}" oninput="window.setState({wfQuery:this.value})"/>
+    <select class="form-input" onchange="window.setState({wfModuleFilter:this.value})">
+      <option value="all"${moduleF==='all'?' selected':''}>All Modules</option>
+      ${modules.map(m => `<option value="${m}"${moduleF===m?' selected':''}>${m}</option>`).join('')}
+    </select>
+    <select class="form-input" onchange="window.setState({wfStatusFilter:this.value})">
+      <option value="all"${statusF==='all'?' selected':''}>All Statuses</option>
+      <option value="Active"${statusF==='Active'?' selected':''}>Active</option>
+      <option value="Draft"${statusF==='Draft'?' selected':''}>Draft</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({wfModuleFilter:'all', wfStatusFilter:'all', wfQuery:''})">Clear</button>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>WF #</th><th>Name</th><th>Module</th><th>Trigger</th><th>Condition</th><th>Actions</th><th>Runs (30d)</th><th>Success</th><th>Status</th><th>Owner</th><th>Last Edited</th><th>Controls</th></tr></thead>
+      <tbody>
+        ${rows.map(w => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${w.id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${w.name}</strong></td>
+          <td style="white-space:nowrap;">${badge('gray', w.module)}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${w.trigger}</td>
+          <td style="font-size:0.78rem;">${w.condition}</td>
+          <td style="font-size:0.78rem;"><ul style="margin:0; padding-left:16px;">${w.actions.slice(0,3).map(a => `<li>${a}</li>`).join('')}${w.actions.length > 3 ? `<li style="color:var(--text-muted);">+${w.actions.length-3} more</li>` : ''}</ul></td>
+          <td style="white-space:nowrap;"><strong>${w.runs_30d.toLocaleString()}</strong></td>
+          <td style="white-space:nowrap;">${w.success_rate !== null ? `<strong style="color:${w.success_rate >= 99 ? 'var(--status-green)' : w.success_rate >= 95 ? 'var(--mga-accent)' : 'var(--status-amber)'};">${w.success_rate}%</strong>` : '<span style="color:var(--text-muted);">—</span>'}</td>
+          <td style="white-space:nowrap;">${badge(w.status === 'Active' ? 'green' : 'gray', w.status)}</td>
+          <td style="white-space:nowrap;">${w.owner}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${w.last_edited}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Edit workflow ${w.id} · visual designer')">Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Run history for ${w.id} · last 30 days · success/failure/retries')">Runs</button>
+            ${w.status === 'Active' ? `<button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Pause ${w.id}')">⏸</button>` : `<button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Activate ${w.id}')">Activate</button>`}
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaSettingsIntegrations() {
+  const integrations = D.mgaIntegrations;
+  const catF = state.intCategoryFilter || 'all';
+  const statF = state.intStatusFilter || 'all';
+  let rows = integrations;
+  if (catF !== 'all') rows = rows.filter(i => i.category === catF);
+  if (statF !== 'all') rows = rows.filter(i => i.status === statF);
+  const cats = [...new Set(integrations.map(i => i.category))];
+  const health = { Healthy: integrations.filter(i => i.status === 'Healthy').length, Watch: integrations.filter(i => i.status === 'Watch').length, 'Not Connected': integrations.filter(i => i.status === 'Not Connected').length };
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🔌 Integration Status Monitor</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">${integrations.length} integrations across ${cats.length} categories · ${health.Healthy} healthy · ${health.Watch} watch · ${health['Not Connected']} available but not connected</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('View integration health timeline · uptime + latency trend per integration')">📊 Health History</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Add new integration · pick from marketplace · OAuth / API key / SFTP setup wizard')">+ Add Integration</button>
+    </div>
+  </div>
+
+  ${_mgaSettingsSubNav('mga-settings-integrations')}
+
+  <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value">${integrations.length}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Healthy</div><div class="kpi-value">${health.Healthy}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Watch</div><div class="kpi-value${health.Watch > 0 ? ' warning' : ''}">${health.Watch}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Not Connected</div><div class="kpi-value">${health['Not Connected']}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Uptime 30d</div><div class="kpi-value">${(integrations.filter(i => i.uptime_30d).reduce((s, i) => s + i.uptime_30d, 0) / integrations.filter(i => i.uptime_30d).length).toFixed(2)}%</div></div>
+  </div>
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <select class="form-input" onchange="window.setState({intCategoryFilter:this.value})">
+      <option value="all"${catF==='all'?' selected':''}>All Categories</option>
+      ${cats.map(c => `<option value="${c}"${catF===c?' selected':''}>${c}</option>`).join('')}
+    </select>
+    <select class="form-input" onchange="window.setState({intStatusFilter:this.value})">
+      <option value="all"${statF==='all'?' selected':''}>All Statuses</option>
+      <option value="Healthy"${statF==='Healthy'?' selected':''}>Healthy</option>
+      <option value="Watch"${statF==='Watch'?' selected':''}>Watch</option>
+      <option value="Not Connected"${statF==='Not Connected'?' selected':''}>Not Connected</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({intCategoryFilter:'all', intStatusFilter:'all'})">Clear</button>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Integration</th><th>Category</th><th>Vendor</th><th>Connection</th><th>Status</th><th>Last Sync</th><th>Volume (24h)</th><th>Latency</th><th>Uptime 30d</th><th>Owner</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(i => `
+        <tr>
+          <td style="white-space:nowrap;"><strong>${i.name}</strong><div style="color:var(--text-muted); font-size:0.72rem; font-family:monospace;">${i.id}</div></td>
+          <td style="white-space:nowrap;">${badge('gray', i.category)}</td>
+          <td style="white-space:nowrap;">${i.vendor}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${i.connection}</td>
+          <td style="white-space:nowrap;">${badge(i.status === 'Healthy' ? 'green' : i.status === 'Watch' ? 'amber' : 'gray', i.status)}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${i.last_sync || '—'}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${i.volume_24h}</td>
+          <td style="white-space:nowrap;">${i.latency_ms !== null ? `<strong style="color:${i.latency_ms > 400 ? 'var(--status-amber)' : 'var(--text-primary)'};">${i.latency_ms}ms</strong>` : '—'}</td>
+          <td style="white-space:nowrap;">${i.uptime_30d !== null ? `<strong>${i.uptime_30d}%</strong>` : '—'}</td>
+          <td style="white-space:nowrap;">${i.owner}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Configure ${i.name} · credentials · sync frequency · webhooks')">⚙</button> ${i.status === 'Not Connected' ? `<button class="btn btn-primary btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Connect ${i.name} · setup wizard')">Connect</button>` : `<button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Test ${i.name} connection · health check')">Test</button>`}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaSettingsGlobal() {
+  const tab = state.globalTab || 'branding';
+  const G = D.mgaGlobalConfig;
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">⚙ Global Configuration Hub</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Company branding · regional + localization · notification templates · business hours</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Save all changes · changes require Compliance Officer approval for production')">💾 Save Changes</button>
+  </div>
+
+  ${_mgaSettingsSubNav('mga-settings-global')}
+
+  <div style="display:flex; gap: var(--space-xs); border-bottom: 1px solid var(--border-subtle); margin-bottom: var(--space-lg);">
+    ${[{k:'branding',l:'🎨 Branding'},{k:'localization',l:'🌍 Localization'},{k:'notifications',l:'🔔 Notifications'},{k:'business',l:'🕰 Business Hours'}].map(t => `
+      <div onclick="window.setState({globalTab:'${t.k}'})" style="padding: var(--space-sm) var(--space-md); cursor:pointer; color:${tab === t.k ? 'var(--mga-accent)' : 'var(--text-secondary)'}; border-bottom: 2px solid ${tab === t.k ? 'var(--mga-accent)' : 'transparent'}; font-weight:${tab === t.k ? '700' : '500'}; font-size:0.9rem;">
+        ${t.l}
+      </div>`).join('')}
+  </div>
+
+  ${tab === 'branding' ? `
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🎨 COMPANY BRANDING</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+          <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Legal Name</div><input class="form-input" value="${G.branding.legal_name}" style="width:100%;"/></div>
+          <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">DBA</div><input class="form-input" value="${G.branding.dba}" style="width:100%;"/></div>
+          <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Primary Color</div><div style="display:flex; gap:var(--space-sm); align-items:center;"><div style="width:36px; height:36px; background:${G.branding.primary_color}; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);"></div><input class="form-input" value="${G.branding.primary_color}" style="flex:1;"/></div></div>
+          <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Accent Color</div><div style="display:flex; gap:var(--space-sm); align-items:center;"><div style="width:36px; height:36px; background:${G.branding.accent_color}; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);"></div><input class="form-input" value="${G.branding.accent_color}" style="flex:1;"/></div></div>
+          <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Support Email</div><input class="form-input" value="${G.branding.support_email}" style="width:100%;"/></div>
+          <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Support Phone</div><input class="form-input" value="${G.branding.support_phone}" style="width:100%;"/></div>
+          <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Website</div><input class="form-input" value="${G.branding.website}" style="width:100%;"/></div>
+          <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Logo URL</div><input class="form-input" value="${G.branding.logo_url}" style="width:100%;"/></div>
+        </div>
+        <div style="margin-top: var(--space-md);">
+          <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Portal Footer</div>
+          <textarea class="form-input" rows="2" style="width:100%;">${G.branding.portal_footer}</textarea>
+        </div>
+        <div style="margin-top: var(--space-sm);">
+          <div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Disclaimer</div>
+          <textarea class="form-input" rows="2" style="width:100%;">${G.branding.disclaimer}</textarea>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">👁 PREVIEW</div>
+        <div style="padding: var(--space-md); background:var(--bg-card); border-radius:var(--radius-md); border: 2px solid ${G.branding.primary_color};">
+          <div style="display:flex; align-items:center; gap:var(--space-sm); margin-bottom: var(--space-sm);">
+            <div style="width:40px; height:40px; background:linear-gradient(135deg, ${G.branding.primary_color}, ${G.branding.accent_color}); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:1.2rem;">⚡</div>
+            <strong>${G.branding.dba}</strong>
+          </div>
+          <div style="height: 80px; background: linear-gradient(135deg, ${G.branding.primary_color}, ${G.branding.accent_color}); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:white; font-weight:700;">Sample Header</div>
+          <div style="margin-top: var(--space-sm); font-size:0.78rem; color:var(--text-muted);">${G.branding.portal_footer.substring(0, 60)}...</div>
+        </div>
+      </div>
+    </div>
+  ` : tab === 'localization' ? `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🌍 REGIONAL &amp; LOCALIZATION</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+        <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Default Country</div><select class="form-input" style="width:100%;"><option>${G.localization.default_country}</option></select></div>
+        <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Default Time Zone</div><select class="form-input" style="width:100%;"><option>${G.localization.default_timezone}</option></select></div>
+        <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Default Currency</div><select class="form-input" style="width:100%;"><option>${G.localization.default_currency}</option></select></div>
+        <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Date Format</div><select class="form-input" style="width:100%;"><option>${G.localization.date_format}</option><option>MM/DD/YYYY</option><option>DD/MM/YYYY</option></select></div>
+        <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Number Format</div><select class="form-input" style="width:100%;"><option>${G.localization.number_format}</option></select></div>
+        <div><div style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Languages</div><input class="form-input" value="${G.localization.languages.join(', ')}" style="width:100%;"/></div>
+        <label style="display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><input type="checkbox" ${G.localization.multi_state ? 'checked' : ''}/>Multi-state support</label>
+        <label style="display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm);"><input type="checkbox" ${G.localization.multi_currency ? 'checked' : ''}/>Multi-currency support</label>
+      </div>
+    </div>
+  ` : tab === 'notifications' ? `
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">🔔 NOTIFICATION SETTINGS</div>
+        <div style="font-size:0.85rem;">
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Default Channels:</span> <strong>${G.notifications.default_channels.join(' · ')}</strong></div>
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Quiet Hours:</span> <strong>${G.notifications.quiet_hours}</strong></div>
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Digest:</span> <strong>${G.notifications.digest_frequency}</strong></div>
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Large Loss SMS:</span> <strong>${G.notifications.large_loss_sms ? 'Enabled' : 'Disabled'}</strong></div>
+          <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle);"><span style="color:var(--text-muted);">Agent Daily Digest:</span> <strong>${G.notifications.agent_daily_digest ? 'Enabled' : 'Disabled'}</strong></div>
+          <div style="padding: var(--space-sm) 0;"><span style="color:var(--text-muted);">Carrier Bordereau Ack:</span> <strong>${G.notifications.carrier_bordereau_ack}</strong></div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+        <div class="section-title">📧 EMAIL TEMPLATES</div>
+        <div style="font-size:0.85rem;">
+          ${['Welcome Email (Binding)','Renewal Reminder (120d)','Renewal Reminder (30d)','Claim Acknowledgment (FNOL)','Reserve Approval Required','Commission Statement','COI Delivery','DOI Complaint Response'].map(t => `
+            <div style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center;">
+              <strong>${t}</strong>
+              <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Edit ${t} template · merge fields · preview · test send')">Edit</button>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  ` : `
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🕰 BUSINESS HOURS</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); font-size:0.9rem;">
+        <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Mon – Fri</div><strong style="font-size:1rem;">${G.business_hours.mon_fri}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Saturday</div><strong style="font-size:1rem;">${G.business_hours.sat}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Sunday</div><strong style="font-size:1rem;">${G.business_hours.sun}</strong></div>
+        <div><div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Holidays</div><strong style="font-size:1rem;">${G.business_hours.holidays}</strong></div>
+      </div>
+      <div style="margin-top: var(--space-md); padding: var(--space-sm); background:var(--bg-card); border-radius:var(--radius-sm); font-size:0.82rem; color:var(--text-muted);">Business hours affect SLA calculations, auto-routing, and quiet-hour notifications.</div>
+    </div>
+  `}`;
+}
+
+function renderMgaSettingsSecurity() {
+  const cfg = D.mgaSecurityConfig;
+  const catF = state.secCategoryFilter || 'all';
+  const riskF = state.secRiskFilter || 'all';
+  let rows = cfg;
+  if (catF !== 'all') rows = rows.filter(c => c.category === catF);
+  if (riskF !== 'all') rows = rows.filter(c => c.risk_level === riskF);
+  const cats = [...new Set(cfg.map(c => c.category))];
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🔒 Security &amp; Compliance Settings</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">SOC2 + ISO 27001 certified · MFA + SSO · AES-256 · DR tested · all changes approval-gated + audit-logged</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'mga-compliance-audit'})">🗒 Audit Trail</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Run security health check · SOC2 controls · password policy · MFA enrollment · DR readiness')">🩺 Health Check</button>
+    </div>
+  </div>
+
+  ${_mgaSettingsSubNav('mga-settings-security')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">SOC2 Type II</div><div class="kpi-value" style="font-size:1rem;">✓ Certified</div></div>
+    <div class="kpi-card"><div class="kpi-label">ISO 27001</div><div class="kpi-value" style="font-size:1rem;">✓ Certified</div></div>
+    <div class="kpi-card"><div class="kpi-label">MFA Enrolled</div><div class="kpi-value">92%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Last DR Test</div><div class="kpi-value" style="font-size:1rem;">Passed 2026-03-15</div></div>
+  </div>
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <select class="form-input" onchange="window.setState({secCategoryFilter:this.value})">
+      <option value="all"${catF==='all'?' selected':''}>All Categories</option>
+      ${cats.map(c => `<option value="${c}"${catF===c?' selected':''}>${c}</option>`).join('')}
+    </select>
+    <select class="form-input" onchange="window.setState({secRiskFilter:this.value})">
+      <option value="all"${riskF==='all'?' selected':''}>All Risk Levels</option>
+      <option value="Critical"${riskF==='Critical'?' selected':''}>Critical</option>
+      <option value="High"${riskF==='High'?' selected':''}>High</option>
+      <option value="Medium"${riskF==='Medium'?' selected':''}>Medium</option>
+      <option value="Low"${riskF==='Low'?' selected':''}>Low</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({secCategoryFilter:'all', secRiskFilter:'all'})">Clear</button>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Category</th><th>Setting</th><th>Current Value</th><th>Risk Level</th><th>Last Modified</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(c => `
+        <tr>
+          <td style="white-space:nowrap;">${badge('gray', c.category)}</td>
+          <td style="white-space:nowrap;"><strong>${c.key}</strong></td>
+          <td style="font-size:0.85rem;">${c.value}</td>
+          <td style="white-space:nowrap;">${badge(c.risk_level === 'Critical' ? 'red' : c.risk_level === 'High' ? 'amber' : 'gray', c.risk_level)}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${c.last_modified}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Edit ' + '${c.key}' + ' · requires Security Committee approval · audit-logged')">Edit</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaSettingsLogs() {
+  const logs = D.mgaSystemLogs;
+  const levelF = state.logLevelFilter || 'all';
+  const svcF = state.logServiceFilter || 'all';
+  const q = (state.logQuery || '').toLowerCase();
+  let rows = logs;
+  if (levelF !== 'all') rows = rows.filter(l => l.level === levelF);
+  if (svcF !== 'all') rows = rows.filter(l => l.service === svcF);
+  if (q) rows = rows.filter(l => l.message.toLowerCase().includes(q) || (l.request_id || '').toLowerCase().includes(q));
+  const services = [...new Set(logs.map(l => l.service))];
+  const counts = { INFO: logs.filter(l => l.level === 'INFO').length, WARN: logs.filter(l => l.level === 'WARN').length, ERROR: logs.filter(l => l.level === 'ERROR').length };
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">📜 System Logs &amp; Activity Explorer</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Real-time application logs · structured + searchable · 180-day retention · Splunk SIEM integrated</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Export logs · CSV or JSON · cryptographically signed · chain-of-custody for legal hold')">📥 Export</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Open Splunk dashboard · full-text search · alerting · dashboards')">🔍 Splunk</button>
+    </div>
+  </div>
+
+  ${_mgaSettingsSubNav('mga-settings-logs')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Total Events (24h)</div><div class="kpi-value">${logs.length.toLocaleString()}</div></div>
+    <div class="kpi-card"><div class="kpi-label">INFO</div><div class="kpi-value">${counts.INFO}</div></div>
+    <div class="kpi-card"><div class="kpi-label">WARN</div><div class="kpi-value${counts.WARN > 0 ? ' warning' : ''}">${counts.WARN}</div></div>
+    <div class="kpi-card"><div class="kpi-label">ERROR</div><div class="kpi-value${counts.ERROR > 0 ? ' warning' : ''}">${counts.ERROR}</div></div>
+  </div>
+
+  <div class="filter-bar" style="margin-bottom: var(--space-md);">
+    <input class="form-input" placeholder="🔍 Search message or request ID..." value="${state.logQuery || ''}" oninput="window.setState({logQuery:this.value})"/>
+    <select class="form-input" onchange="window.setState({logLevelFilter:this.value})">
+      <option value="all"${levelF==='all'?' selected':''}>All Levels</option>
+      <option value="INFO"${levelF==='INFO'?' selected':''}>INFO</option>
+      <option value="WARN"${levelF==='WARN'?' selected':''}>WARN</option>
+      <option value="ERROR"${levelF==='ERROR'?' selected':''}>ERROR</option>
+    </select>
+    <select class="form-input" onchange="window.setState({logServiceFilter:this.value})">
+      <option value="all"${svcF==='all'?' selected':''}>All Services</option>
+      ${services.map(s => `<option value="${s}"${svcF===s?' selected':''}>${s}</option>`).join('')}
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({logLevelFilter:'all', logServiceFilter:'all', logQuery:''})">Clear</button>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Timestamp</th><th>Level</th><th>Service</th><th>Message</th><th>Request ID</th><th>Duration</th></tr></thead>
+      <tbody>
+        ${rows.map(l => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;">${l.ts}</td>
+          <td style="white-space:nowrap;">${badge(l.level === 'ERROR' ? 'red' : l.level === 'WARN' ? 'amber' : 'gray', l.level)}</td>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem;">${l.service}</td>
+          <td style="font-size:0.82rem;">${l.message}</td>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.78rem; color:var(--text-muted);">${l.request_id || '—'}</td>
+          <td style="white-space:nowrap; font-size:0.78rem;">${l.duration_ms !== null ? (l.duration_ms >= 1000 ? (l.duration_ms/1000).toFixed(1) + 's' : l.duration_ms + 'ms') : '—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderMgaSettingsMaintenance() {
+  const jobs = D.mgaMaintenanceJobs;
+  const changes = D.mgaConfigChangeLog;
+
+  return `
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+    <div>
+      <h2 style="margin:0;">🛠 Maintenance &amp; Platform Ops</h2>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Backups · DR drills · upgrades · import/export · config change history with rollback</div>
+    </div>
+    <div style="display:flex; gap:var(--space-sm);">
+      <button class="btn btn-secondary" onclick="window.showAlert &amp;&amp; window.showAlert('Trigger ad-hoc maintenance job · backup · DR test · cache clear')">⚡ Run Job</button>
+      <button class="btn btn-primary" onclick="window.showAlert &amp;&amp; window.showAlert('Schedule platform upgrade window · blue-green zero-downtime · rollback-ready')">⬆ Upgrade</button>
+    </div>
+  </div>
+
+  ${_mgaSettingsSubNav('mga-settings-maintenance')}
+
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    <div class="kpi-card"><div class="kpi-label">Last DB Backup</div><div class="kpi-value" style="font-size:0.9rem;">✓ 2026-04-18 04:00</div></div>
+    <div class="kpi-card"><div class="kpi-label">Last DR Test</div><div class="kpi-value" style="font-size:0.9rem;">✓ Passed (Q1)</div></div>
+    <div class="kpi-card"><div class="kpi-label">Platform Version</div><div class="kpi-value" style="font-size:1rem;">v2.14.1</div></div>
+    <div class="kpi-card"><div class="kpi-label">Ready to Upgrade</div><div class="kpi-value" style="font-size:1rem;">v2.15.0-rc2</div></div>
+  </div>
+
+  <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom: var(--space-lg);">
+    <div class="section-title">🛠 MAINTENANCE JOBS</div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Job #</th><th>Name</th><th>Schedule</th><th>Last Run</th><th>Status</th><th>Duration</th><th>Next Run</th><th>Notes</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${jobs.map(j => `
+        <tr>
+          <td style="white-space:nowrap; font-family:monospace; font-size:0.82rem;"><strong style="color:var(--mga-accent);">${j.id}</strong></td>
+          <td style="white-space:nowrap;"><strong>${j.name}</strong></td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${j.schedule}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${j.last_run}</td>
+          <td style="white-space:nowrap;">${badge(j.status === 'Success' ? 'green' : j.status === 'Failed' ? 'red' : 'amber', j.status)}</td>
+          <td style="white-space:nowrap;">${j.duration}</td>
+          <td style="white-space:nowrap; font-size:0.82rem;">${j.next_run}</td>
+          <td style="font-size:0.78rem;">${j.notes}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Run ' + '${j.name}' + ' now · will start in background')">▶ Run Now</button> <button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('View run history for ${j.id}')">📜</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">📝 CONFIG CHANGE HISTORY (approval-gated)</div>
+      <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Time</th><th>Actor</th><th>Setting</th><th>Before → After</th><th>Severity</th><th></th></tr></thead>
+        <tbody>
+          ${changes.map(c => `
+          <tr>
+            <td style="white-space:nowrap; font-size:0.78rem;">${c.ts}</td>
+            <td style="white-space:nowrap;">${c.actor}</td>
+            <td><strong>${c.key}</strong><div style="color:var(--text-muted); font-size:0.7rem;">${c.category}</div></td>
+            <td style="font-size:0.78rem;"><span style="color:var(--text-muted); text-decoration:line-through;">${c.before}</span> → <strong>${c.after}</strong></td>
+            <td style="white-space:nowrap;">${badge(c.severity === 'Critical' ? 'red' : c.severity === 'High' ? 'amber' : 'gray', c.severity)}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="window.showAlert &amp;&amp; window.showAlert('Rollback this change · will require approval and re-logging')">↩ Rollback</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg);">
+      <div class="section-title">🔄 DATA IMPORT / EXPORT</div>
+      <div style="display:flex; flex-direction:column; gap: var(--space-sm);">
+        <button class="btn btn-ghost" style="justify-content:space-between;" onclick="window.showAlert &amp;&amp; window.showAlert('Bulk user import · CSV upload · OKTA provision · role assignment')">📥 Bulk User Import (CSV) →</button>
+        <button class="btn btn-ghost" style="justify-content:space-between;" onclick="window.showAlert &amp;&amp; window.showAlert('Policy data export · filtered · CSV or JSON · watermarked')">📤 Policy Data Export →</button>
+        <button class="btn btn-ghost" style="justify-content:space-between;" onclick="window.showAlert &amp;&amp; window.showAlert('Bulk endorsement upload · CSV · mass endorsement by LOB or carrier')">📥 Bulk Endorsements (CSV) →</button>
+        <button class="btn btn-ghost" style="justify-content:space-between;" onclick="window.showAlert &amp;&amp; window.showAlert('Export carrier bordereau pack · ZIP with all carriers')">📤 Carrier Bordereau Export →</button>
+        <button class="btn btn-ghost" style="justify-content:space-between;" onclick="window.showAlert &amp;&amp; window.showAlert('Full audit log export · signed PDF · chain-of-custody')">📤 Audit Log (Legal Hold) →</button>
+        <button class="btn btn-ghost" style="justify-content:space-between;" onclick="window.showAlert &amp;&amp; window.showAlert('Cache clear · select service · non-destructive · takes 1-2 min')">🧹 Cache Clear →</button>
+      </div>
+    </div>
   </div>`;
 }
 

@@ -2688,17 +2688,93 @@ export const mgaKPIs = [
   { label: 'Total Premium', value: '$14.2M' }
 ];
 
+// Extended top-row executive KPIs for the main dashboard
+export const mgaDashboardHeroKPIs = [
+  { label: 'Written Premium YTD',  value: '$58.5M', delta: '+18%',   deltaColor: 'green' },
+  { label: 'Loss Ratio YTD',       value: '38%',    delta: '-2pp',   deltaColor: 'green' },
+  { label: 'Combined Ratio',       value: '88%',    delta: '-1pp',   deltaColor: 'green' },
+  { label: 'Retention Rate',       value: '91%',    delta: '+1pp',   deltaColor: 'green' },
+  { label: 'Bind Ratio',           value: '52%',    delta: '+3pp',   deltaColor: 'green' },
+  { label: 'Open Claims Value',    value: '$4.24M', delta: '$272k flagged SIU', deltaColor: 'amber' }
+];
+
 export const mgaAlerts = [
-  { type: 'red', text: '3 policies expire within 7 days — action required' },
-  { type: 'amber', text: '12 commission requests awaiting approval' },
-  { type: 'amber', text: '5 endorsements pending review' },
-  { type: 'blue', text: '2 new broker onboarding requests' }
+  { type: 'red',   category: 'Large Loss',         text: 'Large loss reported — TechCorp cyber breach · $420k reserve · CNA notified', link: 'mga-claim-details', param: 'CLM-MGA-2026-0245', ts: '2026-04-05' },
+  { type: 'red',   category: 'Authority',           text: 'Authority breach attempt — SEMC/Liberty treaty 81% capacity · approaching cap',           link: 'mga-carrier-authority',                                  ts: '2026-04-17' },
+  { type: 'red',   category: 'Commission Dispute',  text: 'Commission reconciliation dispute — CNA $3,200 variance (March period) · resolution 2026-04-24', link: 'mga-commissions-reconciliation',                 ts: '2026-04-17' },
+  { type: 'red',   category: 'Commission Dispute',  text: 'Commission reconciliation dispute — Zurich $6,200 variance · Peninsula Mfg endorsement tie-out', link: 'mga-commissions-reconciliation',                ts: '2026-04-17' },
+  { type: 'amber', category: 'Renewal Risk',        text: '14 high-value renewals at risk — $2.8M premium · AI-flagged · 60 days',              link: 'mga-reports-kpis',                                       ts: '2026-04-17' },
+  { type: 'amber', category: 'Payout Pending',      text: '2 payout approvals pending — $326,440 combined · CFO + Compliance signoff required', link: 'mga-commissions-payouts',                                ts: '2026-04-18' },
+  { type: 'amber', category: 'Bordereau',           text: 'Zurich premium bordereau dispute — $8,400 variance · meeting 2026-04-22',             link: 'mga-carrier-bordereau-report',                          ts: '2026-04-17' },
+  { type: 'amber', category: 'Compliance',          text: 'TX MGA license renewal — 7 days · fingerprint verification pending',                     link: 'mga-compliance-filings',                                 ts: '2026-04-18' },
+  { type: 'amber', category: 'Reserve Approval',    text: '2 reserve approvals pending — Ridge Builders $100k · Harbor Foods $14k',                link: 'mga-claim-approvals',                                    ts: '2026-04-18' },
+  { type: 'amber', category: 'Chargeback',          text: '$1,513 chargebacks processed this period — pro-rata cancellations (2 agents)',          link: 'mga-commissions-agents',                                 ts: '2026-04-15' },
+  { type: 'blue',  category: 'Submissions',         text: '42 submissions received today · +12% vs. avg · 3 high-value ($500k+)',                   link: 'mga-submissions',                                        ts: '2026-04-18' },
+  { type: 'blue',  category: 'Onboarding',          text: 'Markel E&S carrier onboarding at 68% — rate filings TX + FL pending',                   link: 'mga-carrier-profile',  param: 'CAR-08',                  ts: '2026-04-17' }
 ];
 
 export const renewalPipeline = [
   { range: '0–30 days', count: 23, pct: 19 },
   { range: '31–60 days', count: 41, pct: 34 },
   { range: '61–90 days', count: 58, pct: 47 }
+];
+
+// Dashboard-specific widgets
+export const mgaDashboardGeoMix = [
+  { state: 'CA', premium: 24800000, policies: 1842, lr: 40 },
+  { state: 'TX', premium: 10200000, policies:  842, lr: 42 },
+  { state: 'NY', premium:  6800000, policies:  482, lr: 44 },
+  { state: 'FL', premium:  5400000, policies:  392, lr: 48 },
+  { state: 'IL', premium:  4200000, policies:  342, lr: 38 },
+  { state: 'OH', premium:  2400000, policies:  228, lr: 34 },
+  { state: 'PA', premium:  2100000, policies:  204, lr: 36 },
+  { state: 'GA', premium:  1600000, policies:  188, lr: 40 },
+  { state: 'AZ', premium:  1000000, policies:  112, lr: 36 }
+];
+
+export const mgaDashboardActivityFeed = [
+  { ts: '2026-04-18 14:30', icon: '📋', type: 'Policy', text: 'Westshore Logistics policy TRV-AUTO-2026-11445 issued · premium $48,400', actor: 'Mike Torres',        link: 'mga-policy-profile', param: 'POL-10445' },
+  { ts: '2026-04-18 14:22', icon: '⚖', type: 'Claim',   text: 'Reserve change approved — Ridge Builders CLM-0237 · $420k → $520k',       actor: 'Marcus Henderson',    link: 'mga-claim-details',  param: 'CLM-MGA-2026-0237' },
+  { ts: '2026-04-18 14:15', icon: '📤', type: 'Doc',    text: 'Repair estimate uploaded by insured · CLM-0248 Westshore · OCR complete',   actor: 'Insured (portal)',    link: 'mga-claim-details',  param: 'CLM-MGA-2026-0248' },
+  { ts: '2026-04-18 13:55', icon: '🤖', type: 'AI',     text: 'High-severity AI insight — FleetSafe Auto FL loss ratio surge to 62%',   actor: 'AI Engine',           link: 'mga-reports-kpis' },
+  { ts: '2026-04-18 13:20', icon: '🔒', type: 'Bind',   text: 'Policy bound — Westshore Logistics FleetSafe Auto · Travelers · $48,400',   actor: 'Mike Torres',        link: 'mga-policy-profile', param: 'POL-10445' },
+  { ts: '2026-04-18 12:05', icon: '⚠',  type: 'Security',text:'MFA bypass attempted — USR-013 · blocked · alert sent',                     actor: 'Security',            link: 'mga-settings-logs' },
+  { ts: '2026-04-18 11:42', icon: '💰', type: 'Claim',   text: 'Vendor payment approved — CyberDefense forensics $35k (TechCorp)',          actor: 'Rachel Kim',          link: 'mga-claim-details',  param: 'CLM-MGA-2026-0245' },
+  { ts: '2026-04-18 11:22', icon: '💼', type: 'Comm',    text: 'Mid-month Lockton wire request — $42,200 · CFO review',                     actor: 'Omar Khalid',         link: 'mga-commissions-payouts' },
+  { ts: '2026-04-18 09:30', icon: '📤', type: 'Bordereau',text:'Travelers premium bordereau delivered — 82 policies · $1.42M',              actor: 'System',              link: 'mga-carrier-bordereau-report' },
+  { ts: '2026-04-18 08:42', icon: '🔑', type: 'Login',   text: 'Login — Marcus Henderson via OKTA SSO + MFA',                               actor: 'OKTA',                link: 'mga-settings-logs' }
+];
+
+export const mgaDashboardMyTasks = [
+  { id: 'MT-1', module: 'Claims',      title: 'Review reserve approval — Harbor Foods CLM-0244',   due: '2026-04-19', priority: 'High',   status: 'Open',       link: 'mga-claim-approvals' },
+  { id: 'MT-2', module: 'Renewals',    title: 'Kick off Magnolia Construction renewal (exp 2026-06-01)', due: '2026-04-22', priority: 'High', status: 'In Progress', link: 'mga-policy-profile', param: 'POL-10444' },
+  { id: 'MT-3', module: 'Compliance',  title: 'Sign Q1 TX Premium Tax Return (FLG-2026-Q1-TX)',      due: '2026-04-20', priority: 'High',   status: 'Awaiting',   link: 'mga-compliance-filings' },
+  { id: 'MT-4', module: 'Commissions', title: 'Approve April 2026 payout run ($284,240 · 14 agents)', due: '2026-04-30', priority: 'High',   status: 'Pending',    link: 'mga-commissions-payouts' },
+  { id: 'MT-5', module: 'Endorsements',title: 'Issue Ridge Builders Add Location endorsement (END-88419)',due: '2026-04-20',priority: 'Normal', status: 'Ready',      link: 'mga-policy-endorsements' },
+  { id: 'MT-6', module: 'Carriers',    title: 'Prepare for Travelers Q2 QBR (2026-04-22)',           due: '2026-04-22', priority: 'Normal', status: 'In Progress', link: 'mga-carrier-scorecard' }
+];
+
+export const mgaDashboardQuickStats = {
+  submissions_today: 42,
+  submissions_week: 284,
+  bind_ratio_24h: 58,
+  avg_uw_hrs: 21,
+  policies_issued_today: 18,
+  policies_issued_month: 512,
+  open_claims: 82,
+  claims_cycle_days: 38,
+  renewal_30d_value: 2840000,
+  renewal_60d_value: 4120000,
+  renewal_90d_value: 6480000,
+  projected_retention: 91
+};
+
+export const mgaDashboardRoles = [
+  { key: 'executive',     label: 'Executive View',     icon: '👔' },
+  { key: 'underwriting',  label: 'Underwriting',       icon: '📝' },
+  { key: 'claims',        label: 'Claims',             icon: '🛡' },
+  { key: 'finance',       label: 'Finance',            icon: '💰' },
+  { key: 'agent-mgr',     label: 'Agent Manager',      icon: '👥' }
 ];
 
 export const mgaCarriers = [
@@ -2745,6 +2821,120 @@ export const mgaCommConfig = [
   { carrier: 'Hartford', product: 'Cyber', brokerPct: '10%', mgaPct: '6%' }
 ];
 
+// ─── MGA Commissions & Payments ───
+export const mgaCommissionsKPIs = [
+  { label: 'Commission Payable (Month)', value: '$284,240' },
+  { label: 'Pending Approval',           value: '4', warning: true },
+  { label: 'Outstanding Payouts',        value: '$48,420', warning: true },
+  { label: 'Receivable (Carriers)',      value: '$1.28M' },
+  { label: 'Profit Share Accrual',       value: '$1.74M' },
+  { label: 'Next Payout Run',            value: 'May 5' }
+];
+
+export const mgaCommissionTxns = [
+  { id: 'CT-88421', policy_id: 'POL-10445', policy_number: 'TRV-AUTO-2026-11445',   agent_id: 'AGT-2041', agent: 'Brown & Brown',         carrier: 'Travelers',       product: 'FleetSafe Auto',          type: 'New Business', tier: 'Tier 1', premium: 48400,  rate_pct: 14, amount: 6776,  chargeback: 0,     net_payable: 6776,  status: 'Accrued',    statement: 'STM-2026-04', payout_date: null,           carrier_ref: 'TRV-COMM-88421', created: '2026-04-18 13:20' },
+  { id: 'CT-88420', policy_id: 'POL-10439', policy_number: 'TRV-AUTO-2026-11223',   agent_id: 'AGT-2038', agent: 'Lockton Companies',     carrier: 'Travelers',       product: 'FleetSafe Auto',          type: 'New Business', tier: 'Tier 1', premium: 68400,  rate_pct: 14, amount: 9576,  chargeback: 0,     net_payable: 9576,  status: 'Accrued',    statement: 'STM-2026-04', payout_date: null,           carrier_ref: 'TRV-COMM-88420', created: '2026-04-15 09:40' },
+  { id: 'CT-88419', policy_id: 'POL-10441', policy_number: 'CNA-CYB-2026-88102',    agent_id: 'AGT-2038', agent: 'Lockton Companies',     carrier: 'CNA',             product: 'SecureEdge Cyber',         type: 'Renewal',       tier: 'Tier 1', premium: 248000, rate_pct: 15, amount: 37200, chargeback: 0,     net_payable: 37200, status: 'Approved',   statement: 'STM-2026-04', payout_date: '2026-05-05', carrier_ref: 'CNA-COMM-88419', created: '2026-04-14 08:15' },
+  { id: 'CT-88418', policy_id: 'POL-10440', policy_number: 'CHB-DO-2025-10091',      agent_id: 'AGT-2039', agent: 'Marsh Agency Inc',       carrier: 'Chubb',           product: 'BoardGuard D&O',          type: 'Renewal',       tier: 'Tier 1', premium: 184000, rate_pct: 18, amount: 33120, chargeback: 0,     net_payable: 33120, status: 'Paid',       statement: 'STM-2026-03', payout_date: '2026-04-05', carrier_ref: 'CHB-COMM-88418', created: '2026-03-18 10:00', paid: '2026-04-05 14:00' },
+  { id: 'CT-88417', policy_id: 'POL-10444', policy_number: 'SEMC-WC-2025-48821',     agent_id: 'AGT-2038', agent: 'Lockton Companies',     carrier: 'SEMC / Liberty',  product: 'WorkForce WC — CA',        type: 'Renewal',       tier: 'Tier 1', premium: 184700, rate_pct: 13, amount: 24011, chargeback: 0,     net_payable: 24011, status: 'Paid',       statement: 'STM-2026-03', payout_date: '2026-04-05', carrier_ref: 'SEMC-COMM-88417',created: '2026-02-20 09:00', paid: '2026-04-05 14:00' },
+  { id: 'CT-88416', policy_id: 'POL-10442', policy_number: 'HTF-BOP-2025-90112',     agent_id: 'AGT-2038', agent: 'Lockton Companies',     carrier: 'Hartford',        product: 'MainStreet BOP',          type: 'New Business', tier: 'Tier 1', premium: 32200,  rate_pct: 13, amount: 4186,  chargeback: 0,     net_payable: 4186,  status: 'Paid',       statement: 'STM-2026-03', payout_date: '2026-04-05', carrier_ref: 'HFD-COMM-88416', created: '2025-09-05 09:00', paid: '2026-04-05 14:00' },
+  { id: 'CT-88415', policy_id: 'POL-10443', policy_number: 'CNA-GL-2025-33102',       agent_id: 'AGT-2038', agent: 'Lockton Companies',     carrier: 'CNA',             product: 'GuardPoint GL',           type: 'Endorsement',   tier: 'Tier 1', premium: 4800,   rate_pct: 15, amount: 720,   chargeback: 0,     net_payable: 720,   status: 'Approved',   statement: 'STM-2026-04', payout_date: '2026-05-05', carrier_ref: 'CNA-COMM-88415', created: '2026-04-15 11:22' },
+  { id: 'CT-88414', policy_id: 'POL-10434', policy_number: 'HTF-AUTO-2025-31204',     agent_id: 'AGT-2042', agent: 'Hub International',      carrier: 'Hartford',        product: 'FleetSafe Auto',           type: 'Renewal',       tier: 'Tier 2', premium: 92400,  rate_pct: 13, amount: 12012, chargeback: 0,     net_payable: 12012, status: 'Paid',       statement: 'STM-2026-03', payout_date: '2026-04-05', carrier_ref: 'HFD-COMM-88414', created: '2025-07-10 09:00', paid: '2026-04-05 14:00' },
+  { id: 'CT-88413', policy_id: 'POL-10437', policy_number: 'ZUR-PRP-2025-60012',     agent_id: 'AGT-2035', agent: 'Arthur J. Gallagher',    carrier: 'Zurich',          product: 'PropertyGuard',            type: 'Renewal',       tier: 'Tier 2', premium: 142000, rate_pct: 12, amount: 17040, chargeback: 0,     net_payable: 17040, status: 'Paid',       statement: 'STM-2026-03', payout_date: '2026-04-05', carrier_ref: 'ZUR-COMM-88413', created: '2025-08-12 10:00', paid: '2026-04-05 14:00' },
+  { id: 'CT-88412', policy_id: 'POL-10432', policy_number: 'CHB-CYB-2025-18802',     agent_id: 'AGT-2039', agent: 'Marsh Agency Inc',       carrier: 'Chubb',           product: 'SecureEdge Cyber (Enterprise)', type: 'Renewal', tier: 'Tier 1', premium: 384000, rate_pct: 18, amount: 69120, chargeback: 0,     net_payable: 69120, status: 'Paid',       statement: 'STM-2026-03', payout_date: '2026-04-05', carrier_ref: 'CHB-COMM-88412', created: '2025-10-20 11:00', paid: '2026-04-05 14:00' },
+  { id: 'CT-88411', policy_id: 'POL-10438', policy_number: 'CNA-GL-2024-33104',       agent_id: 'AGT-2040', agent: 'Apex Insurance Services',carrier: 'CNA',             product: 'GuardPoint GL',            type: 'Chargeback',    tier: 'Tier 3', premium: -7100,  rate_pct: 15, amount: -1065, chargeback: 1065,  net_payable: -1065, status: 'Paid',       statement: 'STM-2026-03', payout_date: '2026-04-05', carrier_ref: 'CNA-CHBK-88411', created: '2026-03-18 14:00', paid: '2026-04-05 14:00', note: 'Policy cancelled pro-rata at 3 months · 75% chargeback' },
+  { id: 'CT-88410', policy_id: 'POL-10436', policy_number: 'TRV-BOP-2025-12884',     agent_id: 'AGT-2041', agent: 'Brown & Brown',          carrier: 'Travelers',       product: 'MainStreet BOP',           type: 'New Business', tier: 'Tier 2', premium: 14200,  rate_pct: 13, amount: 1846,  chargeback: 0,     net_payable: 1846,  status: 'Paid',       statement: 'STM-2026-03', payout_date: '2026-04-05', carrier_ref: 'TRV-COMM-88410', created: '2025-11-05 09:00', paid: '2026-04-05 14:00' },
+  { id: 'CT-88409', policy_id: 'POL-10430', policy_number: 'HTF-BOP-2026-90045',     agent_id: 'AGT-2045', agent: 'AssuredPartners',        carrier: 'Hartford',        product: 'MainStreet BOP',           type: 'New Business', tier: 'Tier 3', premium: 18400,  rate_pct: 13, amount: 2392,  chargeback: 0,     net_payable: 2392,  status: 'Accrued',    statement: 'STM-2026-04', payout_date: null,           carrier_ref: 'HFD-COMM-88409', created: '2026-02-05 10:00' },
+  { id: 'CT-88408', policy_id: 'POL-10435', policy_number: 'LIB-WC-2025-55041',       agent_id: 'AGT-2035', agent: 'Arthur J. Gallagher',    carrier: 'SEMC / Liberty',  product: 'WorkForce WC — CA',        type: 'Renewal',       tier: 'Tier 2', premium: 98400,  rate_pct: 13, amount: 12792, chargeback: 0,     net_payable: 12792, status: 'Paid',       statement: 'STM-2026-03', payout_date: '2026-04-05', carrier_ref: 'LIB-COMM-88408', created: '2025-08-10 14:00', paid: '2026-04-05 14:00' },
+  { id: 'CT-88407', policy_id: 'POL-10433', policy_number: 'CNA-UMB-2025-88040',     agent_id: 'AGT-2038', agent: 'Lockton Companies',     carrier: 'CNA',             product: 'OverShield Umbrella',      type: 'Override',      tier: 'Tier 1', premium: 42800,  rate_pct: 3,  amount: 1284,  chargeback: 0,     net_payable: 1284,  status: 'Approved',   statement: 'STM-2026-04', payout_date: '2026-05-05', carrier_ref: 'CNA-OVRD-88407', created: '2026-04-01 08:00', note: 'Override for AGT-2038 mentor relationship' },
+  { id: 'CT-88406', policy_id: 'POL-10431', policy_number: 'TRV-AUTO-2025-88420',    agent_id: 'AGT-2037', agent: 'Risk Strategies',        carrier: 'Travelers',       product: 'FleetSafe Auto',           type: 'Chargeback',    tier: 'Tier 2', premium: -3200,  rate_pct: 14, amount: -448,  chargeback: 448,   net_payable: -448,  status: 'Approved',   statement: 'STM-2026-04', payout_date: '2026-05-05', carrier_ref: 'TRV-CHBK-88406', created: '2026-04-10 11:20', note: 'Driver removal endorsement · pro-rata' }
+];
+
+export const mgaAgentCommissionProfiles = [
+  { agent_id: 'AGT-2038', agent: 'Lockton Companies',       tier: 'Tier 1', new_biz_pct: 14, renewal_pct: 14, override_pct: 2, ytd_earned: 284200, ytd_paid: 238600, ytd_pending: 45600, ytd_chargebacks: 2400,  profit_share_accrued: 48200, policies: 142, statements: 12, next_payout: 42200, model: 'Tiered · standard + override on junior agent subs' },
+  { agent_id: 'AGT-2039', agent: 'Marsh Agency Inc',         tier: 'Tier 1', new_biz_pct: 14, renewal_pct: 13, override_pct: 0, ytd_earned: 186400, ytd_paid: 164800, ytd_pending: 21600, ytd_chargebacks: 800,   profit_share_accrued: 32000, policies: 92,  statements: 12, next_payout: 18400, model: 'Flat + profit share' },
+  { agent_id: 'AGT-2040', agent: 'Apex Insurance Services',   tier: 'Tier 2', new_biz_pct: 13, renewal_pct: 12, override_pct: 0, ytd_earned:  94200, ytd_paid:  84600, ytd_pending:  9600, ytd_chargebacks: 1065,  profit_share_accrued: 14200, policies: 58,  statements: 12, next_payout:  8800, model: 'Flat tiered' },
+  { agent_id: 'AGT-2041', agent: 'Brown & Brown',             tier: 'Tier 2', new_biz_pct: 13, renewal_pct: 13, override_pct: 0, ytd_earned:  68400, ytd_paid:  58200, ytd_pending: 10200, ytd_chargebacks: 0,     profit_share_accrued:  8400, policies: 42,  statements: 12, next_payout: 10400, model: 'Flat · standard' },
+  { agent_id: 'AGT-2042', agent: 'Hub International',         tier: 'Tier 2', new_biz_pct: 13, renewal_pct: 12, override_pct: 0, ytd_earned:  48200, ytd_paid:  42800, ytd_pending:  5400, ytd_chargebacks: 0,     profit_share_accrued:  6200, policies: 32,  statements: 10, next_payout:  4200, model: 'Flat · standard' },
+  { agent_id: 'AGT-2043', agent: 'Arthur J. Gallagher',       tier: 'Tier 2', new_biz_pct: 13, renewal_pct: 12, override_pct: 0, ytd_earned:  52400, ytd_paid:  46200, ytd_pending:  6200, ytd_chargebacks: 240,   profit_share_accrued:  7800, policies: 28,  statements: 10, next_payout:  5200, model: 'Flat · standard' },
+  { agent_id: 'AGT-2044', agent: 'Risk Strategies',            tier: 'Tier 2', new_biz_pct: 13, renewal_pct: 12, override_pct: 0, ytd_earned:  38200, ytd_paid:  32400, ytd_pending:  5800, ytd_chargebacks: 448,   profit_share_accrued:  4800, policies: 24,  statements: 10, next_payout:  4800, model: 'Flat · standard' },
+  { agent_id: 'AGT-2045', agent: 'AssuredPartners',           tier: 'Tier 3', new_biz_pct: 12, renewal_pct: 11, override_pct: 0, ytd_earned:  24200, ytd_paid:  18400, ytd_pending:  5800, ytd_chargebacks: 0,     profit_share_accrued:  2400, policies: 18,  statements: 8,  next_payout:  2400, model: 'Flat · entry tier' },
+  { agent_id: 'AGT-2078', agent: 'SunBelt Insurance Co',       tier: 'Tier 4', new_biz_pct: 10, renewal_pct: 10, override_pct: 0, ytd_earned:   6200, ytd_paid:   4400, ytd_pending:  1800, ytd_chargebacks: 0,     profit_share_accrued:     0, policies:  8,  statements: 4,  next_payout:  1800, model: 'PIP reduced tier · performance improvement' }
+];
+
+export const mgaCommissionStatements = [
+  { id: 'STM-2026-04-AGT-2038', period: 'April 2026', agent_id: 'AGT-2038', agent: 'Lockton Companies',       transactions: 18, gross: 44200, chargebacks: 1600, net: 42600, status: 'Pending Approval', generated: '2026-04-18 06:00', sent: null,                  pdf_doc: 'DOC-52014' },
+  { id: 'STM-2026-04-AGT-2039', period: 'April 2026', agent_id: 'AGT-2039', agent: 'Marsh Agency Inc',         transactions: 12, gross: 21600, chargebacks: 0,    net: 21600, status: 'Pending Approval', generated: '2026-04-18 06:00', sent: null,                  pdf_doc: 'DOC-52015' },
+  { id: 'STM-2026-04-AGT-2040', period: 'April 2026', agent_id: 'AGT-2040', agent: 'Apex Insurance Services',  transactions:  8, gross: 10665, chargebacks: 1065, net: 9600,  status: 'Pending Approval', generated: '2026-04-18 06:00', sent: null,                  pdf_doc: 'DOC-52016' },
+  { id: 'STM-2026-04-AGT-2041', period: 'April 2026', agent_id: 'AGT-2041', agent: 'Brown & Brown',            transactions:  7, gross: 10200, chargebacks: 0,    net: 10200, status: 'Pending Approval', generated: '2026-04-18 06:00', sent: null,                  pdf_doc: 'DOC-52017' },
+  { id: 'STM-2026-03-AGT-2038', period: 'March 2026', agent_id: 'AGT-2038', agent: 'Lockton Companies',       transactions: 16, gross: 40400, chargebacks: 0,    net: 40400, status: 'Paid',             generated: '2026-04-01 06:00', sent: '2026-04-01 06:02',   pdf_doc: 'DOC-52010', paid: '2026-04-05 14:00' },
+  { id: 'STM-2026-03-AGT-2039', period: 'March 2026', agent_id: 'AGT-2039', agent: 'Marsh Agency Inc',         transactions: 10, gross: 33120, chargebacks: 0,    net: 33120, status: 'Paid',             generated: '2026-04-01 06:00', sent: '2026-04-01 06:02',   pdf_doc: 'DOC-52011', paid: '2026-04-05 14:00' },
+  { id: 'STM-2026-03-AGT-2040', period: 'March 2026', agent_id: 'AGT-2040', agent: 'Apex Insurance Services',  transactions:  8, gross:  9600, chargebacks: 0,    net: 9600,  status: 'Paid',             generated: '2026-04-01 06:00', sent: '2026-04-01 06:02',   pdf_doc: 'DOC-52012', paid: '2026-04-05 14:00' },
+  { id: 'STM-2026-03-AGT-2041', period: 'March 2026', agent_id: 'AGT-2041', agent: 'Brown & Brown',            transactions:  6, gross:  8200, chargebacks: 0,    net: 8200,  status: 'Paid',             generated: '2026-04-01 06:00', sent: '2026-04-01 06:02',   pdf_doc: 'DOC-52013', paid: '2026-04-05 14:00' }
+];
+
+export const mgaPayoutApprovals = [
+  { id: 'PAY-2026-05-001', batch: 'May 2026 Monthly Run', period: 'April 2026', total_amount: 284240, agents: 14, payment_method: 'ACH · First Republic', scheduled: '2026-05-05 14:00', status: 'Pending Approval', priority: 'High',   requires: 'CFO + Compliance', submitted_by: 'Omar Khalid', submitted: '2026-04-18 06:00', note: 'Monthly commission run · 14 agents · includes $1.6k chargebacks' },
+  { id: 'PAY-2026-05-002', batch: 'Mid-month Wire — Lockton', period: 'April 2026', total_amount: 42200,  agents: 1,  payment_method: 'Wire · top agent expedite', scheduled: '2026-04-25 14:00', status: 'Pending Approval', priority: 'Normal', requires: 'CFO',              submitted_by: 'Omar Khalid', submitted: '2026-04-18 11:20', note: 'Early payout requested by Lockton (top producer)' },
+  { id: 'PAY-2026-04-004', batch: 'April 2026 Monthly Run',  period: 'March 2026', total_amount: 238640, agents: 14, payment_method: 'ACH · First Republic', scheduled: '2026-04-05 14:00', status: 'Completed',         priority: 'High',   requires: 'CFO + Compliance', submitted_by: 'Omar Khalid', submitted: '2026-04-01 06:00', approved_by: 'Marcus Henderson', approved: '2026-04-02 09:15', completed: '2026-04-05 14:12' },
+  { id: 'PAY-2026-04-003', batch: 'March 2026 Contingent Accrual', period: 'Q1 2026', total_amount: 0,     agents: 0,  payment_method: 'Accrual only',          scheduled: null,                status: 'Completed',         priority: 'Low',    requires: 'CFO',              submitted_by: 'Omar Khalid', submitted: '2026-04-02 10:00', approved_by: 'Marcus Henderson', approved: '2026-04-02 14:00', completed: '2026-04-02 14:15' }
+];
+
+export const mgaCarrierCommReconciliation = [
+  { id: 'CR-2026-04-01', carrier: 'Travelers',       period: 'March 2026', mga_expected: 342000, carrier_paid: 342000, variance: 0,     status: 'Reconciled', statusColor: 'green', payment_received: '2026-04-12',  ack_ref: 'TRV-PAID-88421' },
+  { id: 'CR-2026-04-02', carrier: 'SEMC / Liberty',  period: 'March 2026', mga_expected: 252000, carrier_paid: 252000, variance: 0,     status: 'Reconciled', statusColor: 'green', payment_received: '2026-04-11',  ack_ref: 'LIB-PAID-44210' },
+  { id: 'CR-2026-04-03', carrier: 'CNA',              period: 'March 2026', mga_expected: 194000, carrier_paid: 190800, variance: -3200, status: 'Dispute Open', statusColor: 'red',  payment_received: '2026-04-10',  ack_ref: 'CNA-PAID-22010', note: '$3,200 variance · endorsement timing · follow-up 2026-04-24' },
+  { id: 'CR-2026-04-04', carrier: 'Hartford',         period: 'March 2026', mga_expected:  84000, carrier_paid:  84000, variance: 0,     status: 'Reconciled', statusColor: 'green', payment_received: '2026-04-12',  ack_ref: 'HFD-PAID-99210' },
+  { id: 'CR-2026-04-05', carrier: 'Chubb',            period: 'March 2026', mga_expected: 102000, carrier_paid: 102000, variance: 0,     status: 'Reconciled', statusColor: 'green', payment_received: '2026-04-08',  ack_ref: 'CHB-PAID-11010' },
+  { id: 'CR-2026-04-06', carrier: 'Zurich',           period: 'March 2026', mga_expected:  17040, carrier_paid:  10840, variance: -6200, status: 'Dispute Open', statusColor: 'red',  payment_received: '2026-04-09',  ack_ref: 'ZUR-PAID-04400', note: 'Peninsula Mfg endorsement dispute tied to PBD-2026-04-06' },
+  { id: 'CR-2026-04-07', carrier: 'Berkley Net',      period: 'March 2026', mga_expected:  14200, carrier_paid:  14200, variance: 0,     status: 'Reconciled', statusColor: 'green', payment_received: '2026-04-14',  ack_ref: 'BKN-PAID-88120' }
+];
+
+export const mgaCommissionRules = [
+  { id: 'RULE-001', name: 'Tier 1 Base Rate',             trigger: 'Policy bound', condition: 'agent.tier = 1 AND product.category IN (Premium,Core)',  action: 'Apply 14% NB / 14% RN rate',                                               status: 'Active',  priority: 100, created: '2024-01-01', last_edited: '2026-03-01', uses_30d: 284 },
+  { id: 'RULE-002', name: 'Tier 2 Standard',              trigger: 'Policy bound', condition: 'agent.tier = 2',                                           action: 'Apply 13% NB / 12% RN rate',                                               status: 'Active',  priority: 100, created: '2024-01-01', last_edited: '2025-11-15', uses_30d: 142 },
+  { id: 'RULE-003', name: 'Tier 3 Entry',                  trigger: 'Policy bound', condition: 'agent.tier = 3',                                           action: 'Apply 12% NB / 11% RN rate',                                               status: 'Active',  priority: 100, created: '2024-01-01', last_edited: '2024-01-01', uses_30d: 48  },
+  { id: 'RULE-004', name: 'PIP Reduced',                  trigger: 'Policy bound', condition: 'agent.status = PIP',                                       action: 'Apply 10% NB / 10% RN rate · cap $2k/month',                               status: 'Active',  priority: 200, created: '2025-08-01', last_edited: '2026-02-10', uses_30d: 12  },
+  { id: 'RULE-005', name: 'Chargeback: Pro-Rata Cancel',  trigger: 'Policy cancelled', condition: 'cancellation_type = pro-rata AND paid_commission > 0', action: 'Generate chargeback = paid * (1 - earned_pct)',                           status: 'Active',  priority: 100, created: '2024-01-01', last_edited: '2025-05-10', uses_30d: 4   },
+  { id: 'RULE-006', name: 'Mentor Override — Lockton',    trigger: 'Policy bound', condition: 'insured_agent.mentor = AGT-2038',                         action: 'Accrue 2% override to AGT-2038',                                           status: 'Active',  priority: 150, created: '2025-06-01', last_edited: '2025-06-01', uses_30d: 8   },
+  { id: 'RULE-007', name: 'Profit Share — Accrual',         trigger: 'Monthly',      condition: 'agent.ytd_loss_ratio <= 45 AND agent.ytd_premium >= $1M', action: 'Accrue 3% of earned premium as contingent (paid in Q1 of next year)', status: 'Active',  priority: 100, created: '2024-01-01', last_edited: '2024-12-15', uses_30d: 1   },
+  { id: 'RULE-008', name: 'Volume Bonus — $5M+',           trigger: 'Monthly',      condition: 'agent.ytd_premium >= $5,000,000',                         action: 'Add 1% bonus on NB written in month',                                       status: 'Active',  priority: 120, created: '2024-06-01', last_edited: '2025-01-05', uses_30d: 2   },
+  { id: 'RULE-009', name: 'Draft: New Product Launch Bonus',trigger: 'Policy bound',condition: 'product.launched <= 90d ago',                             action: 'Add 2% launch bonus on first 30d NB',                                       status: 'Draft',   priority: 110, created: '2026-04-10', last_edited: '2026-04-10', uses_30d: 0   }
+];
+
+export const mgaTax1099s = [
+  { agent_id: 'AGT-2038', agent: 'Lockton Companies',       tin_masked: '**-***5821', address: 'Kansas City, MO',      tax_year: 2025, total_paid: 720400, status: 'Filed',   filed_date: '2026-01-28', correction: false, doc_id: 'DOC-52020' },
+  { agent_id: 'AGT-2039', agent: 'Marsh Agency Inc',         tin_masked: '**-***3102', address: 'New York, NY',        tax_year: 2025, total_paid: 484200, status: 'Filed',   filed_date: '2026-01-28', correction: false, doc_id: 'DOC-52021' },
+  { agent_id: 'AGT-2040', agent: 'Apex Insurance Services',  tin_masked: '**-***4421', address: 'Phoenix, AZ',         tax_year: 2025, total_paid: 224800, status: 'Filed',   filed_date: '2026-01-28', correction: false, doc_id: 'DOC-52022' },
+  { agent_id: 'AGT-2041', agent: 'Brown & Brown',            tin_masked: '**-***8421', address: 'Daytona Beach, FL',   tax_year: 2025, total_paid: 168200, status: 'Filed',   filed_date: '2026-01-28', correction: false, doc_id: 'DOC-52023' },
+  { agent_id: 'AGT-2042', agent: 'Hub International',        tin_masked: '**-***1104', address: 'Chicago, IL',          tax_year: 2025, total_paid: 124800, status: 'Filed',   filed_date: '2026-01-28', correction: false, doc_id: 'DOC-52024' },
+  { agent_id: 'AGT-2043', agent: 'Arthur J. Gallagher',      tin_masked: '**-***9420', address: 'Rolling Meadows, IL', tax_year: 2025, total_paid: 118400, status: 'Filed',   filed_date: '2026-01-28', correction: false, doc_id: 'DOC-52025' },
+  { agent_id: 'AGT-2044', agent: 'Risk Strategies',           tin_masked: '**-***2018', address: 'Boston, MA',          tax_year: 2025, total_paid:  94200, status: 'Filed',   filed_date: '2026-01-28', correction: false, doc_id: 'DOC-52026' },
+  { agent_id: 'AGT-2045', agent: 'AssuredPartners',           tin_masked: '**-***6602', address: 'Lake Mary, FL',        tax_year: 2025, total_paid:  58200, status: 'Filed',   filed_date: '2026-01-28', correction: false, doc_id: 'DOC-52027' },
+  { agent_id: 'AGT-2038', agent: 'Lockton Companies',       tin_masked: '**-***5821', address: 'Kansas City, MO',      tax_year: 2026, total_paid: 238600, status: 'Accruing',filed_date: null,          correction: false, doc_id: null }
+];
+
+export const mgaCommissionAnalytics = {
+  monthly_trend: [
+    { month: 'Nov 25', commission: 224000, profit_share: 18400 },
+    { month: 'Dec 25', commission: 248000, profit_share: 22000 },
+    { month: 'Jan 26', commission: 262000, profit_share: 24800 },
+    { month: 'Feb 26', commission: 254000, profit_share: 28200 },
+    { month: 'Mar 26', commission: 238600, profit_share: 32400 },
+    { month: 'Apr 26', commission: 284240, profit_share: 42000 }
+  ],
+  by_carrier: [
+    { carrier: 'Travelers',      comm: 28420, earned: 342000 },
+    { carrier: 'SEMC / Liberty', comm: 22400, earned: 252000 },
+    { carrier: 'CNA',             comm: 28400, earned: 194000 },
+    { carrier: 'Chubb',           comm: 33120, earned: 102000 },
+    { carrier: 'Hartford',        comm: 16200, earned:  84000 },
+    { carrier: 'Zurich',          comm: 17040, earned:  17040 },
+    { carrier: 'Berkley Net',     comm: 14200, earned:  14200 }
+  ],
+  leakage: { total_earned_ytd: 1784000, paid_out_ytd: 1742600, leakage_pct: 2.3, uncollected_chargebacks: 42400, unreconciled_variance: 9400 }
+};
+
 export const complianceKPIs = [
   { label: 'Filed', value: '312' },
   { label: 'Pending', value: '18' },
@@ -2762,6 +2952,1105 @@ export const allFilings = [
   { state: 'TX', product: 'Surplus WC', type: 'Surplus Line', due: 'Apr 10', filed: '—', status: 'Overdue', statusColor: 'red' },
   { state: 'FL', product: 'GL', type: 'Rate Filing', due: 'May 15', filed: '—', status: 'Due', statusColor: 'amber' },
   { state: 'NY', product: 'WC', type: 'Annual Audit', due: 'Jul 01', filed: '—', status: 'Future', statusColor: 'blue' }
+];
+
+// ─── MGA Products & Rating Engine ───
+export const mgaProductKPIs = [
+  { label: 'Active Products',   value: '18' },
+  { label: 'In Development',    value: '5' },
+  { label: 'Written Premium',   value: '$48.2M' },
+  { label: 'Avg Combined Ratio',value: '87%' },
+  { label: 'Rate Changes (30d)',value: '3' },
+  { label: 'Launched (YTD)',    value: '2' }
+];
+
+export const mgaProductLifecycleStages = [
+  { key: 'ideation',     label: 'Ideation',        color: 'blue',  order: 1 },
+  { key: 'design',       label: 'Design',          color: 'blue',  order: 2 },
+  { key: 'testing',      label: 'Testing',         color: 'amber', order: 3 },
+  { key: 'carrier_appr', label: 'Carrier Approval',color: 'amber', order: 4 },
+  { key: 'rate_filing',  label: 'Rate Filing',     color: 'amber', order: 5 },
+  { key: 'launch',       label: 'Launched',        color: 'green', order: 6 },
+  { key: 'monitoring',   label: 'Monitoring',      color: 'green', order: 7 },
+  { key: 'enhancement',  label: 'Enhancement',     color: 'blue',  order: 8 },
+  { key: 'sunset',       label: 'Sunset',          color: 'gray',  order: 9 }
+];
+
+export const mgaProducts = [
+  { id: 'PROD-WC-CA-01',   name: 'WorkForce WC — CA Small Biz',          code: 'WF-WC-CA',    lob: 'Workers Comp',      type: 'Admitted',      states: 'CA',                     target: 'Small-biz <$10M rev', carriers: ['SEMC','Liberty Mutual'], stage: 'monitoring',  launched: '2023-06-01', version: '3.2', written_premium: 8420000, loss_ratio: 38, bind_ratio: 62, combined_ratio: 76, profit_margin: 24, retention: 92, policies: 248, forms: 14, rating_factors: 12, last_rate_change: '2026-02-15',  rate_change_pct: 3.5 },
+  { id: 'PROD-GL-CNA-01',  name: 'GuardPoint GL — Contractors',           code: 'GP-GL-CTR',   lob: 'General Liability', type: 'Admitted',      states: 'CA,NV,OR,WA,AZ',          target: 'Construction trades', carriers: ['CNA'],                 stage: 'monitoring',  launched: '2024-04-10', version: '2.1', written_premium: 6120000, loss_ratio: 44, bind_ratio: 58, combined_ratio: 82, profit_margin: 18, retention: 88, policies: 182, forms: 18, rating_factors: 14, last_rate_change: '2026-01-20',  rate_change_pct: 5.2 },
+  { id: 'PROD-CYB-CNA-01', name: 'SecureEdge Cyber — Tech + Prof Svcs',   code: 'SE-CYB',      lob: 'Cyber',             type: 'Admitted',      states: 'All 50',                  target: 'Tech $1M–$500M rev',  carriers: ['CNA','Chubb'],          stage: 'monitoring',  launched: '2024-08-15', version: '2.3', written_premium: 5840000, loss_ratio: 28, bind_ratio: 52, combined_ratio: 68, profit_margin: 32, retention: 90, policies: 142, forms: 16, rating_factors: 22, last_rate_change: '2026-03-10',  rate_change_pct: 2.8 },
+  { id: 'PROD-AUTO-TRV-01',name: 'FleetSafe — Commercial Auto',           code: 'FS-AUTO',     lob: 'Commercial Auto',   type: 'Admitted',      states: 'CA,NV,OR,WA',             target: 'Fleets 5–100 units',   carriers: ['Travelers'],           stage: 'monitoring',  launched: '2024-11-22', version: '2.0', written_premium: 4820000, loss_ratio: 52, bind_ratio: 54, combined_ratio: 88, profit_margin: 12, retention: 84, policies: 92,  forms: 12, rating_factors: 18, last_rate_change: '2026-02-28',  rate_change_pct: 6.1 },
+  { id: 'PROD-BOP-HTF-01', name: 'MainStreet BOP — Retail & Office',      code: 'MS-BOP',      lob: 'BOP',               type: 'Admitted',      states: 'CA,NV,OR,AZ,TX',          target: 'Small retail/office',  carriers: ['Hartford'],            stage: 'monitoring',  launched: '2023-03-15', version: '3.4', written_premium: 3820000, loss_ratio: 42, bind_ratio: 68, combined_ratio: 84, profit_margin: 16, retention: 86, policies: 284, forms: 22, rating_factors: 16, last_rate_change: '2026-01-12',  rate_change_pct: 4.0 },
+  { id: 'PROD-UMB-LIB-01', name: 'OverShield Umbrella',                    code: 'OS-UMB',      lob: 'Umbrella',          type: 'Admitted',      states: 'All 50',                  target: 'Mid-market $2M+',      carriers: ['Liberty Mutual'],       stage: 'monitoring',  launched: '2023-01-10', version: '2.8', written_premium: 2820000, loss_ratio: 18, bind_ratio: 48, combined_ratio: 62, profit_margin: 38, retention: 94, policies: 186, forms: 8,  rating_factors: 8,  last_rate_change: '2025-10-30',  rate_change_pct: 2.0 },
+  { id: 'PROD-PRO-HIS-01', name: 'Professional Shield — Consulting & IT', code: 'PS-PROF',     lob: 'Professional',      type: 'Admitted',      states: 'All 50',                  target: 'Tech/consulting',      carriers: ['Hiscox'],              stage: 'monitoring',  launched: '2024-06-18', version: '1.4', written_premium: 2240000, loss_ratio: 36, bind_ratio: 56, combined_ratio: 76, profit_margin: 24, retention: 88, policies: 98,  forms: 14, rating_factors: 18, last_rate_change: '2026-01-08',  rate_change_pct: 3.2 },
+  { id: 'PROD-DO-CHB-01',  name: 'BoardGuard D&O — Private Co',           code: 'BG-DO',       lob: 'D&O',               type: 'Admitted',      states: 'All 50',                  target: 'Private cos $10M–$500M',carriers: ['Chubb'],              stage: 'monitoring',  launched: '2024-09-22', version: '1.3', written_premium: 1820000, loss_ratio: 24, bind_ratio: 44, combined_ratio: 70, profit_margin: 30, retention: 92, policies: 62,  forms: 12, rating_factors: 14, last_rate_change: '2026-02-02',  rate_change_pct: 1.5 },
+  { id: 'PROD-PROP-ZUR-01',name: 'PropertyGuard Commercial',               code: 'PG-PROP',     lob: 'Property',          type: 'Admitted',      states: 'All 50 (excl. coastal FL)',target: 'TIV $1M–$50M',        carriers: ['Zurich'],              stage: 'monitoring',  launched: '2023-09-05', version: '2.5', written_premium: 1620000, loss_ratio: 48, bind_ratio: 42, combined_ratio: 86, profit_margin: 14, retention: 82, policies: 84,  forms: 20, rating_factors: 20, last_rate_change: '2025-12-15',  rate_change_pct: 7.5 },
+  { id: 'PROD-WC-CA-02',   name: 'WorkForce WC — CA Mid-Market',           code: 'WF-WC-MID',   lob: 'Workers Comp',      type: 'Admitted',      states: 'CA,NV',                   target: 'Mid-market $10M–$100M',carriers: ['SEMC','Liberty Mutual'], stage: 'monitoring',launched: '2024-12-01', version: '1.2', written_premium: 1420000, loss_ratio: 34, bind_ratio: 64, combined_ratio: 74, profit_margin: 26, retention: 90, policies: 42,  forms: 14, rating_factors: 12, last_rate_change: '2026-03-20',  rate_change_pct: 4.2 },
+  { id: 'PROD-CYB-CNA-02', name: 'SecureEdge Cyber — SMB Express',        code: 'SE-CYB-SMB',  lob: 'Cyber',             type: 'Admitted',      states: 'All 50',                  target: 'SMB <$5M rev',        carriers: ['CNA'],                 stage: 'testing',      launched: null,          version: '0.8', written_premium: 0,       loss_ratio: null, bind_ratio: null, combined_ratio: null, profit_margin: null, retention: null, policies: 0,   forms: 12, rating_factors: 16, last_rate_change: null, rate_change_pct: null },
+  { id: 'PROD-GL-MKL-01',  name: 'ArtisanGuard GL — E&S',                 code: 'AG-GL-ES',    lob: 'General Liability', type: 'Surplus / E&S', states: 'All 50',                  target: 'Artisan contractors',  carriers: ['Markel'],              stage: 'carrier_appr', launched: null,          version: '1.0', written_premium: 0,       loss_ratio: null, bind_ratio: null, combined_ratio: null, profit_margin: null, retention: null, policies: 0,   forms: 14, rating_factors: 16, last_rate_change: null, rate_change_pct: null },
+  { id: 'PROD-CANN-01',    name: 'CannaShield — Cannabis Dispensary',      code: 'CS-CAN',      lob: 'Specialty / BOP',   type: 'Surplus / E&S', states: 'CA,CO,NV,MA (pilot)',     target: 'Cannabis retail',      carriers: ['Scottsdale'],          stage: 'rate_filing',  launched: null,          version: '1.0', written_premium: 0,       loss_ratio: null, bind_ratio: null, combined_ratio: null, profit_margin: null, retention: null, policies: 0,   forms: 16, rating_factors: 18, last_rate_change: null, rate_change_pct: null },
+  { id: 'PROD-EV-FLEET-01',name: 'EVFleet — Electric Vehicle Commercial Auto', code: 'EV-AUTO', lob: 'Commercial Auto',   type: 'Admitted',      states: 'CA (pilot)',              target: 'EV fleets 5–50 units', carriers: ['Travelers'],           stage: 'design',        launched: null,          version: '0.3', written_premium: 0,       loss_ratio: null, bind_ratio: null, combined_ratio: null, profit_margin: null, retention: null, policies: 0,   forms: 0,  rating_factors: 0,  last_rate_change: null, rate_change_pct: null },
+  { id: 'PROD-MPL-01',     name: 'MedPractice Shield — PMPM',             code: 'MPS-PL',      lob: 'Professional',       type: 'Admitted',      states: 'All 50 (planned)',         target: 'Medical practices',    carriers: ['Chubb','CNA'],         stage: 'ideation',      launched: null,          version: '0.1', written_premium: 0,       loss_ratio: null, bind_ratio: null, combined_ratio: null, profit_margin: null, retention: null, policies: 0,   forms: 0,  rating_factors: 0,  last_rate_change: null, rate_change_pct: null },
+  { id: 'PROD-BOP-OLD-01', name: 'MainStreet BOP — Legacy v1 (sunset)',    code: 'MS-BOP-V1',   lob: 'BOP',                type: 'Admitted',      states: 'CA,NV',                   target: 'Legacy book',          carriers: ['Hartford'],            stage: 'sunset',        launched: '2020-05-10', version: '1.9', written_premium: 240000,  loss_ratio: 58, bind_ratio: 22, combined_ratio: 94, profit_margin: 6,  retention: 72, policies: 18,  forms: 22, rating_factors: 14, last_rate_change: '2024-10-15',  rate_change_pct: 8.0 }
+];
+
+export const mgaProductDetail = {
+  id: 'PROD-WC-CA-01',
+  general: {
+    name: 'WorkForce WC — CA Small Biz',
+    code: 'WF-WC-CA',
+    description: 'Admitted Workers Comp product for California small businesses (revenue under $10M · class codes 5000–9000).',
+    lob: 'Workers Comp',
+    type: 'Admitted',
+    states: ['CA'],
+    target_market: 'Small-business employers · 5–100 employees · $500k–$10M revenue',
+    target_classes: '5403 Carpentry · 5437 Plumbing · 5645 HVAC · 8810 Clerical · 8742 Sales · 8813 Auto service · 3632 Restaurants · 3669 Retail food',
+    carriers: ['SEMC (primary)', 'Liberty Mutual (co-insurer)'],
+    version: '3.2',
+    effective: '2026-01-01',
+    owner: 'Elena Rodriguez',
+    filing_number: 'CA-WC-2025-14728'
+  },
+  coverages: [
+    { k: 'Employers Liability — BI by Accident',        v: '$1M / accident',                 mandatory: true },
+    { k: 'Employers Liability — BI by Disease',          v: '$1M / employee · $1M aggregate', mandatory: true },
+    { k: 'Workers Compensation — Statutory',             v: 'CA Statutory',                   mandatory: true },
+    { k: 'Terrorism (TRIA)',                              v: 'Included',                       mandatory: false },
+    { k: 'Foreign Voluntary Compensation',                v: 'Optional endorsement',            mandatory: false },
+    { k: 'Stop-Gap Employers Liability (monopolistic)',    v: 'Not applicable CA',              mandatory: false }
+  ],
+  forms: [
+    { id: 'WC-FRM-01', name: 'WC Declarations Page',                        type: 'Dec',         version: '3.2', filed: '2025-12-01' },
+    { id: 'WC-FRM-02', name: 'WC 00 00 01 A · Workers Comp Policy',          type: 'Policy',      version: 'ISO',  filed: '2025-12-01' },
+    { id: 'WC-FRM-03', name: 'WC 04 14 A · CA Cancellation Endorsement',    type: 'Endorsement', version: 'ISO',  filed: '2025-12-01' },
+    { id: 'WC-FRM-04', name: 'WC 00 03 13 · Waiver of Subro',                 type: 'Endorsement', version: 'ISO',  filed: '2025-12-01' },
+    { id: 'WC-FRM-05', name: 'Schedule of Insured Locations',                  type: 'Schedule',    version: '3.2',  filed: '2025-12-01' },
+    { id: 'WC-FRM-06', name: 'Officer Exclusion Election',                     type: 'Endorsement', version: 'CA',   filed: '2025-12-01' },
+    { id: 'WC-FRM-07', name: 'Alternative Dispute Resolution Notice',           type: 'Notice',      version: '3.2',  filed: '2025-12-01' }
+  ],
+  rating_factors: [
+    { factor: 'Base Rate (per $100 payroll)',  type: 'base',       by: 'Class code',           example: 'Class 5403: $4.82 · Class 8810: $0.19', impact: 'Primary' },
+    { factor: 'Experience Modification',         type: 'modifier',   by: 'WCIRB ExMod',          example: '0.75 (min) – 2.00 (max) · avg 0.92',   impact: 'Primary' },
+    { factor: 'Schedule Rating Credits',          type: 'adjustment',  by: 'Safety program',      example: '-5% to -25%',                           impact: 'Secondary' },
+    { factor: 'Safety Program Participation',     type: 'credit',     by: 'Certification',        example: '-10% for OSHA VPP',                     impact: 'Secondary' },
+    { factor: 'Premium Discount',                 type: 'discount',   by: 'Premium band',         example: '$0–$10k: 0% · $100k–$500k: 9.5% · $500k+: 14%', impact: 'Secondary' },
+    { factor: 'Terrorism Premium (TRIA)',         type: 'add',        by: 'Flat fee',              example: '$50 per policy',                        impact: 'Tertiary' },
+    { factor: 'Minimum Premium',                   type: 'floor',      by: 'Class group',          example: 'Low hazard: $750 · High hazard: $2,500', impact: 'Tertiary' },
+    { factor: 'Taxes & Assessments',              type: 'surcharge',  by: 'State mandate',        example: 'CA: ~7% of premium (UAA + Fraud + STBM)', impact: 'Tertiary' }
+  ],
+  underwriting_rules: [
+    { type: 'eligibility', rule: 'Revenue ≤ $10M',                                                 action: 'Proceed' },
+    { type: 'eligibility', rule: 'Headquartered in CA',                                            action: 'Proceed' },
+    { type: 'eligibility', rule: 'Experience Mod ≤ 1.20',                                          action: 'Proceed' },
+    { type: 'referral',    rule: 'Experience Mod 1.20–1.50',                                       action: 'Refer to senior UW' },
+    { type: 'decline',     rule: 'Experience Mod > 1.50',                                          action: 'Decline' },
+    { type: 'referral',    rule: 'Prior 5-yr loss ratio > 70%',                                    action: 'Refer + require narrative' },
+    { type: 'decline',     rule: 'Class code in prohibited list (hazmat, aviation, explosives)',    action: 'Decline' },
+    { type: 'referral',    rule: 'Annual payroll > $5M',                                           action: 'Refer (authority cap)' },
+    { type: 'eligibility', rule: 'At least 2 full years in business',                              action: 'Proceed' },
+    { type: 'decline',     rule: 'Prior cancellation for non-payment or fraud',                    action: 'Decline' }
+  ],
+  questionnaire: [
+    { q: 'Annual estimated payroll by class code?',              type: 'number_per_class', required: true,  weight: 25 },
+    { q: 'Years in business?',                                    type: 'number',           required: true,  weight: 8 },
+    { q: 'Prior insurance carrier (last 5 years)?',               type: 'text',              required: true,  weight: 6 },
+    { q: 'Experience Modification (WCIRB)?',                       type: 'number',           required: true,  weight: 20 },
+    { q: 'Prior claims in last 5 years? (count + amount)',         type: 'claims_list',      required: true,  weight: 18 },
+    { q: 'Safety program in place?',                               type: 'choice',            required: true,  weight: 10 },
+    { q: 'Does the company use subcontractors?',                   type: 'choice',            required: true,  weight: 8 },
+    { q: 'OSHA VPP certified?',                                    type: 'choice',            required: false, weight: 5 }
+  ],
+  pricing_example: {
+    insured: 'Magnolia Construction LLC',
+    class_code: '5403 Carpentry',
+    payroll: 2400000,
+    base_rate: 4.82,
+    base_premium: 115680,
+    ex_mod: 0.92,
+    modified_premium: 106426,
+    schedule_credit_pct: -15,
+    schedule_credit: -15964,
+    subtotal: 90462,
+    premium_discount_pct: -9.5,
+    premium_discount: -8594,
+    terrorism: 50,
+    taxes: 5728,
+    final_premium: 87646
+  },
+  launch_workflow: [
+    { step: 'Product Design',           status: 'complete', date: '2023-02-15', owner: 'Elena Rodriguez', note: 'Class mix + coverage structure finalized' },
+    { step: 'Internal Review',          status: 'complete', date: '2023-03-10', owner: 'Marcus Henderson', note: 'UW committee approved' },
+    { step: 'Carrier Approval',         status: 'complete', date: '2023-04-05', owner: 'SEMC',            note: 'Binding authority granted up to $500k' },
+    { step: 'CA DOI Rate Filing',        status: 'complete', date: '2023-05-12', owner: 'Compliance',      note: 'Filed 2023-04-15 · approved 2023-05-10' },
+    { step: 'Agent Training',            status: 'complete', date: '2023-05-28', owner: 'Ops',             note: '4 training sessions · 142 agents trained' },
+    { step: 'Soft Launch (pilot)',       status: 'complete', date: '2023-06-01', owner: 'Ops',             note: '10 agents · 30-day pilot' },
+    { step: 'Full Launch',               status: 'complete', date: '2023-07-01', owner: 'Ops',             note: 'Rolled out to all appointed agents' },
+    { step: 'Monitoring (90-day)',        status: 'complete', date: '2023-09-30', owner: 'Product Team',    note: 'LR 42% · bind 58% · on-track' }
+  ],
+  rate_history: [
+    { effective: '2023-06-01', version: '1.0', change_pct: 0,    reason: 'Initial launch rates',                 approved_by: 'CA DOI' },
+    { effective: '2024-01-15', version: '2.0', change_pct: 3.2,  reason: 'Market adjustment · class 5403 +3.2%', approved_by: 'CA DOI' },
+    { effective: '2024-09-01', version: '2.5', change_pct: 4.5,  reason: 'LR trending · broad adjustment',        approved_by: 'CA DOI' },
+    { effective: '2025-04-01', version: '3.0', change_pct: -1.8, reason: 'Favorable loss experience · decrease',  approved_by: 'CA DOI' },
+    { effective: '2025-12-01', version: '3.2', change_pct: 3.5,  reason: 'Inflation + medical cost index',         approved_by: 'CA DOI' }
+  ]
+};
+
+export const mgaRateSimulations = [
+  { id: 'SIM-482', run: '2026-04-18 15:22', product: 'WF-WC-CA', agent: 'Bridgepoint', insured: 'Magnolia Construction', version_a: 'v3.1', version_b: 'v3.2', premium_a: 84480, premium_b: 87646, delta: 3.7, user: 'Elena Rodriguez', status: 'Review' },
+  { id: 'SIM-481', run: '2026-04-17 11:04', product: 'SE-CYB',   agent: 'Aon',          insured: 'DataCore Inc',           version_a: 'v2.2', version_b: 'v2.3', premium_a: 256100, premium_b: 249000, delta: -2.8, user: 'Priya Sharma',     status: 'Approved' },
+  { id: 'SIM-480', run: '2026-04-15 14:30', product: 'FS-AUTO',  agent: 'Lockton',      insured: 'Westshore Logistics',    version_a: 'v1.8', version_b: 'v2.0', premium_a: 161200, premium_b: 172400, delta: 6.9, user: 'David Park',       status: 'Approved' },
+  { id: 'SIM-479', run: '2026-04-15 09:15', product: 'GP-GL-CTR',agent: 'Marsh',        insured: 'Apex Industries',        version_a: 'v2.0', version_b: 'v2.1', premium_a: 49400, premium_b: 52000, delta: 5.3, user: 'Marcus Henderson', status: 'Approved' },
+  { id: 'SIM-478', run: '2026-04-12 16:45', product: 'MS-BOP',   agent: 'Hub',           insured: 'Neon Brewing',           version_a: 'v3.3', version_b: 'v3.4', premium_a: 32600, premium_b: 34000, delta: 4.3, user: 'Tomás Weber',      status: 'Review' },
+  { id: 'SIM-477', run: '2026-04-10 10:20', product: 'OS-UMB',   agent: 'Bridgepoint',  insured: 'Magnolia Umbrella',      version_a: 'v2.7', version_b: 'v2.8', premium_a: 17850, premium_b: 18200, delta: 2.0, user: 'Marcus Henderson', status: 'Approved' }
+];
+
+export const mgaLaunchPipeline = [
+  { id: 'PROD-CYB-CNA-02', product: 'SecureEdge Cyber — SMB Express',    stage: 'testing',     owner: 'Priya Sharma',     target_launch: '2026-07-01', progress: 62, blockers: ['Rating model v0.8 needs A/B test data from CNA'],                 open_items: 3 },
+  { id: 'PROD-GL-MKL-01',  product: 'ArtisanGuard GL — E&S',              stage: 'carrier_appr',owner: 'Marcus Henderson', target_launch: '2026-06-15', progress: 78, blockers: ['Markel final appetite sign-off pending · expected Apr 25'],      open_items: 2 },
+  { id: 'PROD-CANN-01',    product: 'CannaShield — Cannabis Dispensary',   stage: 'rate_filing', owner: 'Compliance',       target_launch: '2026-08-01', progress: 85, blockers: ['CA DOI rate filing submitted · 30-day review window'],            open_items: 1 },
+  { id: 'PROD-EV-FLEET-01',product: 'EVFleet — EV Commercial Auto',        stage: 'design',      owner: 'David Park',        target_launch: '2026-09-15', progress: 38, blockers: ['Telematics integration · battery-hazard rating factor research'], open_items: 5 },
+  { id: 'PROD-MPL-01',     product: 'MedPractice Shield — PMPM',          stage: 'ideation',    owner: 'Elena Rodriguez',  target_launch: '2027-01-01', progress: 12, blockers: ['Market research in progress', 'Chubb + CNA capacity discussion'], open_items: 4 }
+];
+
+export const mgaProductAnalytics = {
+  profitability: [
+    { product: 'OverShield Umbrella',                    written: 2820000, loss_ratio: 18, combined: 62, profit: 1072000, profit_pct: 38 },
+    { product: 'SecureEdge Cyber — Tech + Prof Svcs',    written: 5840000, loss_ratio: 28, combined: 68, profit: 1869000, profit_pct: 32 },
+    { product: 'BoardGuard D&O — Private Co',            written: 1820000, loss_ratio: 24, combined: 70, profit: 546000,  profit_pct: 30 },
+    { product: 'WorkForce WC — CA Mid-Market',           written: 1420000, loss_ratio: 34, combined: 74, profit: 369000,  profit_pct: 26 },
+    { product: 'WorkForce WC — CA Small Biz',            written: 8420000, loss_ratio: 38, combined: 76, profit: 2021000, profit_pct: 24 },
+    { product: 'Professional Shield — Consulting & IT',  written: 2240000, loss_ratio: 36, combined: 76, profit: 538000,  profit_pct: 24 },
+    { product: 'GuardPoint GL — Contractors',            written: 6120000, loss_ratio: 44, combined: 82, profit: 1102000, profit_pct: 18 },
+    { product: 'MainStreet BOP — Retail & Office',       written: 3820000, loss_ratio: 42, combined: 84, profit: 611000,  profit_pct: 16 },
+    { product: 'PropertyGuard Commercial',               written: 1620000, loss_ratio: 48, combined: 86, profit: 227000,  profit_pct: 14 },
+    { product: 'FleetSafe — Commercial Auto',            written: 4820000, loss_ratio: 52, combined: 88, profit: 579000,  profit_pct: 12 }
+  ],
+  rate_impact: [
+    { product: 'WorkForce WC — CA Small Biz',   rate_change: 3.5,  retained: 92, lost: 8,  new_business_delta: 6,  premium_delta: 284000 },
+    { product: 'GuardPoint GL — Contractors',    rate_change: 5.2,  retained: 88, lost: 12, new_business_delta: 4,  premium_delta: 318000 },
+    { product: 'SecureEdge Cyber',                rate_change: 2.8,  retained: 90, lost: 10, new_business_delta: 8,  premium_delta: 164000 },
+    { product: 'FleetSafe Auto',                  rate_change: 6.1,  retained: 84, lost: 16, new_business_delta: 2,  premium_delta: 294000 },
+    { product: 'MainStreet BOP',                  rate_change: 4.0,  retained: 86, lost: 14, new_business_delta: 5,  premium_delta: 153000 }
+  ],
+  submission_to_bound: [
+    { product: 'WorkForce WC — CA Small Biz',   submitted: 412, quoted: 312, bound: 248, bind_ratio: 62, avg_tat_hrs: 18 },
+    { product: 'GuardPoint GL — Contractors',    submitted: 328, quoted: 241, bound: 182, bind_ratio: 58, avg_tat_hrs: 22 },
+    { product: 'SecureEdge Cyber',                submitted: 218, quoted: 148, bound: 142, bind_ratio: 52, avg_tat_hrs: 28 },
+    { product: 'FleetSafe Auto',                  submitted: 186, quoted: 124, bound: 92,  bind_ratio: 54, avg_tat_hrs: 24 },
+    { product: 'MainStreet BOP',                  submitted: 428, quoted: 312, bound: 284, bind_ratio: 68, avg_tat_hrs: 16 },
+    { product: 'OverShield Umbrella',             submitted: 412, quoted: 221, bound: 186, bind_ratio: 48, avg_tat_hrs: 20 },
+    { product: 'BoardGuard D&O',                  submitted: 164, quoted: 88,  bound: 62,  bind_ratio: 44, avg_tat_hrs: 36 }
+  ]
+};
+
+// ─── MGA Delegated Claims Management ───
+export const mgaClaimsKPIs = [
+  { label: 'Open Claims',          value: '82' },
+  { label: 'New FNOL (Today)',     value: '4' },
+  { label: 'Incurred (YTD)',       value: '$18.4M' },
+  { label: 'Avg Cycle Time',       value: '38d' },
+  { label: 'Pending Approval',     value: '6', warning: true },
+  { label: 'Loss Ratio',           value: '38%' }
+];
+
+export const mgaClaimStatuses = ['FNOL','Under Investigation','Reserve Set','Estimate Issued','Pending Approval','Payment Issued','Paid','Subrogating','Closed','Denied','Reopened'];
+
+export const mgaAdjusters = [
+  { id: 'ADJ-01', name: 'Jane Rodriguez',    title: 'Senior Adjuster — Auto',         authority: 100000, specialty: ['Auto','Fleet'],          wip: 18, avg_cycle: 32, csat: 4.6, initials: 'JR', avatar_color: 'linear-gradient(135deg,#ff8a65,#ffab40)' },
+  { id: 'ADJ-02', name: 'Mark Chen',          title: 'Senior Adjuster — Property',    authority: 100000, specialty: ['Property','BOP'],       wip: 14, avg_cycle: 38, csat: 4.5, initials: 'MC', avatar_color: 'linear-gradient(135deg,#4fc3f7,#29b6f6)' },
+  { id: 'ADJ-03', name: 'Linda Park',         title: 'Senior Adjuster — Casualty',    authority: 100000, specialty: ['GL','Umbrella'],         wip: 22, avg_cycle: 42, csat: 4.4, initials: 'LP', avatar_color: 'linear-gradient(135deg,#81c784,#66bb6a)' },
+  { id: 'ADJ-04', name: 'Daniel Ortiz',        title: 'Large Loss Adjuster',            authority: 250000, specialty: ['All'],                    wip: 8,  avg_cycle: 68, csat: 4.7, initials: 'DO', avatar_color: 'linear-gradient(135deg,#ba68c8,#ab47bc)' },
+  { id: 'ADJ-05', name: 'Rachel Kim',         title: 'Cyber Claims Specialist',         authority: 150000, specialty: ['Cyber','Tech E&O'],     wip: 9,  avg_cycle: 48, csat: 4.8, initials: 'RK', avatar_color: 'linear-gradient(135deg,#6c5ce7,#a67dff)' },
+  { id: 'ADJ-06', name: 'Tyler Washington',    title: 'Adjuster — WC',                  authority: 75000,  specialty: ['WC'],                    wip: 28, avg_cycle: 52, csat: 4.3, initials: 'TW', avatar_color: 'linear-gradient(135deg,#ffb74d,#ff9800)' },
+  { id: 'ADJ-07', name: 'Sofia Martinez',     title: 'Junior Adjuster',                 authority: 25000,  specialty: ['BOP','Auto'],          wip: 34, avg_cycle: 28, csat: 4.2, initials: 'SM', avatar_color: 'linear-gradient(135deg,#f06292,#ec407a)' }
+];
+
+export const mgaClaims = [
+  { id: 'CLM-MGA-2026-0248', carrier_claim_no: 'TRV-CA-88421-X',     policy_id: 'TRV-AUTO-2026-11445', product: 'FleetSafe Auto',      lob: 'Commercial Auto', agent_id: 'AGT-2041', insured: 'Westshore Logistics',           loss_date: '2026-04-12', reported: '2026-04-12 16:40', status: 'Under Investigation', sub_status: 'Photos requested',     severity: 'Medium', initial_reserve: 8500,   current_reserve: 12400,  paid: 0,     outstanding: 12400,  adjuster: 'ADJ-01', authority_used: 'Senior', closure_date: null,         final_paid: null,     statusColor: 'blue',  fraud_flag: false, litigation: false, red_flags: 0, days_open: 7,  carrier_reporting: 'Pending', next_action: 'Inspection scheduled 2026-04-22', priority: 'Normal' },
+  { id: 'CLM-MGA-2026-0247', carrier_claim_no: 'SEMC-WC-88420-X',    policy_id: 'SEMC-WC-2025-48821', product: 'WorkForce WC — CA',    lob: 'Workers Comp',    agent_id: 'AGT-2038', insured: 'Magnolia Construction LLC',      loss_date: '2026-04-10', reported: '2026-04-11 09:15', status: 'Reserve Set',         sub_status: 'Treatment ongoing',    severity: 'Small',  initial_reserve: 18500,  current_reserve: 18500,  paid: 4200,  outstanding: 14300,  adjuster: 'ADJ-06', authority_used: 'Junior', closure_date: null,         final_paid: null,     statusColor: 'blue',  fraud_flag: false, litigation: false, red_flags: 0, days_open: 9,  carrier_reporting: 'Reported', next_action: 'Medical bills review', priority: 'Normal' },
+  { id: 'CLM-MGA-2026-0246', carrier_claim_no: 'CNA-GL-88419-X',     policy_id: 'CNA-GL-2025-33102',  product: 'GuardPoint GL',        lob: 'General Liability',agent_id: 'AGT-2038', insured: 'Apex Industries',                loss_date: '2026-04-08', reported: '2026-04-08 14:22', status: 'Estimate Issued',     sub_status: 'Awaiting claimant response', severity: 'Medium', initial_reserve: 42000,  current_reserve: 38000,  paid: 0,     outstanding: 38000,  adjuster: 'ADJ-03', authority_used: 'Senior', closure_date: null,         final_paid: null,     statusColor: 'amber', fraud_flag: false, litigation: false, red_flags: 0, days_open: 11, carrier_reporting: 'Reported', next_action: 'Follow-up with claimant attorney', priority: 'Normal' },
+  { id: 'CLM-MGA-2026-0245', carrier_claim_no: 'CNA-CYB-88418-X',    policy_id: 'CNA-CYB-2026-88102', product: 'SecureEdge Cyber',     lob: 'Cyber',           agent_id: 'AGT-2038', insured: 'TechCorp Inc',                   loss_date: '2026-04-05', reported: '2026-04-05 20:15', status: 'Under Investigation', sub_status: 'Forensic firm engaged', severity: 'Large',  initial_reserve: 420000, current_reserve: 420000, paid: 35000, outstanding: 385000, adjuster: 'ADJ-05', authority_used: 'Referred', closure_date: null,         final_paid: null,     statusColor: 'red',   fraud_flag: false, litigation: false, red_flags: 1, days_open: 14, carrier_reporting: 'Reported', next_action: 'Forensic report expected 2026-04-28', priority: 'High' },
+  { id: 'CLM-MGA-2026-0244', carrier_claim_no: 'HTF-BOP-88417-X',    policy_id: 'HTF-BOP-2025-90112', product: 'MainStreet BOP',        lob: 'BOP',             agent_id: 'AGT-2038', insured: 'Harbor Foods',                  loss_date: '2026-03-28', reported: '2026-03-28 11:05', status: 'Pending Approval',    sub_status: 'Settlement offer pending', severity: 'Medium', initial_reserve: 28000,  current_reserve: 42000,  paid: 0,     outstanding: 42000,  adjuster: 'ADJ-02', authority_used: 'Senior', closure_date: null,         final_paid: null,     statusColor: 'amber', fraud_flag: false, litigation: false, red_flags: 0, days_open: 22, carrier_reporting: 'Reported', next_action: 'Waiting on reserve approval', priority: 'Normal' },
+  { id: 'CLM-MGA-2026-0243', carrier_claim_no: 'TRV-AUTO-88416-X',   policy_id: 'TRV-AUTO-2026-11223',product: 'FleetSafe Auto',       lob: 'Commercial Auto', agent_id: 'AGT-2038', insured: 'Delta Logistics',                loss_date: '2026-03-22', reported: '2026-03-23 08:40', status: 'Payment Issued',      sub_status: 'Awaiting check clearance', severity: 'Small',  initial_reserve: 6200,   current_reserve: 6200,   paid: 5200,  outstanding: 1000,   adjuster: 'ADJ-01', authority_used: 'Junior', closure_date: null,         final_paid: null,     statusColor: 'blue',  fraud_flag: false, litigation: false, red_flags: 0, days_open: 28, carrier_reporting: 'Reported', next_action: 'Close after check clears', priority: 'Normal' },
+  { id: 'CLM-MGA-2026-0242', carrier_claim_no: 'TRV-AUTO-88415-X',   policy_id: 'TRV-AUTO-2026-11223',product: 'FleetSafe Auto',       lob: 'Commercial Auto', agent_id: 'AGT-2038', insured: 'Delta Logistics · Driver B',    loss_date: '2026-03-15', reported: '2026-03-15 14:22', status: 'Paid',                sub_status: 'Awaiting closure',        severity: 'Small',  initial_reserve: 4800,   current_reserve: 3240,   paid: 3240,  outstanding: 0,      adjuster: 'ADJ-01', authority_used: 'Junior', closure_date: null,         final_paid: null,     statusColor: 'green', fraud_flag: false, litigation: false, red_flags: 0, days_open: 35, carrier_reporting: 'Reported', next_action: 'Close file + subro review', priority: 'Normal' },
+  { id: 'CLM-MGA-2026-0241', carrier_claim_no: 'CNA-GL-88414-X',     policy_id: 'CNA-GL-2025-33102',  product: 'GuardPoint GL',        lob: 'General Liability', agent_id: 'AGT-2040',insured: 'Coastal Realty',                 loss_date: '2026-03-10', reported: '2026-03-12 10:00', status: 'Subrogating',         sub_status: 'Third-party paying',       severity: 'Medium', initial_reserve: 38000,  current_reserve: 38000,  paid: 38000, outstanding: 0,      adjuster: 'ADJ-03', authority_used: 'Senior', closure_date: null,         final_paid: null,     statusColor: 'blue',  fraud_flag: false, litigation: false, red_flags: 0, days_open: 40, carrier_reporting: 'Reported', next_action: 'Subrogation · expecting $22k recovery', priority: 'Normal' },
+  { id: 'CLM-MGA-2026-0240', carrier_claim_no: 'LIB-WC-88413-X',     policy_id: 'SEMC-WC-2025-48821', product: 'WorkForce WC — CA',    lob: 'Workers Comp',    agent_id: 'AGT-2038', insured: 'Magnolia Constr · Employee A',   loss_date: '2026-03-05', reported: '2026-03-05 16:20', status: 'Closed',              sub_status: 'Settled',                   severity: 'Small',  initial_reserve: 12000,  current_reserve: 8420,   paid: 8420,  outstanding: 0,      adjuster: 'ADJ-06', authority_used: 'Junior', closure_date: '2026-04-15', final_paid: 8420,     statusColor: 'green', fraud_flag: false, litigation: false, red_flags: 0, days_open: 41, carrier_reporting: 'Reported', next_action: '—', priority: 'Normal' },
+  { id: 'CLM-MGA-2026-0239', carrier_claim_no: 'HTF-BOP-88412-X',    policy_id: 'HTF-BOP-2025-90112', product: 'MainStreet BOP',        lob: 'BOP',             agent_id: 'AGT-2040', insured: 'Apex Industries · Showroom',     loss_date: '2026-02-28', reported: '2026-02-28 22:30', status: 'Closed',              sub_status: 'Paid in full',              severity: 'Medium', initial_reserve: 68000,  current_reserve: 54200,  paid: 54200, outstanding: 0,      adjuster: 'ADJ-02', authority_used: 'Senior', closure_date: '2026-04-10', final_paid: 54200,    statusColor: 'green', fraud_flag: false, litigation: false, red_flags: 0, days_open: 41, carrier_reporting: 'Reported', next_action: '—', priority: 'Normal' },
+  { id: 'CLM-MGA-2026-0238', carrier_claim_no: 'ZUR-PRP-88411-X',    policy_id: 'ZUR-PRP-2025-60012', product: 'PropertyGuard',         lob: 'Property',        agent_id: 'AGT-2035', insured: 'Peninsula Manufacturing',        loss_date: '2026-02-22', reported: '2026-02-22 18:15', status: 'Under Investigation', sub_status: 'Suspicious — SIU engaged',   severity: 'Large',  initial_reserve: 284000, current_reserve: 284000, paid: 12000, outstanding: 272000, adjuster: 'ADJ-04', authority_used: 'Referred', closure_date: null,         final_paid: null,     statusColor: 'red',   fraud_flag: true,  litigation: false, red_flags: 3, days_open: 56, carrier_reporting: 'Reported', next_action: 'SIU investigation · carrier aware', priority: 'High' },
+  { id: 'CLM-MGA-2026-0237', carrier_claim_no: 'CNA-GL-88410-X',     policy_id: 'CNA-GL-2025-33102',  product: 'GuardPoint GL',        lob: 'General Liability', agent_id: 'AGT-2038',insured: 'Ridge Builders',                 loss_date: '2026-02-15', reported: '2026-02-16 10:40', status: 'Under Investigation', sub_status: 'Attorney represented',      severity: 'Large',  initial_reserve: 420000, current_reserve: 520000, paid: 48000, outstanding: 472000, adjuster: 'ADJ-04', authority_used: 'Referred', closure_date: null,         final_paid: null,     statusColor: 'red',   fraud_flag: false, litigation: true,  red_flags: 1, days_open: 63, carrier_reporting: 'Reported', next_action: 'Deposition scheduled 2026-05-12', priority: 'High' },
+  { id: 'CLM-MGA-2026-0236', carrier_claim_no: 'CHB-DO-88409-X',     policy_id: 'CHB-DO-2025-10091',  product: 'BoardGuard D&O',        lob: 'D&O',             agent_id: 'AGT-2039', insured: 'TechCorp Inc · Class Action',    loss_date: '2026-02-08', reported: '2026-02-10 11:15', status: 'Under Investigation', sub_status: 'Carrier defense counsel',   severity: 'Large',  initial_reserve: 850000, current_reserve: 850000, paid: 0,     outstanding: 850000, adjuster: 'ADJ-04', authority_used: 'Referred', closure_date: null,         final_paid: null,     statusColor: 'red',   fraud_flag: false, litigation: true,  red_flags: 0, days_open: 70, carrier_reporting: 'Reported', next_action: 'Monitoring defense strategy', priority: 'High' },
+  { id: 'CLM-MGA-2026-0235', carrier_claim_no: 'HTF-AUTO-88408-X',   policy_id: 'NWD-AUTO-2025-41201',product: 'FleetSafe Auto',        lob: 'Commercial Auto', agent_id: 'AGT-2035', insured: 'Summit Industrial · Truck #4',   loss_date: '2026-01-28', reported: '2026-01-28 06:15', status: 'Denied',              sub_status: 'Driver excluded from policy', severity: 'Medium', initial_reserve: 28000,  current_reserve: 0,      paid: 0,     outstanding: 0,      adjuster: 'ADJ-01', authority_used: 'Senior', closure_date: '2026-02-28', final_paid: 0,        statusColor: 'gray',  fraud_flag: false, litigation: false, red_flags: 2, days_open: 31, carrier_reporting: 'Reported', next_action: '—', priority: 'Normal' },
+  { id: 'CLM-MGA-2026-0234', carrier_claim_no: 'TRV-AUTO-88407-X',   policy_id: 'TRV-AUTO-2025-88420',product: 'FleetSafe Auto',        lob: 'Commercial Auto', agent_id: 'AGT-2037', insured: 'Desert Rides Transport',         loss_date: '2026-01-15', reported: '2026-01-15 09:30', status: 'Reopened',            sub_status: 'New injury disclosed',      severity: 'Medium', initial_reserve: 38000,  current_reserve: 72000,  paid: 38000, outstanding: 34000,  adjuster: 'ADJ-01', authority_used: 'Senior', closure_date: null,         final_paid: null,     statusColor: 'amber', fraud_flag: false, litigation: false, red_flags: 1, days_open: 94, carrier_reporting: 'Reported', next_action: 'Medical eval scheduled', priority: 'High' }
+];
+
+export const mgaClaimDetail = {
+  id: 'CLM-MGA-2026-0248',
+  header: {
+    claim_number_mga: 'CLM-MGA-2026-0248',
+    claim_number_carrier: 'TRV-CA-88421-X',
+    policy_number: 'TRV-AUTO-2026-11445',
+    product: 'FleetSafe Auto',
+    carrier: 'Travelers',
+    loss_date: '2026-04-12',
+    reported_date: '2026-04-12 16:40',
+    status: 'Under Investigation',
+    severity: 'Medium',
+    insured: 'Westshore Logistics',
+    agent: 'Lockton Companies'
+  },
+  loss_details: {
+    description: 'Rear-ended at stop light at Folsom Blvd & 65th St. Insured vehicle (2024 Ford F-250) was stationary at red light when struck from behind by claimant vehicle. No injuries reported on scene.',
+    location: 'Folsom Blvd & 65th St, Sacramento CA 95819',
+    cause_of_loss: 'Collision — rear impact',
+    police_report: 'CHP #2026-88421',
+    officer: 'Officer R. Martinez, Badge #4421',
+    weather: 'Clear · 68°F',
+    involved_parties: [
+      { name: 'Driver (insured)',   role: 'Operator',   vehicle: '2024 Ford F-250 · VIN 1FTEX1EP... · Co. truck #8', injury: 'None reported' },
+      { name: 'Other driver',       role: 'At-fault',    vehicle: '2021 Honda Civic · Personal · insured by Geico · policy CAA-8842-X', injury: 'Neck pain — visited ER' },
+      { name: 'Passenger (other)',  role: 'Witness',     vehicle: 'Same as at-fault', injury: 'None' }
+    ]
+  },
+  financials: {
+    initial_reserve: 8500,
+    reserve_history: [
+      { ts: '2026-04-19 14:22', amount: 12400, reason: 'Updated after photo review · rear bumper + tail light + quarter panel', actor: 'Jane Rodriguez' },
+      { ts: '2026-04-13 10:15', amount: 8500,  reason: 'Initial reserve based on FNOL + insured statement',                      actor: 'Jane Rodriguez' }
+    ],
+    current_reserve: 12400,
+    paid: 0,
+    outstanding: 12400,
+    incurred: 12400,
+    payments: [],
+    expenses: [
+      { k: 'Adjuster time',           v: 480 },
+      { k: 'Photo inspection',        v: 250 }
+    ],
+    subrogation: { potential: 12400, pursuing: true, third_party_carrier: 'Geico', status: 'In pursuit' }
+  },
+  documents: [
+    { name: 'FNOL Confirmation.pdf',           type: 'FNOL',             size: '180 KB', uploaded: '2026-04-12 16:42', source: 'Insured' },
+    { name: 'Dashcam clip.mp4',                 type: 'Video',            size: '12 MB',  uploaded: '2026-04-12 16:42', source: 'Insured' },
+    { name: 'Police report CHP 2026-88421.pdf', type: 'Police Report',    size: '820 KB', uploaded: '2026-04-17 14:15', source: 'Insured' },
+    { name: 'Damage photos (12).zip',           type: 'Photos',           size: '48 MB',  uploaded: '2026-04-19 10:30', source: 'Adjuster' },
+    { name: 'Repair estimate — Firestone.pdf',  type: 'Estimate',         size: '480 KB', uploaded: '2026-04-18 09:04', source: 'Insured' },
+    { name: 'Other driver insurance.pdf',       type: 'Third Party',       size: '120 KB', uploaded: '2026-04-12 16:50', source: 'Insured' }
+  ],
+  timeline: [
+    { ts: '2026-04-19 14:22', event: 'Reserve revised up to $12,400 after photo review',    actor: 'Jane Rodriguez', category: 'Reserve' },
+    { ts: '2026-04-19 10:30', event: '12 damage photos uploaded · shop floor inspection',   actor: 'Jane Rodriguez', category: 'Investigation' },
+    { ts: '2026-04-18 09:04', event: 'Repair estimate received from Firestone ($11,200)',    actor: 'Insured (portal)', category: 'Documentation' },
+    { ts: '2026-04-17 14:15', event: 'Police report uploaded by insured',                    actor: 'Insured (portal)', category: 'Documentation' },
+    { ts: '2026-04-15 10:00', event: 'Inspection scheduled for 2026-04-22 @ 10 AM',           actor: 'Jane Rodriguez', category: 'Workflow' },
+    { ts: '2026-04-14 09:30', event: 'First-party statement completed with insured',          actor: 'Jane Rodriguez', category: 'Investigation' },
+    { ts: '2026-04-13 11:05', event: 'Assigned to Jane Rodriguez (Senior Adjuster · Auto)',   actor: 'System auto-assign', category: 'Workflow' },
+    { ts: '2026-04-13 10:15', event: 'Initial reserve $8,500 · auto-triage score 42 (medium)', actor: 'MGA System',         category: 'Reserve' },
+    { ts: '2026-04-12 16:42', event: 'FNOL acknowledged · claim number assigned',              actor: 'MGA System',         category: 'Intake' },
+    { ts: '2026-04-12 16:40', event: 'FNOL filed via insured portal · no injuries',            actor: 'Insured (portal)',   category: 'Intake' }
+  ],
+  audit_trail: [
+    { ts: '2026-04-19 14:22', actor: 'Jane Rodriguez', action: 'Reserve raised from $8,500 to $12,400', auth_level: 'Senior ($100k cap)', authority_used: 'No (well under cap)' },
+    { ts: '2026-04-13 11:05', actor: 'System',          action: 'Auto-assigned to ADJ-01',              auth_level: '—',                    authority_used: 'Routing rule' },
+    { ts: '2026-04-13 10:15', actor: 'System',          action: 'Initial reserve $8,500 set',            auth_level: 'Auto',                  authority_used: 'Auto-triage model' },
+    { ts: '2026-04-12 16:42', actor: 'MGA System',      action: 'Claim number generated',                auth_level: '—',                    authority_used: '—' }
+  ],
+  messages: [
+    { ts: '2026-04-19 14:42', from: 'Jane Rodriguez', to: 'James Reynolds (insured)', channel: 'Portal',    text: 'Hi James — got your photos. Reserve updated to match estimate. We\'re subrogating against Geico; you should see payment within 10 business days of repair completion.' },
+    { ts: '2026-04-18 11:20', from: 'James Reynolds', to: 'Jane Rodriguez',          channel: 'Portal',    text: 'Firestone quoted $11,200 for the repair. Attached estimate.' },
+    { ts: '2026-04-17 14:20', from: 'Jane Rodriguez', to: 'James Reynolds',          channel: 'Portal',    text: 'Thanks for the police report. Any estimate on file?' }
+  ]
+};
+
+export const mgaReserveApprovals = [
+  { id: 'RES-4201', claim_id: 'CLM-MGA-2026-0244', insured: 'Harbor Foods',                  current_reserve: 28000,  proposed_reserve: 42000,  delta: 14000,  proposed_by: 'Mark Chen',          submitted: '2026-04-18 16:22', reason: 'Additional damage discovered in back storage room · water damage spread',                                        priority: 'Normal', status: 'Pending' },
+  { id: 'RES-4200', claim_id: 'CLM-MGA-2026-0237', insured: 'Ridge Builders',                current_reserve: 420000, proposed_reserve: 520000, delta: 100000, proposed_by: 'Daniel Ortiz',       submitted: '2026-04-17 11:04', reason: 'Attorney demand letter received · potential exposure higher than initial assessment',                           priority: 'High',   status: 'Pending' },
+  { id: 'RES-4199', claim_id: 'CLM-MGA-2026-0245', insured: 'TechCorp Inc (cyber breach)',   current_reserve: 280000, proposed_reserve: 420000, delta: 140000, proposed_by: 'Rachel Kim',         submitted: '2026-04-15 09:15', reason: 'Forensic firm identified broader scope than initial · 2.1M PII records · regulatory notifications required', priority: 'High',   status: 'Approved', approved_by: 'Marcus Henderson', approved: '2026-04-15 14:00' },
+  { id: 'RES-4198', claim_id: 'CLM-MGA-2026-0238', insured: 'Peninsula Manufacturing',        current_reserve: 150000, proposed_reserve: 284000, delta: 134000, proposed_by: 'Daniel Ortiz',       submitted: '2026-03-22 10:00', reason: 'SIU investigation revealed greater damage · fraud flag still open',                                              priority: 'High',   status: 'Approved', approved_by: 'Marcus Henderson', approved: '2026-03-22 16:30' },
+  { id: 'RES-4197', claim_id: 'CLM-MGA-2026-0234', insured: 'Desert Rides Transport',        current_reserve: 38000,  proposed_reserve: 72000,  delta: 34000,  proposed_by: 'Jane Rodriguez',    submitted: '2026-04-08 11:20', reason: 'Claim reopened after new injury disclosed by claimant',                                                         priority: 'Medium', status: 'Approved', approved_by: 'Daniel Ortiz',       approved: '2026-04-09 09:15' }
+];
+
+export const mgaPaymentApprovals = [
+  { id: 'PMT-8821', claim_id: 'CLM-MGA-2026-0244', insured: 'Harbor Foods',                payee: 'Servpro Restoration',    amount: 28400, payment_type: 'Vendor', method: 'ACH',     proposed_by: 'Mark Chen',    submitted: '2026-04-18 16:22', status: 'Pending Approval', priority: 'Normal', auth_cap: 100000 },
+  { id: 'PMT-8820', claim_id: 'CLM-MGA-2026-0241', insured: 'Coastal Realty',              payee: 'Plaintiff — Slip & Fall', amount: 38000, payment_type: 'Settlement', method: 'Check', proposed_by: 'Linda Park',   submitted: '2026-04-12 10:15', status: 'Approved',         priority: 'Normal', auth_cap: 100000, approved_by: 'Marcus Henderson', approved: '2026-04-12 15:00' },
+  { id: 'PMT-8819', claim_id: 'CLM-MGA-2026-0240', insured: 'Magnolia · Employee A',       payee: 'Employee (medical)',      amount: 8420,  payment_type: 'Indemnity', method: 'ACH',     proposed_by: 'Tyler Washington',submitted: '2026-04-05 14:30', status: 'Paid',             priority: 'Normal', auth_cap: 75000,  approved_by: 'Tyler Washington',approved: '2026-04-05 14:30' },
+  { id: 'PMT-8818', claim_id: 'CLM-MGA-2026-0245', insured: 'TechCorp Inc',                payee: 'CyberDefense Forensics',  amount: 35000, payment_type: 'Vendor', method: 'ACH',     proposed_by: 'Rachel Kim',   submitted: '2026-04-08 11:15', status: 'Paid',             priority: 'High',   auth_cap: 150000, approved_by: 'Rachel Kim',        approved: '2026-04-08 11:20' }
+];
+
+export const mgaCarrierBordereau = [
+  { id: 'BDX-2026-04-18', carrier: 'Travelers',       type: 'Claims Daily',   period: '2026-04-18', claims: 18, paid_amount: 18420, reserve_movement: 32400, status: 'Delivered', statusColor: 'green', ack: 'TRV-ACK-8842', sent: '2026-04-18 18:00' },
+  { id: 'BDX-2026-04-17', carrier: 'SEMC / Liberty',  type: 'Claims Daily',   period: '2026-04-17', claims: 12, paid_amount: 28200, reserve_movement: 8400,  status: 'Delivered', statusColor: 'green', ack: 'SEMC-ACK-4481', sent: '2026-04-17 18:00' },
+  { id: 'BDX-2026-04-W16',carrier: 'CNA',              type: 'Claims Weekly',  period: 'Wk 16 2026', claims: 28, paid_amount: 82400, reserve_movement: 142000, status: 'Delivered', statusColor: 'green', ack: 'CNA-ACK-4481', sent: '2026-04-15 06:00' },
+  { id: 'BDX-2026-04-M4', carrier: 'Hartford',         type: 'Claims Monthly', period: 'Apr 2026',    claims: 6,  paid_amount: 54200, reserve_movement: 0,      status: 'Queued',    statusColor: 'blue',  ack: null,          sent: null },
+  { id: 'BDX-2026-04-W16-2',carrier: 'Chubb',            type: 'Large Loss',     period: 'Wk 16 2026', claims: 1,  paid_amount: 0,     reserve_movement: 850000, status: 'Delivered', statusColor: 'green', ack: 'CHB-ACK-221',  sent: '2026-04-15 14:30' }
+];
+
+export const mgaClaimsAnalytics = {
+  cycle_time_by_lob: [
+    { lob: 'Workers Comp',        avg_days: 45, closed_30d: 12, closed_45d: 58, closed_60d: 74, target: 45 },
+    { lob: 'General Liability',   avg_days: 62, closed_30d: 8,  closed_45d: 42, closed_60d: 58, target: 60 },
+    { lob: 'Commercial Auto',     avg_days: 32, closed_30d: 18, closed_45d: 72, closed_60d: 88, target: 30 },
+    { lob: 'BOP',                 avg_days: 28, closed_30d: 22, closed_45d: 78, closed_60d: 92, target: 30 },
+    { lob: 'Cyber',               avg_days: 68, closed_30d: 3,  closed_45d: 28, closed_60d: 52, target: 90 },
+    { lob: 'Property',            avg_days: 42, closed_30d: 14, closed_45d: 54, closed_60d: 78, target: 45 },
+    { lob: 'D&O',                 avg_days: 184,closed_30d: 0,  closed_45d: 4,  closed_60d: 8,  target: 180 }
+  ],
+  loss_ratio_by_product: [
+    { product: 'OverShield Umbrella',    written: 2820000, incurred: 508000,   loss_ratio: 18 },
+    { product: 'BoardGuard D&O',         written: 1820000, incurred: 437000,   loss_ratio: 24 },
+    { product: 'SecureEdge Cyber',       written: 5840000, incurred: 1635000,  loss_ratio: 28 },
+    { product: 'WorkForce WC — CA Small',written: 8420000, incurred: 3200000,  loss_ratio: 38 },
+    { product: 'MainStreet BOP',         written: 3820000, incurred: 1604000,  loss_ratio: 42 },
+    { product: 'GuardPoint GL',          written: 6120000, incurred: 2693000,  loss_ratio: 44 },
+    { product: 'FleetSafe Auto',         written: 4820000, incurred: 2506000,  loss_ratio: 52 },
+    { product: 'PropertyGuard',          written: 1620000, incurred: 778000,   loss_ratio: 48 }
+  ],
+  severity_trend: [
+    { month: 'Nov 25', small: 18, medium: 8,  large: 1 },
+    { month: 'Dec 25', small: 22, medium: 12, large: 2 },
+    { month: 'Jan 26', small: 24, medium: 14, large: 1 },
+    { month: 'Feb 26', small: 19, medium: 10, large: 3 },
+    { month: 'Mar 26', small: 21, medium: 11, large: 2 },
+    { month: 'Apr 26', small: 8,  medium: 4,  large: 2 }
+  ],
+  adjuster_performance: [
+    { name: 'Jane Rodriguez',   wip: 18, closed_30d: 24, avg_cycle: 32, csat: 4.6, accuracy: 94 },
+    { name: 'Mark Chen',         wip: 14, closed_30d: 18, avg_cycle: 38, csat: 4.5, accuracy: 92 },
+    { name: 'Linda Park',         wip: 22, closed_30d: 16, avg_cycle: 42, csat: 4.4, accuracy: 90 },
+    { name: 'Daniel Ortiz',       wip: 8,  closed_30d: 4,  avg_cycle: 68, csat: 4.7, accuracy: 96 },
+    { name: 'Rachel Kim',         wip: 9,  closed_30d: 6,  avg_cycle: 48, csat: 4.8, accuracy: 95 },
+    { name: 'Tyler Washington',    wip: 28, closed_30d: 32, avg_cycle: 52, csat: 4.3, accuracy: 88 },
+    { name: 'Sofia Martinez',     wip: 34, closed_30d: 42, avg_cycle: 28, csat: 4.2, accuracy: 84 }
+  ],
+  subro_recovery: { pursued_30d: 142000, recovered_30d: 88000, rate: 62 }
+};
+
+// ─── MGA Risk & Appetite Management ───
+export const mgaAppetiteKPIs = [
+  { label: 'Total Written (YTD)',  value: '$48.2M' },
+  { label: 'Avg Loss Ratio',       value: '38%' },
+  { label: 'Within Appetite %',    value: '94%' },
+  { label: 'Appetite Changes (30d)',value: '7' },
+  { label: 'Pending Approvals',    value: '3', warning: true },
+  { label: 'Capacity Used',        value: '68%' }
+];
+
+export const mgaAppetiteTiers = [
+  { key: 'aggressive', label: 'Aggressive',  color: '#00c853', desc: 'High capacity · competitive pricing · fast-track UW · actively seeking' },
+  { key: 'selective',  label: 'Selective',   color: '#ffb300', desc: 'Limited capacity · stricter terms · case-by-case' },
+  { key: 'restricted', label: 'Restricted',  color: '#ff5252', desc: 'Very limited · senior UW only · requires exec approval' },
+  { key: 'prohibited', label: 'Prohibited',  color: '#424242', desc: 'Auto-decline · not accepting under any circumstances' }
+];
+
+export const mgaAppetiteMatrix = [
+  // LOB × State × class tier · shape: {lob, state, class_group, tier, capacity_pct, active_policies, written_ytd, loss_ratio, notes}
+  { lob: 'Workers Comp',      state: 'CA', class_group: 'Low-hazard office/clerical', tier: 'aggressive', capacity_pct: 48, policies: 62, written_ytd: 2840000, loss_ratio: 28, notes: 'Preferred · all classes 8810 + 8742' },
+  { lob: 'Workers Comp',      state: 'CA', class_group: 'Construction trades',         tier: 'aggressive', capacity_pct: 72, policies: 94, written_ytd: 3820000, loss_ratio: 36, notes: 'Class 5403/5437/5645 with ExMod ≤ 1.0' },
+  { lob: 'Workers Comp',      state: 'CA', class_group: 'Restaurants',                  tier: 'selective',  capacity_pct: 38, policies: 28, written_ytd: 820000,  loss_ratio: 52, notes: 'Class 3632/3669 — tighten for >$2M rev' },
+  { lob: 'Workers Comp',      state: 'CA', class_group: 'Heavy manufacturing',          tier: 'restricted', capacity_pct: 14, policies: 6,  written_ytd: 220000,  loss_ratio: 68, notes: 'Senior UW only · ExMod required ≤0.95' },
+  { lob: 'Workers Comp',      state: 'TX', class_group: 'All low-hazard',               tier: 'selective',  capacity_pct: 24, policies: 14, written_ytd: 420000,  loss_ratio: 44, notes: 'New market · build slowly' },
+  { lob: 'Workers Comp',      state: 'NV', class_group: 'All',                          tier: 'aggressive', capacity_pct: 42, policies: 22, written_ytd: 840000,  loss_ratio: 32, notes: 'Preferred · expanding' },
+  { lob: 'Workers Comp',      state: 'All', class_group: 'Hazmat / Nuclear',            tier: 'prohibited', capacity_pct: 0,  policies: 0,  written_ytd: 0,       loss_ratio: null, notes: 'Auto-decline' },
+  { lob: 'General Liability', state: 'CA', class_group: 'Contractors · artisan',         tier: 'aggressive', capacity_pct: 68, policies: 124,written_ytd: 4120000, loss_ratio: 38, notes: 'Top segment · continue growth' },
+  { lob: 'General Liability', state: 'CA', class_group: 'Restaurants',                   tier: 'selective',  capacity_pct: 32, policies: 22, written_ytd: 620000,  loss_ratio: 58, notes: 'Liquor liability refer' },
+  { lob: 'General Liability', state: 'TX', class_group: 'All',                           tier: 'aggressive', capacity_pct: 56, policies: 42, written_ytd: 1820000, loss_ratio: 42, notes: 'Profitable market' },
+  { lob: 'General Liability', state: 'FL', class_group: 'Coastal contractors',           tier: 'restricted', capacity_pct: 8,  policies: 4,  written_ytd: 180000,  loss_ratio: 62, notes: 'Coastal wind exposure · limited' },
+  { lob: 'General Liability', state: 'All', class_group: 'Professional / Medical',       tier: 'prohibited', capacity_pct: 0,  policies: 0,  written_ytd: 0,       loss_ratio: null, notes: 'Refer to Chubb / carrier' },
+  { lob: 'Commercial Auto',   state: 'CA', class_group: 'Fleet 5–50 units',               tier: 'aggressive', capacity_pct: 54, policies: 48, written_ytd: 2420000, loss_ratio: 44, notes: 'Telematics required' },
+  { lob: 'Commercial Auto',   state: 'CA', class_group: 'Fleet 50–100 units',             tier: 'selective',  capacity_pct: 28, policies: 18, written_ytd: 1820000, loss_ratio: 56, notes: 'Driver MVR strict' },
+  { lob: 'Commercial Auto',   state: 'All', class_group: 'Long-haul / Hazmat',           tier: 'prohibited', capacity_pct: 0,  policies: 0,  written_ytd: 0,       loss_ratio: null, notes: 'Auto-decline' },
+  { lob: 'Cyber',             state: 'All', class_group: 'Tech + Prof Services',          tier: 'aggressive', capacity_pct: 64, policies: 142,written_ytd: 5840000, loss_ratio: 28, notes: 'Best-performing segment · expand' },
+  { lob: 'Cyber',             state: 'All', class_group: 'Healthcare / Hospital',        tier: 'selective',  capacity_pct: 18, policies: 8,  written_ytd: 480000,  loss_ratio: 48, notes: 'HIPAA exposure · strict controls' },
+  { lob: 'Cyber',             state: 'All', class_group: 'Critical infrastructure',      tier: 'restricted', capacity_pct: 4,  policies: 2,  written_ytd: 120000,  loss_ratio: null, notes: 'Refer to senior UW + carrier' },
+  { lob: 'BOP',               state: 'CA', class_group: 'Retail / Office',               tier: 'aggressive', capacity_pct: 72, policies: 182,written_ytd: 3120000, loss_ratio: 38, notes: 'Core product · high volume' },
+  { lob: 'BOP',               state: 'CA', class_group: 'Wholesale / Distribution',      tier: 'selective',  capacity_pct: 22, policies: 22, written_ytd: 480000,  loss_ratio: 48, notes: 'Larger risks only' },
+  { lob: 'Property',          state: 'CA', class_group: 'Wildfire zones',                 tier: 'restricted', capacity_pct: 6,  policies: 4,  written_ytd: 180000,  loss_ratio: null, notes: 'Defensible space required · cat limit' },
+  { lob: 'Property',          state: 'All (excl. coastal FL)', class_group: 'TIV <$50M',  tier: 'aggressive', capacity_pct: 52, policies: 74, written_ytd: 1820000, loss_ratio: 42, notes: 'COPE ≥ 70 required' },
+  { lob: 'D&O / Professional',state: 'All', class_group: 'Private cos $10M–$500M',       tier: 'aggressive', capacity_pct: 44, policies: 62, written_ytd: 1820000, loss_ratio: 24, notes: 'Growing segment' },
+  { lob: 'Umbrella',          state: 'All', class_group: 'Mid-market · follow-form',     tier: 'aggressive', capacity_pct: 38, policies: 186,written_ytd: 2820000, loss_ratio: 18, notes: 'Top-quartile margin · scale aggressively' }
+];
+
+export const mgaAppetiteRulesEnhanced = [
+  { id: 'APT-001', lob: 'Workers Comp',     state: 'CA',           risk_attr: 'Class codes 5000–5999 · Payroll $500k–$10M',  tier: 'aggressive', max_limit: 500000,  referral_threshold: 250000, effective: '2025-12-01', expiry: '2026-12-31', last_modified: 'Elena Rodriguez', notes: 'Core WC appetite · ExMod ≤ 1.20 · safety program required', active: true, version: 'v3.2' },
+  { id: 'APT-002', lob: 'Workers Comp',     state: 'CA',           risk_attr: 'Class 3632/3669 (restaurants) · rev $250k–$10M', tier: 'selective', max_limit: 150000,  referral_threshold: 75000,  effective: '2026-01-15', expiry: '2026-12-31', last_modified: 'Elena Rodriguez', notes: 'Liquor liability exclusion applies · LR watch',                  active: true, version: 'v2.1' },
+  { id: 'APT-003', lob: 'Workers Comp',     state: 'All',          risk_attr: 'Class hazmat/nuclear/aviation',                  tier: 'prohibited', max_limit: 0,       referral_threshold: 0,      effective: '2023-01-01', expiry: '—',          last_modified: 'Marcus Henderson', notes: 'Permanent auto-decline',                                            active: true, version: 'v1.0' },
+  { id: 'APT-004', lob: 'General Liability',state: 'All 50',       risk_attr: 'Most contractors · artisan trades',               tier: 'aggressive', max_limit: 500000,  referral_threshold: 200000, effective: '2025-10-15', expiry: '2026-10-15', last_modified: 'Marcus Henderson', notes: 'Prior loss runs required',                                           active: true, version: 'v2.4' },
+  { id: 'APT-005', lob: 'General Liability',state: 'FL',           risk_attr: 'Coastal contractors · wind exposure',             tier: 'restricted', max_limit: 100000,  referral_threshold: 50000,  effective: '2026-03-01', expiry: '2026-10-31', last_modified: 'David Park',       notes: 'Hurricane season adjustment · limited capacity',                     active: true, version: 'v1.1' },
+  { id: 'APT-006', lob: 'Cyber',             state: 'All 50',       risk_attr: 'Tech + Prof Services · Rev <$500M',               tier: 'aggressive', max_limit: 500000,  referral_threshold: 250000, effective: '2026-04-01', expiry: '2027-04-01', last_modified: 'Priya Sharma',     notes: 'MFA + SOC2 preferred · top-performing segment',                      active: true, version: 'v3.0' },
+  { id: 'APT-007', lob: 'Cyber',             state: 'All 50',       risk_attr: 'Healthcare / PHI-heavy',                          tier: 'selective',  max_limit: 250000,  referral_threshold: 100000, effective: '2026-02-15', expiry: '2026-12-31', last_modified: 'Priya Sharma',     notes: 'HIPAA controls required · MFA 100%',                                  active: true, version: 'v2.2' },
+  { id: 'APT-008', lob: 'Commercial Auto',   state: 'CA,NV,OR,WA',  risk_attr: 'Fleet 5–100 units',                                tier: 'aggressive', max_limit: 500000,  referral_threshold: 250000, effective: '2025-11-22', expiry: '2026-11-22', last_modified: 'David Park',       notes: 'Telematics required for discount',                                    active: true, version: 'v2.0' },
+  { id: 'APT-009', lob: 'Commercial Auto',   state: 'All',          risk_attr: 'Long-haul / Hazmat / Aviation',                    tier: 'prohibited', max_limit: 0,       referral_threshold: 0,      effective: '2023-01-01', expiry: '—',          last_modified: 'Marcus Henderson', notes: 'Permanent auto-decline',                                              active: true, version: 'v1.0' },
+  { id: 'APT-010', lob: 'Property',          state: 'CA',           risk_attr: 'Wildfire zones · defensible space verified',      tier: 'restricted', max_limit: 250000,  referral_threshold: 100000, effective: '2026-04-01', expiry: '2026-10-31', last_modified: 'David Park',       notes: 'Wildfire season restriction · cat limit applies',                     active: true, version: 'v1.4' },
+  { id: 'APT-011', lob: 'Property',          state: 'All (excl. FL coastal)', risk_attr: 'COPE ≥ 70 · TIV <$50M',               tier: 'aggressive', max_limit: 500000,  referral_threshold: 250000, effective: '2025-08-10', expiry: '2026-08-10', last_modified: 'David Park',       notes: 'Sprinkler + alarm monitoring required',                               active: true, version: 'v2.5' },
+  { id: 'APT-012', lob: 'D&O',                state: 'All 50',       risk_attr: 'Private cos · rev $10M–$500M',                     tier: 'aggressive', max_limit: 500000,  referral_threshold: 250000, effective: '2025-09-22', expiry: '2026-09-22', last_modified: 'Priya Sharma',     notes: 'IPO/M&A exclusions · clean financials required',                      active: true, version: 'v1.3' }
+];
+
+export const mgaPortfolioExposure = {
+  by_state: [
+    { state: 'California',   tiv: 1820000000, policies: 684, premium_ytd: 28420000, loss_ratio: 36, concentration_pct: 59 },
+    { state: 'Texas',        tiv: 320000000,  policies: 108, premium_ytd: 4820000,  loss_ratio: 42, concentration_pct: 10 },
+    { state: 'Nevada',       tiv: 180000000,  policies: 62,  premium_ytd: 2420000,  loss_ratio: 38, concentration_pct: 5 },
+    { state: 'Oregon',       tiv: 140000000,  policies: 48,  premium_ytd: 1820000,  loss_ratio: 34, concentration_pct: 4 },
+    { state: 'Washington',   tiv: 120000000,  policies: 42,  premium_ytd: 1620000,  loss_ratio: 36, concentration_pct: 3 },
+    { state: 'Arizona',      tiv: 100000000,  policies: 36,  premium_ytd: 1240000,  loss_ratio: 48, concentration_pct: 3 },
+    { state: 'New York',     tiv: 240000000,  policies: 54,  premium_ytd: 3240000,  loss_ratio: 32, concentration_pct: 7 },
+    { state: 'Florida',      tiv: 160000000,  policies: 28,  premium_ytd: 1820000,  loss_ratio: 58, concentration_pct: 4 },
+    { state: 'Illinois',     tiv: 80000000,   policies: 24,  premium_ytd: 980000,   loss_ratio: 40, concentration_pct: 2 },
+    { state: 'Other (12 states)', tiv: 120000000, policies: 42, premium_ytd: 1820000, loss_ratio: 44, concentration_pct: 3 }
+  ],
+  top_agents: [
+    { agent: 'Lockton Companies',              policies: 182, premium: 8420000, concentration_pct: 17 },
+    { agent: 'Marsh McLennan',                  policies: 148, premium: 6120000, concentration_pct: 13 },
+    { agent: 'Aon Risk Solutions',              policies: 132, premium: 5840000, concentration_pct: 12 },
+    { agent: 'Bridgepoint Insurance Brokers',   policies: 127, premium: 3920000, concentration_pct: 8 },
+    { agent: 'Hub International',               policies: 84,  premium: 2480000, concentration_pct: 5 },
+    { agent: 'Woodruff Sawyer',                 policies: 62,  premium: 1820000, concentration_pct: 4 },
+    { agent: 'All Others (8 agents)',           policies: 118, premium: 19600000,concentration_pct: 41 }
+  ],
+  top_locations: [
+    { location: 'Sacramento, CA',     tiv: 124000000, policies: 42, premium: 1820000 },
+    { location: 'Los Angeles, CA',    tiv: 218000000, policies: 68, premium: 3420000 },
+    { location: 'San Francisco, CA',  tiv: 184000000, policies: 54, premium: 2820000 },
+    { location: 'San Diego, CA',      tiv: 142000000, policies: 48, premium: 2020000 },
+    { location: 'Houston, TX',        tiv: 98000000,  policies: 32, premium: 1420000 },
+    { location: 'Dallas, TX',         tiv: 82000000,  policies: 28, premium: 1240000 },
+    { location: 'New York, NY',       tiv: 156000000, policies: 38, premium: 2240000 },
+    { location: 'Miami, FL',          tiv: 78000000,  policies: 18, premium: 1120000 }
+  ],
+  by_lob: [
+    { lob: 'Workers Comp',        written: 16820000, share: 35, target_share: 38, delta: -3, loss_ratio: 38 },
+    { lob: 'General Liability',   written: 10440000, share: 22, target_share: 22, delta: 0,  loss_ratio: 44 },
+    { lob: 'Commercial Auto',     written: 6840000,  share: 14, target_share: 12, delta: +2, loss_ratio: 52 },
+    { lob: 'Cyber',               written: 5200000,  share: 11, target_share: 10, delta: +1, loss_ratio: 28 },
+    { lob: 'BOP',                 written: 4340000,  share: 9,  target_share: 10, delta: -1, loss_ratio: 42 },
+    { lob: 'Property',            written: 2820000,  share: 6,  target_share: 6,  delta: 0,  loss_ratio: 48 },
+    { lob: 'D&O / Professional',  written: 1440000,  share: 3,  target_share: 2,  delta: +1, loss_ratio: 24 }
+  ]
+};
+
+export const mgaCatExposure = [
+  { peril: 'Wildfire',        region: 'CA · Nor Cal',     tiv: 124000000, policies: 42, pml_1in100: 24800000, pml_1in250: 62000000, reinsurance_attach: 10000000, capacity_remaining: 8200000, status: 'Healthy' },
+  { peril: 'Wildfire',        region: 'CA · So Cal',      tiv: 218000000, policies: 68, pml_1in100: 43600000, pml_1in250: 109000000,reinsurance_attach: 15000000, capacity_remaining: 12400000, status: 'Watch' },
+  { peril: 'Earthquake',      region: 'CA Bay Area',      tiv: 184000000, policies: 54, pml_1in100: 27600000, pml_1in250: 73600000, reinsurance_attach: 12000000, capacity_remaining: 9800000, status: 'Healthy' },
+  { peril: 'Hurricane / Wind', region: 'FL Coastal',      tiv: 78000000,  policies: 18, pml_1in100: 19500000, pml_1in250: 54600000, reinsurance_attach: 8000000,  capacity_remaining: 2400000, status: 'Approaching Cap' },
+  { peril: 'Hail',             region: 'TX Plains',       tiv: 98000000,  policies: 32, pml_1in100: 7840000,  pml_1in250: 19600000, reinsurance_attach: 5000000,  capacity_remaining: 8200000, status: 'Healthy' },
+  { peril: 'Winter Storm',    region: 'NY Metro',         tiv: 156000000, policies: 38, pml_1in100: 9360000,  pml_1in250: 23400000, reinsurance_attach: 6000000,  capacity_remaining: 12600000, status: 'Healthy' },
+  { peril: 'Flood',           region: 'Multi-state',       tiv: 420000000, policies: 124,pml_1in100: 16800000, pml_1in250: 42000000, reinsurance_attach: 10000000, capacity_remaining: 18000000, status: 'Healthy' }
+];
+
+export const mgaAppetiteChanges = [
+  { id: 'CHG-042', rule_id: 'APT-005', title: 'Extend FL Coastal GL restriction through hurricane season',    proposed_by: 'David Park',        submitted: '2026-04-18 10:22', status: 'Pending Committee Review', statusColor: 'amber', priority: 'High',   tier_from: 'restricted', tier_to: 'restricted', expiry_from: '2026-10-15', expiry_to: '2026-12-31', rationale: 'Continue cap through year-end per reinsurance treaty renewal terms' },
+  { id: 'CHG-041', rule_id: 'APT-006', title: 'Expand Cyber aggressive tier to healthcare (non-PHI)',        proposed_by: 'Priya Sharma',     submitted: '2026-04-16 14:15', status: 'Pending Committee Review', statusColor: 'amber', priority: 'Medium', tier_from: 'selective',  tier_to: 'aggressive',  effective_from: '2026-02-15', effective_to: '2026-05-01',  rationale: 'Loss ratio 28% in tech cyber book · extend confidence to healthcare admins · refer PHI-heavy separately' },
+  { id: 'CHG-040', rule_id: 'APT-001', title: 'Tighten WC Restaurant class (CA 3632/3669)',                  proposed_by: 'Elena Rodriguez', submitted: '2026-04-14 09:30', status: 'Approved',                   statusColor: 'green', priority: 'Medium', tier_from: 'aggressive', tier_to: 'selective',   effective_from: '2026-05-01', effective_to: '2026-05-01',  rationale: 'LR 52% in past 12 months · require ExMod ≤ 1.0 · cap new bus at $150k', approved_by: 'Marcus Henderson', approved: '2026-04-17' },
+  { id: 'CHG-039', rule_id: 'APT-010', title: 'Add wildfire defensible-space requirement',                    proposed_by: 'David Park',        submitted: '2026-04-10 11:05', status: 'Approved',                   statusColor: 'green', priority: 'High',   tier_from: 'selective',  tier_to: 'restricted',  effective_from: '2026-04-01', effective_to: '2026-04-15',  rationale: 'Wildfire season prep · photo-verified defensible space now required', approved_by: 'Marcus Henderson', approved: '2026-04-12' },
+  { id: 'CHG-038', rule_id: 'APT-008', title: 'Expand Commercial Auto telematics incentive',                  proposed_by: 'David Park',        submitted: '2026-04-05 15:40', status: 'Approved',                   statusColor: 'green', priority: 'Low',    tier_from: 'aggressive', tier_to: 'aggressive',  effective_from: '2026-05-01', effective_to: '2026-05-01',  rationale: 'Increase telematics credit from 8% to 10% · no tier change · competitive advantage', approved_by: 'Marcus Henderson', approved: '2026-04-08' },
+  { id: 'CHG-037', rule_id: 'APT-003', title: 'Add explosives class to prohibited list',                       proposed_by: 'Marcus Henderson', submitted: '2026-03-28 10:00', status: 'Approved',                   statusColor: 'green', priority: 'High',   tier_from: 'prohibited', tier_to: 'prohibited',  effective_from: '2023-01-01', effective_to: '2023-01-01',  rationale: 'Explicitly add Class 7605/7607 · zero tolerance', approved_by: 'CEO',              approved: '2026-03-30' }
+];
+
+export const mgaRiskScoringModel = {
+  factors: [
+    { factor: 'Prior 3-year Loss Ratio',              weight: 25, threshold_aggressive: 30, threshold_selective: 50, threshold_restricted: 70 },
+    { factor: 'Years in Business',                     weight: 12, threshold_aggressive: 10, threshold_selective: 3,  threshold_restricted: 1 },
+    { factor: 'Experience Modifier (WC only)',         weight: 18, threshold_aggressive: 0.90, threshold_selective: 1.10, threshold_restricted: 1.30 },
+    { factor: 'Revenue Size',                           weight: 10, threshold_aggressive: 10000000, threshold_selective: 2000000, threshold_restricted: 500000 },
+    { factor: 'Safety Program / Controls',              weight: 12, threshold_aggressive: 'OSHA VPP / SOC 2', threshold_selective: 'Basic', threshold_restricted: 'None' },
+    { factor: 'Prior Cancellation / Non-renewal',      weight: 10, threshold_aggressive: 'None', threshold_selective: '1 non-renewal', threshold_restricted: '2+ / fraud' },
+    { factor: 'Industry / NAICS Risk Score',            weight: 8, threshold_aggressive: 'Low-hazard', threshold_selective: 'Medium', threshold_restricted: 'High-hazard' },
+    { factor: 'Submission Quality (agent quality)',     weight: 5, threshold_aggressive: '≥90 score', threshold_selective: '≥70 score', threshold_restricted: '<70 score' }
+  ],
+  outcomes: [
+    { score_range: '85–100', tier: 'Preferred',    action: 'Auto-approve at target',         avg_bind_rate: 78, avg_loss_ratio: 28 },
+    { score_range: '70–84',  tier: 'Standard',     action: 'Approve with standard rates',     avg_bind_rate: 62, avg_loss_ratio: 42 },
+    { score_range: '55–69',  tier: 'Watch',         action: 'Refer to senior UW',              avg_bind_rate: 38, avg_loss_ratio: 58 },
+    { score_range: '40–54',  tier: 'Sub-Standard',  action: 'Refer to carrier or decline',     avg_bind_rate: 12, avg_loss_ratio: 72 },
+    { score_range: '< 40',   tier: 'Auto-Decline',  action: 'Automatic decline',               avg_bind_rate: 0,  avg_loss_ratio: null }
+  ]
+};
+
+// ─── MGA Policy Issuance & Bindings ───
+export const mgaBindingKPIs = [
+  { label: 'Pending Bind',       value: '14' },
+  { label: 'Bound Today',        value: '8' },
+  { label: 'Issued Today',       value: '6' },
+  { label: 'Avg Time-to-Issue',  value: '3.2 hrs' },
+  { label: 'Straight-Through %', value: '42%' },
+  { label: 'Written Premium MTD',value: '$8.4M' }
+];
+
+export const mgaBindingStatuses = ['Pending Bind','Authority Check','Bound','Documents Generating','Issued','Carrier Reporting','Active','Cancelled','Reinstated','Rewritten'];
+
+export const mgaBindings = [
+  { id: 'BND-48842', submission: 'SUB-28931', policy_number: 'LIB-UMB-2026-88203', agent_id: 'AGT-2038', agent_name: 'Bridgepoint Insurance Brokers', insured: 'Magnolia Construction LLC — Umbrella',   product_id: 'PROD-UMB-LIB-01', product: 'OverShield Umbrella',         lob: 'Umbrella',      carrier: 'Liberty Mutual',     state: 'CA', effective: '2026-06-01', expiration: '2027-06-01', written_premium: 18200,  status: 'Issued',                statusColor: 'green', bound_at: '2026-04-19 09:42', issued_at: '2026-04-19 10:04', bound_by: 'Elena Rodriguez',    authority_used: 18200,  auth_cap: 500000,  carrier_reporting: 'Reported', binder_number: 'B-2026-4842',   stp: true,  documents_ready: true },
+  { id: 'BND-48841', submission: 'SUB-28935', policy_number: 'CNA-CYB-2026-88201', agent_id: 'AGT-2036', agent_name: 'Woodruff Sawyer',               insured: 'DataCore Inc',                        product_id: 'PROD-CYB-CNA-01', product: 'SecureEdge Cyber',            lob: 'Cyber',         carrier: 'CNA',                state: 'TX', effective: '2026-07-22', expiration: '2027-07-22', written_premium: 249000, status: 'Documents Generating',  statusColor: 'blue',  bound_at: '2026-04-19 08:30', issued_at: null,              bound_by: 'Priya Sharma',        authority_used: 249000, auth_cap: 500000,  carrier_reporting: 'Pending',  binder_number: 'B-2026-4841',   stp: false, documents_ready: false },
+  { id: 'BND-48840', submission: 'SUB-28939', policy_number: 'TRV-AUTO-2026-11445', agent_id: 'AGT-2041', agent_name: 'Lockton Companies',              insured: 'Westshore Logistics',                 product_id: 'PROD-AUTO-TRV-01',product: 'FleetSafe Auto',               lob: 'Commercial Auto', carrier: 'Travelers',         state: 'CA', effective: '2026-06-15', expiration: '2027-06-15', written_premium: 172400, status: 'Bound',                 statusColor: 'blue',  bound_at: '2026-04-18 16:22', issued_at: null,              bound_by: 'Elena Rodriguez',     authority_used: 172400, auth_cap: 500000,  carrier_reporting: 'Queued',   binder_number: 'B-2026-4840',   stp: false, documents_ready: false },
+  { id: 'BND-48839', submission: 'SUB-28900', policy_number: 'SEMC-WC-2026-48823', agent_id: 'AGT-2038', agent_name: 'Bridgepoint Insurance Brokers',  insured: 'Magnolia Construction LLC',           product_id: 'PROD-WC-CA-01',   product: 'WorkForce WC — CA Small Biz',  lob: 'Workers Comp',  carrier: 'SEMC / Liberty',    state: 'CA', effective: '2026-06-01', expiration: '2027-06-01', written_premium: 87646,  status: 'Issued',                statusColor: 'green', bound_at: '2026-04-18 14:15', issued_at: '2026-04-18 15:02', bound_by: 'Elena Rodriguez',     authority_used: 87646,  auth_cap: 500000,  carrier_reporting: 'Reported', binder_number: 'B-2026-4839',   stp: true,  documents_ready: true },
+  { id: 'BND-48838', submission: 'SUB-28890', policy_number: 'HTF-BOP-2026-44229', agent_id: 'AGT-2040', agent_name: 'Marsh McLennan',                 insured: 'Apex Industries Group',               product_id: 'PROD-BOP-HTF-01', product: 'MainStreet BOP',              lob: 'BOP',           carrier: 'Hartford',           state: 'TX', effective: '2026-05-10', expiration: '2027-05-10', written_premium: 48200,  status: 'Issued',                statusColor: 'green', bound_at: '2026-04-17 11:04', issued_at: '2026-04-17 13:30', bound_by: 'Tomás Weber',         authority_used: 48200,  auth_cap: 250000,  carrier_reporting: 'Reported', binder_number: 'B-2026-4838',   stp: true,  documents_ready: true },
+  { id: 'BND-48837', submission: 'SUB-28888', policy_number: 'LIB-WC-2026-33102', agent_id: 'AGT-2041', agent_name: 'Lockton Companies',              insured: 'Summit Industrial Services',          product_id: 'PROD-WC-CA-02',   product: 'WorkForce WC — Mid-Market',    lob: 'Workers Comp', carrier: 'Liberty Mutual',     state: 'CA', effective: '2026-06-01', expiration: '2027-06-01', written_premium: 228400, status: 'Active',                statusColor: 'green', bound_at: '2026-04-15 09:15', issued_at: '2026-04-15 10:02', bound_by: 'Marcus Henderson',    authority_used: 228400, auth_cap: 2000000, carrier_reporting: 'Reported', binder_number: 'B-2026-4837',   stp: false, documents_ready: true },
+  { id: 'BND-48836', submission: 'SUB-28886', policy_number: 'CNA-GL-2026-20118', agent_id: 'AGT-2038', agent_name: 'Bridgepoint Insurance Brokers',  insured: 'Cascade HVAC Services',               product_id: 'PROD-GL-CNA-01',  product: 'GuardPoint GL',                lob: 'General Liability',carrier: 'CNA',            state: 'OR', effective: '2026-08-10', expiration: '2027-08-10', written_premium: 96800,  status: 'Pending Bind',          statusColor: 'amber', bound_at: null,              issued_at: null,              bound_by: null,                   authority_used: 96800,  auth_cap: 500000,  carrier_reporting: '—',        binder_number: null,            stp: false, documents_ready: false },
+  { id: 'BND-48835', submission: 'SUB-28884', policy_number: 'CHB-DO-2026-10091', agent_id: 'AGT-2039', agent_name: 'Aon Risk Solutions',             insured: 'Helix Biotech Inc',                    product_id: 'PROD-DO-CHB-01',  product: 'BoardGuard D&O',               lob: 'D&O',           carrier: 'Chubb',              state: 'CA', effective: '2026-05-30', expiration: '2027-05-30', written_premium: 438000, status: 'Authority Check',       statusColor: 'amber', bound_at: null,              issued_at: null,              bound_by: null,                   authority_used: 438000, auth_cap: 500000,  carrier_reporting: '—',        binder_number: null,            stp: false, documents_ready: false },
+  { id: 'BND-48834', submission: 'SUB-28882', policy_number: 'ZUR-PRP-2026-60014', agent_id: 'AGT-2035', agent_name: 'USI Insurance Services',         insured: 'Peninsula Manufacturing',              product_id: 'PROD-PROP-ZUR-01',product: 'PropertyGuard Commercial',     lob: 'Property',      carrier: 'Zurich',             state: 'CA', effective: '2026-06-01', expiration: '2027-06-01', written_premium: 132400, status: 'Issued',                statusColor: 'green', bound_at: '2026-04-14 16:40', issued_at: '2026-04-14 18:15', bound_by: 'David Park',          authority_used: 132400, auth_cap: 1000000, carrier_reporting: 'Reported', binder_number: 'B-2026-4834',   stp: false, documents_ready: true },
+  { id: 'BND-48833', submission: 'SUB-28878', policy_number: 'HIS-PRO-2026-22104', agent_id: 'AGT-2036', agent_name: 'Woodruff Sawyer',                insured: 'BlueSky Consulting Group',             product_id: 'PROD-PRO-HIS-01', product: 'Professional Shield',          lob: 'Professional',  carrier: 'Hiscox',             state: 'CA', effective: '2026-07-01', expiration: '2027-07-01', written_premium: 84200,  status: 'Issued',                statusColor: 'green', bound_at: '2026-04-12 10:05', issued_at: '2026-04-12 11:40', bound_by: 'Priya Sharma',        authority_used: 84200,  auth_cap: 500000,  carrier_reporting: 'Reported', binder_number: 'B-2026-4833',   stp: true,  documents_ready: true },
+  { id: 'BND-48832', submission: 'SUB-28874', policy_number: 'TRV-AUTO-2025-88820', agent_id: 'AGT-2037', agent_name: 'Hub International',              insured: 'Desert Rides Transport',                product_id: 'PROD-AUTO-TRV-01',product: 'FleetSafe Auto',              lob: 'Commercial Auto', carrier: 'Travelers',         state: 'AZ', effective: '2026-04-01', expiration: '2027-04-01', written_premium: 62400,  status: 'Cancelled',             statusColor: 'red',   bound_at: '2026-03-28 14:30', issued_at: '2026-03-28 16:10', bound_by: 'Tomás Weber',         authority_used: 62400,  auth_cap: 500000,  carrier_reporting: 'Reported', binder_number: 'B-2026-4832',   stp: true,  documents_ready: true, cancel_reason: 'Non-payment', cancel_date: '2026-04-18' },
+  { id: 'BND-48831', submission: 'SUB-28870', policy_number: 'LIB-UMB-2026-88204', agent_id: 'AGT-2040', agent_name: 'Marsh McLennan',                 insured: 'Sterling Financial Holdings',          product_id: 'PROD-UMB-LIB-01', product: 'OverShield Umbrella',          lob: 'Umbrella',      carrier: 'Liberty Mutual',     state: 'NY', effective: '2026-05-15', expiration: '2027-05-15', written_premium: 42800,  status: 'Active',                statusColor: 'green', bound_at: '2026-04-10 14:22', issued_at: '2026-04-10 15:04', bound_by: 'Marcus Henderson',    authority_used: 42800,  auth_cap: 2000000, carrier_reporting: 'Reported', binder_number: 'B-2026-4831',   stp: true,  documents_ready: true },
+  { id: 'BND-48830', submission: 'SUB-28865', policy_number: 'CNA-CYB-2026-88202', agent_id: 'AGT-2034', agent_name: 'Newfront Insurance',             insured: 'PixelFlow Media',                       product_id: 'PROD-CYB-CNA-01', product: 'SecureEdge Cyber',             lob: 'Cyber',         carrier: 'CNA',                state: 'CA', effective: '2026-05-01', expiration: '2027-05-01', written_premium: 118000, status: 'Active',                statusColor: 'green', bound_at: '2026-04-08 11:15', issued_at: '2026-04-08 12:30', bound_by: 'Priya Sharma',        authority_used: 118000, auth_cap: 500000,  carrier_reporting: 'Reported', binder_number: 'B-2026-4830',   stp: false, documents_ready: true },
+  { id: 'BND-48829', submission: 'SUB-28862', policy_number: 'SEMC-WC-2025-48819', agent_id: 'AGT-2038', agent_name: 'Bridgepoint Insurance Brokers', insured: 'Magnolia Construction LLC (OLD)',      product_id: 'PROD-WC-CA-01',   product: 'WorkForce WC — CA Small Biz',  lob: 'Workers Comp', carrier: 'SEMC / Liberty',    state: 'CA', effective: '2026-02-01', expiration: '2027-02-01', written_premium: 82140,  status: 'Rewritten',             statusColor: 'gray',  bound_at: '2026-01-28 09:30', issued_at: '2026-01-28 10:15', bound_by: 'Elena Rodriguez',     authority_used: 82140,  auth_cap: 500000,  carrier_reporting: 'Reported', binder_number: 'B-2026-4829',   stp: true,  documents_ready: true, rewrite_to: 'BND-48839' },
+  { id: 'BND-48828', submission: 'SUB-28858', policy_number: 'MKL-GL-2026-ES0012', agent_id: 'AGT-2033', agent_name: 'Regional Brokers Inc',           insured: 'Atlantic Artisan Contractors',          product_id: 'PROD-GL-MKL-01',  product: 'ArtisanGuard GL — E&S',        lob: 'General Liability', carrier: 'Markel',         state: 'FL', effective: '2026-05-01', expiration: '2027-05-01', written_premium: 24800,  status: 'Reinstated',            statusColor: 'green', bound_at: '2026-04-05 10:22', issued_at: '2026-04-05 11:45', bound_by: 'Marcus Henderson',    authority_used: 24800,  auth_cap: 500000,  carrier_reporting: 'Reported', binder_number: 'B-2026-4828',   stp: false, documents_ready: true, reinstate_reason: 'Payment received after lapse' }
+];
+
+export const mgaBindingDetail = {
+  id: 'BND-48839',
+  submission_link: 'SUB-28900',
+  policy_header: {
+    policy_number: 'SEMC-WC-2026-48823',
+    carrier_policy_no: 'SEMC-WC-0088923-X',
+    carrier: 'SEMC / Liberty Mutual',
+    mga_reference: 'Singlepoint MGA · WF-WC-CA',
+    line_of_business: 'Workers Comp',
+    product: 'WorkForce WC — CA Small Biz',
+    product_version: 'v3.2',
+    effective: '2026-06-01',
+    expiration: '2027-06-01',
+    term: '12 months',
+    state: 'CA',
+    billing_type: 'Agency Bill',
+    billing_frequency: 'Quarterly'
+  },
+  premium_breakdown: {
+    base: 115680,
+    ex_mod: 0.92,
+    modified: 106426,
+    schedule_credit: -15964,
+    subtotal: 90462,
+    premium_discount: -8594,
+    terrorism: 50,
+    taxes: 5728,
+    written: 87646,
+    commission_rate: 13,
+    commission: 11394,
+    mga_fee: 2629,
+    carrier_share: 73623
+  },
+  insured: {
+    legal_name: 'Magnolia Construction LLC',
+    dba: 'Magnolia Build Co.',
+    fein: '88-XXXX492',
+    primary_contact: 'James Reynolds · CEO',
+    phone: '(916) 555-0184',
+    email: 'james@magnoliaconstruction.com',
+    primary_address: '1201 Industrial Blvd, Sacramento CA 95814',
+    operations: 'Electrical contracting · specialty trade'
+  },
+  coverage_schedule: [
+    { coverage: 'Employers Liability — Each Accident',        limit: '$1,000,000',                    deductible: '$0',   premium: 0 },
+    { coverage: 'Employers Liability — Disease / Employee',   limit: '$1,000,000',                    deductible: '$0',   premium: 0 },
+    { coverage: 'Employers Liability — Disease / Aggregate',  limit: '$1,000,000',                    deductible: '$0',   premium: 0 },
+    { coverage: 'Workers Compensation — Statutory',            limit: 'CA Statutory',                  deductible: '$0',   premium: 0 },
+    { coverage: 'Terrorism (TRIA)',                             limit: 'Included',                      deductible: '—',   premium: 50 },
+    { coverage: 'Waiver of Subrogation (Blanket)',              limit: 'Applied to all scheduled',     deductible: '—',   premium: 0 }
+  ],
+  locations: [
+    { id: 'LOC-01', label: 'HQ / Main Office',        address: '1201 Industrial Blvd, Sacramento CA 95814',    payroll: 1440000, class_codes: ['8810 Clerical','5403 Carpentry'] },
+    { id: 'LOC-02', label: 'Yard / Equipment Storage',address: '1250 Industrial Blvd, Sacramento CA 95814',    payroll: 540000,  class_codes: ['5403 Carpentry','8813 Auto Service'] },
+    { id: 'LOC-03', label: 'Satellite — Folsom',       address: '892 East Bidwell St, Folsom CA 95630',          payroll: 420000,  class_codes: ['5403 Carpentry'] }
+  ],
+  endorsements: [
+    { form: 'WC 00 03 13', title: 'Waiver of Our Right to Recover From Others (Blanket)', applied: '2026-06-01', premium_effect: 0 },
+    { form: 'WC 04 14 A',  title: 'CA Cancellation Endorsement',                            applied: '2026-06-01', premium_effect: 0 },
+    { form: 'CUSTOM-01',   title: 'Additional Insured — Kroger Real Estate (Job site lease)', applied: '2026-06-01', premium_effect: 0 }
+  ],
+  documents_package: [
+    { name: 'Declarations Page.pdf',        type: 'Dec',          size: '420 KB', status: 'Generated', generated: '2026-04-18 15:02' },
+    { name: 'Workers Comp Policy Form.pdf', type: 'Policy',       size: '2.1 MB', status: 'Generated', generated: '2026-04-18 15:02' },
+    { name: 'Endorsement Schedule.pdf',     type: 'Endorsement',  size: '180 KB', status: 'Generated', generated: '2026-04-18 15:02' },
+    { name: 'Location Schedule.pdf',        type: 'Schedule',     size: '96 KB',  status: 'Generated', generated: '2026-04-18 15:02' },
+    { name: 'Officer Exclusion Election.pdf', type: 'Endorsement', size: '64 KB', status: 'Generated', generated: '2026-04-18 15:02' },
+    { name: 'Alternative Dispute Resolution Notice.pdf', type: 'Notice', size: '48 KB', status: 'Generated', generated: '2026-04-18 15:02' }
+  ],
+  authority_check: {
+    used: 87646,
+    agent_cap: 500000,
+    product_cap: 500000,
+    underwriter_cap: 750000,
+    aggregate_state_cap: 15000000,
+    aggregate_state_used: 8420000,
+    result: 'Within authority · all checks passed'
+  },
+  compliance_checks: [
+    { check: 'State DOI filing approved (CA)',         status: 'pass', detail: 'Rate version 3.2 approved 2025-12-01' },
+    { check: 'E&O coverage verified (agent)',          status: 'pass', detail: 'Scottsdale $2M/$4M · expires 2027-01-15' },
+    { check: 'License active in CA (agent)',           status: 'pass', detail: 'CA-LIC-892341 · active through 2027-01-15' },
+    { check: 'Underwriter authority not exceeded',     status: 'pass', detail: 'Premium $87,646 within $750k cap' },
+    { check: 'Required forms filed for state',         status: 'pass', detail: '6 mandatory forms attached' },
+    { check: 'Commission percentage within cap',       status: 'pass', detail: '13% within max 15% for class' },
+    { check: 'No prohibited class codes',              status: 'pass', detail: 'All 3 class codes within appetite' }
+  ],
+  carrier_reporting: {
+    status: 'Reported',
+    sent_at: '2026-04-18 15:30',
+    bordereau_batch: 'BDX-2026-04-18',
+    method: 'API',
+    fields_sent: 42,
+    ack_received: '2026-04-18 15:32',
+    ack_reference: 'SEMC-ACK-4481729'
+  },
+  audit_trail: [
+    { ts: '2026-04-18 15:32', actor: 'SEMC System',      event: 'Bordereau acknowledgment received',         category: 'Carrier' },
+    { ts: '2026-04-18 15:30', actor: 'MGA System',       event: 'Carrier bordereau sent via API',             category: 'Carrier' },
+    { ts: '2026-04-18 15:02', actor: 'MGA System',       event: 'Policy documents generated (6 files · 2.9 MB)', category: 'Issuance' },
+    { ts: '2026-04-18 14:20', actor: 'MGA System',       event: 'Binder B-2026-4839 created',                 category: 'Issuance' },
+    { ts: '2026-04-18 14:15', actor: 'Elena Rodriguez',  event: 'Policy bound · Straight-Through Processing', category: 'Binding' },
+    { ts: '2026-04-18 14:12', actor: 'MGA System',       event: 'Authority check passed · $87,646 within all caps', category: 'Compliance' },
+    { ts: '2026-04-18 14:10', actor: 'Elena Rodriguez',  event: 'Approved at $87,646 · UW decision logged',   category: 'Underwriting' }
+  ]
+};
+
+export const mgaAuthorityLimits = [
+  { entity: 'Agent', name: 'Lockton Companies',            limit: 500000, ytd_used: 8420000, ytd_written: 8420000, utilization_per_policy: 42, pct_capacity: 68 },
+  { entity: 'Agent', name: 'Marsh McLennan',              limit: 500000, ytd_used: 6120000, ytd_written: 6120000, utilization_per_policy: 38, pct_capacity: 52 },
+  { entity: 'Agent', name: 'Aon Risk Solutions',            limit: 500000, ytd_used: 5840000, ytd_written: 5840000, utilization_per_policy: 36, pct_capacity: 48 },
+  { entity: 'Agent', name: 'Bridgepoint Insurance Brokers', limit: 500000, ytd_used: 3920000, ytd_written: 3920000, utilization_per_policy: 34, pct_capacity: 42 },
+  { entity: 'Product', name: 'WF-WC-CA',                     limit: 10000000, ytd_used: 8420000, ytd_written: 8420000, utilization_per_policy: 82, pct_capacity: 84 },
+  { entity: 'Product', name: 'SE-CYB',                       limit: 8000000,  ytd_used: 5840000, ytd_written: 5840000, utilization_per_policy: 68, pct_capacity: 73 },
+  { entity: 'Product', name: 'GP-GL-CTR',                    limit: 10000000, ytd_used: 6120000, ytd_written: 6120000, utilization_per_policy: 61, pct_capacity: 61 },
+  { entity: 'State',  name: 'California (WC)',              limit: 15000000, ytd_used: 8420000, ytd_written: 8420000, utilization_per_policy: 56, pct_capacity: 56 },
+  { entity: 'State',  name: 'California (GL)',              limit: 12000000, ytd_used: 6120000, ytd_written: 6120000, utilization_per_policy: 51, pct_capacity: 51 },
+  { entity: 'State',  name: 'Texas (All Lines)',             limit: 8000000,  ytd_used: 2240000, ytd_written: 2240000, utilization_per_policy: 28, pct_capacity: 28 }
+];
+
+export const mgaBulkCerts = [
+  { id: 'BCR-2042', batch: 'Lockton_Apr_Batch_1', requested_by: 'Lockton Companies',        requested: '2026-04-18 10:22', policies: 18, certificates: 28, status: 'Completed',  statusColor: 'green', sent: '2026-04-18 10:45', format: 'PDF' },
+  { id: 'BCR-2041', batch: 'Bridgepoint_Q2_Holders', requested_by: 'Bridgepoint Insurance', requested: '2026-04-17 15:10', policies: 12, certificates: 42, status: 'Completed',  statusColor: 'green', sent: '2026-04-17 15:38', format: 'PDF + Email' },
+  { id: 'BCR-2040', batch: 'Aon_MegaCorp_Package',     requested_by: 'Aon Risk Solutions',    requested: '2026-04-17 09:20', policies: 8,  certificates: 18, status: 'Completed',  statusColor: 'green', sent: '2026-04-17 09:42', format: 'PDF' },
+  { id: 'BCR-2039', batch: 'Marsh_Auto_Renewal_COIs',  requested_by: 'Marsh McLennan',         requested: '2026-04-16 14:30', policies: 24, certificates: 36, status: 'Processing', statusColor: 'blue',  sent: null,                format: 'PDF + Mail' },
+  { id: 'BCR-2038', batch: 'Hub_Q2_MassGen',            requested_by: 'Hub International',     requested: '2026-04-15 11:15', policies: 6,  certificates: 14, status: 'Completed',  statusColor: 'green', sent: '2026-04-15 11:40', format: 'PDF' }
+];
+
+export const mgaIssuanceAudit = [
+  { ts: '2026-04-19 10:04', bind_id: 'BND-48842', actor: 'Elena Rodriguez',    action: 'Policy LIB-UMB-2026-88203 issued',             category: 'Issuance',  severity: 'info',    ip: '10.0.0.42' },
+  { ts: '2026-04-19 09:42', bind_id: 'BND-48842', actor: 'Elena Rodriguez',    action: 'Policy bound · STP auto-issued',                category: 'Binding',   severity: 'info',    ip: '10.0.0.42' },
+  { ts: '2026-04-19 08:30', bind_id: 'BND-48841', actor: 'Priya Sharma',        action: 'Policy CNA-CYB-2026-88201 bound',               category: 'Binding',   severity: 'info',    ip: '10.0.0.18' },
+  { ts: '2026-04-19 08:15', bind_id: 'BND-48841', actor: 'Priya Sharma',        action: 'Authority check passed at $249k',                category: 'Compliance',severity: 'info',    ip: '10.0.0.18' },
+  { ts: '2026-04-18 18:15', bind_id: 'BND-48834', actor: 'David Park',          action: 'Policy ZUR-PRP-2026-60014 issued',               category: 'Issuance',  severity: 'info',    ip: '10.0.0.22' },
+  { ts: '2026-04-18 15:32', bind_id: 'BND-48839', actor: 'SEMC System',          action: 'Bordereau ACK received · BDX-2026-04-18',        category: 'Carrier',   severity: 'info',    ip: 'ext' },
+  { ts: '2026-04-18 15:30', bind_id: 'BND-48839', actor: 'MGA System',           action: 'Bordereau auto-sent to SEMC via API',            category: 'Carrier',   severity: 'info',    ip: 'system' },
+  { ts: '2026-04-18 15:02', bind_id: 'BND-48839', actor: 'MGA System',           action: 'Documents auto-generated (6 files · 2.9 MB)',    category: 'Issuance',  severity: 'info',    ip: 'system' },
+  { ts: '2026-04-18 14:30', bind_id: 'BND-48832', actor: 'System',                action: 'Policy TRV-AUTO-2025-88820 cancelled · non-payment', category: 'Cancellation', severity: 'warning', ip: 'system' },
+  { ts: '2026-04-18 14:15', bind_id: 'BND-48839', actor: 'Elena Rodriguez',     action: 'Policy bound · STP',                             category: 'Binding',   severity: 'info',    ip: '10.0.0.42' },
+  { ts: '2026-04-18 11:04', bind_id: 'BND-48835', actor: 'System',                action: 'Authority check flagged · 87.6% of $500k cap',   category: 'Compliance',severity: 'warning', ip: 'system' },
+  { ts: '2026-04-17 13:30', bind_id: 'BND-48838', actor: 'Tomás Weber',          action: 'Policy HTF-BOP-2026-44229 issued',               category: 'Issuance',  severity: 'info',    ip: '10.0.0.31' },
+  { ts: '2026-04-15 10:02', bind_id: 'BND-48837', actor: 'Marcus Henderson',    action: 'Policy LIB-WC-2026-33102 issued · high-value',   category: 'Issuance',  severity: 'info',    ip: '10.0.0.11' },
+  { ts: '2026-04-12 11:40', bind_id: 'BND-48833', actor: 'Priya Sharma',        action: 'Policy HIS-PRO-2026-22104 issued · STP',         category: 'Issuance',  severity: 'info',    ip: '10.0.0.18' }
+];
+
+// ─── MGA Submissions & Underwriting ───
+export const mgaSubmissionKPIs = [
+  { label: 'New Today',          value: '24' },
+  { label: 'Pending Review',     value: '48', warning: true },
+  { label: 'Avg TAT',            value: '19 hrs' },
+  { label: 'Bind Ratio',         value: '61%' },
+  { label: 'Auto-Underwritten',  value: '38%' },
+  { label: 'Referred to Carrier',value: '8' }
+];
+
+export const mgaSubmissionStatuses = ['New','Auto-Triaged','Pending Agent Info','In Underwriting','Peer Review','Quoted','Approved','Conditional Approve','Referred to Carrier','Declined','Withdrawn','Bound'];
+
+export const mgaUnderwriters = [
+  { id: 'UW-01', name: 'Marcus Henderson',   title: 'Director of Underwriting',      authority: 2000000, lobs: ['WC','GL','Property','Umbrella','D&O','Cyber'], wip: 8,  avg_tat: 14, bind_rate: 68, avatar_color: 'linear-gradient(135deg,#6c5ce7,#a67dff)', initials: 'MH' },
+  { id: 'UW-02', name: 'Elena Rodriguez',     title: 'Senior Underwriter — Casualty', authority: 750000,  lobs: ['WC','GL','Auto','Umbrella'],                   wip: 14, avg_tat: 18, bind_rate: 62, avatar_color: 'linear-gradient(135deg,#ff8a65,#ffab40)', initials: 'ER' },
+  { id: 'UW-03', name: 'David Park',          title: 'Senior Underwriter — Property', authority: 1000000, lobs: ['Property','BOP','Auto'],                       wip: 11, avg_tat: 16, bind_rate: 65, avatar_color: 'linear-gradient(135deg,#81c784,#66bb6a)', initials: 'DP' },
+  { id: 'UW-04', name: 'Priya Sharma',        title: 'Underwriter — Cyber & Professional', authority: 500000,  lobs: ['Cyber','D&O','Professional','Tech E&O'], wip: 9,  avg_tat: 22, bind_rate: 58, avatar_color: 'linear-gradient(135deg,#4fc3f7,#29b6f6)', initials: 'PS' },
+  { id: 'UW-05', name: 'Tomás Weber',         title: 'Underwriter — Commercial Lines', authority: 250000,  lobs: ['WC','GL','BOP','Auto'],                       wip: 18, avg_tat: 26, bind_rate: 54, avatar_color: 'linear-gradient(135deg,#ba68c8,#ab47bc)', initials: 'TW' },
+  { id: 'UW-06', name: 'Hannah Okafor',       title: 'Junior Underwriter',            authority: 100000,  lobs: ['WC','BOP','Auto'],                            wip: 22, avg_tat: 32, bind_rate: 48, avatar_color: 'linear-gradient(135deg,#ffb74d,#ff9800)', initials: 'HO' }
+];
+
+export const mgaDeclineReasons = [
+  { code: 'APPETITE',        label: 'Outside MGA appetite',          count: 42, category: 'Appetite' },
+  { code: 'LOSS_HISTORY',    label: 'Adverse loss history',          count: 28, category: 'Risk' },
+  { code: 'CAPACITY',        label: 'Capacity exhausted — class',     count: 18, category: 'Capacity' },
+  { code: 'CLASS_CODE',      label: 'Prohibited class code',          count: 14, category: 'Appetite' },
+  { code: 'MIN_PREMIUM',     label: 'Below minimum premium',          count: 12, category: 'Financial' },
+  { code: 'STATE_EXCL',      label: 'State not authorized',            count: 8,  category: 'Licensing' },
+  { code: 'PRIOR_CANCEL',    label: 'Prior cancellation / non-renew', count: 8,  category: 'Risk' },
+  { code: 'INCOMPLETE',      label: 'Incomplete submission',           count: 10, category: 'Data' },
+  { code: 'HAZMAT',          label: 'Hazmat / prohibited exposure',    count: 6,  category: 'Appetite' },
+  { code: 'NAICS_EXCL',      label: 'NAICS code excluded',             count: 5,  category: 'Appetite' }
+];
+
+export const mgaSubmissions = [
+  { id: 'SUB-28942', agent_id: 'AGT-2041', agent_name: 'Lockton Companies',            insured_id: 'CLI-20421', insured: 'TechForward Dynamics Inc',     naics: '541511', product: 'Cyber Liability',         lob: 'Cyber',           state: 'CA', received: '2026-04-19 09:22', effective: '2026-05-15', target_premium: 148000, risk_score: 82, appetite_match: 94, status: 'In Underwriting',       stage_color: 'blue',  underwriter: 'UW-04', underwriter_name: 'Priya Sharma',    priority: 'Normal', age_hrs: 6,  channel: 'Agent Portal', documents: 8, red_flags: 0, loss_ratio_3yr: 12, final_premium: null, decision_reason: null, auto_uw_eligible: false, revenue: 38000000, employees: 120 },
+  { id: 'SUB-28941', agent_id: 'AGT-2038', agent_name: 'Bridgepoint Insurance Brokers',insured_id: 'CLI-18292', insured: 'Magnolia Construction LLC',   naics: '238220', product: 'Workers Comp',            lob: 'WC',              state: 'CA', received: '2026-04-19 08:14', effective: '2026-05-01', target_premium: 184700, risk_score: 88, appetite_match: 96, status: 'Auto-Triaged',          stage_color: 'blue',  underwriter: null,    underwriter_name: null,             priority: 'Normal', age_hrs: 7,  channel: 'Agent Portal', documents: 12, red_flags: 0, loss_ratio_3yr: 18, final_premium: null, decision_reason: null, auto_uw_eligible: true,  revenue: 42000000, employees: 180 },
+  { id: 'SUB-28940', agent_id: 'AGT-2040', agent_name: 'Marsh McLennan',              insured_id: 'CLI-19822', insured: 'Apex Industries Group',         naics: '332999', product: 'General Liability',        lob: 'GL',              state: 'TX', received: '2026-04-18 16:40', effective: '2026-05-10', target_premium: 52000,  risk_score: 72, appetite_match: 78, status: 'Pending Agent Info',     stage_color: 'amber', underwriter: 'UW-02', underwriter_name: 'Elena Rodriguez', priority: 'Normal', age_hrs: 23, channel: 'API',          documents: 5,  red_flags: 1, loss_ratio_3yr: 32, final_premium: null, decision_reason: null, auto_uw_eligible: false, revenue: 28000000, employees: 120 },
+  { id: 'SUB-28939', agent_id: 'AGT-2041', agent_name: 'Lockton Companies',            insured_id: 'CLI-20218', insured: 'Westshore Logistics',           naics: '484110', product: 'Commercial Auto',          lob: 'Auto',            state: 'CA', received: '2026-04-18 14:22', effective: '2026-06-15', target_premium: 168000, risk_score: 78, appetite_match: 86, status: 'Quoted',                 stage_color: 'green', underwriter: 'UW-02', underwriter_name: 'Elena Rodriguez', priority: 'Normal', age_hrs: 26, channel: 'Agent Portal', documents: 10, red_flags: 0, loss_ratio_3yr: 24, final_premium: 172400, decision_reason: null, auto_uw_eligible: false, revenue: 18000000, employees: 48  },
+  { id: 'SUB-28938', agent_id: 'AGT-2039', agent_name: 'Aon Risk Solutions',           insured_id: 'CLI-20021', insured: 'Helix Biotech Inc',             naics: '541714', product: 'D&O Liability',            lob: 'D&O',             state: 'CA', received: '2026-04-18 11:15', effective: '2026-05-30', target_premium: 420000, risk_score: 85, appetite_match: 88, status: 'Peer Review',            stage_color: 'amber', underwriter: 'UW-04', underwriter_name: 'Priya Sharma',    priority: 'High',   age_hrs: 29, channel: 'Agent Portal', documents: 14, red_flags: 0, loss_ratio_3yr: 8,  final_premium: null, decision_reason: null, auto_uw_eligible: false, revenue: 42000000, employees: 112 },
+  { id: 'SUB-28937', agent_id: 'AGT-2038', agent_name: 'Bridgepoint Insurance Brokers',insured_id: 'CLI-19611', insured: 'Cascade HVAC Services',         naics: '238220', product: 'Workers Comp',             lob: 'WC',              state: 'OR', received: '2026-04-18 10:04', effective: '2026-08-10', target_premium: 94000,  risk_score: 80, appetite_match: 91, status: 'In Underwriting',        stage_color: 'blue',  underwriter: 'UW-02', underwriter_name: 'Elena Rodriguez', priority: 'Normal', age_hrs: 30, channel: 'Agent Portal', documents: 9,  red_flags: 0, loss_ratio_3yr: 22, final_premium: null, decision_reason: null, auto_uw_eligible: false, revenue: 12000000, employees: 62  },
+  { id: 'SUB-28936', agent_id: 'AGT-2037', agent_name: 'Hub International',            insured_id: 'CLI-19102', insured: 'Summit Dental Group',           naics: '621210', product: 'Professional Liability',   lob: 'Professional',    state: 'CA', received: '2026-04-18 09:30', effective: '2026-07-01', target_premium: 56000,  risk_score: 76, appetite_match: 82, status: 'Referred to Carrier',    stage_color: 'amber', underwriter: 'UW-04', underwriter_name: 'Priya Sharma',    priority: 'Normal', age_hrs: 31, channel: 'Agent Portal', documents: 7,  red_flags: 0, loss_ratio_3yr: 6,  final_premium: null, decision_reason: null, auto_uw_eligible: false, revenue: 8400000, employees: 34 },
+  { id: 'SUB-28935', agent_id: 'AGT-2036', agent_name: 'Woodruff Sawyer',             insured_id: 'CLI-19822', insured: 'DataCore Inc',                  naics: '541512', product: 'Cyber Liability',          lob: 'Cyber',           state: 'TX', received: '2026-04-17 15:20', effective: '2026-07-22', target_premium: 256100, risk_score: 89, appetite_match: 92, status: 'Approved',              stage_color: 'green', underwriter: 'UW-04', underwriter_name: 'Priya Sharma',    priority: 'Normal', age_hrs: 47, channel: 'Agent Portal', documents: 16, red_flags: 0, loss_ratio_3yr: 14, final_premium: 249000, decision_reason: null, auto_uw_eligible: false, revenue: 15000000, employees: 48  },
+  { id: 'SUB-28934', agent_id: 'AGT-2035', agent_name: 'USI Insurance Services',       insured_id: 'CLI-18812', insured: 'Peninsula Manufacturing',        naics: '332710', product: 'Property',                 lob: 'Property',        state: 'CA', received: '2026-04-17 13:10', effective: '2026-06-01', target_premium: 118000, risk_score: 64, appetite_match: 68, status: 'Conditional Approve',   stage_color: 'amber', underwriter: 'UW-03', underwriter_name: 'David Park',      priority: 'Normal', age_hrs: 49, channel: 'Email',        documents: 8,  red_flags: 1, loss_ratio_3yr: 54, final_premium: 132400, decision_reason: null, auto_uw_eligible: false, revenue: 14000000, employees: 58  },
+  { id: 'SUB-28933', agent_id: 'AGT-2033', agent_name: 'Regional Brokers Inc',          insured_id: 'CLI-17291', insured: 'Neon Brewing Co.',              naics: '312120', product: 'BOP',                       lob: 'BOP',             state: 'CA', received: '2026-04-17 11:15', effective: '2026-09-01', target_premium: 34000,  risk_score: 68, appetite_match: 72, status: 'New',                    stage_color: 'blue',  underwriter: null,    underwriter_name: null,             priority: 'Normal', age_hrs: 51, channel: 'Agent Portal', documents: 6,  red_flags: 0, loss_ratio_3yr: 28, final_premium: null, decision_reason: null, auto_uw_eligible: true,  revenue: 6200000, employees: 28 },
+  { id: 'SUB-28932', agent_id: 'AGT-2032', agent_name: 'Summit Agency',                insured_id: 'CLI-16842', insured: 'Fleet Flex Rentals',            naics: '532111', product: 'Commercial Auto',          lob: 'Auto',            state: 'CA', received: '2026-04-17 10:04', effective: '2026-10-15', target_premium: 22000,  risk_score: 42, appetite_match: 38, status: 'Declined',              stage_color: 'red',   underwriter: 'UW-05', underwriter_name: 'Tomás Weber',     priority: 'Normal', age_hrs: 53, channel: 'Agent Portal', documents: 4,  red_flags: 2, loss_ratio_3yr: 78, final_premium: null, decision_reason: 'LOSS_HISTORY', auto_uw_eligible: false, revenue: 22000000, employees: 54  },
+  { id: 'SUB-28931', agent_id: 'AGT-2038', agent_name: 'Bridgepoint Insurance Brokers',insured_id: 'CLI-18292', insured: 'Magnolia Construction — Umbrella', naics: '238220', product: 'Umbrella',              lob: 'Umbrella',        state: 'CA', received: '2026-04-16 14:22', effective: '2026-06-01', target_premium: 18200,  risk_score: 92, appetite_match: 96, status: 'Bound',                  stage_color: 'green', underwriter: 'UW-02', underwriter_name: 'Elena Rodriguez', priority: 'Normal', age_hrs: 69, channel: 'Agent Portal', documents: 5,  red_flags: 0, loss_ratio_3yr: 0,  final_premium: 18200,  decision_reason: null, auto_uw_eligible: true,  revenue: 42000000, employees: 180 },
+  { id: 'SUB-28930', agent_id: 'AGT-2034', agent_name: 'Newfront Insurance',           insured_id: 'CLI-18104', insured: 'Cipher Security Labs',           naics: '541512', product: 'Tech E&O',                 lob: 'Tech E&O',        state: 'CA', received: '2026-04-16 10:15', effective: '2026-07-22', target_premium: 148000, risk_score: 86, appetite_match: 88, status: 'Withdrawn',             stage_color: 'gray',  underwriter: 'UW-04', underwriter_name: 'Priya Sharma',    priority: 'Normal', age_hrs: 73, channel: 'Agent Portal', documents: 11, red_flags: 0, loss_ratio_3yr: 18, final_premium: null, decision_reason: 'WITHDRAWN', auto_uw_eligible: false, revenue: 15000000, employees: 48 },
+  { id: 'SUB-28929', agent_id: 'AGT-2031', agent_name: 'GreenLeaf Brokers',            insured_id: 'CLI-16104', insured: 'GreenField Landscaping',         naics: '561730', product: 'Workers Comp',             lob: 'WC',              state: 'CA', received: '2026-04-15 16:22', effective: '2027-01-10', target_premium: 12000,  risk_score: 34, appetite_match: 48, status: 'Declined',              stage_color: 'red',   underwriter: 'UW-06', underwriter_name: 'Hannah Okafor',   priority: 'Normal', age_hrs: 90, channel: 'Agent Portal', documents: 3,  red_flags: 3, loss_ratio_3yr: 88, final_premium: null, decision_reason: 'APPETITE', auto_uw_eligible: false, revenue: 3200000, employees: 24 },
+  { id: 'SUB-28928', agent_id: 'AGT-2040', agent_name: 'Marsh McLennan',              insured_id: 'CLI-20104', insured: 'Atlas Energy Services',          naics: '213112', product: 'General Liability',        lob: 'GL',              state: 'TX', received: '2026-04-15 14:22', effective: '2026-06-01', target_premium: 820000, risk_score: 58, appetite_match: 42, status: 'Referred to Carrier',    stage_color: 'amber', underwriter: 'UW-01', underwriter_name: 'Marcus Henderson',priority: 'High',   age_hrs: 92, channel: 'API',          documents: 22, red_flags: 1, loss_ratio_3yr: 42, final_premium: null, decision_reason: null, auto_uw_eligible: false, revenue: 124000000, employees: 480 }
+];
+
+export const mgaSubmissionDetail = {
+  id: 'SUB-28942',
+  risk_overview: {
+    insured_legal_name: 'TechForward Dynamics Inc',
+    dba: 'TechForward',
+    website: 'techforwarddynamics.com',
+    address: '2200 Mission College Blvd, Santa Clara CA 95054',
+    operations: 'SaaS platform + custom software · 120 employees · 4 offices',
+    revenue: '$38M (2025)',
+    employees_split: 'US: 92 · Intl: 28',
+    years_in_business: 11,
+    ceo: 'Priya Rao',
+    cfo: 'Marcus Chen'
+  },
+  exposures: [
+    { k: 'Annual Revenue',            v: '$38M' },
+    { k: 'Employee Count',            v: '120' },
+    { k: 'PHI / PII Records',         v: '~2.1M records' },
+    { k: 'Cloud Infrastructure',      v: 'AWS + Azure (multi-region)' },
+    { k: 'Security Certifications',   v: 'SOC 2 Type II · ISO 27001' },
+    { k: 'MFA Coverage',              v: '100% of employees' },
+    { k: 'Prior Breaches',            v: 'None disclosed' },
+    { k: 'Incident Response Plan',    v: 'Tested quarterly' }
+  ],
+  loss_history: [
+    { year: 2025, claims: 0, paid: 0,    reserves: 0,   status: 'Clean' },
+    { year: 2024, claims: 1, paid: 8400, reserves: 0,   status: 'Closed · phishing incident $8.4k' },
+    { year: 2023, claims: 0, paid: 0,    reserves: 0,   status: 'Clean' },
+    { year: 2022, claims: 0, paid: 0,    reserves: 0,   status: 'Clean' },
+    { year: 2021, claims: 0, paid: 0,    reserves: 0,   status: 'Clean' }
+  ],
+  coverage_requested: [
+    { k: 'Cyber Liability — Aggregate',     v: '$10M' },
+    { k: 'First-Party Cyber',                v: '$5M' },
+    { k: 'Third-Party Cyber',                v: '$10M' },
+    { k: 'Business Interruption (72hr)',    v: '$2M' },
+    { k: 'Ransomware / Extortion',           v: '$1M sublimit' },
+    { k: 'Notification & Credit Monitoring', v: '$2M sublimit' },
+    { k: 'Regulatory Defense',                v: '$5M sublimit' },
+    { k: 'Retention / Deductible',           v: '$50,000' }
+  ],
+  documents: [
+    { name: 'ACORD 125 — Commercial Application.pdf', type: 'Application',  size: '1.2 MB', uploaded: '2026-04-19 09:22' },
+    { name: 'Supplemental Cyber Questionnaire.pdf',    type: 'Questionnaire', size: '680 KB', uploaded: '2026-04-19 09:22' },
+    { name: 'SOC 2 Type II Report (2025).pdf',         type: 'Certification', size: '4.8 MB', uploaded: '2026-04-19 09:22' },
+    { name: 'ISO 27001 Certificate.pdf',                type: 'Certification', size: '420 KB', uploaded: '2026-04-19 09:22' },
+    { name: 'Incident Response Plan v3.pdf',            type: 'Documentation', size: '1.1 MB', uploaded: '2026-04-19 09:22' },
+    { name: 'Loss Run — AIG (5 years).pdf',             type: 'Loss Run',      size: '380 KB', uploaded: '2026-04-19 09:22' },
+    { name: 'Financial Statements 2024.pdf',            type: 'Financials',    size: '2.2 MB', uploaded: '2026-04-19 09:22' },
+    { name: 'Incumbent Policy — AIG Cyber.pdf',         type: 'Incumbent',     size: '3.4 MB', uploaded: '2026-04-19 09:22' }
+  ],
+  questionnaire: [
+    { q: 'How many records of PII/PHI do you store?',        a: '~2.1 million records (customer data)' },
+    { q: 'Is multi-factor authentication enforced?',          a: 'Yes — 100% of employees, all systems' },
+    { q: 'Do you have a written incident response plan?',     a: 'Yes — tested quarterly · last test 2026-02-15' },
+    { q: 'What backup frequency do you maintain?',            a: 'Continuous replication + daily snapshots · 30-day retention' },
+    { q: 'Cloud provider(s)?',                                a: 'AWS (primary) + Azure (DR) · multi-region active/active' },
+    { q: 'Any known breaches in past 5 years?',               a: '1 minor phishing incident 2024 · $8.4k · contained within 4 hours' },
+    { q: 'Security certifications?',                          a: 'SOC 2 Type II (annual) · ISO 27001 · PCI-DSS Level 2' },
+    { q: 'Employee security training cadence?',              a: 'Monthly phishing tests · annual KnowBe4 certification' }
+  ],
+  uw_notes: [
+    { ts: '2026-04-19 11:42', author: 'Priya Sharma',  note: 'Strong security posture — SOC 2 + ISO 27001 · clean 5yr loss run. Prior incident was minor phishing, well-contained. Leaning toward approval at target premium or slightly below.' },
+    { ts: '2026-04-19 09:28', author: 'System',        note: 'Auto-triage: passed appetite (94% match) · risk score 82 · no red flags.' },
+    { ts: '2026-04-19 09:22', author: 'System',        note: 'Submission received via agent portal · routed to Priya Sharma (Cyber specialist).' }
+  ],
+  audit_trail: [
+    { ts: '2026-04-19 11:42', actor: 'Priya Sharma',   action: 'UW note added · tentative approval at target', category: 'Review' },
+    { ts: '2026-04-19 10:15', actor: 'Priya Sharma',   action: 'SOC 2 report reviewed · passed',               category: 'Review' },
+    { ts: '2026-04-19 09:28', actor: 'System',         action: 'Auto-triage complete · assigned to UW-04',      category: 'Automation' },
+    { ts: '2026-04-19 09:22', actor: 'Sarah Mitchell', action: 'Submission filed via agent portal',             category: 'Intake' }
+  ],
+  pricing: {
+    base_premium: 142000,
+    schedule_credits: [
+      { reason: 'SOC 2 Type II certified', amount: -4200 },
+      { reason: 'MFA 100% enforced',        amount: -2800 },
+      { reason: 'Clean 5-year loss run',    amount: -3600 }
+    ],
+    debits: [
+      { reason: 'PHI record count >2M', amount: 1800 }
+    ],
+    fees: [
+      { k: 'Policy fee',    v: 250 },
+      { k: 'TRIA premium',  v: 850 },
+      { k: 'State tax',     v: 2100 }
+    ],
+    final_premium: 136400,
+    commission_rate: 15,
+    commission_dollars: 20460,
+    mga_fee: 6820
+  }
+};
+
+export const mgaUwGuidelines = [
+  { id: 'UG-01', lob: 'Cyber',               title: 'Cyber Appetite Matrix (2026)',       version: '2026.2', updated: '2026-04-01', owner: 'Priya Sharma',    tags: ['appetite','authority','class'],          summary: 'Defines preferred classes, MFA / encryption requirements, and per-UW authority caps. Use with ACORD 140.' },
+  { id: 'UG-02', lob: 'Workers Comp',        title: 'WC Class Code & State Matrix',       version: '2026.1', updated: '2026-03-15', owner: 'Elena Rodriguez', tags: ['class','state','rates'],                   summary: 'Approved/declined class codes by state. Includes experience mod thresholds and schedule credit rules.' },
+  { id: 'UG-03', lob: 'General Liability',   title: 'GL Underwriting Playbook',           version: '2025.4', updated: '2026-01-20', owner: 'Marcus Henderson', tags: ['appetite','questionnaire','risk'],        summary: 'Standard GL risk-selection criteria, contractor vs. non-contractor flows, hazmat exclusions.' },
+  { id: 'UG-04', lob: 'Commercial Auto',     title: 'Fleet Safety & Rating Guidelines',   version: '2026.1', updated: '2026-02-28', owner: 'David Park',       tags: ['telematics','driver','MVR'],              summary: 'Driver MVR thresholds, telematics incentives, fleet size × radius matrix.' },
+  { id: 'UG-05', lob: 'Property',            title: 'Property COPE & Sprinkler Rules',    version: '2026.1', updated: '2026-02-10', owner: 'David Park',       tags: ['COPE','protection','construction'],        summary: 'Construction class, protection class, sprinkler discounts, coastal/wind exclusions.' },
+  { id: 'UG-06', lob: 'Umbrella',            title: 'Umbrella Underlying Limits Matrix',  version: '2026.1', updated: '2026-01-05', owner: 'Marcus Henderson', tags: ['underlying','limits','follow-form'],      summary: 'Required GL/Auto/WC underlying limits, scheduled excess placement rules.' },
+  { id: 'UG-07', lob: 'D&O / Professional',  title: 'D&O Questionnaire Decision Tree',    version: '2026.1', updated: '2026-03-05', owner: 'Priya Sharma',     tags: ['questionnaire','financials','industry'], summary: 'Financial health checks, IPO/M&A exclusions, regulated-industry underwriting.' },
+  { id: 'UG-08', lob: 'All Lines',           title: 'MGA Authority Matrix',                version: '2026.3', updated: '2026-04-10', owner: 'Marcus Henderson', tags: ['authority','escalation','referral'],      summary: 'Per-underwriter authority caps by LOB and state · escalation paths · carrier referral triggers.' }
+];
+
+export const mgaCarrierReferrals = [
+  { id: 'REF-4421', submission: 'SUB-28928', insured: 'Atlas Energy Services',    carrier: 'Liberty Mutual',   reason: 'Premium above MGA authority ($820k > $500k GL cap)', sent: '2026-04-16 09:22', status: 'Under Carrier Review', statusColor: 'amber', sla_hrs: 48, carrier_contact: 'Daniel Ortiz · d.ortiz@libertymutual.com', underwriter: 'Marcus Henderson' },
+  { id: 'REF-4420', submission: 'SUB-28936', insured: 'Summit Dental Group',       carrier: 'CNA',              reason: 'Dental professional liability · requires carrier sign-off', sent: '2026-04-18 10:04', status: 'Quoted by Carrier',    statusColor: 'green', sla_hrs: 24, carrier_contact: 'Linda Park · l.park@cna.com',                underwriter: 'Priya Sharma' },
+  { id: 'REF-4419', submission: 'SUB-28901', insured: 'Coastal Shipping Co.',      carrier: 'Travelers',        reason: 'Marine cargo · outside MGA book',                            sent: '2026-04-12 14:15', status: 'Declined by Carrier', statusColor: 'red',   sla_hrs: 72, carrier_contact: 'Jim Walsh · j.walsh@travelers.com',         underwriter: 'Marcus Henderson' },
+  { id: 'REF-4418', submission: 'SUB-28892', insured: 'Valley Biotech Research',    carrier: 'Chubb',            reason: 'Clinical trials D&O · carrier authority only',              sent: '2026-04-10 11:30', status: 'Bound',                 statusColor: 'green', sla_hrs: 24, carrier_contact: 'Rachel Kim · r.kim@chubb.com',                 underwriter: 'Priya Sharma' },
+  { id: 'REF-4417', submission: 'SUB-28884', insured: 'Pacific Aviation Partners',  carrier: 'AIG',              reason: 'Aviation hull · not in MGA appetite',                        sent: '2026-04-08 09:15', status: 'Under Carrier Review', statusColor: 'amber', sla_hrs: 72, carrier_contact: 'Marcus Lee · m.lee@aig.com',                   underwriter: 'Marcus Henderson' }
+];
+
+export const mgaAppetiteRules = [
+  { id: 'AP-01', lob: 'Workers Comp',        class_codes: '5403, 5645, 5437, 8810',  states: 'CA, NV, OR, WA, AZ',   revenue_min: '$500k',  revenue_max: '$50M',  loss_ratio_max: 60,  authority: '$500k premium', priority: 1, active: true },
+  { id: 'AP-02', lob: 'Workers Comp',        class_codes: '3632, 3669 (restaurants)', states: 'CA only',             revenue_min: '$250k',  revenue_max: '$10M',  loss_ratio_max: 70,  authority: '$150k premium', priority: 2, active: true },
+  { id: 'AP-03', lob: 'General Liability',   class_codes: 'Most contractors',         states: 'All 50',              revenue_min: '$500k',  revenue_max: '$100M', loss_ratio_max: 55,  authority: '$500k premium', priority: 1, active: true },
+  { id: 'AP-04', lob: 'Cyber Liability',     class_codes: 'Tech + Prof services',     states: 'All 50',              revenue_min: '$1M',    revenue_max: '$500M', loss_ratio_max: 40,  authority: '$500k premium', priority: 1, active: true },
+  { id: 'AP-05', lob: 'Commercial Auto',     class_codes: 'Fleet 5–100 units',         states: 'CA, NV, OR, WA',      revenue_min: '$1M',    revenue_max: '$50M',  loss_ratio_max: 55,  authority: '$500k premium', priority: 1, active: true },
+  { id: 'AP-06', lob: 'Property',            class_codes: 'COPE ≥ 70',                 states: 'All 50 (excl. coastal FL)', revenue_min: '$500k', revenue_max: '$50M', loss_ratio_max: 50, authority: '$500k premium', priority: 1, active: true },
+  { id: 'AP-07', lob: 'Any',                  class_codes: 'Prohibited: Hazmat, Nuclear, Aviation, Professional MD/Lawyer', states: 'All', revenue_min: '—', revenue_max: '—', loss_ratio_max: null, authority: '—', priority: 99, active: true }
+];
+
+export const mgaAgentSubmissionSummary = [
+  { agent_id: 'AGT-2041', ytd_submissions: 248, bound: 159, declined: 28, in_flight: 38, bind_ratio: 64, avg_tat_hrs: 14, loss_ratio: 38, quality: 94, top_lobs: 'WC, GL, Cyber' },
+  { agent_id: 'AGT-2040', ytd_submissions: 204, bound: 118, declined: 32, in_flight: 42, bind_ratio: 58, avg_tat_hrs: 16, loss_ratio: 42, quality: 91, top_lobs: 'GL, WC, D&O' },
+  { agent_id: 'AGT-2039', ytd_submissions: 192, bound: 108, declined: 30, in_flight: 34, bind_ratio: 56, avg_tat_hrs: 17, loss_ratio: 44, quality: 89, top_lobs: 'Cyber, GL, Property' },
+  { agent_id: 'AGT-2038', ytd_submissions: 184, bound: 114, declined: 22, in_flight: 28, bind_ratio: 62, avg_tat_hrs: 13, loss_ratio: 35, quality: 93, top_lobs: 'WC, GL, Auto, BOP' },
+  { agent_id: 'AGT-2037', ytd_submissions: 122, bound: 58,  declined: 18, in_flight: 24, bind_ratio: 48, avg_tat_hrs: 22, loss_ratio: 52, quality: 82, top_lobs: 'WC, GL, BOP' },
+  { agent_id: 'AGT-2036', ytd_submissions: 96,  bound: 52,  declined: 14, in_flight: 18, bind_ratio: 54, avg_tat_hrs: 19, loss_ratio: 38, quality: 88, top_lobs: 'Cyber, D&O' }
+];
+
+// ─── MGA Agents & Brokers Management ───
+export const mgaAgentKPIs = [
+  { label: 'Active Agents',        value: '142' },
+  { label: 'In Onboarding',        value: '8' },
+  { label: 'On Hold',              value: '3', warning: true },
+  { label: 'Premium YTD',          value: '$48.2M' },
+  { label: 'Avg Bind Ratio',       value: '52%' },
+  { label: 'Tier-1 Contribution',  value: '74%' }
+];
+
+export const mgaAgentStages = ['Prospecting','Application','Appointment','Active','On Hold','Terminated'];
+
+export const mgaAgentTiers = [
+  { key: 'tier1', label: 'Tier 1 — Preferred',   color: 'green', desc: 'Top producers · higher commission · binding authority up to $500k · priority UW' },
+  { key: 'tier2', label: 'Tier 2 — Standard',    color: 'blue',  desc: 'Solid production · standard commission · binding authority up to $150k' },
+  { key: 'tier3', label: 'Tier 3 — Developing',  color: 'amber', desc: 'Probation period · reduced commission · all submissions require MGA UW review' }
+];
+
+export const mgaAgents = [
+  { id: 'AGT-2041', name: 'Lockton Companies',              npn: '16842041', primary: 'Sarah Mitchell',   contact: 'sarah.mitchell@lockton.com', phone: '(212) 555-0184', states: 'All 50',       lobs: ['WC','GL','BOP','Umbrella','Cyber'], tier: 'tier1', stage: 'Active',       health: 'green',  joined: '2021-03-15', premium_ytd: 8420000, bind_ratio: 64, loss_ratio: 38, quality: 94, retention: 92, performance_score: 92, active_policies: 182, submissions_ytd: 248, commission_rate: 13, producers: 4,  eo_expiry: '2026-12-15', license_check: 'Verified', submissions_30d: 28, pending_comm: 42840 },
+  { id: 'AGT-2040', name: 'Marsh McLennan',                  npn: '15284012', primary: 'David Kim',         contact: 'david.kim@marsh.com',       phone: '(212) 555-0122', states: 'All 50',       lobs: ['WC','GL','Cyber','D&O','Property'],tier: 'tier1', stage: 'Active',       health: 'green',  joined: '2020-05-20', premium_ytd: 6120000, bind_ratio: 58, loss_ratio: 42, quality: 91, retention: 88, performance_score: 87, active_policies: 148, submissions_ytd: 204, commission_rate: 12.5,producers: 3,  eo_expiry: '2026-09-30', license_check: 'Verified', submissions_30d: 22, pending_comm: 28920 },
+  { id: 'AGT-2039', name: 'Aon Risk Solutions',              npn: '14921008', primary: 'Jennifer Liu',      contact: 'jen.liu@aon.com',           phone: '(312) 555-0177', states: 'All 50',       lobs: ['GL','Property','Cyber','Management'], tier: 'tier1', stage: 'Active',    health: 'green',  joined: '2019-09-12', premium_ytd: 5840000, bind_ratio: 56, loss_ratio: 44, quality: 89, retention: 90, performance_score: 85, active_policies: 132, submissions_ytd: 192, commission_rate: 12.5,producers: 3,  eo_expiry: '2026-07-22', license_check: 'Verified', submissions_30d: 18, pending_comm: 14600 },
+  { id: 'AGT-2038', name: 'Bridgepoint Insurance Brokers',   npn: '18924088', primary: 'Sarah Chen',        contact: 'sarah@bridgepoint.com',     phone: '(916) 555-0182', states: 'CA,NV,OR,WA,AZ',lobs: ['WC','GL','BOP','Auto','Cyber'],tier: 'tier1', stage: 'Active',      health: 'green',  joined: '2020-01-08', premium_ytd: 3920000, bind_ratio: 62, loss_ratio: 35, quality: 93, retention: 94, performance_score: 91, active_policies: 127, submissions_ytd: 184, commission_rate: 13, producers: 4,  eo_expiry: '2027-01-15', license_check: 'Verified', submissions_30d: 24, pending_comm: 38720 },
+  { id: 'AGT-2037', name: 'Hub International',               npn: '17432055', primary: 'Mike Torres',       contact: 'mike.torres@hub.com',       phone: '(602) 555-0141', states: 'CA,AZ,NV,TX',    lobs: ['WC','GL','BOP'],                   tier: 'tier2', stage: 'Active',       health: 'green',  joined: '2022-04-14', premium_ytd: 2480000, bind_ratio: 48, loss_ratio: 52, quality: 82, retention: 84, performance_score: 74, active_policies: 84,  submissions_ytd: 122, commission_rate: 11, producers: 2,  eo_expiry: '2026-08-10', license_check: 'Verified', submissions_30d: 14, pending_comm: 18240 },
+  { id: 'AGT-2036', name: 'Woodruff Sawyer',                 npn: '18120094', primary: 'Lisa Park',         contact: 'l.park@woodruffsawyer.com', phone: '(415) 555-0156', states: 'CA,OR,WA',       lobs: ['Cyber','D&O','Professional'],      tier: 'tier2', stage: 'Active',       health: 'green',  joined: '2021-11-05', premium_ytd: 1820000, bind_ratio: 54, loss_ratio: 38, quality: 88, retention: 89, performance_score: 81, active_policies: 62,  submissions_ytd: 96,  commission_rate: 11.5,producers: 2,  eo_expiry: '2027-02-28', license_check: 'Verified', submissions_30d: 10, pending_comm: 12400 },
+  { id: 'AGT-2035', name: 'USI Insurance Services',          npn: '17928062', primary: 'Tom Chen',          contact: 't.chen@usi.com',            phone: '(503) 555-0199', states: 'Pacific Northwest', lobs: ['WC','GL','Auto','Property'],    tier: 'tier2', stage: 'Active',       health: 'amber',  joined: '2022-06-22', premium_ytd: 1420000, bind_ratio: 42, loss_ratio: 58, quality: 78, retention: 80, performance_score: 66, active_policies: 48,  submissions_ytd: 104, commission_rate: 10.5,producers: 2,  eo_expiry: '2026-06-30', license_check: 'Verified', submissions_30d: 11, pending_comm: 8420,  watch_note: 'Loss ratio trending high — QBR scheduled' },
+  { id: 'AGT-2034', name: 'Newfront Insurance',              npn: '19241021', primary: 'Alex Morgan',       contact: 'alex@newfront.com',         phone: '(415) 555-0133', states: 'CA,TX,NY,FL',    lobs: ['Cyber','Tech E&O','D&O'],          tier: 'tier2', stage: 'Active',       health: 'green',  joined: '2023-02-10', premium_ytd: 1280000, bind_ratio: 50, loss_ratio: 41, quality: 86, retention: 85, performance_score: 78, active_policies: 42,  submissions_ytd: 84,  commission_rate: 11, producers: 2,  eo_expiry: '2026-11-20', license_check: 'Verified', submissions_30d: 8,  pending_comm: 9180 },
+  { id: 'AGT-2033', name: 'Regional Brokers Inc',            npn: '18520011', primary: 'Ramon Ortiz',       contact: 'ramon@regionalbrkr.com',    phone: '(714) 555-0188', states: 'CA',              lobs: ['WC','GL','BOP'],                    tier: 'tier2', stage: 'Active',       health: 'green',  joined: '2023-08-04', premium_ytd: 820000,  bind_ratio: 46, loss_ratio: 48, quality: 80, retention: 82, performance_score: 72, active_policies: 28,  submissions_ytd: 62,  commission_rate: 10, producers: 1,  eo_expiry: '2026-10-05', license_check: 'Verified', submissions_30d: 6,  pending_comm: 4820 },
+  { id: 'AGT-2032', name: 'Summit Agency',                   npn: '20118049', primary: 'Priya Menon',       contact: 'priya@summitagency.com',    phone: '(510) 555-0148', states: 'CA,NV',           lobs: ['WC','GL'],                         tier: 'tier3', stage: 'Active',       health: 'amber',  joined: '2025-02-18', premium_ytd: 420000,  bind_ratio: 38, loss_ratio: 64, quality: 72, retention: 78, performance_score: 58, active_policies: 18,  submissions_ytd: 48,  commission_rate: 9,  producers: 1,  eo_expiry: '2026-07-15', license_check: 'Verified', submissions_30d: 5,  pending_comm: 2420,  watch_note: 'Probation — 12 months from appointment' },
+  { id: 'AGT-2031', name: 'GreenLeaf Brokers',               npn: '19984072', primary: 'Carl Weaver',       contact: 'carl@greenleafbrokers.com', phone: '(916) 555-0118', states: 'CA',              lobs: ['WC','BOP'],                        tier: 'tier3', stage: 'Active',       health: 'red',    joined: '2024-11-20', premium_ytd: 180000,  bind_ratio: 28, loss_ratio: 78, quality: 62, retention: 65, performance_score: 44, active_policies: 8,   submissions_ytd: 32,  commission_rate: 8,  producers: 1,  eo_expiry: '2026-06-10', license_check: 'Verified', submissions_30d: 3,  pending_comm: 1240,  watch_note: 'Performance Improvement Plan active · manager review due' },
+  { id: 'AGT-2030', name: 'Pacific Crest Advisors',          npn: '18642033', primary: 'Jill Nguyen',       contact: 'jill@pacificcrest.com',     phone: '(503) 555-0156', states: 'OR,WA,CA',        lobs: ['WC','GL','Property'],              tier: 'tier2', stage: 'On Hold',     health: 'red',    joined: '2022-09-30', premium_ytd: 620000,  bind_ratio: 36, loss_ratio: 82, quality: 64, retention: 70, performance_score: 42, active_policies: 14,  submissions_ytd: 28,  commission_rate: 10, producers: 1,  eo_expiry: '2026-05-30', license_check: 'EXPIRING', submissions_30d: 0,  pending_comm: 0,     watch_note: 'E&O expiring in 41 days · license lapse TX' },
+  { id: 'AGT-2029', name: 'Neon Insurance Group',            npn: '20412088', primary: 'Dana Carter',       contact: 'dana@neonins.com',          phone: '(415) 555-0133', states: 'CA,TX',          lobs: ['Cyber','Tech E&O'],                tier: 'tier3', stage: 'Application',  health: 'amber',  joined: null,         premium_ytd: 0,       bind_ratio: null, loss_ratio: null, quality: null, retention: null, performance_score: null, active_policies: 0,   submissions_ytd: 0,   commission_rate: 10, producers: 1,  eo_expiry: '2027-03-10', license_check: 'Pending', submissions_30d: 0,  pending_comm: 0,     watch_note: 'Background check in progress · est. appointment 2026-05-01',  projected_volume: 1200000, expected_appt: '2026-05-01', referrer: 'Sarah Mitchell (Lockton)', application_progress: 75 },
+  { id: 'AGT-2028', name: 'Cipher Risk Advisors',            npn: '20628002', primary: 'Alex Kim',          contact: 'alex@cipher-risk.com',      phone: '(650) 555-0168', states: 'CA,NY',          lobs: ['Cyber','D&O'],                     tier: 'tier3', stage: 'Prospecting',  health: 'amber',  joined: null,         premium_ytd: 0,       bind_ratio: null, loss_ratio: null, quality: null, retention: null, performance_score: null, active_policies: 0,   submissions_ytd: 0,   commission_rate: null,producers: 1,  eo_expiry: 'Pending',    license_check: 'Not Started', submissions_30d: 0, pending_comm: 0, watch_note: 'Initial outreach · exec meeting scheduled 2026-04-28',  projected_volume: 800000,  expected_appt: '2026-07-15', referrer: 'Sarah Mitchell (Lockton)', application_progress: 10 }
+];
+
+export const mgaAgentDetail = {
+  id: 'AGT-2038',
+  name: 'Bridgepoint Insurance Brokers',
+  dba: 'Bridgepoint',
+  entity_type: 'LLC',
+  fein: '88-XXXX492',
+  website: 'bridgepoint.com',
+  founded: 2017,
+  employees: 24,
+  primary_contact: { name: 'Sarah Chen', title: 'Principal', email: 'sarah@bridgepoint.com', phone: '(916) 555-0182', decision_maker: true },
+  other_contacts: [
+    { name: 'Mike Torres',  title: 'Senior Producer',  email: 'mike@bridgepoint.com',  phone: '(916) 555-0185', decision_maker: false },
+    { name: 'Lisa Park',    title: 'Commercial CSR',   email: 'lisa@bridgepoint.com',  phone: '(916) 555-0186', decision_maker: false },
+    { name: 'David Kim',    title: 'Producer',         email: 'david@bridgepoint.com', phone: '(916) 555-0187', decision_maker: false }
+  ],
+  address: '1201 Industrial Blvd, Suite 200, Sacramento CA 95814',
+  npn: '18924088',
+  licenses: [
+    { state: 'CA', npn: '18924088', license_no: 'CA-LIC-892341', type: 'Producer License',      status: 'Active', expires: '2027-01-15' },
+    { state: 'NV', npn: '18924088', license_no: 'NV-LIC-99214',  type: 'Non-Resident Producer', status: 'Active', expires: '2026-11-22' },
+    { state: 'OR', npn: '18924088', license_no: 'OR-LIC-40281',  type: 'Non-Resident Producer', status: 'Active', expires: '2027-03-08' },
+    { state: 'WA', npn: '18924088', license_no: 'WA-LIC-33120',  type: 'Non-Resident Producer', status: 'Active', expires: '2026-12-10' },
+    { state: 'AZ', npn: '18924088', license_no: 'AZ-LIC-21833',  type: 'Non-Resident Producer', status: 'Active', expires: '2027-04-02' }
+  ],
+  appointments: [
+    { lob: 'Workers Comp',    states: 'CA,NV,OR,WA,AZ', authority: 'Bind up to $500k', effective: '2020-01-08' },
+    { lob: 'General Liability',states: 'CA,NV,OR,WA,AZ', authority: 'Bind up to $250k', effective: '2020-01-08' },
+    { lob: 'BOP',             states: 'CA,NV,OR,WA,AZ', authority: 'Bind up to $200k', effective: '2020-01-08' },
+    { lob: 'Commercial Auto', states: 'CA,NV,OR',       authority: 'Bind up to $300k', effective: '2021-06-15' },
+    { lob: 'Cyber',           states: 'All appointed',  authority: 'Quote only — refer for bind', effective: '2023-04-01' }
+  ],
+  commission_structure: {
+    new_business: 13,
+    renewal: 13,
+    bonus_threshold: 3500000,
+    bonus_rate: 2,
+    contingent: 'Yes — 2% of profit share',
+    override: null
+  },
+  eo_insurance: { carrier: 'Scottsdale', limit: '$2M/$4M', expires: '2027-01-15', uploaded: '2026-01-08' },
+  contract: { version: 'v3.2', signed: '2023-04-01', auto_renew: true, next_review: '2026-04-01' },
+  performance_scorecard: {
+    submission_volume: { value: 184, rank: '8 of 142', percentile: 94, trend: 'up' },
+    bind_ratio:        { value: 62,  rank: '12 of 142', percentile: 91, trend: 'up' },
+    loss_ratio:        { value: 35,  rank: '11 of 142', percentile: 92, trend: 'down' },
+    avg_premium:       { value: 30870, rank: '34 of 142', percentile: 76, trend: 'flat' },
+    retention:         { value: 94, rank: '18 of 142', percentile: 87, trend: 'up' },
+    quality_score:     { value: 93, rank: '14 of 142', percentile: 90, trend: 'up' }
+  },
+  documents: [
+    { name: 'Appointment Contract v3.2.pdf',         type: 'Contract',     signed: '2023-04-01', status: 'Active' },
+    { name: 'E&O Certificate 2026–27.pdf',            type: 'E&O',          uploaded: '2026-01-08', expires: '2027-01-15', status: 'Active' },
+    { name: 'W-9 Form.pdf',                           type: 'W-9',          uploaded: '2024-01-12', status: 'Active' },
+    { name: 'Commission Schedule — Q2 2026.pdf',      type: 'Commission',   uploaded: '2026-04-01', status: 'Active' },
+    { name: 'CA License Renewal Cert.pdf',            type: 'License',      uploaded: '2026-01-15', status: 'Active' },
+    { name: 'Quarterly Business Review — Q1 2026.pdf',type: 'QBR',          uploaded: '2026-04-05', status: 'Active' }
+  ],
+  qbr_history: [
+    { date: '2026-04-05', overall: 92, highlights: ['+18% premium growth YoY','Top-quartile loss ratio','Expanded into cyber'], concerns: [],                                  next_date: '2026-07-05' },
+    { date: '2026-01-08', overall: 88, highlights: ['Strong Q4 production','0 declinations by UW'],                              concerns: ['Below-target retention on WC book'], next_date: '2026-04-05' },
+    { date: '2025-10-10', overall: 86, highlights: ['Added 2 new producers','Completed cyber training'],                         concerns: ['Avg premium slipping'],                next_date: '2026-01-08' }
+  ],
+  activity_timeline: [
+    { ts: '2026-04-18 14:22', event: 'New submission received — TechCorp WC renewal',     actor: 'Sarah Chen' },
+    { ts: '2026-04-15 10:04', event: 'Commission statement Q1 2026 — $38,720 paid',       actor: 'MGA Finance' },
+    { ts: '2026-04-10 09:18', event: 'QBR completed · score 92 · no action items',         actor: 'MGA Ops' },
+    { ts: '2026-04-05 11:30', event: 'Annual E&O certificate uploaded · expires 2027-01-15', actor: 'Sarah Chen' },
+    { ts: '2026-03-22 16:40', event: 'Tier review: maintained Tier 1 — Preferred',         actor: 'Auto-scoring' },
+    { ts: '2026-02-14 13:05', event: 'Bound SEMC-WC-2025-48821 · $184,700 premium',         actor: 'Sarah Chen' }
+  ]
+};
+
+export const mgaAgentOnboardingSteps = [
+  { key: 'app',       label: 'Application',     desc: 'Agency details, license info, E&O, history' },
+  { key: 'dd',        label: 'Due Diligence',   desc: 'License + background + credit + AML/OFAC' },
+  { key: 'contract',  label: 'Contract',        desc: 'Digital signing · commission · authority' },
+  { key: 'portal',    label: 'Portal Setup',    desc: 'Login · products · welcome kit' },
+  { key: 'go',        label: 'Go-Live',         desc: 'Probation period + first submission review' }
+];
+
+export const mgaAgentCommissions = [
+  { agent: 'Lockton Companies',         period: 'Apr 2026', new_business: 28420, renewal: 14400, bonus: 0,    overrides: 0,    chargebacks: 0,    total: 42820, status: 'Paid',     statusColor: 'green', paid_date: '2026-04-15', method: 'ACH' },
+  { agent: 'Marsh McLennan',            period: 'Apr 2026', new_business: 18420, renewal: 10500, bonus: 0,    overrides: 0,    chargebacks: 0,    total: 28920, status: 'Paid',     statusColor: 'green', paid_date: '2026-04-15', method: 'ACH' },
+  { agent: 'Bridgepoint Insurance',     period: 'Apr 2026', new_business: 24880, renewal: 13840, bonus: 0,    overrides: 0,    chargebacks: 0,    total: 38720, status: 'Pending Approval',statusColor: 'amber', paid_date: '—',         method: '—' },
+  { agent: 'Aon Risk Solutions',        period: 'Apr 2026', new_business: 8600,  renewal: 6000,  bonus: 0,    overrides: 0,    chargebacks: 0,    total: 14600, status: 'Pending Approval',statusColor: 'amber', paid_date: '—',         method: '—' },
+  { agent: 'Hub International',         period: 'Apr 2026', new_business: 11420, renewal: 6820,  bonus: 0,    overrides: 0,    chargebacks: 0,    total: 18240, status: 'Processing',statusColor: 'blue',  paid_date: '—',         method: 'ACH' },
+  { agent: 'Woodruff Sawyer',           period: 'Apr 2026', new_business: 7420,  renewal: 4980,  bonus: 0,    overrides: 0,    chargebacks: 0,    total: 12400, status: 'Paid',     statusColor: 'green', paid_date: '2026-04-15', method: 'ACH' },
+  { agent: 'USI Insurance',              period: 'Apr 2026', new_business: 5820,  renewal: 3200,  bonus: 0,    overrides: 0,    chargebacks: -600, total: 8420,  status: 'Paid',     statusColor: 'green', paid_date: '2026-04-15', method: 'ACH' },
+  { agent: 'Newfront Insurance',         period: 'Apr 2026', new_business: 6080,  renewal: 3100,  bonus: 0,    overrides: 0,    chargebacks: 0,    total: 9180,  status: 'Paid',     statusColor: 'green', paid_date: '2026-04-15', method: 'ACH' },
+  { agent: 'Regional Brokers Inc',       period: 'Apr 2026', new_business: 3220,  renewal: 1600,  bonus: 0,    overrides: 0,    chargebacks: 0,    total: 4820,  status: 'Paid',     statusColor: 'green', paid_date: '2026-04-15', method: 'Check' },
+  { agent: 'Bridgepoint — Bonus Q1',     period: 'Q1 2026',  new_business: 0,     renewal: 0,     bonus: 8400, overrides: 0,    chargebacks: 0,    total: 8400,  status: 'Paid',     statusColor: 'green', paid_date: '2026-04-01', method: 'ACH', note: 'Production bonus · 2% above $3.5M threshold' }
+];
+
+export const mgaAgentCommissionRules = [
+  { carrier: 'SEMC / Liberty', lob: 'Workers Comp',    nb_rate: 13.0, renewal_rate: 13.0, bonus: '2% over $3.5M',   contingent: '2% profit share',        tier1_uplift: '+0.5%', tier3_haircut: '-2.0%' },
+  { carrier: 'CNA',            lob: 'General Liability',nb_rate: 12.0, renewal_rate: 12.0, bonus: '1.5% over $2M',   contingent: '1.5% profit share',      tier1_uplift: '+0.5%', tier3_haircut: '-2.0%' },
+  { carrier: 'Hartford',       lob: 'BOP',              nb_rate: 11.0, renewal_rate: 11.0, bonus: '1% over $1.5M',   contingent: '—',                      tier1_uplift: '+0.5%', tier3_haircut: '-2.0%' },
+  { carrier: 'Travelers',      lob: 'Commercial Auto',  nb_rate: 11.5, renewal_rate: 11.5, bonus: '1.5% over $2M',   contingent: '1% profit share',        tier1_uplift: '+0.5%', tier3_haircut: '-2.0%' },
+  { carrier: 'CNA',            lob: 'Cyber',            nb_rate: 15.0, renewal_rate: 14.0, bonus: 'Flat $5k at $500k',contingent: '—',                      tier1_uplift: '+1.0%', tier3_haircut: '-3.0%' },
+  { carrier: 'Chubb',          lob: 'D&O',              nb_rate: 12.5, renewal_rate: 12.5, bonus: '—',              contingent: '2% profit share',        tier1_uplift: '+0.5%', tier3_haircut: '-2.0%' }
+];
+
+export const mgaAgentAnalytics = {
+  production_by_tier: [
+    { tier: 'Tier 1 — Preferred', agents: 12, premium_ytd: 28420000, share: 59, bind_ratio: 61, loss_ratio: 39 },
+    { tier: 'Tier 2 — Standard',  agents: 68, premium_ytd: 14820000, share: 31, bind_ratio: 48, loss_ratio: 48 },
+    { tier: 'Tier 3 — Developing',agents: 62, premium_ytd: 4960000,  share: 10, bind_ratio: 32, loss_ratio: 64 }
+  ],
+  top_agents: [
+    { name: 'Lockton Companies',     premium: 8420000, bind_ratio: 64, loss_ratio: 38, retention: 92 },
+    { name: 'Marsh McLennan',        premium: 6120000, bind_ratio: 58, loss_ratio: 42, retention: 88 },
+    { name: 'Aon Risk Solutions',    premium: 5840000, bind_ratio: 56, loss_ratio: 44, retention: 90 },
+    { name: 'Bridgepoint Insurance', premium: 3920000, bind_ratio: 62, loss_ratio: 35, retention: 94 },
+    { name: 'Hub International',     premium: 2480000, bind_ratio: 48, loss_ratio: 52, retention: 84 }
+  ],
+  bottom_agents: [
+    { name: 'GreenLeaf Brokers',     premium: 180000, bind_ratio: 28, loss_ratio: 78, retention: 65, concern: 'PIP active · LR above threshold' },
+    { name: 'Pacific Crest Advisors',premium: 620000, bind_ratio: 36, loss_ratio: 82, retention: 70, concern: 'On Hold · E&O expiring · license lapse' },
+    { name: 'Summit Agency',         premium: 420000, bind_ratio: 38, loss_ratio: 64, retention: 78, concern: 'Probation period — 12 months' }
+  ],
+  lob_mix: [
+    { lob: 'Workers Comp',        premium: 16820000, share: 35 },
+    { lob: 'General Liability',   premium: 10440000, share: 22 },
+    { lob: 'Commercial Auto',     premium: 6840000,  share: 14 },
+    { lob: 'Cyber',               premium: 5200000,  share: 11 },
+    { lob: 'BOP',                 premium: 4340000,  share: 9  },
+    { lob: 'Property',            premium: 2820000,  share: 6  },
+    { lob: 'D&O / Professional',  premium: 1440000,  share: 3  }
+  ],
+  retention_trend: [
+    { q: 'Q1 2025', new: 8,  terminated: 2 },
+    { q: 'Q2 2025', new: 6,  terminated: 1 },
+    { q: 'Q3 2025', new: 10, terminated: 3 },
+    { q: 'Q4 2025', new: 7,  terminated: 2 },
+    { q: 'Q1 2026', new: 11, terminated: 4 }
+  ],
+  submission_quality: [
+    { week: 'Wk 14', submitted: 142, clean: 118, flagged: 18, rejected: 6 },
+    { week: 'Wk 15', submitted: 158, clean: 132, flagged: 20, rejected: 6 },
+    { week: 'Wk 16', submitted: 164, clean: 138, flagged: 22, rejected: 4 },
+    { week: 'Wk 17', submitted: 148, clean: 128, flagged: 16, rejected: 4 }
+  ]
+};
+
+export const mgaAgentBroadcastTemplates = [
+  { id: 'BT-01', name: 'Monthly Producer Newsletter',  category: 'Newsletter',   audience: 'All active agents',      channel: 'Email',     last_used: '2026-04-01', open_rate: 62, variables: ['agent_name','top_products','upcoming_webinars'] },
+  { id: 'BT-02', name: 'Rate Change Announcement',     category: 'Rate Notice',  audience: 'By LOB',                  channel: 'Email+SMS', last_used: '2026-03-14', open_rate: 78, variables: ['carrier','lob','effective_date','change_pct'] },
+  { id: 'BT-03', name: 'New Product Launch',            category: 'Product',      audience: 'Tier 1 + 2',              channel: 'Email',     last_used: '2026-02-20', open_rate: 71, variables: ['product_name','states','launch_date','commission_rate'] },
+  { id: 'BT-04', name: 'Appetite Update',               category: 'Underwriting', audience: 'All by LOB',              channel: 'Email',     last_used: '2026-04-10', open_rate: 84, variables: ['carrier','lob','class_codes','changes'] },
+  { id: 'BT-05', name: 'Training Webinar Invite',      category: 'Training',     audience: 'Tier 2 + 3',              channel: 'Email',     last_used: '2026-04-02', open_rate: 54, variables: ['topic','date','presenter','zoom_link'] },
+  { id: 'BT-06', name: 'QBR Scheduling',                category: 'Operations',   audience: 'Tier 1 preferred',        channel: 'Email',     last_used: '2026-04-01', open_rate: 91, variables: ['agent_name','quarter','proposed_dates','mga_rep'] },
+  { id: 'BT-07', name: 'Compliance Deadline Reminder', category: 'Compliance',   audience: 'By state',                channel: 'Email+SMS', last_used: '2026-03-28', open_rate: 88, variables: ['deadline','state','filing_type','link'] },
+  { id: 'BT-08', name: 'Commission Statement Available',category: 'Finance',     audience: 'All paid agents',         channel: 'Email',     last_used: '2026-04-15', open_rate: 95, variables: ['agent_name','period','amount','statement_link'] }
+];
+
+export const mgaAgentBroadcasts = [
+  { id: 'BC-8842', template: 'Appetite Update',           subject: 'SEMC WC appetite expansion — CA class codes added',   sent: '2026-04-18 10:00', recipients: 142, delivered: 141, opened: 119, clicked: 48, replied: 12, status: 'Sent',     statusColor: 'green' },
+  { id: 'BC-8841', template: 'Commission Statement Available', subject: 'Your April 2026 commission statement is ready', sent: '2026-04-15 08:00', recipients: 142, delivered: 142, opened: 135, clicked: 102,replied: 18, status: 'Sent',     statusColor: 'green' },
+  { id: 'BC-8840', template: 'Rate Change Announcement',  subject: 'Travelers Commercial Auto rate change eff. 5/1',     sent: '2026-04-14 14:30', recipients: 86,  delivered: 85,  opened: 67,  clicked: 42, replied: 6,  status: 'Sent',     statusColor: 'green' },
+  { id: 'BC-8839', template: 'Training Webinar Invite',  subject: 'Q2 Cyber Underwriting Deep-Dive · Tue Apr 22 @ 10am', sent: '2026-04-10 09:15', recipients: 84,  delivered: 84,  opened: 56,  clicked: 38, replied: 4,  status: 'Sent',     statusColor: 'green' },
+  { id: 'BC-8838', template: 'Monthly Producer Newsletter',subject: 'April 2026 Producer Bulletin — 3 new wins, 2 updates',sent: '2026-04-01 08:00', recipients: 142, delivered: 141, opened: 92,  clicked: 34, replied: 8,  status: 'Sent',     statusColor: 'green' },
+  { id: 'BC-8837', template: 'QBR Scheduling',            subject: 'Q2 QBR scheduling — please pick a time',              sent: null,                recipients: 12,  delivered: 0,   opened: 0,   clicked: 0,  replied: 0,  status: 'Draft',    statusColor: 'gray'  },
+  { id: 'BC-8836', template: 'Compliance Deadline Reminder',subject: 'CA surplus lines filing due 4/30',                 sent: '2026-04-19 06:00', recipients: 38,  delivered: 38,  opened: 18,  clicked: 8,  replied: 2,  status: 'Sending',  statusColor: 'blue'  }
+];
+
+export const mgaAgentBrandingTemplates = [
+  { id: 'TM-01', name: 'Classic Blue',          preview: '🌊', primary: '#1976d2', accent: '#64b5f6', uses: 48, last_updated: '2026-03-12', default: true,  description: 'Clean corporate blue — default template for Tier 2/3 agents' },
+  { id: 'TM-02', name: 'Agency Premium',        preview: '✨', primary: '#6c5ce7', accent: '#a67dff', uses: 28, last_updated: '2026-02-18', default: false, description: 'Purple gradient · Tier 1 preferred · available as "premium" template' },
+  { id: 'TM-03', name: 'Emerald',                preview: '🌿', primary: '#00897b', accent: '#4db6ac', uses: 14, last_updated: '2026-01-22', default: false, description: 'Green palette · popular with wellness & specialty agents' },
+  { id: 'TM-04', name: 'Sunset Orange',         preview: '🌅', primary: '#f4511e', accent: '#ff8a65', uses: 9,  last_updated: '2025-11-04', default: false, description: 'Warm orange · construction & trade-focused agents' },
+  { id: 'TM-05', name: 'Monochrome',             preview: '⬛', primary: '#37474f', accent: '#78909c', uses: 18, last_updated: '2026-01-08', default: false, description: 'Professional charcoal · common with large broker houses' },
+  { id: 'TM-06', name: 'Custom (per agent)',    preview: '🎨', primary: null,      accent: null,      uses: 17, last_updated: '—',          default: false, description: 'Fully custom · agent uploads their own brand kit · subject to review' }
+];
+
+export const mgaAgentEmailComponents = [
+  { type: 'Header Logo',      active: true,  desc: 'Agency logo rendered at top of every email · fallback to MGA logo' },
+  { type: 'Producer Signature',active: true, desc: 'Primary contact name, title, phone, email auto-appended to every outbound email' },
+  { type: 'Footer Disclaimer', active: true, desc: 'State-specific legal disclaimers appended per recipient state of residence' },
+  { type: 'Unsubscribe Link',  active: true, desc: 'CAN-SPAM compliant unsubscribe link in every broadcast' },
+  { type: 'Social Links',      active: false,desc: 'LinkedIn / Facebook / Twitter icons · opt-in per agent' },
+  { type: 'Co-Branding',       active: true, desc: 'MGA + agency logos side-by-side on rate change and appetite notices' }
+];
+
+export const mgaAgentCommNotifications = [
+  { type: 'tier_change', title: 'Tier promotion — USI Insurance Services',          body: 'USI qualifies for Tier 2 based on Q1 production. Confirm promotion.',                 ts: '2026-04-18', unread: true },
+  { type: 'eo_expiry',    title: 'E&O expiring — Pacific Crest (41 days)',          body: 'E&O expires 2026-05-30. Auto-hold triggered. Notify agent.',                          ts: '2026-04-18', unread: true },
+  { type: 'qbr_due',      title: 'QBR due — USI Insurance Services',                body: 'Q1 QBR overdue by 8 days · LR trending 58%.',                                         ts: '2026-04-17', unread: true },
+  { type: 'commission',   title: 'Commission approval queued — 3 statements',       body: 'Bridgepoint, Aon, Hub statements awaiting your approval · $81,580 total.',           ts: '2026-04-17', unread: false },
+  { type: 'submission',   title: 'High-quality submission from Tier 3 — GreenLeaf', body: 'First clean submission in 90 days · consider PIP checkpoint.',                        ts: '2026-04-16', unread: false }
 ];
 
 // ─── Activity & Task Management ───
@@ -3445,4 +4734,1130 @@ export const documentAIChat = [
   { role: 'ai',   text: 'Found 2 unsigned binders expiring within 7 days:\n• Magnolia Construction — DOC-10480 (expires 2026-04-25)\n• Endorsement Add Loc — DOC-10477 (expires 2026-04-22)\n\nWould you like me to send reminders to both signatories?' },
   { role: 'user', text: 'Yes, and also summarize the Magnolia binder.' },
   { role: 'ai',   text: '✓ Reminders sent to 2 signatories via DocuSign.\n\n**Summary — DOC-10480 Magnolia WC Binder v2:**\n• Carrier: Liberty Mutual / SEMC\n• Premium: $184,700 / yr · Effective 2026-05-01\n• 3 signers (1 signed, 1 viewed, 1 pending)\n• Conditional on TRIA election + down payment by 2026-04-25\n• No red-flag indicators detected.' }
+];
+
+// ─── MGA Compliance & Administration ───
+export const mgaComplianceKPIs = [
+  { label: 'Compliance Score',       value: '94' },
+  { label: 'Open Items',             value: '14', warning: true },
+  { label: 'Due This Week',          value: '6',  warning: true },
+  { label: 'On-Time Filing Rate',    value: '98%' },
+  { label: 'Active Users',           value: '84' },
+  { label: 'MFA Enrollment',         value: '92%' }
+];
+
+export const mgaRoles = [
+  { id: 'ROL-01', name: 'Admin',                       tier: 1, users: 3,  perms: ['users:*','settings:*','audit:read','compliance:*','finance:*','uw:*','claims:*'], description: 'Full system access · can edit users, settings, and all modules',                                       authority_limit: null,    mfa_required: true },
+  { id: 'ROL-02', name: 'Senior Underwriter',          tier: 2, users: 8,  perms: ['submissions:*','policies:*','bindings:write','uw:approve','referrals:approve'],    description: 'Binding authority up to $250k · can approve referrals · no admin rights',                             authority_limit: 250000,  mfa_required: true },
+  { id: 'ROL-03', name: 'Underwriter',                 tier: 3, users: 14, perms: ['submissions:read+write','policies:read','bindings:write','rating:use'],           description: 'Standard UW authority up to $100k · no binding outside appetite',                                      authority_limit: 100000,  mfa_required: true },
+  { id: 'ROL-04', name: 'Claims Adjuster (Senior)',    tier: 2, users: 4,  perms: ['claims:*','reserves:write','payments:approve<=100k','subrogation:*'],              description: 'Senior adjuster · reserve + payment authority up to $100k',                                             authority_limit: 100000,  mfa_required: true },
+  { id: 'ROL-05', name: 'Claims Adjuster',             tier: 3, users: 6,  perms: ['claims:read+write','reserves:write<=25k','payments:propose'],                     description: 'Junior adjuster · authority up to $25k · proposes payments for senior approval',                       authority_limit: 25000,   mfa_required: true },
+  { id: 'ROL-06', name: 'Agent Manager',               tier: 2, users: 3,  perms: ['agents:*','appointments:write','commissions:read','access:grant'],                description: 'Manages agent relationships, appointments, commission overrides',                                      authority_limit: null,    mfa_required: true },
+  { id: 'ROL-07', name: 'Finance / Accounting',        tier: 2, users: 4,  perms: ['commissions:*','payments:*','reconciliation:*','trust-accounts:*','reports:*'],  description: 'Manages premium trust accounts, bordereau reconciliation, commission payouts',                          authority_limit: null,    mfa_required: true },
+  { id: 'ROL-08', name: 'Compliance Officer',          tier: 2, users: 2,  perms: ['compliance:*','audit:read','filings:*','contracts:*','users:read'],              description: 'Regulatory filings, DOI examinations, audit readiness, compliance calendar',                           authority_limit: null,    mfa_required: true },
+  { id: 'ROL-09', name: 'Agent Portal (External)',      tier: 4, users: 32, perms: ['submissions:own','policies:own','commissions:own','documents:own'],              description: 'External agent login · can only see their own book of business',                                       authority_limit: null,    mfa_required: false },
+  { id: 'ROL-10', name: 'Read-Only / Auditor',         tier: 4, users: 8,  perms: ['*:read'],                                                                         description: 'External carrier auditor · read-only access for audit windows · auto-expires after 30 days',            authority_limit: null,    mfa_required: true }
+];
+
+export const mgaComplianceUsers = [
+  { id: 'USR-001', name: 'Marcus Henderson',      email: 'marcus.h@singlepoint.com',   role: 'Admin',                       dept: 'Executive',        last_login: '2026-04-18 08:42', mfa: true,  sso: true,  status: 'Active',   training: ['SOC2 2025','SOX 2025','NAIC Ethics'], failed_logins: 0, created: '2022-03-15' },
+  { id: 'USR-002', name: 'Sarah Chen',             email: 'sarah.c@singlepoint.com',    role: 'Senior Underwriter',          dept: 'Underwriting',     last_login: '2026-04-18 09:15', mfa: true,  sso: true,  status: 'Active',   training: ['UW Authority 2025','Appetite Guidelines'], failed_logins: 0, created: '2023-01-10' },
+  { id: 'USR-003', name: 'Lisa Park',              email: 'lisa.p@singlepoint.com',     role: 'Senior Underwriter',          dept: 'Underwriting',     last_login: '2026-04-18 10:22', mfa: true,  sso: true,  status: 'Active',   training: ['UW Authority 2025','Appetite Guidelines'], failed_logins: 0, created: '2022-09-04' },
+  { id: 'USR-004', name: 'Mike Torres',             email: 'mike.t@singlepoint.com',     role: 'Underwriter',                 dept: 'Underwriting',     last_login: '2026-04-18 11:04', mfa: true,  sso: true,  status: 'Active',   training: ['UW Authority 2025'], failed_logins: 0, created: '2024-02-18' },
+  { id: 'USR-005', name: 'Jane Rodriguez',         email: 'jane.r@singlepoint.com',     role: 'Claims Adjuster (Senior)',    dept: 'Claims',           last_login: '2026-04-18 09:30', mfa: true,  sso: true,  status: 'Active',   training: ['Claims Authority 2025','Fair Claims Act'], failed_logins: 0, created: '2021-11-22' },
+  { id: 'USR-006', name: 'Daniel Ortiz',            email: 'daniel.o@singlepoint.com',   role: 'Claims Adjuster (Senior)',    dept: 'Claims',           last_login: '2026-04-17 16:45', mfa: true,  sso: true,  status: 'Active',   training: ['Claims Authority 2025','Large Loss'], failed_logins: 1, created: '2021-06-08' },
+  { id: 'USR-007', name: 'Rachel Kim',              email: 'rachel.k@singlepoint.com',   role: 'Claims Adjuster (Senior)',    dept: 'Claims',           last_login: '2026-04-18 08:15', mfa: true,  sso: true,  status: 'Active',   training: ['Claims Authority 2025','Cyber Specialty'], failed_logins: 0, created: '2023-05-14' },
+  { id: 'USR-008', name: 'Sofia Martinez',          email: 'sofia.m@singlepoint.com',    role: 'Claims Adjuster',             dept: 'Claims',           last_login: '2026-04-18 07:58', mfa: true,  sso: true,  status: 'Active',   training: ['Claims 101'], failed_logins: 0, created: '2025-08-01' },
+  { id: 'USR-009', name: 'Priya Shah',               email: 'priya.s@singlepoint.com',    role: 'Compliance Officer',          dept: 'Compliance',        last_login: '2026-04-18 09:40', mfa: true,  sso: true,  status: 'Active',   training: ['SOC2','DOI Exam Prep','Surplus Lines Law'], failed_logins: 0, created: '2022-07-19' },
+  { id: 'USR-010', name: 'Omar Khalid',              email: 'omar.k@singlepoint.com',     role: 'Finance / Accounting',        dept: 'Finance',          last_login: '2026-04-18 10:10', mfa: true,  sso: true,  status: 'Active',   training: ['SOX 2025','Trust Account Rules'], failed_logins: 0, created: '2023-09-12' },
+  { id: 'USR-011', name: 'Rebecca Fields',           email: 'rebecca.f@singlepoint.com',  role: 'Agent Manager',               dept: 'Distribution',     last_login: '2026-04-18 11:22', mfa: true,  sso: true,  status: 'Active',   training: ['Appointment Regulations'], failed_logins: 0, created: '2022-04-05' },
+  { id: 'USR-012', name: 'David Wong',               email: 'david.w@singlepoint.com',    role: 'Underwriter',                 dept: 'Underwriting',     last_login: '2026-04-17 15:30', mfa: false, sso: true,  status: 'Active',   training: ['UW Authority 2025'], failed_logins: 0, created: '2024-11-03', flags:['MFA not enrolled'] },
+  { id: 'USR-013', name: 'Olivia Sanchez',           email: 'olivia.s@lockton.com',       role: 'Agent Portal (External)',     dept: 'External',         last_login: '2026-04-18 08:00', mfa: false, sso: false, status: 'Active',   training: [], failed_logins: 0, created: '2024-02-10' },
+  { id: 'USR-014', name: 'Ex-Employee Account',     email: 'former@singlepoint.com',     role: 'Underwriter',                 dept: 'Underwriting',     last_login: '2025-12-14 10:00', mfa: true,  sso: true,  status: 'Offboarded', training: [], failed_logins: 0, created: '2023-03-22', flags:['Scheduled for deletion 2026-04-22'] },
+  { id: 'USR-015', name: 'Audit Reviewer — Travelers', email: 'audit@travelers.com',      role: 'Read-Only / Auditor',         dept: 'External Audit',    last_login: '2026-04-17 14:00', mfa: true,  sso: false, status: 'Active',   training: [], failed_logins: 0, created: '2026-04-01', expires:'2026-05-01', flags:['Time-limited access'] }
+];
+
+export const mgaComplianceItems = [
+  { id: 'CMP-2026-041', task: 'File Q1 2026 Surplus Lines Tax — CA',            regulatory_body: 'CA Surplus Lines Assoc.',    category: 'Tax Filing',         due: '2026-04-30', owner: 'Priya Shah',      status: 'In Progress', priority: 'High',   days_to_due: 12, attachments: 2, notes: 'Preparing SLA-5 form · need Q1 placements export from bordereau system' },
+  { id: 'CMP-2026-040', task: 'Annual CA DOI Financial Statement',                regulatory_body: 'CA Dept. of Insurance',      category: 'DOI Report',          due: '2026-05-15', owner: 'Priya Shah',      status: 'Open',        priority: 'High',   days_to_due: 27, attachments: 0, notes: 'Annual Schedule T + Premium Tax Return' },
+  { id: 'CMP-2026-039', task: 'Renew MGA License — Texas',                        regulatory_body: 'TX Dept. of Insurance',      category: 'License',             due: '2026-04-25', owner: 'Priya Shah',      status: 'In Progress', priority: 'High',   days_to_due: 7,  attachments: 4, notes: 'Application filed 2026-04-01 · awaiting fingerprint verification · CE credits confirmed' },
+  { id: 'CMP-2026-038', task: 'SOC2 Type II — Evidence Collection',              regulatory_body: 'External Auditor (Deloitte)', category: 'SOC2',                due: '2026-05-31', owner: 'Marcus Henderson', status: 'In Progress', priority: 'Medium', days_to_due: 43, attachments: 8, notes: '11 of 14 controls evidenced · awaiting incident response drill + 2 user access reviews' },
+  { id: 'CMP-2026-037', task: 'NAIC Model Audit Rule — Q1',                        regulatory_body: 'NAIC',                       category: 'NAIC',                 due: '2026-04-20', owner: 'Priya Shah',      status: 'In Progress', priority: 'Medium', days_to_due: 2,  attachments: 0, notes: 'Internal control certifications due' },
+  { id: 'CMP-2026-036', task: 'Travelers Carrier Audit — Readiness Pack',        regulatory_body: 'Travelers',                   category: 'Carrier Audit',       due: '2026-05-10', owner: 'Priya Shah',      status: 'Open',        priority: 'High',   days_to_due: 22, attachments: 0, notes: '10-policy sample · loss runs · UW files' },
+  { id: 'CMP-2026-035', task: 'Annual MGA Appointment Filing — Ohio',             regulatory_body: 'OH Dept. of Insurance',      category: 'License',             due: '2026-06-30', owner: 'Rebecca Fields',  status: 'Open',        priority: 'Medium', days_to_due: 73, attachments: 0, notes: '4 agent appointments to renew' },
+  { id: 'CMP-2026-034', task: 'Q1 Premium Tax Return — Texas',                    regulatory_body: 'TX Comptroller',             category: 'Tax Filing',         due: '2026-04-20', owner: 'Omar Khalid',      status: 'Review',       priority: 'High',   days_to_due: 2,  attachments: 3, notes: 'Draft prepared · pending Omar final review' },
+  { id: 'CMP-2026-033', task: 'ISO 27001 Annual Surveillance Audit',               regulatory_body: 'BSI Group',                  category: 'ISO',                  due: '2026-08-15', owner: 'Marcus Henderson', status: 'Open',        priority: 'Low',    days_to_due: 119,attachments: 0, notes: 'Scheduled · gap assessment due May 2026' },
+  { id: 'CMP-2026-032', task: 'Producer Licensing Audit — Florida',                regulatory_body: 'FL Dept. of Financial Svc.', category: 'License',             due: '2026-04-18', owner: 'Rebecca Fields',  status: 'In Progress', priority: 'High',   days_to_due: 0,  attachments: 2, notes: '⚠ Due today · 12 FL producers to verify' },
+  { id: 'CMP-2026-031', task: 'Anti-Money Laundering Training (All Staff)',       regulatory_body: 'Internal + FinCEN',          category: 'Training',            due: '2026-06-01', owner: 'Priya Shah',      status: 'In Progress', priority: 'Medium', days_to_due: 44, attachments: 0, notes: '61 of 84 completed (73%) · 23 overdue' },
+  { id: 'CMP-2026-030', task: 'Cyber Liability Policy Renewal — MGA Own Coverage',regulatory_body: 'Internal',                   category: 'Internal Policy',    due: '2026-05-01', owner: 'Marcus Henderson', status: 'Open',        priority: 'Medium', days_to_due: 13, attachments: 0, notes: 'Compare 3 markets · legal review clauses' },
+  { id: 'CMP-2026-029', task: 'SOC2 Pen-Test — Scoping',                           regulatory_body: 'Offensive Security Ltd',     category: 'SOC2',                due: '2026-05-20', owner: 'Marcus Henderson', status: 'Open',        priority: 'Medium', days_to_due: 32, attachments: 1, notes: '—' },
+  { id: 'CMP-2026-028', task: 'E&O Insurance Renewal Documentation',                regulatory_body: 'Internal',                   category: 'Internal Policy',    due: '2026-07-15', owner: 'Marcus Henderson', status: 'Open',        priority: 'Low',    days_to_due: 88, attachments: 0, notes: '—' },
+  { id: 'CMP-2026-027', task: 'DOI Complaint Response — CA Complaint #88421',     regulatory_body: 'CA Dept. of Insurance',      category: 'DOI Response',        due: '2026-04-22', owner: 'Priya Shah',      status: 'In Progress', priority: 'High',   days_to_due: 4,  attachments: 3, notes: 'Response drafted · legal review Monday' }
+];
+
+export const mgaAuditLogs = [
+  { ts: '2026-04-18 14:22', actor: 'Marcus Henderson', module: 'Compliance',  action: 'Approved reserve change RES-4200 · Ridge Builders · $420k → $520k', ip: '10.0.8.42',   severity: 'Info',    before: '$420,000', after: '$520,000' },
+  { ts: '2026-04-18 14:15', actor: 'Sarah Chen',        module: 'Submissions', action: 'Quoted SUB-92104 Magnolia Construction at $184,700',                 ip: '10.0.8.18',   severity: 'Info',    before: 'Not quoted', after: '$184,700' },
+  { ts: '2026-04-18 14:08', actor: 'Jane Rodriguez',    module: 'Claims',      action: 'Updated reserve on CLM-MGA-2026-0248 · $8,500 → $12,400',           ip: '10.0.8.24',   severity: 'Info',    before: '$8,500',   after: '$12,400' },
+  { ts: '2026-04-18 13:55', actor: 'Priya Shah',        module: 'Compliance',  action: 'Generated Q1 2026 Premium Tax Return draft · TX',                     ip: '10.0.8.65',   severity: 'Info',    before: '—',        after: 'Draft created' },
+  { ts: '2026-04-18 13:40', actor: 'Daniel Ortiz',      module: 'Claims',      action: 'Requested reserve change RES-4200 on CLM-MGA-2026-0237',            ip: '10.0.8.52',   severity: 'Info',    before: '—',        after: 'Submitted for approval' },
+  { ts: '2026-04-18 13:20', actor: 'Mike Torres',       module: 'Policies',    action: 'Issued policy TRV-AUTO-2026-11445 · Westshore Logistics',             ip: '10.0.8.31',   severity: 'Info',    before: 'Bound',     after: 'Issued' },
+  { ts: '2026-04-18 12:48', actor: 'Omar Khalid',       module: 'Finance',     action: 'Initiated commission payment batch $184,240 to 14 agents',            ip: '10.0.8.19',   severity: 'Info',    before: 'Pending',   after: 'Processing' },
+  { ts: '2026-04-18 12:30', actor: 'System',            module: 'Compliance',  action: 'Auto-routed CA Surplus Lines filing to Priya Shah (due 2026-04-30)',  ip: '—',            severity: 'Info',    before: '—',        after: 'Assigned' },
+  { ts: '2026-04-18 12:05', actor: 'David Wong',        module: 'Login',       action: 'Login — SSO success (MFA not enrolled)',                                ip: '10.0.8.77',   severity: 'Warning', before: '—',        after: 'Session opened' },
+  { ts: '2026-04-18 11:42', actor: 'Rachel Kim',        module: 'Claims',      action: 'Approved forensic firm engagement · CyberDefense $35k',              ip: '10.0.8.48',   severity: 'Info',    before: 'Proposed',  after: 'Approved' },
+  { ts: '2026-04-18 11:18', actor: 'Rebecca Fields',    module: 'Agents',      action: 'Appointed Lockton Companies to FL (Workers Comp)',                    ip: '10.0.8.22',   severity: 'Info',    before: '—',        after: 'Appointment filed' },
+  { ts: '2026-04-18 10:50', actor: 'System',            module: 'Security',    action: 'Failed login attempt — USR-006 Daniel Ortiz (1 of 3)',                 ip: '172.98.45.11',severity: 'Warning', before: '—',        after: 'Locked no' },
+  { ts: '2026-04-18 10:25', actor: 'Audit Reviewer',    module: 'Policies',    action: 'Downloaded 10 policy samples for Travelers carrier audit',            ip: '203.44.89.2', severity: 'Info',    before: '—',        after: 'Exported' },
+  { ts: '2026-04-18 09:58', actor: 'Lisa Park',        module: 'Settings',    action: 'Updated commission schedule · Commercial Auto · 13% → 14%',            ip: '10.0.8.45',   severity: 'Info',    before: '13%',       after: '14%' },
+  { ts: '2026-04-18 09:30', actor: 'System',            module: 'Bordereau',   action: 'Delivered BDX-2026-04-18 to Travelers (18 claims)',                    ip: '—',            severity: 'Info',    before: 'Queued',    after: 'Delivered (ACK: TRV-ACK-8842)' },
+  { ts: '2026-04-18 09:02', actor: 'Marcus Henderson', module: 'Users',        action: 'Scheduled offboarding for Ex-Employee Account (USR-014)',              ip: '10.0.8.42',   severity: 'Info',    before: 'Active',    after: 'Offboarded · deletion 2026-04-22' },
+  { ts: '2026-04-18 08:42', actor: 'Marcus Henderson', module: 'Login',       action: 'Login — SSO + MFA success',                                            ip: '10.0.8.42',   severity: 'Info',    before: '—',        after: 'Session opened' },
+  { ts: '2026-04-17 18:22', actor: 'Priya Shah',        module: 'Contracts',   action: 'Uploaded 2026 Travelers MGA Agreement Amendment #4',                  ip: '10.0.8.65',   severity: 'Info',    before: '—',        after: 'Contract v4 stored' }
+];
+
+export const mgaContracts = [
+  { id: 'CNT-1001', party: 'Travelers',                     type: 'Carrier MGA Agreement',   effective: '2024-01-01', expiry: '2027-12-31', status: 'Active',      version: 'v4',   signer_mga: 'Marcus Henderson', signer_carrier: 'R. Patel (Travelers)',    notes: 'Amendment #4 2026-04-17 · added CA Property capacity $5M/risk',           renewal_alert: '180d pre-expiry', premium_cap: '25000000' },
+  { id: 'CNT-1002', party: 'SEMC / Liberty Mutual',          type: 'Carrier MGA Agreement',   effective: '2023-06-01', expiry: '2026-05-31', status: 'Expiring',    version: 'v2',   signer_mga: 'Marcus Henderson', signer_carrier: 'J. Kim (Liberty)',          notes: '⚠ Expires in 43 days · renewal terms in review · committee meets 2026-04-25', renewal_alert: '90d pre-expiry',  premium_cap: '18000000' },
+  { id: 'CNT-1003', party: 'CNA',                             type: 'Carrier MGA Agreement',   effective: '2023-01-01', expiry: '2026-12-31', status: 'Active',      version: 'v3',   signer_mga: 'Marcus Henderson', signer_carrier: 'M. Brody (CNA)',             notes: 'Auto-renewal with 90-day notice · standard terms',                          renewal_alert: '180d pre-expiry', premium_cap: '12000000' },
+  { id: 'CNT-1004', party: 'Hartford',                        type: 'Carrier MGA Agreement',   effective: '2025-01-01', expiry: '2027-12-31', status: 'Active',      version: 'v1',   signer_mga: 'Marcus Henderson', signer_carrier: 'P. Collins (Hartford)',     notes: 'New 2025 partnership · BOP + Auto focus',                                    renewal_alert: '180d pre-expiry', premium_cap: '8000000' },
+  { id: 'CNT-1005', party: 'Chubb',                           type: 'Carrier MGA Agreement',   effective: '2024-07-01', expiry: '2026-06-30', status: 'Active',      version: 'v2',   signer_mga: 'Marcus Henderson', signer_carrier: 'S. Reeves (Chubb)',          notes: 'D&O + Cyber specialty · limited capacity · renewal negotiations May 2026',    renewal_alert: '90d pre-expiry',  premium_cap: '6000000' },
+  { id: 'CNT-1006', party: 'Zurich',                          type: 'Carrier MGA Agreement',   effective: '2022-01-01', expiry: '2026-12-31', status: 'Active',      version: 'v5',   signer_mga: 'Marcus Henderson', signer_carrier: 'A. Schmidt (Zurich)',       notes: 'Property only · Cat-heavy capacity',                                          renewal_alert: '180d pre-expiry', premium_cap: '4000000' },
+  { id: 'CNT-2001', party: 'Lockton Companies',               type: 'Agent Appointment',        effective: '2023-03-15', expiry: '2028-03-14', status: 'Active',      version: 'v2',   signer_mga: 'Rebecca Fields',   signer_carrier: 'Olivia Sanchez (Lockton)', notes: 'Top producer · 14 states · all LOBs',                                         renewal_alert: '365d pre-expiry', premium_cap: null },
+  { id: 'CNT-2002', party: 'Marsh Agency Inc',                 type: 'Agent Appointment',        effective: '2024-01-01', expiry: '2029-01-01', status: 'Active',      version: 'v1',   signer_mga: 'Rebecca Fields',   signer_carrier: 'T. Mitchell (Marsh)',       notes: 'Mid-tier producer · 8 states',                                                renewal_alert: '365d pre-expiry', premium_cap: null },
+  { id: 'CNT-2003', party: 'Apex Insurance Services',          type: 'Agent Appointment',        effective: '2022-09-01', expiry: '2026-08-31', status: 'Active',      version: 'v3',   signer_mga: 'Rebecca Fields',   signer_carrier: 'J. Osborn (Apex)',          notes: 'Regional agent · 4 states',                                                  renewal_alert: '180d pre-expiry', premium_cap: null },
+  { id: 'CNT-3001', party: 'Munich Re',                        type: 'Reinsurance Treaty',      effective: '2026-01-01', expiry: '2026-12-31', status: 'Active',      version: 'v2',   signer_mga: 'Marcus Henderson', signer_carrier: 'K. Berg (Munich Re)',       notes: 'Quota share 50% · Commercial Auto book · $5M/risk cession',                  renewal_alert: '90d pre-expiry',  premium_cap: null },
+  { id: 'CNT-3002', party: 'Swiss Re',                         type: 'Reinsurance Treaty',      effective: '2026-01-01', expiry: '2026-12-31', status: 'Active',      version: 'v1',   signer_mga: 'Marcus Henderson', signer_carrier: 'E. Fischer (Swiss Re)',     notes: 'Cat XL for Property book · $10M xs $2M per event',                            renewal_alert: '90d pre-expiry',  premium_cap: null },
+  { id: 'CNT-4001', party: 'Snowflake Inc',                    type: 'Vendor Contract',         effective: '2024-06-01', expiry: '2027-05-31', status: 'Active',      version: 'v1',   signer_mga: 'Marcus Henderson', signer_carrier: 'Sales Rep',                  notes: 'Data warehouse · processes all claims/policy data · DPA executed',           renewal_alert: '90d pre-expiry',  premium_cap: null },
+  { id: 'CNT-4002', party: 'DocuSign Inc',                     type: 'Vendor Contract',         effective: '2023-01-01', expiry: '2026-12-31', status: 'Active',      version: 'v2',   signer_mga: 'Marcus Henderson', signer_carrier: 'Sales Rep',                  notes: 'E-signature · SOC2 Type II compliant',                                       renewal_alert: '90d pre-expiry',  premium_cap: null },
+  { id: 'CNT-4003', party: 'Deloitte LLP',                     type: 'Professional Services',    effective: '2026-01-01', expiry: '2026-12-31', status: 'Active',      version: 'v1',   signer_mga: 'Marcus Henderson', signer_carrier: 'Partner',                    notes: 'SOC2 Type II + financial audit · annual engagement',                         renewal_alert: '60d pre-expiry',  premium_cap: null }
+];
+
+export const mgaLicenses = [
+  { id: 'LIC-CA-01', state: 'California',   license_type: 'MGA / Surplus Lines Broker', license_no: 'MGA-CA-884210',  issued: '2023-01-15', expires: '2026-12-31', status: 'Active',  renewal_days: 258, designated_ro: 'Sarah Chen',     exam_credits: 24, filing_required: 'Annual' },
+  { id: 'LIC-TX-01', state: 'Texas',        license_type: 'MGA / Agent',                  license_no: 'MGA-TX-772201',  issued: '2024-06-01', expires: '2026-04-25', status: 'Renewing', renewal_days: 7,   designated_ro: 'Mike Torres',     exam_credits: 16, filing_required: 'Biennial' },
+  { id: 'LIC-NY-01', state: 'New York',     license_type: 'MGA',                          license_no: 'MGA-NY-551103',  issued: '2022-08-10', expires: '2026-08-10', status: 'Active',  renewal_days: 114, designated_ro: 'Marcus Henderson', exam_credits: 20, filing_required: 'Annual' },
+  { id: 'LIC-FL-01', state: 'Florida',      license_type: 'MGA / Surplus Lines',          license_no: 'MGA-FL-441002',  issued: '2023-04-20', expires: '2027-04-20', status: 'Active',  renewal_days: 368, designated_ro: 'Lisa Park',       exam_credits: 24, filing_required: 'Annual' },
+  { id: 'LIC-IL-01', state: 'Illinois',     license_type: 'MGA',                          license_no: 'MGA-IL-330405',  issued: '2023-10-01', expires: '2026-09-30', status: 'Active',  renewal_days: 165, designated_ro: 'Marcus Henderson', exam_credits: 16, filing_required: 'Annual' },
+  { id: 'LIC-OH-01', state: 'Ohio',         license_type: 'MGA / Agent',                  license_no: 'MGA-OH-220806',  issued: '2024-03-15', expires: '2026-06-30', status: 'Active',  renewal_days: 73,  designated_ro: 'David Wong',      exam_credits: 12, filing_required: 'Biennial' },
+  { id: 'LIC-PA-01', state: 'Pennsylvania', license_type: 'MGA',                          license_no: 'MGA-PA-110207',  issued: '2023-11-12', expires: '2026-11-12', status: 'Active',  renewal_days: 208, designated_ro: 'Marcus Henderson', exam_credits: 16, filing_required: 'Annual' },
+  { id: 'LIC-GA-01', state: 'Georgia',      license_type: 'MGA',                          license_no: 'MGA-GA-990308',  issued: '2024-07-04', expires: '2027-07-03', status: 'Active',  renewal_days: 441, designated_ro: 'Rebecca Fields',  exam_credits: 12, filing_required: 'Annual' }
+];
+
+export const mgaRegulatoryFilings = [
+  { id: 'FLG-2026-Q1-CA',  filing_type: 'Quarterly Surplus Lines Tax',  state: 'CA', period: 'Q1 2026',        due: '2026-04-30', filed: null,            status: 'In Preparation', owner: 'Priya Shah',      amount_reported: 1840000, tax_due: 54200, form: 'SLA-5' },
+  { id: 'FLG-2026-Q1-TX',  filing_type: 'Quarterly Premium Tax',         state: 'TX', period: 'Q1 2026',        due: '2026-04-20', filed: null,            status: 'Review',         owner: 'Omar Khalid',      amount_reported: 920000,  tax_due: 16560, form: 'IT-175' },
+  { id: 'FLG-2026-Q1-FL',  filing_type: 'Quarterly Surplus Lines Tax',  state: 'FL', period: 'Q1 2026',        due: '2026-04-15', filed: '2026-04-14 16:30',status: 'Filed',          owner: 'Priya Shah',      amount_reported: 620000,  tax_due: 31000, form: 'SL-1' },
+  { id: 'FLG-2026-Q1-NY',  filing_type: 'Quarterly Premium Tax',         state: 'NY', period: 'Q1 2026',        due: '2026-04-20', filed: '2026-04-18 14:22',status: 'Filed',          owner: 'Omar Khalid',      amount_reported: 1240000, tax_due: 22320, form: 'CT-33' },
+  { id: 'FLG-2026-AN-CA',  filing_type: 'Annual MGA Report',             state: 'CA', period: '2025',            due: '2026-05-15', filed: null,            status: 'Open',            owner: 'Priya Shah',      amount_reported: null,    tax_due: null,  form: 'MGA-AN-1' },
+  { id: 'FLG-2026-AN-NY',  filing_type: 'Annual Financial Statement',    state: 'NY', period: '2025',            due: '2026-03-01', filed: '2026-02-28 17:00',status: 'Filed',          owner: 'Marcus Henderson', amount_reported: null,    tax_due: null,  form: 'Schedule T' },
+  { id: 'FLG-2026-RT-CA',  filing_type: 'Rate & Form Filing — Cyber v2',  state: 'CA', period: '2026 Cycle',      due: '2026-06-01', filed: null,            status: 'In Preparation', owner: 'Priya Shah',      amount_reported: null,    tax_due: null,  form: 'RT-Form-CYB2' },
+  { id: 'FLG-2025-Q4-CA',  filing_type: 'Quarterly Surplus Lines Tax',  state: 'CA', period: 'Q4 2025',        due: '2026-01-30', filed: '2026-01-28 15:40',status: 'Filed',          owner: 'Priya Shah',      amount_reported: 2140000, tax_due: 63100, form: 'SLA-5' },
+  { id: 'FLG-2026-AP-OH',  filing_type: 'Annual Appointment Filing',    state: 'OH', period: '2026',            due: '2026-06-30', filed: null,            status: 'Open',            owner: 'Rebecca Fields',  amount_reported: null,    tax_due: null,  form: 'APPT-1' }
+];
+
+export const mgaSystemSettings = [
+  { category: 'Binding',          key: 'Max Auto-Bind Authority',         value: '$100,000',                   last_modified: '2026-01-15 by Marcus Henderson', description: 'Hard cap on auto-bind without UW sign-off' },
+  { category: 'Binding',          key: 'Appetite Check Required',           value: 'Yes',                        last_modified: '2025-10-01 by Sarah Chen',        description: 'Every submission must pass appetite matrix' },
+  { category: 'Claims',           key: 'Auto-Assign Adjuster',              value: 'Enabled (by LOB + WIP)',     last_modified: '2026-02-04 by Jane Rodriguez',   description: 'Round-robin within LOB specialty; skip if WIP > 35' },
+  { category: 'Claims',           key: 'Reserve Auto-Approve Threshold',     value: 'Up to $25k (junior) · $100k (senior) · $250k (large loss)', last_modified: '2025-12-10 by Marcus Henderson', description: 'Per role tier · above this requires committee approval' },
+  { category: 'Claims',           key: 'Large Loss Notification (Carrier)', value: '$100k+ within 24h',          last_modified: '2025-11-01 by Priya Shah',        description: 'Auto-email to carrier loss desk · SEMC bordereau flag' },
+  { category: 'Compliance',       key: 'Audit Log Retention',               value: '7 years',                    last_modified: '2024-01-01 by Marcus Henderson', description: 'SOX + NAIC minimum retention' },
+  { category: 'Compliance',       key: 'MFA Enforcement',                   value: 'All internal roles',         last_modified: '2025-06-15 by Marcus Henderson', description: 'External agents optional · internal required · auditors required' },
+  { category: 'Compliance',       key: 'Session Timeout',                    value: '30 minutes',                 last_modified: '2025-09-01 by Marcus Henderson', description: 'Idle-only · Active sessions extended' },
+  { category: 'Financial',        key: 'Premium Trust Bank',                 value: 'First Republic · ***4421',    last_modified: '2024-07-01 by Omar Khalid',       description: 'Segregated trust account · daily reconciliation' },
+  { category: 'Financial',        key: 'Commission Pay Schedule',            value: 'Monthly · 5th of next month',last_modified: '2025-01-01 by Omar Khalid',       description: 'ACH batch run 1st · released 5th after reconciliation' },
+  { category: 'Notifications',    key: 'Renewal Kickoff Lead Time',         value: '120 days pre-expiry',        last_modified: '2025-04-01 by Sarah Chen',        description: 'Auto-email to producer + account exec' },
+  { category: 'Notifications',    key: 'FNOL Acknowledgment',               value: 'Auto within 4 business hours',last_modified: '2024-10-01 by Jane Rodriguez',    description: 'Email + portal notification to insured + agent' },
+  { category: 'Integrations',     key: 'SEMC (Carrier)',                      value: 'Active · 6 carriers',        last_modified: '2026-03-22 by IT',                description: 'Bordereau + claims + submissions via SEMC API' },
+  { category: 'Integrations',     key: 'Accounting (NetSuite)',              value: 'Connected · nightly sync',   last_modified: '2024-11-01 by Omar Khalid',       description: 'GL · AR · trust · commissions' },
+  { category: 'Integrations',     key: 'DocuSign',                            value: 'Connected · 14,224 envelopes', last_modified: '2023-01-15 by IT',                 description: 'E-signature for all binders, contracts, endorsements' },
+  { category: 'Data',             key: 'PII Encryption at Rest',             value: 'AES-256',                    last_modified: '2024-01-01 by IT',                description: 'Keys rotated annually · KMS-managed' },
+  { category: 'Data',             key: 'Backup Frequency',                   value: 'Daily · 30d retained · monthly 7y', last_modified: '2024-01-01 by IT',           description: 'Cross-region replication · SOC2 control' }
+];
+
+export const mgaComplianceTrend = [
+  { month: 'Nov 25', score: 88, open: 22, filed_ontime: 94 },
+  { month: 'Dec 25', score: 91, open: 18, filed_ontime: 96 },
+  { month: 'Jan 26', score: 93, open: 16, filed_ontime: 97 },
+  { month: 'Feb 26', score: 92, open: 17, filed_ontime: 95 },
+  { month: 'Mar 26', score: 94, open: 15, filed_ontime: 98 },
+  { month: 'Apr 26', score: 94, open: 14, filed_ontime: 98 }
+];
+
+// ─── MGA Principal Carriers Management ───
+export const mgaCarriersKPIs = [
+  { label: 'Principal Carriers',     value: '8' },
+  { label: 'Total Capacity',         value: '$128M' },
+  { label: 'Capacity Used',          value: '68%' },
+  { label: 'Avg Loss Ratio',         value: '38%' },
+  { label: 'Contracts Expiring',     value: '2', warning: true },
+  { label: 'Partnership Score',      value: '4.4 ★' }
+];
+
+export const mgaCarriersEnhanced = [
+  {
+    id: 'CAR-01', name: 'Travelers', naic: '19046', am_best: 'A++', sp_rating: 'AA', tier: 'Core',
+    logo_initials: 'TR', logo_color: 'linear-gradient(135deg,#d32f2f,#ef5350)',
+    relationship_status: 'Active', since: '2021-01-01', contract_id: 'CNT-1001',
+    contract_effective: '2024-01-01', contract_expiry: '2027-12-31', contract_version: 'v4',
+    products: ['FleetSafe Auto', 'MainStreet BOP', 'PropertyGuard'], lobs: ['Commercial Auto','BOP','Property'],
+    states: ['CA','TX','NY','FL','IL','OH','PA','GA','AZ','CO','NV','WA','OR','NC'],
+    binding_authority: 250000, claims_authority: 100000, subjectivity_required_above: 500000,
+    commission_rate: 14, profit_share_threshold_lr: 55, profit_share_pct: 30, profit_share_earned_ytd: 482000,
+    capacity_treaty: 25000000, capacity_used: 18400000, capacity_pct: 74,
+    premium_ytd: 18400000, premium_prior_ytd: 15800000, growth_pct: 16, policies_inforce: 842,
+    loss_ratio_ytd: 42, combined_ratio_ytd: 88, claims_count_ytd: 42,
+    submission_quality: 92, claims_handling: 94, uw_response_time_hrs: 18,
+    performance_score: 91, partnership_rating: 4.6, last_qbr: '2026-01-15', next_qbr: '2026-04-22',
+    key_contact_uw: 'Rajesh Patel',   key_contact_claims: 'Karen Liu',   key_contact_audit: 'Michael Donovan',
+    integration_method: 'SEMC API', health: 'Healthy',
+    contingent_commission_projected: 620000, open_referrals: 3, data_feeds: ['Policies','Claims','Bordereau']
+  },
+  {
+    id: 'CAR-02', name: 'SEMC / Liberty Mutual', naic: '23035', am_best: 'A', sp_rating: 'A', tier: 'Core',
+    logo_initials: 'LM', logo_color: 'linear-gradient(135deg,#fdd835,#fbc02d)',
+    relationship_status: 'Renewing', since: '2018-06-01', contract_id: 'CNT-1002',
+    contract_effective: '2023-06-01', contract_expiry: '2026-05-31', contract_version: 'v2',
+    products: ['WorkForce WC — CA', 'GuardPoint GL', 'MainStreet BOP'], lobs: ['Workers Comp','General Liability','BOP'],
+    states: ['CA','TX','NY','NJ','MA','FL','IL','OH','PA','GA','AZ','CO','NV','WA','OR','NC','VA','MD','CT','MN'],
+    binding_authority: 250000, claims_authority: 75000, subjectivity_required_above: 500000,
+    commission_rate: 13, profit_share_threshold_lr: 60, profit_share_pct: 25, profit_share_earned_ytd: 210000,
+    capacity_treaty: 18000000, capacity_used: 14600000, capacity_pct: 81,
+    premium_ytd: 14600000, premium_prior_ytd: 13200000, growth_pct: 11, policies_inforce: 1842,
+    loss_ratio_ytd: 48, combined_ratio_ytd: 92, claims_count_ytd: 82,
+    submission_quality: 88, claims_handling: 90, uw_response_time_hrs: 22,
+    performance_score: 85, partnership_rating: 4.4, last_qbr: '2026-01-20', next_qbr: '2026-04-25',
+    key_contact_uw: 'Jennifer Kim',   key_contact_claims: 'David Park',   key_contact_audit: 'Ruben Cohen',
+    integration_method: 'SEMC API', health: 'Watch',
+    contingent_commission_projected: 285000, open_referrals: 5, data_feeds: ['Policies','Claims','Bordereau']
+  },
+  {
+    id: 'CAR-03', name: 'CNA', naic: '20443', am_best: 'A', sp_rating: 'A+', tier: 'Core',
+    logo_initials: 'CN', logo_color: 'linear-gradient(135deg,#1e88e5,#1565c0)',
+    relationship_status: 'Active', since: '2020-01-01', contract_id: 'CNT-1003',
+    contract_effective: '2023-01-01', contract_expiry: '2026-12-31', contract_version: 'v3',
+    products: ['GuardPoint GL', 'SecureEdge Cyber', 'OverShield Umbrella'], lobs: ['General Liability','Cyber','Umbrella','Management'],
+    states: ['CA','TX','NY','FL','IL','OH','PA','MA','NJ','CT','GA','AZ','CO','NC','VA'],
+    binding_authority: 500000, claims_authority: 150000, subjectivity_required_above: 1000000,
+    commission_rate: 15, profit_share_threshold_lr: 50, profit_share_pct: 35, profit_share_earned_ytd: 342000,
+    capacity_treaty: 20000000, capacity_used: 12200000, capacity_pct: 61,
+    premium_ytd: 12200000, premium_prior_ytd: 10400000, growth_pct: 17, policies_inforce: 524,
+    loss_ratio_ytd: 34, combined_ratio_ytd: 82, claims_count_ytd: 28,
+    submission_quality: 94, claims_handling: 92, uw_response_time_hrs: 16,
+    performance_score: 94, partnership_rating: 4.8, last_qbr: '2026-01-08', next_qbr: '2026-04-18',
+    key_contact_uw: 'Matthew Brody',   key_contact_claims: 'Lisa Chen',   key_contact_audit: 'Steven Walsh',
+    integration_method: 'SEMC API', health: 'Healthy',
+    contingent_commission_projected: 485000, open_referrals: 2, data_feeds: ['Policies','Claims','Bordereau','Appetite']
+  },
+  {
+    id: 'CAR-04', name: 'Hartford', naic: '19682', am_best: 'A+', sp_rating: 'A+', tier: 'Growth',
+    logo_initials: 'HF', logo_color: 'linear-gradient(135deg,#00897b,#00acc1)',
+    relationship_status: 'Active', since: '2025-01-01', contract_id: 'CNT-1004',
+    contract_effective: '2025-01-01', contract_expiry: '2027-12-31', contract_version: 'v1',
+    products: ['MainStreet BOP', 'FleetSafe Auto', 'WorkForce WC — CA'], lobs: ['BOP','Commercial Auto','Workers Comp'],
+    states: ['CA','TX','NY','FL','IL','OH','PA','GA','AZ','CO','NC','VA','MA','NJ','CT'],
+    binding_authority: 150000, claims_authority: 75000, subjectivity_required_above: 350000,
+    commission_rate: 13, profit_share_threshold_lr: 55, profit_share_pct: 25, profit_share_earned_ytd: 128000,
+    capacity_treaty: 8000000, capacity_used: 5400000, capacity_pct: 68,
+    premium_ytd: 5400000, premium_prior_ytd: 3800000, growth_pct: 42, policies_inforce: 284,
+    loss_ratio_ytd: 36, combined_ratio_ytd: 86, claims_count_ytd: 14,
+    submission_quality: 90, claims_handling: 88, uw_response_time_hrs: 24,
+    performance_score: 88, partnership_rating: 4.5, last_qbr: '2026-02-05', next_qbr: '2026-05-10',
+    key_contact_uw: 'Patricia Collins',   key_contact_claims: 'Anthony Miller',   key_contact_audit: 'Diane Fox',
+    integration_method: 'SEMC API', health: 'Healthy',
+    contingent_commission_projected: 182000, open_referrals: 4, data_feeds: ['Policies','Claims','Bordereau']
+  },
+  {
+    id: 'CAR-05', name: 'Chubb', naic: '10052', am_best: 'A++', sp_rating: 'AA', tier: 'Specialty',
+    logo_initials: 'CH', logo_color: 'linear-gradient(135deg,#6d4c41,#8d6e63)',
+    relationship_status: 'Active', since: '2024-07-01', contract_id: 'CNT-1005',
+    contract_effective: '2024-07-01', contract_expiry: '2026-06-30', contract_version: 'v2',
+    products: ['BoardGuard D&O', 'SecureEdge Cyber (Enterprise)'], lobs: ['Management Liability','D&O','Cyber'],
+    states: ['CA','TX','NY','FL','IL','MA','NJ','CT'],
+    binding_authority: 100000, claims_authority: 50000, subjectivity_required_above: 250000,
+    commission_rate: 18, profit_share_threshold_lr: 45, profit_share_pct: 40, profit_share_earned_ytd: 92000,
+    capacity_treaty: 6000000, capacity_used: 3800000, capacity_pct: 63,
+    premium_ytd: 3800000, premium_prior_ytd: 2800000, growth_pct: 36, policies_inforce: 124,
+    loss_ratio_ytd: 28, combined_ratio_ytd: 76, claims_count_ytd: 6,
+    submission_quality: 96, claims_handling: 96, uw_response_time_hrs: 12,
+    performance_score: 96, partnership_rating: 4.9, last_qbr: '2026-02-18', next_qbr: '2026-05-20',
+    key_contact_uw: 'Stephen Reeves',   key_contact_claims: 'Miranda Hayes',   key_contact_audit: 'James Tanaka',
+    integration_method: 'File (SFTP)', health: 'Healthy',
+    contingent_commission_projected: 148000, open_referrals: 1, data_feeds: ['Policies','Claims','Bordereau']
+  },
+  {
+    id: 'CAR-06', name: 'Zurich', naic: '16535', am_best: 'A+', sp_rating: 'AA-', tier: 'Specialty',
+    logo_initials: 'ZR', logo_color: 'linear-gradient(135deg,#1976d2,#0d47a1)',
+    relationship_status: 'Active', since: '2022-01-01', contract_id: 'CNT-1006',
+    contract_effective: '2022-01-01', contract_expiry: '2026-12-31', contract_version: 'v5',
+    products: ['PropertyGuard', 'PropertyGuard Plus (Cat)'], lobs: ['Property'],
+    states: ['CA','TX','FL','NY','IL','OH','PA','GA','NC','VA','MA','NJ','AZ','CO','NV','WA','OR'],
+    binding_authority: 500000, claims_authority: 100000, subjectivity_required_above: 1000000,
+    commission_rate: 12, profit_share_threshold_lr: 50, profit_share_pct: 30, profit_share_earned_ytd: 64000,
+    capacity_treaty: 4000000, capacity_used: 1620000, capacity_pct: 41,
+    premium_ytd: 1620000, premium_prior_ytd: 1780000, growth_pct: -9, policies_inforce: 82,
+    loss_ratio_ytd: 48, combined_ratio_ytd: 94, claims_count_ytd: 8,
+    submission_quality: 86, claims_handling: 88, uw_response_time_hrs: 32,
+    performance_score: 80, partnership_rating: 4.1, last_qbr: '2026-01-22', next_qbr: '2026-04-28',
+    key_contact_uw: 'Andreas Schmidt',   key_contact_claims: 'Elena Rossi',   key_contact_audit: 'Bernd Fischer',
+    integration_method: 'File (SFTP)', health: 'Watch',
+    contingent_commission_projected: 72000, open_referrals: 2, data_feeds: ['Policies','Claims']
+  },
+  {
+    id: 'CAR-07', name: 'Berkley Net', naic: '32603', am_best: 'A-', sp_rating: 'A-', tier: 'Growth',
+    logo_initials: 'BK', logo_color: 'linear-gradient(135deg,#43a047,#388e3c)',
+    relationship_status: 'Active', since: '2023-09-01', contract_id: 'CNT-1007',
+    contract_effective: '2023-09-01', contract_expiry: '2026-08-31', contract_version: 'v2',
+    products: ['WorkForce WC — CA Small'], lobs: ['Workers Comp'],
+    states: ['CA'],
+    binding_authority: 75000, claims_authority: 50000, subjectivity_required_above: 150000,
+    commission_rate: 13, profit_share_threshold_lr: 60, profit_share_pct: 20, profit_share_earned_ytd: 42000,
+    capacity_treaty: 2400000, capacity_used: 1820000, capacity_pct: 76,
+    premium_ytd: 1820000, premium_prior_ytd: 1420000, growth_pct: 28, policies_inforce: 248,
+    loss_ratio_ytd: 52, combined_ratio_ytd: 96, claims_count_ytd: 14,
+    submission_quality: 82, claims_handling: 84, uw_response_time_hrs: 36,
+    performance_score: 76, partnership_rating: 4.0, last_qbr: '2026-02-01', next_qbr: '2026-05-05',
+    key_contact_uw: 'Andrew Collins',   key_contact_claims: 'Maria Rodriguez',   key_contact_audit: 'Peter Nguyen',
+    integration_method: 'Direct API', health: 'Watch',
+    contingent_commission_projected: 48000, open_referrals: 6, data_feeds: ['Policies','Claims','Bordereau']
+  },
+  {
+    id: 'CAR-08', name: 'Markel E&S', naic: '38970', am_best: 'A', sp_rating: 'A', tier: 'Onboarding',
+    logo_initials: 'MK', logo_color: 'linear-gradient(135deg,#ab47bc,#8e24aa)',
+    relationship_status: 'Onboarding', since: '2026-03-15', contract_id: 'CNT-1008',
+    contract_effective: '2026-05-01', contract_expiry: '2028-04-30', contract_version: 'v1 (draft)',
+    products: ['SecureEdge Cyber (E&S)', 'PropertyGuard Plus (E&S Cat)'], lobs: ['Cyber','Property E&S'],
+    states: ['TX','FL','LA','GA'],
+    binding_authority: 100000, claims_authority: 50000, subjectivity_required_above: 250000,
+    commission_rate: 17, profit_share_threshold_lr: 55, profit_share_pct: 30, profit_share_earned_ytd: 0,
+    capacity_treaty: 5000000, capacity_used: 0, capacity_pct: 0,
+    premium_ytd: 0, premium_prior_ytd: 0, growth_pct: 0, policies_inforce: 0,
+    loss_ratio_ytd: 0, combined_ratio_ytd: 0, claims_count_ytd: 0,
+    submission_quality: null, claims_handling: null, uw_response_time_hrs: null,
+    performance_score: null, partnership_rating: null, last_qbr: null, next_qbr: '2026-07-15',
+    key_contact_uw: 'Paul Westbrook',   key_contact_claims: 'Sara Williams',   key_contact_audit: '—',
+    integration_method: 'Pending (API planned)', health: 'Onboarding',
+    contingent_commission_projected: 0, open_referrals: 0, data_feeds: [],
+    onboarding_progress: 68, onboarding_next_step: 'Complete rate + form filings in TX + FL'
+  }
+];
+
+export const mgaCarrierProfileCanonical = {
+  carrier_id: 'CAR-01',
+  overview: {
+    strategic_importance: 'Tier 1 / Core Partner — primary carrier for commercial auto and BOP/Property programs. Top-3 carrier by written premium and consistent loss ratio performance.',
+    relationship_health: 'Healthy',
+    concerns: [],
+    opportunities: ['Expand property capacity to PA + NJ (treaty amendment pending)', 'Cross-sell BOP to existing auto accounts (62 prospects identified)']
+  },
+  agreement_terms: {
+    contract_id: 'CNT-1001', version: 'v4', effective: '2024-01-01', expiry: '2027-12-31',
+    auto_renew: true, termination_notice_days: 120,
+    addendums: [
+      { number: 4, date: '2026-04-17', description: 'CA Property capacity increase $5M/risk · new SFHA underwriting rules' },
+      { number: 3, date: '2025-08-15', description: 'TRIA election and cyber extension form updates' },
+      { number: 2, date: '2025-03-01', description: 'Commission schedule revision — BOP 13%→14%' },
+      { number: 1, date: '2024-06-01', description: 'Addition of Auto program (FleetSafe)' }
+    ],
+    side_letters: [
+      { date: '2026-02-10', description: 'Side letter: waiver of minimum premium volume for 2026 due to market softening' }
+    ]
+  },
+  contacts: [
+    { role: 'VP Underwriting (National)',  name: 'Rajesh Patel',    email: 'rajesh.patel@travelers.com',   phone: '860-555-4421', ext: '4421' },
+    { role: 'Director, Commercial Auto',   name: 'Susan Fletcher',  email: 'susan.fletcher@travelers.com', phone: '860-555-4425', ext: '4425' },
+    { role: 'Claims Operations Lead',      name: 'Karen Liu',       email: 'karen.liu@travelers.com',       phone: '860-555-4500', ext: '4500' },
+    { role: 'Large Loss Committee Chair',  name: 'Robert Young',    email: 'robert.young@travelers.com',    phone: '860-555-4512', ext: '4512' },
+    { role: 'MGA Audit Lead',               name: 'Michael Donovan', email: 'michael.donovan@travelers.com', phone: '860-555-4600', ext: '4600' },
+    { role: 'Accounting / Bordereau',       name: 'Sharon Wells',     email: 'sharon.wells@travelers.com',    phone: '860-555-4640', ext: '4640' }
+  ],
+  products_and_states: [
+    { product: 'FleetSafe Auto',       states: ['CA','TX','NY','FL','IL','OH','PA','GA','AZ','CO','NV','WA','OR','NC'], rate_filed: true,  form_filed: true,  deployed: true,  written_ytd: 10800000, policies: 482 },
+    { product: 'MainStreet BOP',       states: ['CA','TX','NY','FL','IL','OH','GA','AZ'],                                 rate_filed: true,  form_filed: true,  deployed: true,  written_ytd:  5200000, policies: 282 },
+    { product: 'PropertyGuard',         states: ['CA','TX','FL','GA','NC','AZ'],                                           rate_filed: true,  form_filed: true,  deployed: true,  written_ytd:  2400000, policies:  78 }
+  ],
+  authority: {
+    binding_limit: 250000, claims_limit: 100000, new_products_authority: 'Senior UW or higher',
+    subjectivity_req_above: 500000, class_exclusions: ['Nightclubs','Amusement parks','Armed security','Professional drivers under 21'],
+    loss_ratio_trigger: 65, authority_last_reviewed: '2026-01-15'
+  },
+  commission_and_profit_share: {
+    schedule: [
+      { product: 'FleetSafe Auto', rate: 14, new_business_bonus: 1, renewal_rate: 14 },
+      { product: 'MainStreet BOP', rate: 14, new_business_bonus: 1, renewal_rate: 14 },
+      { product: 'PropertyGuard',   rate: 12, new_business_bonus: 1, renewal_rate: 12 }
+    ],
+    profit_share: {
+      threshold_lr: 55, pct: 30, min_premium: 5000000, measurement_period: 'Calendar Year',
+      ytd_earned: 482000, full_year_projected: 620000, prior_year_actual: 512000
+    },
+    contingent_commission: {
+      ytd_earned: 482000, projected_full_year: 620000, paid_last: '2026-02-15', next_payment: '2027-02-15'
+    }
+  },
+  documents: [
+    { name: '2026 MGA Agreement v4.pdf',                type: 'Contract',      size: '2.4 MB', date: '2026-04-17' },
+    { name: 'Travelers Amendment #4.pdf',               type: 'Addendum',       size: '380 KB', date: '2026-04-17' },
+    { name: '2025 Q4 Carrier Audit Report.pdf',         type: 'Audit Report',   size: '1.2 MB', date: '2026-02-28' },
+    { name: 'CA Rate Filing — PropertyGuard 2026.pdf',  type: 'Rate Filing',     size: '680 KB', date: '2025-11-05' },
+    { name: 'FleetSafe Side Letter — Volume Waiver.pdf', type: 'Side Letter',   size: '120 KB', date: '2026-02-10' },
+    { name: '2026 Commission Schedule.xlsx',             type: 'Commission',     size: '80 KB',  date: '2026-01-01' },
+    { name: 'Claims Bordereau Template.xlsx',            type: 'Template',        size: '42 KB',  date: '2025-01-01' },
+    { name: '2025 Q3 QBR Deck.pptx',                     type: 'QBR',            size: '4.2 MB', date: '2025-10-15' },
+    { name: '2025 Q4 QBR Deck.pptx',                     type: 'QBR',            size: '4.4 MB', date: '2026-01-15' }
+  ]
+};
+
+export const mgaCarrierScorecards = [
+  { carrier_id: 'CAR-01', carrier: 'Travelers',          period: '2026 Q1', premium: 4600000, growth: 18, loss_ratio: 42, combined_ratio: 88, sub_quality: 92, claims_handling: 94, profit_share: 140000, partnership: 4.6, overall: 91 },
+  { carrier_id: 'CAR-02', carrier: 'SEMC / Liberty',     period: '2026 Q1', premium: 3650000, growth: 11, loss_ratio: 48, combined_ratio: 92, sub_quality: 88, claims_handling: 90, profit_share: 52000,  partnership: 4.4, overall: 85 },
+  { carrier_id: 'CAR-03', carrier: 'CNA',                 period: '2026 Q1', premium: 3050000, growth: 17, loss_ratio: 34, combined_ratio: 82, sub_quality: 94, claims_handling: 92, profit_share: 95000,  partnership: 4.8, overall: 94 },
+  { carrier_id: 'CAR-04', carrier: 'Hartford',            period: '2026 Q1', premium: 1350000, growth: 42, loss_ratio: 36, combined_ratio: 86, sub_quality: 90, claims_handling: 88, profit_share: 38000,  partnership: 4.5, overall: 88 },
+  { carrier_id: 'CAR-05', carrier: 'Chubb',               period: '2026 Q1', premium:  950000, growth: 36, loss_ratio: 28, combined_ratio: 76, sub_quality: 96, claims_handling: 96, profit_share: 42000,  partnership: 4.9, overall: 96 },
+  { carrier_id: 'CAR-06', carrier: 'Zurich',              period: '2026 Q1', premium:  405000, growth: -9, loss_ratio: 48, combined_ratio: 94, sub_quality: 86, claims_handling: 88, profit_share: 18000,  partnership: 4.1, overall: 80 },
+  { carrier_id: 'CAR-07', carrier: 'Berkley Net',         period: '2026 Q1', premium:  455000, growth: 28, loss_ratio: 52, combined_ratio: 96, sub_quality: 82, claims_handling: 84, profit_share: 12000,  partnership: 4.0, overall: 76 },
+  { carrier_id: 'CAR-01', carrier: 'Travelers',          period: '2025 Q4', premium: 4100000, growth: 12, loss_ratio: 44, combined_ratio: 90, sub_quality: 90, claims_handling: 92, profit_share: 118000, partnership: 4.5, overall: 89 },
+  { carrier_id: 'CAR-03', carrier: 'CNA',                 period: '2025 Q4', premium: 2820000, growth: 14, loss_ratio: 32, combined_ratio: 80, sub_quality: 92, claims_handling: 92, profit_share: 82000,  partnership: 4.7, overall: 93 }
+];
+
+export const mgaCarrierQBRs = [
+  { id: 'QBR-2026Q2-CAR-03', carrier_id: 'CAR-03', carrier: 'CNA',                 scheduled: '2026-04-18', duration_min: 90, status: 'Today',       agenda_items: 11, action_items_open: 4, stakeholders: ['Marcus Henderson','Sarah Chen','Matthew Brody','Lisa Chen'],    meeting_link: 'meet.google.com/cna-qbr-q2' },
+  { id: 'QBR-2026Q2-CAR-01', carrier_id: 'CAR-01', carrier: 'Travelers',          scheduled: '2026-04-22', duration_min: 120,status: 'Scheduled',  agenda_items: 14, action_items_open: 6, stakeholders: ['Marcus Henderson','Lisa Park','Rajesh Patel','Karen Liu'],       meeting_link: 'meet.google.com/trv-qbr-q2' },
+  { id: 'QBR-2026Q2-CAR-02', carrier_id: 'CAR-02', carrier: 'SEMC / Liberty',     scheduled: '2026-04-25', duration_min: 120,status: 'Scheduled',  agenda_items: 16, action_items_open: 8, stakeholders: ['Marcus Henderson','Sarah Chen','Jennifer Kim','David Park'],    meeting_link: 'meet.google.com/lib-qbr-q2', note: 'Renewal negotiations on agenda' },
+  { id: 'QBR-2026Q2-CAR-06', carrier_id: 'CAR-06', carrier: 'Zurich',              scheduled: '2026-04-28', duration_min: 60, status: 'Scheduled',  agenda_items: 8,  action_items_open: 3, stakeholders: ['Marcus Henderson','Lisa Park','Andreas Schmidt'],                meeting_link: 'meet.google.com/zur-qbr-q2' },
+  { id: 'QBR-2026Q2-CAR-07', carrier_id: 'CAR-07', carrier: 'Berkley Net',         scheduled: '2026-05-05', duration_min: 60, status: 'Scheduled',  agenda_items: 7,  action_items_open: 2, stakeholders: ['Marcus Henderson','Mike Torres','Andrew Collins'],                meeting_link: 'meet.google.com/bkn-qbr-q2' },
+  { id: 'QBR-2026Q2-CAR-04', carrier_id: 'CAR-04', carrier: 'Hartford',            scheduled: '2026-05-10', duration_min: 90, status: 'Scheduled',  agenda_items: 10, action_items_open: 3, stakeholders: ['Marcus Henderson','Sarah Chen','Patricia Collins','Anthony Miller'], meeting_link: 'meet.google.com/hrt-qbr-q2' },
+  { id: 'QBR-2026Q1-CAR-03', carrier_id: 'CAR-03', carrier: 'CNA',                 scheduled: '2026-01-08', duration_min: 90, status: 'Completed',  agenda_items: 12, action_items_open: 0, stakeholders: ['—'],                                                                  meeting_link: null, note: 'All action items closed · strong quarter' },
+  { id: 'QBR-2026Q1-CAR-01', carrier_id: 'CAR-01', carrier: 'Travelers',          scheduled: '2026-01-15', duration_min: 120,status: 'Completed',  agenda_items: 13, action_items_open: 2, stakeholders: ['—'],                                                                  meeting_link: null, note: '2 open items · capacity amendment and TRIA renewal' }
+];
+
+export const mgaCarrierCapacity = [
+  { carrier_id: 'CAR-01', carrier: 'Travelers',       treaty: 25000000, used: 18400000, pct: 74, per_risk_max: 5000000, buffer: 6600000, health: 'Healthy',  trend_30d: '+2.1pp' },
+  { carrier_id: 'CAR-02', carrier: 'SEMC / Liberty',  treaty: 18000000, used: 14600000, pct: 81, per_risk_max: 3000000, buffer: 3400000, health: 'Watch',    trend_30d: '+3.4pp' },
+  { carrier_id: 'CAR-03', carrier: 'CNA',              treaty: 20000000, used: 12200000, pct: 61, per_risk_max: 5000000, buffer: 7800000, health: 'Healthy',  trend_30d: '+1.2pp' },
+  { carrier_id: 'CAR-04', carrier: 'Hartford',         treaty:  8000000, used:  5400000, pct: 68, per_risk_max: 2000000, buffer: 2600000, health: 'Healthy',  trend_30d: '+5.2pp' },
+  { carrier_id: 'CAR-05', carrier: 'Chubb',            treaty:  6000000, used:  3800000, pct: 63, per_risk_max: 2000000, buffer: 2200000, health: 'Healthy',  trend_30d: '+4.1pp' },
+  { carrier_id: 'CAR-06', carrier: 'Zurich',           treaty:  4000000, used:  1620000, pct: 41, per_risk_max: 2500000, buffer: 2380000, health: 'Low-Util', trend_30d: '-1.0pp' },
+  { carrier_id: 'CAR-07', carrier: 'Berkley Net',      treaty:  2400000, used:  1820000, pct: 76, per_risk_max:  500000, buffer:  580000, health: 'Watch',    trend_30d: '+4.8pp' },
+  { carrier_id: 'CAR-08', carrier: 'Markel E&S',        treaty:  5000000, used:        0, pct:  0, per_risk_max: 1000000, buffer: 5000000, health: 'Onboarding',trend_30d: '0.0pp' }
+];
+
+export const mgaCarrierAuthorityRequests = [
+  { id: 'AUTH-2026-041', carrier_id: 'CAR-01', carrier: 'Travelers',      type: 'Capacity Amendment',      description: 'Increase PA + NJ Property treaty capacity from $2M/risk to $5M/risk · adds ~$8M capacity',                            submitted: '2026-04-12', submitted_by: 'Sarah Chen',     status: 'With Carrier UW',  priority: 'High',   eta: '2026-05-01' },
+  { id: 'AUTH-2026-040', carrier_id: 'CAR-02', carrier: 'SEMC / Liberty', type: 'New Product Approval',     description: 'Launch MainStreet BOP — Restaurants subclass for FL market · rate + form filings complete',                        submitted: '2026-03-20', submitted_by: 'Lisa Park',      status: 'Approved',         priority: 'High',   eta: '2026-04-15', approved: '2026-04-10' },
+  { id: 'AUTH-2026-039', carrier_id: 'CAR-03', carrier: 'CNA',             type: 'Binding Authority Raise',   description: 'Raise cyber binding authority from $500k to $1M for enterprise tech risks · subject to senior UW co-sign',           submitted: '2026-04-05', submitted_by: 'Sarah Chen',     status: 'Under Review',     priority: 'Medium', eta: '2026-05-15' },
+  { id: 'AUTH-2026-038', carrier_id: 'CAR-04', carrier: 'Hartford',        type: 'New State',                  description: 'Add MA + NJ to FleetSafe Auto program · rate filing in progress',                                                  submitted: '2026-03-28', submitted_by: 'Mike Torres',    status: 'Rate Filing Pending', priority: 'Medium', eta: '2026-06-01' },
+  { id: 'AUTH-2026-037', carrier_id: 'CAR-06', carrier: 'Zurich',          type: 'Class Expansion',           description: 'Add manufacturing — Class 5403 (chemicals) to PropertyGuard appetite · declined last cycle',                       submitted: '2026-03-15', submitted_by: 'Lisa Park',      status: 'Declined',         priority: 'Low',    eta: '—',           declined: '2026-04-02', decline_reason: 'Outside Zurich global chemical appetite · resubmit with narrower class (5400) in Q3' },
+  { id: 'AUTH-2026-036', carrier_id: 'CAR-05', carrier: 'Chubb',           type: 'Profit Share Adjustment',   description: 'Renegotiate profit share threshold from 45% LR to 40% LR · supported by 4-quarter performance',                    submitted: '2026-02-25', submitted_by: 'Marcus Henderson',status: 'Counter-Offered', priority: 'Medium', eta: '2026-05-01', counter: '42% LR threshold with 35% profit share pct (vs. current 40%)' },
+  { id: 'AUTH-2026-035', carrier_id: 'CAR-07', carrier: 'Berkley Net',     type: 'Claims Authority Raise',    description: 'Raise claims authority from $50k to $75k for California WC · improves cycle time by ~4 days',                       submitted: '2026-03-10', submitted_by: 'Jane Rodriguez', status: 'Approved',         priority: 'Medium', eta: '2026-04-01', approved: '2026-03-28' }
+];
+
+export const mgaCarrierPremiumBordereau = [
+  { id: 'PBD-2026-04-01', carrier_id: 'CAR-01', carrier: 'Travelers',       type: 'Premium Monthly',  period: 'Mar 2026', policies: 82, premium_written: 1420000, commission_due: 198800, reserve_change: 42000, submitted: '2026-04-05 09:00', status: 'Reconciled',        statusColor:'green', variance: 0,       ack: 'TRV-PBD-8801' },
+  { id: 'PBD-2026-04-02', carrier_id: 'CAR-02', carrier: 'SEMC / Liberty',  type: 'Premium Monthly',  period: 'Mar 2026', policies: 142,premium_written: 1240000, commission_due: 161200, reserve_change: 18400, submitted: '2026-04-05 09:00', status: 'Reconciled',        statusColor:'green', variance: 0,       ack: 'LIB-PBD-4421' },
+  { id: 'PBD-2026-04-03', carrier_id: 'CAR-03', carrier: 'CNA',              type: 'Premium Monthly',  period: 'Mar 2026', policies: 54, premium_written:  920000, commission_due: 138000, reserve_change: 12400, submitted: '2026-04-05 09:00', status: 'In Reconciliation', statusColor:'amber', variance: -4200,   ack: 'CNA-PBD-2201', note: 'Variance from endorsement premium timing — under investigation' },
+  { id: 'PBD-2026-04-04', carrier_id: 'CAR-04', carrier: 'Hartford',         type: 'Premium Monthly',  period: 'Mar 2026', policies: 42, premium_written:  580000, commission_due: 75400,  reserve_change: 8200,  submitted: '2026-04-05 09:00', status: 'Reconciled',        statusColor:'green', variance: 0,       ack: 'HFD-PBD-9921' },
+  { id: 'PBD-2026-04-05', carrier_id: 'CAR-05', carrier: 'Chubb',            type: 'Premium Monthly',  period: 'Mar 2026', policies: 12, premium_written:  320000, commission_due: 57600,  reserve_change: 0,      submitted: '2026-04-05 09:00', status: 'Reconciled',        statusColor:'green', variance: 0,       ack: 'CHB-PBD-1101' },
+  { id: 'PBD-2026-04-06', carrier_id: 'CAR-06', carrier: 'Zurich',           type: 'Premium Monthly',  period: 'Mar 2026', policies: 8,  premium_written:  148000, commission_due: 17760,  reserve_change: 0,      submitted: '2026-04-05 09:00', status: 'Dispute Open',      statusColor:'red',   variance: -8400,   ack: 'ZUR-PBD-0440', note: 'Disputed: Zurich claims $8,400 premium mismatch on Peninsula Mfg endorsement · meeting scheduled 2026-04-22' },
+  { id: 'PBD-2026-04-07', carrier_id: 'CAR-07', carrier: 'Berkley Net',      type: 'Premium Monthly',  period: 'Mar 2026', policies: 22, premium_written:  162000, commission_due: 21060,  reserve_change: 2200,   submitted: '2026-04-05 09:00', status: 'Reconciled',        statusColor:'green', variance: 0,       ack: 'BKN-PBD-8812' }
+];
+
+export const mgaCarrierAnalytics = {
+  profitability_by_carrier: [
+    { carrier: 'Chubb',            premium: 3800000,  loss_ratio: 28, combined_ratio: 76, comm: 684000,  contingent: 148000, margin: 24 },
+    { carrier: 'CNA',               premium: 12200000, loss_ratio: 34, combined_ratio: 82, comm: 1830000, contingent: 485000, margin: 18 },
+    { carrier: 'Hartford',          premium: 5400000,  loss_ratio: 36, combined_ratio: 86, comm: 702000,  contingent: 182000, margin: 14 },
+    { carrier: 'Travelers',         premium: 18400000, loss_ratio: 42, combined_ratio: 88, comm: 2576000, contingent: 620000, margin: 12 },
+    { carrier: 'SEMC / Liberty',    premium: 14600000, loss_ratio: 48, combined_ratio: 92, comm: 1898000, contingent: 285000, margin: 8  },
+    { carrier: 'Zurich',            premium: 1620000,  loss_ratio: 48, combined_ratio: 94, comm: 194400,  contingent: 72000,  margin: 6  },
+    { carrier: 'Berkley Net',       premium: 1820000,  loss_ratio: 52, combined_ratio: 96, comm: 236600,  contingent: 48000,  margin: 4  }
+  ],
+  growth_trend: [
+    { q: '2025 Q1', total: 12400000 },
+    { q: '2025 Q2', total: 13200000 },
+    { q: '2025 Q3', total: 13850000 },
+    { q: '2025 Q4', total: 14620000 },
+    { q: '2026 Q1', total: 14465000 }
+  ],
+  authority_utilization: [
+    { carrier: 'SEMC / Liberty', binding_used: 92, claims_used: 68 },
+    { carrier: 'Travelers',       binding_used: 76, claims_used: 52 },
+    { carrier: 'CNA',              binding_used: 64, claims_used: 44 },
+    { carrier: 'Hartford',         binding_used: 62, claims_used: 58 },
+    { carrier: 'Berkley Net',      binding_used: 84, claims_used: 72 },
+    { carrier: 'Chubb',            binding_used: 48, claims_used: 40 },
+    { carrier: 'Zurich',           binding_used: 32, claims_used: 28 }
+  ],
+  loss_ratio_by_product_carrier: [
+    { carrier: 'Travelers',      product: 'FleetSafe Auto',     lr: 52 },
+    { carrier: 'Travelers',      product: 'MainStreet BOP',     lr: 38 },
+    { carrier: 'Travelers',      product: 'PropertyGuard',      lr: 44 },
+    { carrier: 'CNA',             product: 'GuardPoint GL',      lr: 38 },
+    { carrier: 'CNA',             product: 'SecureEdge Cyber',   lr: 28 },
+    { carrier: 'CNA',             product: 'OverShield Umbrella',lr: 18 },
+    { carrier: 'SEMC / Liberty', product: 'WorkForce WC — CA',  lr: 42 },
+    { carrier: 'SEMC / Liberty', product: 'MainStreet BOP',     lr: 46 },
+    { carrier: 'Hartford',       product: 'FleetSafe Auto',     lr: 50 },
+    { carrier: 'Chubb',           product: 'BoardGuard D&O',     lr: 24 },
+    { carrier: 'Chubb',           product: 'SecureEdge Cyber',   lr: 32 },
+    { carrier: 'Zurich',          product: 'PropertyGuard',      lr: 48 }
+  ]
+};
+
+// ─── MGA Reports & Analytics ───
+export const mgaReportsKPIs = [
+  { label: 'Written Premium (YTD)',  value: '$58.5M' },
+  { label: 'Combined Ratio',         value: '88%' },
+  { label: 'Retention Rate',         value: '91%' },
+  { label: 'New Biz Growth',         value: '+18%' },
+  { label: 'Bind Ratio',             value: '52%' },
+  { label: 'Risk Quality Index',     value: '86' }
+];
+
+export const mgaExecMetrics = {
+  written_premium_ytd: 58500000,
+  written_premium_prior_ytd: 49600000,
+  loss_ratio_ytd: 38,
+  combined_ratio_ytd: 88,
+  retention_rate: 91,
+  new_business_growth: 18,
+  commission_income_ytd: 7605000,
+  capacity_utilization: 68,
+  submission_bind_ratio: 52,
+  risk_quality_index: 86,
+  policies_inforce: 4946,
+  active_agents: 84,
+  monthly_trend: [
+    { month: 'Nov 25', premium: 4200000, loss_ratio: 36, combined_ratio: 86 },
+    { month: 'Dec 25', premium: 4800000, loss_ratio: 38, combined_ratio: 88 },
+    { month: 'Jan 26', premium: 5400000, loss_ratio: 37, combined_ratio: 87 },
+    { month: 'Feb 26', premium: 5100000, loss_ratio: 39, combined_ratio: 89 },
+    { month: 'Mar 26', premium: 5600000, loss_ratio: 38, combined_ratio: 88 },
+    { month: 'Apr 26', premium: 2800000, loss_ratio: 38, combined_ratio: 88 }
+  ],
+  yoy_growth: [
+    { year: '2022', premium: 28400000, growth: null },
+    { year: '2023', premium: 38200000, growth: 35 },
+    { year: '2024', premium: 44800000, growth: 17 },
+    { year: '2025', premium: 58400000, growth: 30 },
+    { year: '2026 (proj)', premium: 72000000, growth: 23 }
+  ]
+};
+
+export const mgaSubmissionFunnel = {
+  stages: [
+    { stage: 'Submissions Received',   count: 1840, pct: 100, drop: null },
+    { stage: 'Cleared Appetite',        count: 1424, pct:  77, drop: 416  },
+    { stage: 'Quoted',                   count:  986, pct:  54, drop: 438  },
+    { stage: 'Bound',                    count:  512, pct:  28, drop: 474  },
+    { stage: 'Issued',                   count:  498, pct:  27, drop:  14  }
+  ],
+  overall_bind_ratio: 52,
+  avg_days_to_quote: 2.1,
+  avg_days_to_bind: 4.8,
+  top_decline_reasons: [
+    { reason: 'Outside appetite',         count: 312, pct: 75 },
+    { reason: 'Missing subjectivity',     count: 62,  pct: 15 },
+    { reason: 'Loss history exceeds threshold', count: 28, pct: 7 },
+    { reason: 'Rate inadequate',          count: 14,  pct: 3 }
+  ]
+};
+
+export const mgaProfitHeatmap = {
+  dimensions: ['Commercial Auto','General Liability','Workers Comp','BOP','Cyber','Property','D&O','Umbrella'],
+  states: ['CA','TX','NY','FL','IL','OH','PA','GA'],
+  cells: [
+    // Commercial Auto
+    { lob: 'Commercial Auto', state: 'CA', lr: 52, premium: 2400000 },
+    { lob: 'Commercial Auto', state: 'TX', lr: 48, premium: 2800000 },
+    { lob: 'Commercial Auto', state: 'NY', lr: 58, premium: 1800000 },
+    { lob: 'Commercial Auto', state: 'FL', lr: 62, premium: 2100000 },
+    { lob: 'Commercial Auto', state: 'IL', lr: 44, premium: 1200000 },
+    { lob: 'Commercial Auto', state: 'OH', lr: 42, premium: 820000 },
+    { lob: 'Commercial Auto', state: 'PA', lr: 46, premium: 940000 },
+    { lob: 'Commercial Auto', state: 'GA', lr: 54, premium: 680000 },
+    // General Liability
+    { lob: 'General Liability', state: 'CA', lr: 38, premium: 1800000 },
+    { lob: 'General Liability', state: 'TX', lr: 42, premium: 2200000 },
+    { lob: 'General Liability', state: 'NY', lr: 48, premium: 1400000 },
+    { lob: 'General Liability', state: 'FL', lr: 52, premium: 1620000 },
+    { lob: 'General Liability', state: 'IL', lr: 36, premium: 820000 },
+    { lob: 'General Liability', state: 'OH', lr: 34, premium: 480000 },
+    { lob: 'General Liability', state: 'PA', lr: 40, premium: 640000 },
+    { lob: 'General Liability', state: 'GA', lr: 44, premium: 380000 },
+    // Workers Comp
+    { lob: 'Workers Comp', state: 'CA', lr: 42, premium: 4800000 },
+    { lob: 'Workers Comp', state: 'TX', lr: null, premium: 0 },
+    { lob: 'Workers Comp', state: 'NY', lr: 44, premium: 1840000 },
+    { lob: 'Workers Comp', state: 'FL', lr: 48, premium: 1200000 },
+    { lob: 'Workers Comp', state: 'IL', lr: 38, premium: 820000 },
+    { lob: 'Workers Comp', state: 'OH', lr: null, premium: 0 },
+    { lob: 'Workers Comp', state: 'PA', lr: 40, premium: 580000 },
+    { lob: 'Workers Comp', state: 'GA', lr: null, premium: 0 },
+    // BOP
+    { lob: 'BOP', state: 'CA', lr: 38, premium: 1200000 },
+    { lob: 'BOP', state: 'TX', lr: 44, premium: 1420000 },
+    { lob: 'BOP', state: 'NY', lr: 42, premium: 820000 },
+    { lob: 'BOP', state: 'FL', lr: 48, premium: 1100000 },
+    { lob: 'BOP', state: 'IL', lr: 36, premium: 620000 },
+    { lob: 'BOP', state: 'OH', lr: 38, premium: 420000 },
+    { lob: 'BOP', state: 'PA', lr: 40, premium: 340000 },
+    { lob: 'BOP', state: 'GA', lr: 44, premium: 380000 },
+    // Cyber
+    { lob: 'Cyber', state: 'CA', lr: 28, premium: 1800000 },
+    { lob: 'Cyber', state: 'TX', lr: 24, premium: 1240000 },
+    { lob: 'Cyber', state: 'NY', lr: 32, premium: 1100000 },
+    { lob: 'Cyber', state: 'FL', lr: 30, premium: 620000 },
+    { lob: 'Cyber', state: 'IL', lr: 26, premium: 420000 },
+    { lob: 'Cyber', state: 'OH', lr: 22, premium: 240000 },
+    { lob: 'Cyber', state: 'PA', lr: 28, premium: 320000 },
+    { lob: 'Cyber', state: 'GA', lr: null, premium: 0 },
+    // Property
+    { lob: 'Property', state: 'CA', lr: 46, premium: 620000 },
+    { lob: 'Property', state: 'TX', lr: 42, premium: 380000 },
+    { lob: 'Property', state: 'NY', lr: null, premium: 0 },
+    { lob: 'Property', state: 'FL', lr: 68, premium: 420000 },
+    { lob: 'Property', state: 'IL', lr: 38, premium: 140000 },
+    { lob: 'Property', state: 'OH', lr: null, premium: 0 },
+    { lob: 'Property', state: 'PA', lr: 40, premium: 60000 },
+    { lob: 'Property', state: 'GA', lr: 44, premium: 140000 },
+    // D&O
+    { lob: 'D&O', state: 'CA', lr: 24, premium: 820000 },
+    { lob: 'D&O', state: 'TX', lr: 28, premium: 420000 },
+    { lob: 'D&O', state: 'NY', lr: 32, premium: 680000 },
+    { lob: 'D&O', state: 'FL', lr: null, premium: 0 },
+    { lob: 'D&O', state: 'IL', lr: 22, premium: 240000 },
+    { lob: 'D&O', state: 'OH', lr: null, premium: 0 },
+    { lob: 'D&O', state: 'PA', lr: null, premium: 0 },
+    { lob: 'D&O', state: 'GA', lr: null, premium: 0 },
+    // Umbrella
+    { lob: 'Umbrella', state: 'CA', lr: 18, premium: 840000 },
+    { lob: 'Umbrella', state: 'TX', lr: 22, premium: 620000 },
+    { lob: 'Umbrella', state: 'NY', lr: 16, premium: 480000 },
+    { lob: 'Umbrella', state: 'FL', lr: 24, premium: 380000 },
+    { lob: 'Umbrella', state: 'IL', lr: 14, premium: 220000 },
+    { lob: 'Umbrella', state: 'OH', lr: 18, premium: 140000 },
+    { lob: 'Umbrella', state: 'PA', lr: 16, premium: 140000 },
+    { lob: 'Umbrella', state: 'GA', lr: 20, premium: 0 }
+  ]
+};
+
+export const mgaAgentLeaderboard = {
+  top_performers: [
+    { rank: 1, agent: 'Lockton Companies',    id: 'AGT-2038', premium_ytd: 8400000, submissions: 142, bound: 88, bind_ratio: 62, loss_ratio: 36, score: 96 },
+    { rank: 2, agent: 'Marsh Agency Inc',      id: 'AGT-2039', premium_ytd: 6200000, submissions: 108, bound: 68, bind_ratio: 63, loss_ratio: 34, score: 94 },
+    { rank: 3, agent: 'Apex Insurance Svc',    id: 'AGT-2040', premium_ytd: 4800000, submissions:  94, bound: 58, bind_ratio: 62, loss_ratio: 38, score: 92 },
+    { rank: 4, agent: 'Brown & Brown',          id: 'AGT-2041', premium_ytd: 3900000, submissions:  82, bound: 48, bind_ratio: 59, loss_ratio: 40, score: 90 },
+    { rank: 5, agent: 'Hub International',     id: 'AGT-2042', premium_ytd: 3200000, submissions:  72, bound: 42, bind_ratio: 58, loss_ratio: 42, score: 88 },
+    { rank: 6, agent: 'Arthur J. Gallagher',   id: 'AGT-2043', premium_ytd: 2800000, submissions:  68, bound: 38, bind_ratio: 56, loss_ratio: 44, score: 86 },
+    { rank: 7, agent: 'Risk Strategies',        id: 'AGT-2044', premium_ytd: 2400000, submissions:  58, bound: 32, bind_ratio: 55, loss_ratio: 44, score: 85 },
+    { rank: 8, agent: 'AssuredPartners',        id: 'AGT-2045', premium_ytd: 1800000, submissions:  52, bound: 28, bind_ratio: 54, loss_ratio: 46, score: 82 }
+  ],
+  bottom_performers: [
+    { rank: 1, agent: 'Regional Alpha Agency',  id: 'AGT-2080', premium_ytd:  180000, submissions:  22, bound:  6, bind_ratio: 27, loss_ratio: 68, score: 48, issue: 'Low hit ratio · high loss ratio · submissions often outside appetite' },
+    { rank: 2, agent: 'SunBelt Insurance Co',   id: 'AGT-2078', premium_ytd:  240000, submissions:  28, bound:  8, bind_ratio: 29, loss_ratio: 62, score: 54, issue: '4 unresolved E&O claims · compliance training overdue' },
+    { rank: 3, agent: 'Coastline Brokers',      id: 'AGT-2082', premium_ytd:  120000, submissions:  18, bound:  4, bind_ratio: 22, loss_ratio: 72, score: 42, issue: 'Under PIP · quality improvement plan due 2026-06-01' }
+  ]
+};
+
+export const mgaReportCatalog = [
+  // Executive
+  { id: 'RPT-EXE-01', name: 'MGA Profitability Overview',          category: 'Executive',   format: 'PDF + Excel', frequency: 'Monthly',   owner: 'Marcus Henderson', last_generated: '2026-04-01', distribution: 'C-Suite + Board', description: 'Written premium, loss ratio, combined ratio, commission, contingent income · by carrier and overall' },
+  { id: 'RPT-EXE-02', name: 'Portfolio Health Scorecard',          category: 'Executive',   format: 'PDF',         frequency: 'Weekly',    owner: 'Sarah Chen',        last_generated: '2026-04-14', distribution: 'Executive Team',  description: 'Key KPIs · appetite distribution · growth · risk quality index · flags' },
+  { id: 'RPT-EXE-03', name: 'Carrier Partnership Summary',          category: 'Executive',   format: 'PDF',         frequency: 'Quarterly', owner: 'Marcus Henderson', last_generated: '2026-01-15', distribution: 'CEO + Board',      description: '360° view of each carrier · premium · LR · contingent · partnership rating · renewal roadmap' },
+  { id: 'RPT-EXE-04', name: 'Year-over-Year Growth Analysis',       category: 'Executive',   format: 'Excel',        frequency: 'Monthly',   owner: 'Omar Khalid',       last_generated: '2026-04-02', distribution: 'CFO + Board',      description: 'Premium growth by year/quarter · product/state/carrier mix shift · drivers' },
+  // Operational
+  { id: 'RPT-OPR-01', name: 'Submission Funnel Analysis',            category: 'Operational', format: 'Dashboard',    frequency: 'Weekly',    owner: 'Sarah Chen',        last_generated: '2026-04-15', distribution: 'UW Team',           description: 'Submissions received → quoted → bound funnel · drop-off reasons · by underwriter/agent' },
+  { id: 'RPT-OPR-02', name: 'Renewal Retention Dashboard',           category: 'Operational', format: 'Dashboard',    frequency: 'Daily',     owner: 'Lisa Park',          last_generated: '2026-04-18', distribution: 'UW + Account Exec',  description: 'Renewal pipeline · at-risk accounts · retention by agent/carrier/product · premium at stake' },
+  { id: 'RPT-OPR-03', name: 'Claims Leakage Report',                 category: 'Operational', format: 'PDF + Excel', frequency: 'Monthly',   owner: 'Jane Rodriguez',     last_generated: '2026-04-05', distribution: 'Claims Mgmt',       description: 'Unnecessary claim payment variance · by adjuster · by LOB · leakage % against benchmark' },
+  { id: 'RPT-OPR-04', name: 'Agent Performance Leaderboard',         category: 'Operational', format: 'Dashboard',    frequency: 'Weekly',    owner: 'Rebecca Fields',     last_generated: '2026-04-14', distribution: 'Distribution Team',  description: 'Top 20 / Bottom 10 agents · premium · bind ratio · LR · score · PIP status' },
+  { id: 'RPT-OPR-05', name: 'Large Loss Watch Report',                category: 'Operational', format: 'PDF',         frequency: 'Daily',     owner: 'Daniel Ortiz',       last_generated: '2026-04-18', distribution: 'Claims + Carriers',  description: 'All claims $100k+ · status · reserve movement · litigation/SIU flags · daily carrier notification' },
+  { id: 'RPT-OPR-06', name: 'Underwriter Productivity Report',       category: 'Operational', format: 'Excel',        frequency: 'Monthly',   owner: 'Sarah Chen',        last_generated: '2026-04-02', distribution: 'UW Mgmt',            description: 'Submissions processed · avg TAT · bind ratio · premium written · by UW' },
+  // Financial
+  { id: 'RPT-FIN-01', name: 'Commission Payout Reconciliation',      category: 'Financial',   format: 'Excel',        frequency: 'Monthly',   owner: 'Omar Khalid',       last_generated: '2026-04-05', distribution: 'Finance',             description: 'Commission earned vs. paid · profit share accrual · variance · pending disputes' },
+  { id: 'RPT-FIN-02', name: 'Premium Trust Account Ledger',          category: 'Financial',   format: 'Excel',        frequency: 'Daily',     owner: 'Omar Khalid',       last_generated: '2026-04-18', distribution: 'Finance + Audit',     description: 'Trust account receipts · disbursements · reconciliation · outstanding items' },
+  { id: 'RPT-FIN-03', name: 'Contingent Commission Projections',      category: 'Financial',   format: 'Excel',        frequency: 'Quarterly', owner: 'Omar Khalid',       last_generated: '2026-04-10', distribution: 'CFO + Actuary',       description: 'YTD accrual · projected FY · confidence intervals · by carrier' },
+  // Compliance
+  { id: 'RPT-CMP-01', name: 'Bordereau Reconciliation Report',       category: 'Compliance',  format: 'PDF',         frequency: 'Monthly',   owner: 'Priya Shah',         last_generated: '2026-04-06', distribution: 'Carriers + Finance',   description: 'All bordereau · ack status · variance/disputes · trend in timeliness + accuracy' },
+  { id: 'RPT-CMP-02', name: 'Authority Utilization Report',           category: 'Compliance',  format: 'PDF',         frequency: 'Monthly',   owner: 'Priya Shah',         last_generated: '2026-04-01', distribution: 'UW Mgmt + Carriers',  description: '% binding/claims authority used by carrier · over-authority events · approval volume' },
+  { id: 'RPT-CMP-03', name: 'Audit Readiness Summary',               category: 'Compliance',  format: 'PDF',         frequency: 'Quarterly', owner: 'Priya Shah',         last_generated: '2026-03-31', distribution: 'Carriers + DOI',       description: '10-policy sample · loss runs · audit trail · training completion · compliance score' },
+  { id: 'RPT-CMP-04', name: 'Regulatory Filing Status Tracker',      category: 'Compliance',  format: 'Dashboard',    frequency: 'Weekly',    owner: 'Priya Shah',         last_generated: '2026-04-14', distribution: 'Compliance',            description: 'All filings · state · status · due date · on-time % · overdue count' },
+  // Claims
+  { id: 'RPT-CLM-01', name: 'Claims Aging & Cycle Time',             category: 'Claims',      format: 'Excel',        frequency: 'Weekly',    owner: 'Jane Rodriguez',     last_generated: '2026-04-15', distribution: 'Claims Mgmt',          description: 'Claims by aging bucket · cycle time by LOB · adjuster · avg vs. target' },
+  { id: 'RPT-CLM-02', name: 'Subrogation Recovery Report',           category: 'Claims',      format: 'Excel',        frequency: 'Monthly',   owner: 'Jane Rodriguez',     last_generated: '2026-04-06', distribution: 'Claims + Finance',     description: 'Subro pursued · recovered · pending · recovery rate trend' },
+  { id: 'RPT-CLM-03', name: 'Fraud Detection Summary',                category: 'Claims',      format: 'PDF',         frequency: 'Monthly',   owner: 'Daniel Ortiz',       last_generated: '2026-04-04', distribution: 'Claims + SIU',         description: 'SIU-referred claims · red-flag patterns · fraud confirmed/denied · savings' }
+];
+
+export const mgaScheduledReports = [
+  { id: 'SCH-001', report_id: 'RPT-EXE-01', name: 'MGA Profitability Overview',        schedule: 'Monthly · 1st · 6:00 UTC',  next_run: '2026-05-01 06:00', recipients: 12, format: 'PDF + Excel', status: 'Active',  last_sent: '2026-04-01 06:02' },
+  { id: 'SCH-002', report_id: 'RPT-EXE-02', name: 'Portfolio Health Scorecard',        schedule: 'Weekly · Mon · 7:00 UTC',    next_run: '2026-04-20 07:00', recipients: 8,  format: 'PDF',         status: 'Active',  last_sent: '2026-04-14 07:01' },
+  { id: 'SCH-003', report_id: 'RPT-OPR-02', name: 'Renewal Retention Dashboard',       schedule: 'Daily · 8:00 UTC',            next_run: '2026-04-19 08:00', recipients: 14, format: 'Dashboard URL', status: 'Active', last_sent: '2026-04-18 08:00' },
+  { id: 'SCH-004', report_id: 'RPT-OPR-05', name: 'Large Loss Watch Report',            schedule: 'Daily · 18:00 UTC',            next_run: '2026-04-18 18:00', recipients: 22, format: 'PDF',         status: 'Active',  last_sent: '2026-04-18 18:00' },
+  { id: 'SCH-005', report_id: 'RPT-FIN-02', name: 'Premium Trust Account Ledger',      schedule: 'Daily · 04:00 UTC',            next_run: '2026-04-19 04:00', recipients: 4,  format: 'Excel',        status: 'Active',  last_sent: '2026-04-18 04:00' },
+  { id: 'SCH-006', report_id: 'RPT-CMP-04', name: 'Regulatory Filing Status',          schedule: 'Weekly · Mon · 9:00 UTC',     next_run: '2026-04-20 09:00', recipients: 5,  format: 'Dashboard URL', status: 'Active', last_sent: '2026-04-14 09:00' },
+  { id: 'SCH-007', report_id: 'RPT-EXE-03', name: 'Carrier Partnership Summary',        schedule: 'Quarterly · 1st · 7:00 UTC', next_run: '2026-07-01 07:00', recipients: 6,  format: 'PDF',         status: 'Active',  last_sent: '2026-01-15 07:00' },
+  { id: 'SCH-008', report_id: 'RPT-OPR-01', name: 'Submission Funnel Analysis',         schedule: 'Weekly · Fri · 17:00 UTC',   next_run: '2026-04-18 17:00', recipients: 6,  format: 'Dashboard URL', status: 'Active', last_sent: '2026-04-11 17:00' },
+  { id: 'SCH-009', report_id: 'RPT-CLM-01', name: 'Claims Aging & Cycle Time',          schedule: 'Weekly · Fri · 17:00 UTC',   next_run: '2026-04-18 17:00', recipients: 8,  format: 'Excel',        status: 'Paused',  last_sent: '2026-03-28 17:00', paused_reason: 'Paused until claims system migration complete' }
+];
+
+export const mgaAIInsights = [
+  { id: 'AI-9042', severity: 'High',   detected: '2026-04-18 08:15', category: 'Loss Ratio Anomaly',
+    insight: 'FleetSafe Auto loss ratio in Florida surged to 62% (vs. 48% 12-mo avg)',
+    analysis: '3 large losses in past 14 days driven by a single agent (Regional Alpha) writing outside appetite guidelines. Pattern matches 2024 Q3 spike that cost $1.2M.',
+    recommendation: 'Pause Regional Alpha new business in FL · notify Travelers · tighten FL auto appetite to include only fleets <15 vehicles',
+    confidence: 92, impact: '$480k potential exposure saved', owner: 'Sarah Chen', status: 'Under Review' },
+  { id: 'AI-9041', severity: 'Medium', detected: '2026-04-17 16:40', category: 'Retention Risk',
+    insight: '14 high-value renewals at risk — total $2.8M premium — due in next 60 days',
+    analysis: 'Model flags accounts with: (a) >20% rate increase proposed, (b) competitor quote in file, or (c) >3 mo without agent contact. Lockton and Marsh have 8 of the 14.',
+    recommendation: 'Auto-route to senior UW for personalized renewal strategy · consider 5% discretionary adjustment for top 5',
+    confidence: 86, impact: '$1.4M premium retention', owner: 'Lisa Park', status: 'Open' },
+  { id: 'AI-9040', severity: 'Medium', detected: '2026-04-17 14:22', category: 'Capacity Forecast',
+    insight: 'SEMC/Liberty treaty projected to hit 100% capacity by 2026-06-02',
+    analysis: 'Linear projection based on 30-day trend (+3.4pp/month). Three large submissions pending could accelerate.',
+    recommendation: 'Initiate treaty amendment conversation with Jennifer Kim by 2026-04-25 QBR · prepare 90-day production pipeline data',
+    confidence: 94, impact: 'Prevent 2-3 week binding freeze', owner: 'Marcus Henderson', status: 'Actioned' },
+  { id: 'AI-9039', severity: 'Low',    detected: '2026-04-17 11:05', category: 'Cross-Sell Opportunity',
+    insight: '62 existing auto policyholders could add BOP → ~$820k potential premium',
+    analysis: 'Clustering analysis identified insureds with >3 employees, >1 location, BOP-suitable SIC codes, and no BOP in force. 78% Lockton relationships.',
+    recommendation: 'Produce Lockton-branded cross-sell list · 10% bundle discount · 6-week campaign',
+    confidence: 78, impact: '$820k upside', owner: 'Sarah Chen', status: 'Open' },
+  { id: 'AI-9038', severity: 'High',   detected: '2026-04-16 09:22', category: 'Fraud Detection',
+    insight: 'Peninsula Manufacturing claim shows 3 indicators matching historical SIU-referred losses',
+    analysis: 'Pattern match: claim reported 6d after policy effective, previous denial in other state, inconsistent cause-of-loss statements.',
+    recommendation: 'SIU engagement confirmed · freeze payments pending investigation · notify Zurich',
+    confidence: 96, impact: 'Avoid $272k potential fraud loss', owner: 'Daniel Ortiz', status: 'Actioned' },
+  { id: 'AI-9037', severity: 'Low',    detected: '2026-04-15 10:15', category: 'Submission Quality',
+    insight: 'Agent SunBelt Insurance submission quality score declining 3 quarters in row',
+    analysis: 'Avg clearance rate 58% vs. 72% peer group · missing subjectivity in 42% of submissions.',
+    recommendation: 'Enroll in Q2 submission quality training · follow-up audit in 90 days',
+    confidence: 88, impact: 'Quality improvement', owner: 'Rebecca Fields', status: 'Open' }
+];
+
+export const mgaCustomReportBuilderTemplates = [
+  { id: 'TPL-001', name: 'Premium by Agent × Carrier',          description: 'Cross-tab agent × carrier · pivot by month · filterable by product',  saved_by: 'Sarah Chen',     last_run: '2026-04-15' },
+  { id: 'TPL-002', name: 'Loss Ratio Drill-Down',                description: '3-level drill (LOB → State → Product) with trend · exports to Excel', saved_by: 'Lisa Park',      last_run: '2026-04-12' },
+  { id: 'TPL-003', name: 'Agent PIP Candidates',                  description: 'Agents with score <70, LR >55%, >6mo tenure · triggers PIP workflow',   saved_by: 'Rebecca Fields', last_run: '2026-04-10' },
+  { id: 'TPL-004', name: 'Submission-to-Bind Funnel by Product',  description: 'Funnel drop-off with reason codes per product · weekly refresh',         saved_by: 'Sarah Chen',     last_run: '2026-04-17' },
+  { id: 'TPL-005', name: 'Claims Severity Curve',                 description: 'Histogram of closed claim final paid amounts · by LOB · by year',      saved_by: 'Jane Rodriguez', last_run: '2026-04-04' }
+];
+
+export const mgaCarrierMessages = [
+  { ts: '2026-04-18 11:22', carrier: 'Travelers',      from: 'Rajesh Patel (Travelers)',    to: 'Sarah Chen',        subject: 'Property capacity amendment — AUTH-2026-041', snippet: 'Approved in principle. Legal is drafting the addendum now. Expect signature by 2026-04-29.' },
+  { ts: '2026-04-17 16:40', carrier: 'CNA',             from: 'Matthew Brody (CNA)',         to: 'Sarah Chen',        subject: 'Q2 QBR agenda',                                 snippet: 'Attached draft agenda for 2026-04-18. Added discussion on cyber binding authority raise.' },
+  { ts: '2026-04-17 14:00', carrier: 'Zurich',          from: 'Andreas Schmidt (Zurich)',    to: 'Lisa Park',          subject: 'Premium bordereau PBD-2026-04-06 dispute',       snippet: 'We show a $8,400 variance on the Peninsula Mfg endorsement. Can we compare our ledgers on the call 04-22?' },
+  { ts: '2026-04-16 09:15', carrier: 'Chubb',           from: 'Stephen Reeves (Chubb)',      to: 'Marcus Henderson',  subject: 'Profit share counter-offer',                      snippet: 'Proposal: 42% LR threshold with 35% share pct. Lets chat next Monday.' },
+  { ts: '2026-04-15 13:30', carrier: 'Hartford',        from: 'Patricia Collins (Hartford)', to: 'Rebecca Fields',   subject: 'MA + NJ rate filings — status',                   snippet: 'Filings submitted to MA DOI 04-10. Received acknowledgment. NJ expected by 04-22.' }
+];
+
+// ─── MGA Documents Management ───
+export const mgaDocsKPIs = [
+  { label: 'Total Documents',          value: '14,224' },
+  { label: 'Added This Week',          value: '284' },
+  { label: 'Pending e-Signature',       value: '18', warning: true },
+  { label: 'Expiring (30d)',           value: '12', warning: true },
+  { label: 'Avg Retrieval Time',       value: '1.2s' },
+  { label: 'OCR Accuracy',             value: '98.4%' }
+];
+
+export const mgaDocCategories = [
+  { key: 'policy',     label: 'Policy Documents',       icon: '📋', count: 5842, sub: ['Applications','Binders','Declarations','Forms','Endorsements','COI','ID Cards'] },
+  { key: 'claims',     label: 'Claims Documents',        icon: '🛡', count: 3124, sub: ['FNOL','Photos','Police Reports','Estimates','Release Forms','Adjuster Notes','Payment Proofs'] },
+  { key: 'submission', label: 'Submission & UW',         icon: '📝', count: 2184, sub: ['ACORD','Supplemental','Loss History','UW Worksheets','Referrals'] },
+  { key: 'agent',      label: 'Agent & Compliance',      icon: '👥', count: 1248, sub: ['Agent Contracts','E&O Certificates','W-9s','Licenses','Training Certificates'] },
+  { key: 'carrier',    label: 'Carrier & Contracts',     icon: '🏢', count:  482, sub: ['Carrier Agreements','Addendums','Side Letters','Rate Filings','Audit Reports'] },
+  { key: 'financial',  label: 'Financial & Bordereau',    icon: '💰', count:  920, sub: ['Invoices','Commission Statements','Bordereau','Tax Filings'] },
+  { key: 'legal',      label: 'Legal & Regulatory',      icon: '⚖', count:  424, sub: ['Legal Documents','DOI Correspondence','Litigation Files','Compliance Filings'] }
+];
+
+export const mgaDocs = [
+  // Policy Documents
+  { id: 'DOC-54201', name: 'Westshore Logistics — FleetSafe Auto Binder v2.pdf',       category: 'policy',     sub: 'Binders',             size_kb: 1420, uploaded: '2026-04-18 13:20', uploaded_by: 'Mike Torres',       version: 2,  status: 'Final',      linked_entity: 'TRV-AUTO-2026-11445', linked_type: 'policy',     linked_label: 'Policy TRV-AUTO-2026-11445', tags: ['FleetSafe','auto','CA'],           expires: null,         retention_yrs: 10, signed: true,  pending_signatures: 0, views: 12, downloads: 4 },
+  { id: 'DOC-54200', name: 'Westshore Logistics — Declarations Page.pdf',               category: 'policy',     sub: 'Declarations',        size_kb: 480,  uploaded: '2026-04-18 13:22', uploaded_by: 'System',             version: 1,  status: 'Final',      linked_entity: 'TRV-AUTO-2026-11445', linked_type: 'policy',     linked_label: 'Policy TRV-AUTO-2026-11445', tags: ['auto','declarations'],             expires: null,         retention_yrs: 10, signed: false, pending_signatures: 0, views: 6,  downloads: 3 },
+  { id: 'DOC-54199', name: 'Magnolia Construction — COI #4421.pdf',                      category: 'policy',     sub: 'COI',                  size_kb: 280,  uploaded: '2026-04-17 10:15', uploaded_by: 'Lockton (portal)',   version: 1,  status: 'Final',      linked_entity: 'SEMC-WC-2025-48821', linked_type: 'policy',     linked_label: 'Policy SEMC-WC-2025-48821', tags: ['WC','COI','additional insured'], expires: '2026-06-30', retention_yrs: 7,  signed: false, pending_signatures: 0, views: 18, downloads: 8 },
+  { id: 'DOC-54198', name: 'Apex Industries — GL Policy Form 2026.pdf',                 category: 'policy',     sub: 'Forms',                size_kb: 820,  uploaded: '2026-04-16 14:40', uploaded_by: 'System',             version: 3,  status: 'Final',      linked_entity: 'CNA-GL-2025-33102',  linked_type: 'policy',     linked_label: 'Policy CNA-GL-2025-33102',  tags: ['GL','forms','CNA'],               expires: null,         retention_yrs: 10, signed: true,  pending_signatures: 0, views: 24, downloads: 12 },
+  { id: 'DOC-54197', name: 'Ridge Builders — Endorsement #4 (Add Location).pdf',         category: 'policy',     sub: 'Endorsements',         size_kb: 340,  uploaded: '2026-04-15 11:22', uploaded_by: 'Mike Torres',       version: 1,  status: 'Pending Signature', linked_entity: 'CNA-GL-2025-33102',  linked_type: 'policy', linked_label: 'Policy CNA-GL-2025-33102',  tags: ['endorsement','add location','GL'], expires: null,         retention_yrs: 10, signed: false, pending_signatures: 2, views: 4,  downloads: 0 },
+  { id: 'DOC-54196', name: 'TechCorp Inc — Cyber Policy Form + Retention Rider.pdf',      category: 'policy',     sub: 'Forms',                size_kb: 1240, uploaded: '2026-04-14 09:00', uploaded_by: 'System',             version: 2,  status: 'Final',      linked_entity: 'CNA-CYB-2026-88102', linked_type: 'policy',     linked_label: 'Policy CNA-CYB-2026-88102', tags: ['cyber','tech E&O','CNA'],         expires: null,         retention_yrs: 10, signed: true,  pending_signatures: 0, views: 15, downloads: 5 },
+  // Claims
+  { id: 'DOC-54150', name: 'CLM-MGA-2026-0248 — Dashcam clip.mp4',                        category: 'claims',     sub: 'Photos',                size_kb: 12288,uploaded: '2026-04-12 16:42', uploaded_by: 'Insured (portal)',   version: 1,  status: 'Final',      linked_entity: 'CLM-MGA-2026-0248',  linked_type: 'claim',      linked_label: 'Claim CLM-MGA-2026-0248',   tags: ['dashcam','auto','evidence'],       expires: null,         retention_yrs: 10, signed: false, pending_signatures: 0, views: 22, downloads: 3 },
+  { id: 'DOC-54149', name: 'CLM-MGA-2026-0248 — Police Report CHP 2026-88421.pdf',         category: 'claims',     sub: 'Police Reports',       size_kb: 820,  uploaded: '2026-04-17 14:15', uploaded_by: 'Insured (portal)',   version: 1,  status: 'Final',      linked_entity: 'CLM-MGA-2026-0248',  linked_type: 'claim',      linked_label: 'Claim CLM-MGA-2026-0248',   tags: ['police','evidence','auto'],        expires: null,         retention_yrs: 10, signed: false, pending_signatures: 0, views: 14, downloads: 2 },
+  { id: 'DOC-54148', name: 'CLM-MGA-2026-0248 — Firestone Repair Estimate.pdf',            category: 'claims',     sub: 'Estimates',            size_kb: 480,  uploaded: '2026-04-18 09:04', uploaded_by: 'Insured (portal)',   version: 1,  status: 'Under Review', linked_entity: 'CLM-MGA-2026-0248',  linked_type: 'claim',     linked_label: 'Claim CLM-MGA-2026-0248',   tags: ['estimate','repair','shop'],        expires: null,         retention_yrs: 10, signed: false, pending_signatures: 0, views: 8,  downloads: 1 },
+  { id: 'DOC-54147', name: 'CLM-MGA-2026-0245 — Forensic Report (TechCorp breach).pdf',     category: 'claims',     sub: 'Adjuster Notes',       size_kb: 3840, uploaded: '2026-04-16 17:20', uploaded_by: 'Rachel Kim',        version: 2,  status: 'Final',      linked_entity: 'CLM-MGA-2026-0245',  linked_type: 'claim',      linked_label: 'Claim CLM-MGA-2026-0245',   tags: ['cyber','forensic','SIU'],          expires: null,         retention_yrs: 10, signed: false, pending_signatures: 0, views: 42, downloads: 8 },
+  { id: 'DOC-54146', name: 'CLM-MGA-2026-0241 — Coastal Realty Settlement Release.pdf',     category: 'claims',     sub: 'Release Forms',        size_kb: 240,  uploaded: '2026-04-12 14:00', uploaded_by: 'Linda Park',        version: 1,  status: 'Final',      linked_entity: 'CLM-MGA-2026-0241',  linked_type: 'claim',      linked_label: 'Claim CLM-MGA-2026-0241',   tags: ['settlement','release','signed'],    expires: null,         retention_yrs: 10, signed: true,  pending_signatures: 0, views: 6,  downloads: 3 },
+  { id: 'DOC-54145', name: 'CLM-MGA-2026-0240 — Medical Bills (Magnolia employee).zip',     category: 'claims',     sub: 'Adjuster Notes',       size_kb: 2400, uploaded: '2026-04-02 11:40', uploaded_by: 'Tyler Washington',  version: 1,  status: 'Final',      linked_entity: 'CLM-MGA-2026-0240',  linked_type: 'claim',      linked_label: 'Claim CLM-MGA-2026-0240',   tags: ['WC','medical','bills'],             expires: null,         retention_yrs: 10, signed: false, pending_signatures: 0, views: 12, downloads: 4 },
+  // Submission & UW
+  { id: 'DOC-54100', name: 'SUB-92104 Magnolia — ACORD 125 (General).pdf',                  category: 'submission', sub: 'ACORD',                 size_kb: 420,  uploaded: '2026-04-11 09:30', uploaded_by: 'Lockton (portal)',  version: 1,  status: 'Final',      linked_entity: 'SUB-92104',           linked_type: 'submission', linked_label: 'Submission SUB-92104',      tags: ['ACORD','submission','WC'],         expires: null,         retention_yrs: 7,  signed: false, pending_signatures: 0, views: 8,  downloads: 2 },
+  { id: 'DOC-54099', name: 'SUB-92104 Magnolia — ACORD 130 (Workers Comp).pdf',              category: 'submission', sub: 'ACORD',                 size_kb: 480,  uploaded: '2026-04-11 09:30', uploaded_by: 'Lockton (portal)',  version: 1,  status: 'Final',      linked_entity: 'SUB-92104',           linked_type: 'submission', linked_label: 'Submission SUB-92104',      tags: ['ACORD','WC','submission'],          expires: null,         retention_yrs: 7,  signed: false, pending_signatures: 0, views: 10, downloads: 3 },
+  { id: 'DOC-54098', name: 'SUB-92104 Magnolia — 5-Year Loss Runs.pdf',                      category: 'submission', sub: 'Loss History',          size_kb: 1200, uploaded: '2026-04-11 09:35', uploaded_by: 'Lockton (portal)',  version: 1,  status: 'Final',      linked_entity: 'SUB-92104',           linked_type: 'submission', linked_label: 'Submission SUB-92104',      tags: ['loss history','WC','5-year'],       expires: null,         retention_yrs: 7,  signed: false, pending_signatures: 0, views: 22, downloads: 4 },
+  { id: 'DOC-54097', name: 'SUB-92104 Magnolia — UW Worksheet.xlsx',                        category: 'submission', sub: 'UW Worksheets',         size_kb: 320,  uploaded: '2026-04-12 11:20', uploaded_by: 'Sarah Chen',        version: 2,  status: 'Final',      linked_entity: 'SUB-92104',           linked_type: 'submission', linked_label: 'Submission SUB-92104',      tags: ['UW worksheet','rating'],            expires: null,         retention_yrs: 7,  signed: false, pending_signatures: 0, views: 14, downloads: 6 },
+  { id: 'DOC-54096', name: 'SUB-92104 Magnolia — Supplemental App (Exposures).pdf',        category: 'submission', sub: 'Supplemental',          size_kb: 380,  uploaded: '2026-04-11 10:00', uploaded_by: 'Lockton (portal)',  version: 1,  status: 'Final',      linked_entity: 'SUB-92104',           linked_type: 'submission', linked_label: 'Submission SUB-92104',      tags: ['supplemental','exposures'],         expires: null,         retention_yrs: 7,  signed: false, pending_signatures: 0, views: 7,  downloads: 2 },
+  // Agent & Compliance
+  { id: 'DOC-54050', name: 'Lockton Companies — Agent Agreement v2.pdf',                    category: 'agent',      sub: 'Agent Contracts',       size_kb: 2800, uploaded: '2024-01-15 09:00', uploaded_by: 'Rebecca Fields',    version: 2,  status: 'Final',      linked_entity: 'AGT-2038',            linked_type: 'agent',      linked_label: 'Agent Lockton (AGT-2038)',   tags: ['contract','agent','signed'],         expires: '2029-01-14', retention_yrs: 10, signed: true,  pending_signatures: 0, views: 24, downloads: 6 },
+  { id: 'DOC-54049', name: 'Lockton Companies — E&O Certificate 2026.pdf',                  category: 'agent',      sub: 'E&O Certificates',      size_kb: 180,  uploaded: '2026-01-02 08:15', uploaded_by: 'Lockton (portal)',  version: 1,  status: 'Final',      linked_entity: 'AGT-2038',            linked_type: 'agent',      linked_label: 'Agent Lockton (AGT-2038)',   tags: ['E&O','certificate','2026'],         expires: '2026-12-31', retention_yrs: 7,  signed: false, pending_signatures: 0, views: 12, downloads: 3 },
+  { id: 'DOC-54048', name: 'Lockton Companies — W-9 2026.pdf',                              category: 'agent',      sub: 'W-9s',                  size_kb: 120,  uploaded: '2026-01-02 08:15', uploaded_by: 'Lockton (portal)',  version: 1,  status: 'Final',      linked_entity: 'AGT-2038',            linked_type: 'agent',      linked_label: 'Agent Lockton (AGT-2038)',   tags: ['W-9','tax','2026'],                 expires: '2026-12-31', retention_yrs: 7,  signed: true,  pending_signatures: 0, views: 4,  downloads: 2 },
+  { id: 'DOC-54047', name: 'SunBelt Insurance — E&O Certificate.pdf',                        category: 'agent',      sub: 'E&O Certificates',      size_kb: 180,  uploaded: '2025-11-12 10:20', uploaded_by: 'SunBelt (portal)',  version: 1,  status: 'Expiring',   linked_entity: 'AGT-2078',            linked_type: 'agent',      linked_label: 'Agent SunBelt (AGT-2078)',   tags: ['E&O','expiring'],                   expires: '2026-05-01', retention_yrs: 7,  signed: false, pending_signatures: 0, views: 8,  downloads: 1 },
+  { id: 'DOC-54046', name: 'Brown & Brown — Agent Training Certificate Q1.pdf',             category: 'agent',      sub: 'Training Certificates', size_kb: 220,  uploaded: '2026-03-22 14:10', uploaded_by: 'Rebecca Fields',    version: 1,  status: 'Final',      linked_entity: 'AGT-2041',            linked_type: 'agent',      linked_label: 'Agent Brown & Brown',        tags: ['training','Q1','completed'],         expires: null,         retention_yrs: 3,  signed: true,  pending_signatures: 0, views: 3,  downloads: 1 },
+  // Carrier & Contracts
+  { id: 'DOC-53021', name: '2026 Travelers MGA Agreement Amendment #4.pdf',                category: 'carrier',    sub: 'Addendums',             size_kb: 380,  uploaded: '2026-04-17 18:22', uploaded_by: 'Priya Shah',        version: 1,  status: 'Final',      linked_entity: 'CAR-01',              linked_type: 'carrier',    linked_label: 'Carrier Travelers',          tags: ['contract','amendment','Travelers'],  expires: '2027-12-31', retention_yrs: 10, signed: true,  pending_signatures: 0, views: 18, downloads: 7 },
+  { id: 'DOC-53020', name: '2026 SEMC/Liberty MGA Agreement v2.pdf',                       category: 'carrier',    sub: 'Carrier Agreements',    size_kb: 4200, uploaded: '2023-06-01 12:00', uploaded_by: 'Priya Shah',        version: 2,  status: 'Expiring',   linked_entity: 'CAR-02',              linked_type: 'carrier',    linked_label: 'Carrier SEMC/Liberty',       tags: ['contract','expiring','Liberty'],     expires: '2026-05-31', retention_yrs: 10, signed: true,  pending_signatures: 0, views: 42, downloads: 16 },
+  { id: 'DOC-53019', name: 'CA Rate Filing — PropertyGuard 2026.pdf',                       category: 'carrier',    sub: 'Rate Filings',          size_kb: 680,  uploaded: '2025-11-05 15:30', uploaded_by: 'Priya Shah',        version: 1,  status: 'Final',      linked_entity: 'CAR-01',              linked_type: 'carrier',    linked_label: 'Carrier Travelers',          tags: ['rate filing','CA','property'],       expires: null,         retention_yrs: 10, signed: false, pending_signatures: 0, views: 9,  downloads: 3 },
+  { id: 'DOC-53018', name: '2025 Q4 Travelers Audit Report.pdf',                           category: 'carrier',    sub: 'Audit Reports',         size_kb: 1200, uploaded: '2026-02-28 14:00', uploaded_by: 'Michael Donovan',   version: 1,  status: 'Final',      linked_entity: 'CAR-01',              linked_type: 'carrier',    linked_label: 'Carrier Travelers',          tags: ['audit','Q4 2025','Travelers'],       expires: null,         retention_yrs: 7,  signed: false, pending_signatures: 0, views: 32, downloads: 12 },
+  // Financial
+  { id: 'DOC-52010', name: 'March 2026 Commission Statement — Lockton.pdf',                category: 'financial',  sub: 'Commission Statements', size_kb: 240,  uploaded: '2026-04-05 06:00', uploaded_by: 'System',             version: 1,  status: 'Final',      linked_entity: 'AGT-2038',            linked_type: 'agent',      linked_label: 'Agent Lockton (AGT-2038)',   tags: ['commission','March 2026'],           expires: null,         retention_yrs: 7,  signed: false, pending_signatures: 0, views: 8,  downloads: 4 },
+  { id: 'DOC-52009', name: 'PBD-2026-04-01 Travelers Premium Bordereau.xlsx',                category: 'financial',  sub: 'Bordereau',             size_kb: 184,  uploaded: '2026-04-05 09:00', uploaded_by: 'System',             version: 1,  status: 'Final',      linked_entity: 'CAR-01',              linked_type: 'carrier',    linked_label: 'Carrier Travelers',          tags: ['bordereau','premium','March'],        expires: null,         retention_yrs: 10, signed: false, pending_signatures: 0, views: 12, downloads: 6 },
+  { id: 'DOC-52008', name: 'Q1 2026 Premium Tax Return — TX.pdf',                           category: 'financial',  sub: 'Tax Filings',           size_kb: 220,  uploaded: '2026-04-14 11:40', uploaded_by: 'Omar Khalid',       version: 2,  status: 'Pending Signature', linked_entity: 'FLG-2026-Q1-TX',    linked_type: 'filing',     linked_label: 'Filing FLG-2026-Q1-TX',      tags: ['tax','TX','Q1','signature required'], expires: null,         retention_yrs: 7,  signed: false, pending_signatures: 1, views: 4,  downloads: 1 },
+  { id: 'DOC-52007', name: 'Invoice #88421 — Deloitte SOC2 Audit.pdf',                     category: 'financial',  sub: 'Invoices',               size_kb: 140,  uploaded: '2026-04-08 13:20', uploaded_by: 'Omar Khalid',       version: 1,  status: 'Final',      linked_entity: 'CNT-4003',            linked_type: 'contract',   linked_label: 'Contract CNT-4003 Deloitte', tags: ['invoice','Deloitte'],                 expires: null,         retention_yrs: 7,  signed: false, pending_signatures: 0, views: 3,  downloads: 1 },
+  // Legal
+  { id: 'DOC-51005', name: 'DOI Complaint Response — CA-88421.pdf',                         category: 'legal',      sub: 'DOI Correspondence',    size_kb: 340,  uploaded: '2026-04-16 10:20', uploaded_by: 'Priya Shah',        version: 2,  status: 'Pending Signature', linked_entity: 'CMP-2026-027',      linked_type: 'compliance', linked_label: 'Task CMP-2026-027',          tags: ['DOI','complaint','CA'],               expires: null,         retention_yrs: 7,  signed: false, pending_signatures: 1, views: 9,  downloads: 2 },
+  { id: 'DOC-51004', name: 'Litigation Hold — Ridge Builders CLM-0237.pdf',                category: 'legal',      sub: 'Litigation Files',     size_kb: 180,  uploaded: '2026-03-14 11:30', uploaded_by: 'Priya Shah',        version: 1,  status: 'Final',      linked_entity: 'CLM-MGA-2026-0237',  linked_type: 'claim',      linked_label: 'Claim CLM-MGA-2026-0237',    tags: ['litigation','hold','GL'],             expires: null,         retention_yrs: 10, signed: true,  pending_signatures: 0, views: 14, downloads: 4 },
+  { id: 'DOC-51003', name: '2026 NY Annual Financial Statement (filed).pdf',                category: 'legal',      sub: 'Compliance Filings',   size_kb: 2400, uploaded: '2026-02-28 17:00', uploaded_by: 'Marcus Henderson',  version: 1,  status: 'Final',      linked_entity: 'FLG-2026-AN-NY',      linked_type: 'filing',     linked_label: 'Filing FLG-2026-AN-NY',      tags: ['NY','annual','filed'],                expires: null,         retention_yrs: 10, signed: true,  pending_signatures: 0, views: 6,  downloads: 2 }
+];
+
+export const mgaDocExpiring = [
+  { id: 'DOC-53020', name: '2026 SEMC/Liberty MGA Agreement v2.pdf',     type: 'Carrier Agreement', expires: '2026-05-31', days_to_expire: 43,  action: 'Renewal negotiation in progress · committee 2026-04-25',       owner: 'Marcus Henderson' },
+  { id: 'DOC-54047', name: 'SunBelt Insurance — E&O Certificate.pdf',     type: 'E&O Certificate',    expires: '2026-05-01', days_to_expire: 13,  action: '⚠ Agent flagged · renewal certificate requested',                 owner: 'Rebecca Fields' },
+  { id: 'DOC-54199', name: 'Magnolia Construction — COI #4421.pdf',       type: 'Certificate (COI)',  expires: '2026-06-30', days_to_expire: 73,  action: 'Auto-regenerate 7d before policy expiry',                          owner: 'System (auto)' },
+  { id: 'DOC-54049', name: 'Lockton Companies — E&O Certificate 2026.pdf',type: 'E&O Certificate',    expires: '2026-12-31', days_to_expire: 257, action: 'Annual renewal due year-end',                                       owner: 'Rebecca Fields' },
+  { id: 'DOC-54048', name: 'Lockton Companies — W-9 2026.pdf',            type: 'W-9',                expires: '2026-12-31', days_to_expire: 257, action: 'Annual renewal due year-end',                                       owner: 'Rebecca Fields' }
+];
+
+export const mgaDocEsigQueue = [
+  { id: 'SIG-8821', doc_id: 'DOC-54197', doc_name: 'Ridge Builders — Endorsement #4 (Add Location).pdf',        signers: 2, signed: 0, sent: '2026-04-15 11:22', expires_in_days: 4,  status: 'Awaiting First Signer',  workflow: 'Sequential · Agent → Insured', next_signer: 'Olivia Sanchez (Lockton)' },
+  { id: 'SIG-8820', doc_id: 'DOC-52008', doc_name: 'Q1 2026 Premium Tax Return — TX.pdf',                        signers: 1, signed: 0, sent: '2026-04-14 11:40', expires_in_days: 3,  status: 'Awaiting First Signer',  workflow: 'Single signer',                 next_signer: 'Marcus Henderson' },
+  { id: 'SIG-8819', doc_id: 'DOC-51005', doc_name: 'DOI Complaint Response — CA-88421.pdf',                     signers: 1, signed: 0, sent: '2026-04-16 10:20', expires_in_days: 5,  status: 'Viewed (not signed)',      workflow: 'Single signer',                 next_signer: 'Marcus Henderson' },
+  { id: 'SIG-8818', doc_id: 'DOC-54200', doc_name: 'Westshore Logistics — New Policy Declarations.pdf',           signers: 2, signed: 1, sent: '2026-04-17 14:00', expires_in_days: 6,  status: 'In Progress · 1 of 2',    workflow: 'Sequential · UW → Insured',     next_signer: 'James Reynolds (Westshore)' }
+];
+
+export const mgaDocVersions = [
+  { doc_id: 'DOC-54201', versions: [
+    { v: 2, ts: '2026-04-18 13:20', by: 'Mike Torres',   change: 'Corrected VIN on vehicle #3 · updated limits section · added TRIA election',    size_kb: 1420 },
+    { v: 1, ts: '2026-04-17 09:15', by: 'System',        change: 'Initial binder generated from bound quote',                                        size_kb: 1280 }
+  ]},
+  { doc_id: 'DOC-53020', versions: [
+    { v: 2, ts: '2023-06-01 12:00', by: 'Priya Shah',    change: 'Renewed contract with revised commission schedule and capacity increase',          size_kb: 4200 },
+    { v: 1, ts: '2020-06-01 10:00', by: 'Priya Shah',    change: 'Original Liberty MGA agreement',                                                   size_kb: 3800 }
+  ]},
+  { doc_id: 'DOC-54198', versions: [
+    { v: 3, ts: '2026-04-16 14:40', by: 'System',        change: 'Policy renewal · updated forms to 2026 CNA edition · new TRIA selection',         size_kb: 820 },
+    { v: 2, ts: '2025-04-15 10:00', by: 'System',        change: '2025 renewal',                                                                     size_kb: 780 },
+    { v: 1, ts: '2024-04-15 10:00', by: 'System',        change: 'Original policy issuance',                                                         size_kb: 720 }
+  ]},
+  { doc_id: 'DOC-54147', versions: [
+    { v: 2, ts: '2026-04-16 17:20', by: 'Rachel Kim',   change: 'Updated with full forensic report including regulatory notifications required',    size_kb: 3840 },
+    { v: 1, ts: '2026-04-14 11:00', by: 'CyberDefense', change: 'Initial forensic report from vendor',                                               size_kb: 2400 }
+  ]}
+];
+
+export const mgaDocAuditLogs = [
+  { ts: '2026-04-18 14:30', doc_id: 'DOC-54147', action: 'Downloaded',   actor: 'Rachel Kim',       ip: '10.0.8.48',    metadata: 'Full file · 3.8 MB',              severity: 'Info' },
+  { ts: '2026-04-18 14:22', doc_id: 'DOC-54201', action: 'Generated',    actor: 'System',            ip: '—',            metadata: 'Auto-generated from bound quote', severity: 'Info' },
+  { ts: '2026-04-18 14:15', doc_id: 'DOC-54148', action: 'Uploaded',     actor: 'Insured (portal)',  ip: '98.44.12.45',  metadata: 'PDF · OCR completed · linked to CLM-MGA-2026-0248', severity: 'Info' },
+  { ts: '2026-04-18 13:22', doc_id: 'DOC-54200', action: 'Shared',       actor: 'Mike Torres',       ip: '10.0.8.31',    metadata: 'Secure link sent to James Reynolds · expires 7d', severity: 'Info' },
+  { ts: '2026-04-18 13:20', doc_id: 'DOC-54201', action: 'E-Sign Sent',  actor: 'Mike Torres',       ip: '10.0.8.31',    metadata: 'DocuSign envelope · 2 signers',    severity: 'Info' },
+  { ts: '2026-04-18 12:45', doc_id: 'DOC-51005', action: 'Viewed',       actor: 'Marcus Henderson', ip: '10.0.8.42',    metadata: 'Preview only · 3m 20s',              severity: 'Info' },
+  { ts: '2026-04-17 18:22', doc_id: 'DOC-53021', action: 'Uploaded',     actor: 'Priya Shah',        ip: '10.0.8.65',    metadata: 'PDF · auto-classified · contract',   severity: 'Info' },
+  { ts: '2026-04-17 17:00', doc_id: 'DOC-54099', action: 'Downloaded',   actor: 'Audit Reviewer',    ip: '203.44.89.2',  metadata: 'Audit export · watermarked',        severity: 'Info' },
+  { ts: '2026-04-17 14:15', doc_id: 'DOC-54149', action: 'Uploaded',     actor: 'Insured (portal)',  ip: '98.44.12.45',  metadata: 'PDF · OCR · linked to claim',        severity: 'Info' },
+  { ts: '2026-04-17 10:15', doc_id: 'DOC-54199', action: 'Generated',    actor: 'System',            ip: '—',            metadata: 'COI auto-generated for certificate holder', severity: 'Info' },
+  { ts: '2026-04-16 17:20', doc_id: 'DOC-54147', action: 'Version 2',    actor: 'Rachel Kim',       ip: '10.0.8.48',    metadata: 'Replaced v1 · forensic report final', severity: 'Info' },
+  { ts: '2026-04-16 10:20', doc_id: 'DOC-51005', action: 'Uploaded',     actor: 'Priya Shah',        ip: '10.0.8.65',    metadata: 'DOI complaint response · legal-reviewed', severity: 'Info' },
+  { ts: '2026-04-15 22:12', doc_id: 'DOC-52007', action: 'Access Denied',actor: 'unknown',            ip: '45.202.89.11',metadata: 'User lacked finance:read permission', severity: 'Warning' }
+];
+
+// ─── MGA Settings & Administration ───
+export const mgaSettingsKPIs = [
+  { label: 'Config Keys',          value: '284' },
+  { label: 'Active Workflows',     value: '42' },
+  { label: 'Integrations',         value: '18' },
+  { label: 'Active Env',           value: 'Production' },
+  { label: 'Pending Approvals',    value: '3', warning: true },
+  { label: 'System Uptime (30d)',  value: '99.98%' }
+];
+
+export const mgaWorkflows = [
+  { id: 'WF-001', name: 'Auto-Route New Submission',     module: 'Submissions', trigger: 'On Submission Created', condition: 'LOB IN (WC,GL,BOP) AND state IN [all active]',   actions: ['Assign UW by round-robin (LOB specialty)','Send ack to agent','Create task for clearance'], status: 'Active',  runs_30d: 1420, success_rate: 99.2, owner: 'Sarah Chen',        last_edited: '2026-02-15' },
+  { id: 'WF-002', name: 'Binding → Documents + Welcome', module: 'Bindings',    trigger: 'On Policy Bound',        condition: 'always',                                          actions: ['Generate declarations page','Generate policy forms','Email welcome pack to insured','Notify agent'], status: 'Active', runs_30d: 512, success_rate: 99.8, owner: 'Mike Torres',       last_edited: '2026-03-02' },
+  { id: 'WF-003', name: 'Claims FNOL Triage',             module: 'Claims',      trigger: 'On Claim Reported',      condition: 'severity IN (Medium,Large) OR fraud_indicators>=2', actions: ['Auto-assign adjuster by LOB','Set initial reserve from model','Notify carrier (if Large)','Create tasks'], status: 'Active',  runs_30d: 84,   success_rate: 98.8, owner: 'Jane Rodriguez',    last_edited: '2026-02-18' },
+  { id: 'WF-004', name: 'Commission Batch Runner',         module: 'Finance',     trigger: 'Monthly · 1st · 6:00 UTC', condition: 'policies.status IN [Active,Renewing]',        actions: ['Calculate commission per agent','Generate statements PDF','Initiate ACH batch','Email statements'], status: 'Active', runs_30d: 1,   success_rate: 100,  owner: 'Omar Khalid',       last_edited: '2025-12-10' },
+  { id: 'WF-005', name: 'Renewal Kickoff (120d pre-exp)', module: 'Policies',    trigger: 'Daily · 8:00 UTC',        condition: 'expiry <= today + 120 AND status = Active',   actions: ['Create renewal task','Email producer','Pull loss run + MVR update','Flag at-risk accounts'], status: 'Active',  runs_30d: 30,  success_rate: 99.4, owner: 'Lisa Park',          last_edited: '2026-01-05' },
+  { id: 'WF-006', name: 'Reserve Approval Router',         module: 'Claims',      trigger: 'On Reserve Change Proposed', condition: 'delta > adjuster.authority',                 actions: ['Route to supervisor by LOB','Send notification with rationale','SLA: 24h response'], status: 'Active',  runs_30d: 28,  success_rate: 100,  owner: 'Daniel Ortiz',       last_edited: '2026-02-28' },
+  { id: 'WF-007', name: 'Bordereau Auto-Generation',       module: 'Carriers',    trigger: 'Daily · 18:00 UTC',       condition: 'per-carrier config',                             actions: ['Aggregate policy + claims data','Format per carrier template','Encrypt + send via SFTP or API','Log ack'], status: 'Active', runs_30d: 30,  success_rate: 99.6, owner: 'Priya Shah',        last_edited: '2026-03-14' },
+  { id: 'WF-008', name: 'Agent Onboarding — Step 4 to 5',  module: 'Agents',      trigger: 'On E&O Certificate Uploaded', condition: 'certificate.validated = true',              actions: ['Advance onboarding to Step 5','Notify agent manager','Issue portal credentials'], status: 'Active',  runs_30d: 4,   success_rate: 100,  owner: 'Rebecca Fields',    last_edited: '2026-01-28' },
+  { id: 'WF-009', name: 'COI Auto-Regenerate',              module: 'Policies',    trigger: 'Daily · 7d before renewal', condition: 'COI.auto_renew = true',                     actions: ['Regenerate COI with new policy period','Email to certificate holder'],                   status: 'Active',  runs_30d: 8,   success_rate: 100,  owner: 'Mike Torres',       last_edited: '2025-11-22' },
+  { id: 'WF-010', name: 'High-Severity AI Alert',          module: 'Analytics',   trigger: 'On Anomaly Detected',     condition: 'severity = High',                                actions: ['Slack notify #risk-management','Email assigned owner','Create escalation task'], status: 'Active',  runs_30d: 12,  success_rate: 100,  owner: 'Marcus Henderson',  last_edited: '2026-03-22' },
+  { id: 'WF-011', name: 'Expired Policy Cancellation Flow', module: 'Policies',    trigger: 'Daily · policy.expiry < today - 30', condition: 'no renewal in progress',               actions: ['Move status → Expired','Notify finance','Stop commission accrual','Archive docs'], status: 'Active', runs_30d: 6,   success_rate: 100,  owner: 'Lisa Park',          last_edited: '2025-10-05' },
+  { id: 'WF-012', name: 'Draft: Agent Training Reminder',  module: 'Agents',      trigger: 'Monthly',                   condition: 'agent.training_due_days <= 30',                 actions: ['Email reminder','Create training task','Notify agent manager if overdue 30d'], status: 'Draft',   runs_30d: 0,   success_rate: null, owner: 'Rebecca Fields',    last_edited: '2026-04-10' }
+];
+
+export const mgaIntegrations = [
+  { id: 'INT-001', name: 'SEMC (Carrier Aggregator)',      category: 'Carrier',     vendor: 'SEMC',                 connection: 'API (OAuth 2.0)',  status: 'Healthy', last_sync: '2026-04-18 14:30', volume_24h: '1,420 transactions', latency_ms: 142, uptime_30d: 99.98, feeds: ['Policies','Claims','Bordereau','Submissions'], owner: 'IT Ops',         notes: 'Primary carrier hub · 6 carriers' },
+  { id: 'INT-002', name: 'Travelers Direct API',            category: 'Carrier',     vendor: 'Travelers',            connection: 'REST API',          status: 'Healthy', last_sync: '2026-04-18 14:28', volume_24h: '282 transactions',   latency_ms: 180, uptime_30d: 99.95, feeds: ['Submissions','Bindings','Bordereau'],           owner: 'IT Ops',         notes: 'Premium partner · direct feed' },
+  { id: 'INT-003', name: 'IVANS',                            category: 'Carrier',     vendor: 'IVANS',                connection: 'IVANS Download',    status: 'Healthy', last_sync: '2026-04-18 06:00', volume_24h: '42 policy downloads',latency_ms: 320, uptime_30d: 99.80, feeds: ['Policy Download (agency bill)'],                owner: 'IT Ops',         notes: 'Nightly IVANS download' },
+  { id: 'INT-004', name: 'Chubb SFTP',                       category: 'Carrier',     vendor: 'Chubb',                connection: 'SFTP (keyed)',      status: 'Watch',   last_sync: '2026-04-18 02:00', volume_24h: '12 files',            latency_ms: 480, uptime_30d: 98.40, feeds: ['Claims Bordereau','Premium Bordereau'],        owner: 'IT Ops',         notes: 'File-based · planned API migration Q3' },
+  { id: 'INT-005', name: 'Zurich SFTP',                      category: 'Carrier',     vendor: 'Zurich',                connection: 'SFTP (keyed)',      status: 'Healthy', last_sync: '2026-04-18 03:00', volume_24h: '8 files',             latency_ms: 420, uptime_30d: 99.20, feeds: ['Property bordereau'],                             owner: 'IT Ops',         notes: 'File-based · legacy' },
+  { id: 'INT-006', name: 'NetSuite',                         category: 'Accounting', vendor: 'Oracle NetSuite',      connection: 'REST API',          status: 'Healthy', last_sync: '2026-04-18 04:00', volume_24h: '1,200 records',       latency_ms: 220, uptime_30d: 99.90, feeds: ['GL Sync','AR','Commissions','Trust Accounts'], owner: 'Finance',         notes: 'Nightly full sync · Omar Khalid owns' },
+  { id: 'INT-007', name: 'DocuSign',                         category: 'e-Signature', vendor: 'DocuSign',             connection: 'REST API',          status: 'Healthy', last_sync: '2026-04-18 14:22', volume_24h: '84 envelopes',       latency_ms: 180, uptime_30d: 99.99, feeds: ['Envelope Status','Event Webhooks'],            owner: 'IT Ops',         notes: 'E-sign for binders, contracts, endorsements' },
+  { id: 'INT-008', name: 'Adobe Sign',                        category: 'e-Signature', vendor: 'Adobe',                connection: 'REST API',          status: 'Healthy', last_sync: '2026-04-18 11:10', volume_24h: '14 envelopes',       latency_ms: 220, uptime_30d: 99.92, feeds: ['Envelope Status'],                              owner: 'IT Ops',         notes: 'Backup e-sign · used for carrier audits' },
+  { id: 'INT-009', name: 'Snowflake (Data Warehouse)',       category: 'Analytics',   vendor: 'Snowflake',             connection: 'Snowpipe',          status: 'Healthy', last_sync: '2026-04-18 04:00', volume_24h: '84M rows',            latency_ms: 3200,uptime_30d: 99.99, feeds: ['Analytics Warehouse','BI Reporting'],           owner: 'Analytics',       notes: 'Full platform data' },
+  { id: 'INT-010', name: 'LexisNexis ThreatMetrix',           category: 'Risk',        vendor: 'LexisNexis',            connection: 'REST API',          status: 'Healthy', last_sync: '2026-04-18 14:29', volume_24h: '82 risk scores',     latency_ms: 480, uptime_30d: 99.85, feeds: ['Risk Scoring'],                                  owner: 'Underwriting',   notes: 'Real-time risk scoring for submissions' },
+  { id: 'INT-011', name: 'LexisNexis MVR',                    category: 'Risk',        vendor: 'LexisNexis',            connection: 'REST API',          status: 'Healthy', last_sync: '2026-04-18 14:20', volume_24h: '22 MVR pulls',        latency_ms: 680, uptime_30d: 99.90, feeds: ['MVR for Commercial Auto'],                      owner: 'Underwriting',   notes: 'Motor vehicle records for auto UW' },
+  { id: 'INT-012', name: 'QuickBooks Online',                 category: 'Accounting',  vendor: 'Intuit',               connection: 'REST API',          status: 'Not Connected', last_sync: null,      volume_24h: '—',                     latency_ms: null, uptime_30d: null,  feeds: [],                                              owner: '—',               notes: 'Available for smaller agents · not currently enabled' },
+  { id: 'INT-013', name: 'Slack',                             category: 'Notifications',vendor: 'Slack',                connection: 'Webhook',           status: 'Healthy', last_sync: '2026-04-18 14:22', volume_24h: '42 messages',         latency_ms: 84,  uptime_30d: 99.99, feeds: ['Alerts','Workflow notifications'],              owner: 'IT Ops',         notes: '#risk-management, #carrier-ops, #claims-ops' },
+  { id: 'INT-014', name: 'SendGrid (Transactional Email)',    category: 'Notifications',vendor: 'Twilio SendGrid',     connection: 'REST API',          status: 'Healthy', last_sync: '2026-04-18 14:30', volume_24h: '1,840 emails',        latency_ms: 120, uptime_30d: 99.98, feeds: ['Transactional','Bulk'],                         owner: 'IT Ops',         notes: 'All outbound email (except Slack)' },
+  { id: 'INT-015', name: 'Twilio (SMS)',                      category: 'Notifications',vendor: 'Twilio',               connection: 'REST API',          status: 'Healthy', last_sync: '2026-04-18 14:20', volume_24h: '28 SMS',              latency_ms: 220, uptime_30d: 99.95, feeds: ['SMS Alerts'],                                     owner: 'IT Ops',         notes: 'Urgent claim notifications · large loss' },
+  { id: 'INT-016', name: 'OKTA (SSO + MFA)',                  category: 'Security',    vendor: 'OKTA',                 connection: 'SAML 2.0 / OIDC',   status: 'Healthy', last_sync: '2026-04-18 14:30', volume_24h: '184 auth events',     latency_ms: 140, uptime_30d: 99.99, feeds: ['SSO','MFA enforcement'],                        owner: 'Security',         notes: 'Primary auth provider' },
+  { id: 'INT-017', name: 'ClamAV (Virus Scan)',               category: 'Security',    vendor: 'ClamAV',               connection: 'Internal service',  status: 'Healthy', last_sync: '2026-04-18 14:22', volume_24h: '42 uploads scanned',  latency_ms: 420, uptime_30d: 99.98, feeds: ['Doc Uploads'],                                    owner: 'Security',         notes: 'Every document upload scanned' },
+  { id: 'INT-018', name: 'Webhook: Agent Portal Events',      category: 'Webhook',     vendor: 'Internal',             connection: 'HTTPS Webhook Out', status: 'Healthy', last_sync: '2026-04-18 14:29', volume_24h: '320 events',          latency_ms: 80,  uptime_30d: 99.99, feeds: ['Submission events','Policy events'],            owner: 'IT Ops',         notes: 'Events pushed to customer integrations' }
+];
+
+export const mgaGlobalConfig = {
+  branding: {
+    legal_name: 'Singlepoint MGA, LLC',
+    dba: 'Singlepoint Insurance Services',
+    primary_color: '#6c5ce7',
+    accent_color: '#a67dff',
+    logo_url: '/assets/logo-mga.svg',
+    favicon_url: '/assets/favicon.ico',
+    portal_footer: '© 2026 Singlepoint MGA, LLC. Licensed in 22 states. NPN: 17421.',
+    disclaimer: 'This platform contains confidential information. Unauthorized access prohibited.',
+    website: 'singlepoint-mga.com',
+    support_email: 'support@singlepoint-mga.com',
+    support_phone: '1-888-555-MGA1'
+  },
+  localization: {
+    default_country: 'United States',
+    default_timezone: 'America/Los_Angeles (PDT)',
+    default_currency: 'USD',
+    multi_state: true,
+    multi_currency: false,
+    date_format: 'YYYY-MM-DD',
+    number_format: 'en-US',
+    languages: ['en-US']
+  },
+  notifications: {
+    default_channels: ['Email','In-App','Portal'],
+    quiet_hours: '22:00 – 06:00 PT',
+    digest_frequency: 'Daily at 8:00 AM PT',
+    large_loss_sms: true,
+    agent_daily_digest: true,
+    carrier_bordereau_ack: 'Slack + Email'
+  },
+  business_hours: {
+    mon_fri: '08:00 – 18:00 PT',
+    sat: '09:00 – 13:00 PT',
+    sun: 'Closed',
+    holidays: 'NYSE schedule'
+  }
+};
+
+export const mgaSecurityConfig = [
+  { category: 'Authentication',  key: 'Password Policy',             value: 'Min 14 chars · 1 upper · 1 digit · 1 symbol · rotate 90d', last_modified: '2025-06-15 by Marcus Henderson', risk_level: 'High' },
+  { category: 'Authentication',  key: 'MFA Enforcement',             value: 'Required for all internal roles · optional for external agents', last_modified: '2025-06-15 by Marcus Henderson', risk_level: 'Critical' },
+  { category: 'Authentication',  key: 'SSO (OKTA)',                  value: 'Enabled for all employees',                                last_modified: '2024-01-10 by IT',             risk_level: 'Critical' },
+  { category: 'Authentication',  key: 'Session Timeout',             value: '30 min idle · 8 hr absolute',                              last_modified: '2025-09-01 by Marcus Henderson', risk_level: 'Medium' },
+  { category: 'Authentication',  key: 'Failed Login Lockout',         value: '5 attempts · 30 min lockout · alert after 3',             last_modified: '2025-06-15 by IT',             risk_level: 'High' },
+  { category: 'Access Control',  key: 'IP Allowlist (Admin)',         value: '10.0.0.0/16 · 172.16.0.0/12 · corp VPN only',             last_modified: '2025-11-20 by Security',        risk_level: 'Critical' },
+  { category: 'Access Control',  key: 'IP Allowlist (External)',     value: 'Disabled · rely on MFA + device attestation',              last_modified: '2025-11-20 by Security',        risk_level: 'Medium' },
+  { category: 'Access Control',  key: 'Data-level Security',          value: 'Enabled · agents see only own book · auditors read-only', last_modified: '2024-06-01 by Marcus Henderson', risk_level: 'Critical' },
+  { category: 'Data Protection', key: 'Encryption at Rest',           value: 'AES-256 · keys managed in KMS · rotated annually',         last_modified: '2024-01-01 by Security',        risk_level: 'Critical' },
+  { category: 'Data Protection', key: 'Encryption in Transit',        value: 'TLS 1.3 · HSTS enforced',                                   last_modified: '2024-01-01 by Security',        risk_level: 'Critical' },
+  { category: 'Data Protection', key: 'PII Redaction',                 value: 'Auto-detected on upload · redacted in exports unless admin', last_modified: '2025-03-14 by Security',    risk_level: 'High' },
+  { category: 'Backup',          key: 'Database Backup',               value: 'Daily full + hourly incremental · 30d retention',            last_modified: '2024-01-01 by IT',             risk_level: 'Critical' },
+  { category: 'Backup',          key: 'Document Backup',               value: 'S3 cross-region replication · 7y retention',                 last_modified: '2024-01-01 by IT',             risk_level: 'High' },
+  { category: 'Disaster Recov.', key: 'RTO (Recovery Time Objective)', value: '4 hours',                                                   last_modified: '2025-01-01 by IT',             risk_level: 'High' },
+  { category: 'Disaster Recov.', key: 'RPO (Recovery Point Objective)',value: '1 hour',                                                    last_modified: '2025-01-01 by IT',             risk_level: 'High' },
+  { category: 'Disaster Recov.', key: 'Last DR Test',                  value: '2026-03-15 · Passed · 3h 12m RTO actual',                   last_modified: '2026-03-15 by IT',             risk_level: 'Medium' },
+  { category: 'Compliance',      key: 'SOC2 Type II',                  value: 'Certified · audit Deloitte · next audit 2026-11',         last_modified: '2025-12-01 by Compliance',     risk_level: 'High' },
+  { category: 'Compliance',      key: 'ISO 27001',                     value: 'Certified · BSI · next surveillance 2026-08',              last_modified: '2025-08-15 by Compliance',     risk_level: 'High' },
+  { category: 'Compliance',      key: 'PCI DSS',                       value: 'Not applicable · no direct card processing',                last_modified: '2024-01-01 by Compliance',     risk_level: 'Low' },
+  { category: 'Monitoring',      key: 'SIEM',                           value: 'Splunk · 180-day log retention · 24/7 SOC',                last_modified: '2024-06-01 by Security',        risk_level: 'High' }
+];
+
+export const mgaSystemLogs = [
+  { ts: '2026-04-18 14:30:04.182', level: 'INFO',    service: 'policy-svc',    message: 'Policy TRV-AUTO-2026-11445 issued · binder sent',        request_id: 'req-8842', duration_ms: 182 },
+  { ts: '2026-04-18 14:29:58.042', level: 'INFO',    service: 'auth',           message: 'User login success · sarah.c@singlepoint.com · OKTA SSO', request_id: 'req-8841', duration_ms: 120 },
+  { ts: '2026-04-18 14:28:12.380', level: 'INFO',    service: 'claim-svc',      message: 'Reserve change approved · RES-4200 · $420k → $520k',    request_id: 'req-8840', duration_ms: 92  },
+  { ts: '2026-04-18 14:25:45.220', level: 'WARN',    service: 'carrier-svc',    message: 'Chubb SFTP latency 480ms (threshold 400ms) · 3 of 5 last minute', request_id: null, duration_ms: null },
+  { ts: '2026-04-18 14:22:08.100', level: 'INFO',    service: 'bordereau-svc',  message: 'BDX-2026-04-18 delivered to Travelers · ACK TRV-ACK-8842', request_id: 'req-8839', duration_ms: 2420 },
+  { ts: '2026-04-18 14:15:22.060', level: 'INFO',    service: 'docs-svc',       message: 'Doc upload DOC-54148 · OCR completed · linked CLM-MGA-2026-0248', request_id: 'req-8838', duration_ms: 1820 },
+  { ts: '2026-04-18 14:10:40.220', level: 'ERROR',   service: 'rating-engine',  message: 'Rating calculation failed · product PRD-CYB · missing class code lookup · retried successfully on attempt 2', request_id: 'req-8837', duration_ms: 820 },
+  { ts: '2026-04-18 14:05:12.400', level: 'INFO',    service: 'commission-svc', message: 'Commission batch job completed · 14 agents · $184,240 total', request_id: 'job-ct-8820', duration_ms: 18420 },
+  { ts: '2026-04-18 13:55:18.020', level: 'INFO',    service: 'ai-service',     message: 'High-severity anomaly detected · AI-9042 · Florida LR surge', request_id: 'ai-9042',  duration_ms: 420 },
+  { ts: '2026-04-18 13:45:02.100', level: 'WARN',    service: 'auth',           message: 'Failed login attempt · USR-006 · IP 172.98.45.11 · 1 of 5', request_id: 'req-8836', duration_ms: 80  },
+  { ts: '2026-04-18 13:20:40.380', level: 'INFO',    service: 'binding-svc',    message: 'Policy TRV-AUTO-2026-11445 bound · premium $48,400',   request_id: 'req-8835', duration_ms: 1280 },
+  { ts: '2026-04-18 12:30:22.400', level: 'INFO',    service: 'scheduler',      message: 'Cron: compliance-auto-route fired · 1 task routed',    request_id: 'cron-4422',duration_ms: 220 },
+  { ts: '2026-04-18 12:05:12.100', level: 'WARN',    service: 'auth',           message: 'MFA bypass attempted · USR-013 · blocked · alert sent', request_id: 'req-8834', duration_ms: 180 },
+  { ts: '2026-04-18 10:50:08.200', level: 'WARN',    service: 'auth',           message: 'Failed login attempt · USR-006 · IP 172.98.45.11 · 1 of 5', request_id: 'req-8833', duration_ms: 82 },
+  { ts: '2026-04-18 09:30:14.180', level: 'INFO',    service: 'bordereau-svc',  message: 'Premium bordereau generated · Travelers PBD-2026-04-01 · $1.42M premium', request_id: 'req-8832', duration_ms: 4200 },
+  { ts: '2026-04-18 09:02:02.080', level: 'INFO',    service: 'user-svc',       message: 'User USR-014 marked Offboarded · access revoked · deletion scheduled', request_id: 'req-8831', duration_ms: 180 },
+  { ts: '2026-04-18 08:42:00.020', level: 'INFO',    service: 'auth',           message: 'User login success · marcus.h@singlepoint.com · OKTA SSO + MFA', request_id: 'req-8830', duration_ms: 140 },
+  { ts: '2026-04-18 04:00:00.200', level: 'INFO',    service: 'backup-svc',     message: 'Daily database backup completed · 284 GB · 42 minutes · SHA-256 verified', request_id: 'job-bk-4420', duration_ms: 2520000 },
+  { ts: '2026-04-17 22:12:14.100', level: 'WARN',    service: 'docs-svc',       message: 'Access denied · DOC-52007 · user lacked finance:read',   request_id: 'req-8829', duration_ms: 40 },
+  { ts: '2026-04-17 18:22:18.400', level: 'INFO',    service: 'docs-svc',       message: 'Contract uploaded · CNT-1001 Travelers Amendment #4 · auto-classified',  request_id: 'req-8828', duration_ms: 620 }
+];
+
+export const mgaMaintenanceJobs = [
+  { id: 'MNT-001', name: 'Database Full Backup',             schedule: 'Daily · 04:00 UTC',           last_run: '2026-04-18 04:00', status: 'Success', duration: '42m 18s', next_run: '2026-04-19 04:00', notes: '284 GB · SHA-256 verified · cross-region replicated' },
+  { id: 'MNT-002', name: 'Database Incremental Backup',        schedule: 'Hourly',                       last_run: '2026-04-18 14:00', status: 'Success', duration: '82s',     next_run: '2026-04-18 15:00', notes: 'Last 1h WAL · streamed to S3' },
+  { id: 'MNT-003', name: 'Document Archive → Cold Storage',    schedule: 'Weekly · Sun · 02:00 UTC',    last_run: '2026-04-14 02:00', status: 'Success', duration: '1h 48m',  next_run: '2026-04-20 02:00', notes: 'Moved 1,820 docs >7 years old to Glacier' },
+  { id: 'MNT-004', name: 'Cache Rebuild',                      schedule: 'Weekly · Sun · 03:00 UTC',    last_run: '2026-04-14 03:00', status: 'Success', duration: '24m',     next_run: '2026-04-20 03:00', notes: 'Redis · 4.2M keys refreshed' },
+  { id: 'MNT-005', name: 'Analytics Warehouse Sync',           schedule: 'Daily · 04:00 UTC',            last_run: '2026-04-18 04:00', status: 'Success', duration: '1h 12m',  next_run: '2026-04-19 04:00', notes: 'Snowflake · 84M rows merged' },
+  { id: 'MNT-006', name: 'DR Test — Failover Drill',          schedule: 'Quarterly',                    last_run: '2026-03-15 14:00', status: 'Success', duration: '3h 12m',  next_run: '2026-06-15 14:00', notes: 'RTO 3h 12m (target 4h) · passed · next Q2 drill' },
+  { id: 'MNT-007', name: 'Security Patch Window',              schedule: 'Monthly · 2nd Sun · 01:00',    last_run: '2026-04-13 01:00', status: 'Success', duration: '45m',     next_run: '2026-05-11 01:00', notes: 'OS + app patches · zero-downtime rolling' },
+  { id: 'MNT-008', name: 'Audit Log Archive',                  schedule: 'Monthly · 1st · 05:00 UTC',   last_run: '2026-04-01 05:00', status: 'Success', duration: '2h 18m',  next_run: '2026-05-01 05:00', notes: 'Logs >1 year moved to compliance archive (7-year retention)' },
+  { id: 'MNT-009', name: 'Orphan Record Cleanup',              schedule: 'Monthly · Last Sun · 04:00',  last_run: '2026-03-30 04:00', status: 'Success', duration: '18m',     next_run: '2026-04-27 04:00', notes: '42 orphan records purged · safely · dry-run mode off' },
+  { id: 'MNT-010', name: 'Platform Upgrade Window (v2.14)',    schedule: 'Ad-hoc',                       last_run: '2026-03-22 02:00', status: 'Success', duration: '18m',     next_run: '—',                 notes: 'Zero-downtime blue-green · rollback-ready' }
+];
+
+export const mgaEnvironments = [
+  { env: 'Production',  version: 'v2.14.1',  status: 'Healthy', users_24h: 84, last_deploy: '2026-03-22 02:00', latency_p95: '142ms', uptime_30d: 99.98, alerts_24h: 0 },
+  { env: 'Staging',      version: 'v2.15.0-rc2',status: 'Healthy',users_24h: 12, last_deploy: '2026-04-17 16:20', latency_p95: '160ms', uptime_30d: 99.92, alerts_24h: 0 },
+  { env: 'Sandbox',      version: 'v2.15.0-dev',status: 'Healthy', users_24h: 6,  last_deploy: '2026-04-18 11:22', latency_p95: '180ms', uptime_30d: 99.80, alerts_24h: 0 }
+];
+
+export const mgaConfigChangeLog = [
+  { ts: '2026-04-18 09:58', actor: 'Lisa Park',        category: 'Commission',   key: 'Commercial Auto Rate',           before: '13%',                        after: '14%',                            reason: 'Travelers Amendment #4 · new rate effective 2026-04-17', approval: 'Auto-applied',          severity: 'High' },
+  { ts: '2026-04-17 14:40', actor: 'Marcus Henderson', category: 'Security',     key: 'MFA Enforcement Scope',         before: 'Internal only',              after: 'Internal + external auditors',  reason: 'Compliance · SOC2 2026 control update',                  approval: 'Security Committee',    severity: 'Critical' },
+  { ts: '2026-04-15 10:00', actor: 'Sarah Chen',        category: 'Appetite',     key: 'GL Min Premium',                 before: '$2,500',                      after: '$3,000',                         reason: 'Improve risk mix · decline low-premium GL',             approval: 'UW Committee',          severity: 'Medium' },
+  { ts: '2026-04-10 16:22', actor: 'Priya Shah',         category: 'Retention',    key: 'Claims Doc Retention',           before: '7 years',                     after: '10 years',                       reason: 'NAIC model audit rule update',                            approval: 'Compliance Officer',    severity: 'High' },
+  { ts: '2026-04-05 11:04', actor: 'Marcus Henderson', category: 'Authority',    key: 'Daniel Ortiz Authority Cap',       before: '$200,000',                    after: '$250,000',                       reason: 'Promotion to Large Loss specialist',                      approval: 'Authority Committee',   severity: 'High' },
+  { ts: '2026-03-22 11:30', actor: 'Omar Khalid',        category: 'Billing',      key: 'Commission Pay Schedule',        before: '10th of month',               after: '5th of month',                    reason: 'Agent request + reconciliation now faster',               approval: 'Finance Director',      severity: 'Medium' }
+];
+
+// ─── MGA Policy Management ───
+export const mgaPoliciesKPIs = [
+  { label: 'Policies In Force',      value: '4,946' },
+  { label: 'Written Premium (IF)',   value: '$58.5M' },
+  { label: 'Expiring (30d)',          value: '284', warning: true },
+  { label: 'Retention Rate',         value: '91%' },
+  { label: 'Open Endorsements',      value: '42', warning: true },
+  { label: 'COI Requests (24h)',     value: '18' }
+];
+
+export const mgaPoliciesEnhanced = [
+  { id: 'POL-10445', policy_number: 'TRV-AUTO-2026-11445',  carrier_ref: 'TRV-2026-88421', carrier: 'Travelers',       carrier_id: 'CAR-01', insured: 'Westshore Logistics',           client_id: 'CL-8842', agent_id: 'AGT-2041', agent: 'Lockton Companies',       product: 'FleetSafe Auto',         product_id: 'PRD-AUTO',  lob: 'Commercial Auto',  effective: '2026-01-01', expiry: '2027-01-01', days_to_expiry: 257, status: 'Active',  status_color: 'green',  premium: 48400,   prior_premium: 44200,  commission_pct: 14, commission: 6776,  billing: 'Direct Bill',   installments: 4, paid_pct: 25, states: ['CA','NV','AZ'], coverages: ['Auto Liability $1M','PD $1M','UM/UIM $500k','Medical Pay $10k'], deductible: 1000, open_claims: 1, open_reserves: 12400, loss_ratio: 26, last_endorsement: null, compliance_flags: [],                     exposure: { vehicles: 14, drivers: 18, zip: '95819' } },
+  { id: 'POL-10444', policy_number: 'SEMC-WC-2025-48821',    carrier_ref: 'LIB-WC-88420', carrier: 'SEMC / Liberty',   carrier_id: 'CAR-02', insured: 'Magnolia Construction LLC',      client_id: 'CL-8821', agent_id: 'AGT-2038', agent: 'Lockton Companies',       product: 'WorkForce WC — CA Small', product_id: 'PRD-WC-CA', lob: 'Workers Comp',    effective: '2025-06-01', expiry: '2026-06-01', days_to_expiry: 43,  status: 'Renewing',status_color: 'amber',  premium: 184700,  prior_premium: 168400,  commission_pct: 13, commission: 24011, billing: 'Direct Bill',   installments: 12,paid_pct: 92, states: ['CA','TX','NC'], coverages: ['WC Statutory CA','WC Statutory TX','Employers Liability $1M/$1M/$1M'], deductible: 0,    open_claims: 2, open_reserves: 22720, loss_ratio: 42, last_endorsement: '2026-02-15', compliance_flags: ['Renewal terms due'], exposure: { employees: 142, payroll: 4800000, class_codes: ['5403','5474','8810'] } },
+  { id: 'POL-10443', policy_number: 'CNA-GL-2025-33102',     carrier_ref: 'CNA-33102', carrier: 'CNA',               carrier_id: 'CAR-03', insured: 'Apex Industries',                 client_id: 'CL-3310', agent_id: 'AGT-2038', agent: 'Lockton Companies',       product: 'GuardPoint GL',          product_id: 'PRD-GL',   lob: 'General Liability',effective: '2025-04-01', expiry: '2026-04-01', days_to_expiry: -17, status: 'In Renewal', status_color: 'red',  premium: 52000,   prior_premium: 48000,   commission_pct: 15, commission: 7800,  billing: 'Agency Bill',   installments: 2, paid_pct: 100,states: ['TX','OK','NM','AR'], coverages: ['Each Occurrence $1M','Aggregate $2M','Products/Completed $1M','Medical Exp $5k'], deductible: 5000, open_claims: 2, open_reserves: 510000, loss_ratio: 52, last_endorsement: '2026-02-15', compliance_flags: ['Expired · policy in renewal workflow'], exposure: { locations: 3, employees: 84, sales: 12400000 } },
+  { id: 'POL-10442', policy_number: 'HTF-BOP-2025-90112',    carrier_ref: 'HFD-BOP-11223', carrier: 'Hartford',          carrier_id: 'CAR-04', insured: 'Harbor Foods',                   client_id: 'CL-9011', agent_id: 'AGT-2038', agent: 'Lockton Companies',       product: 'MainStreet BOP',         product_id: 'PRD-BOP',  lob: 'BOP',              effective: '2025-09-01', expiry: '2026-09-01', days_to_expiry: 136, status: 'Active',  status_color: 'green',  premium: 32200,   prior_premium: 30500,    commission_pct: 13, commission: 4186,  billing: 'Direct Bill',   installments: 12,paid_pct: 58, states: ['CA'],             coverages: ['Property $1M BPP','Business Income $500k','GL $1M/$2M','Employee Dishonesty $25k'], deductible: 1000, open_claims: 1, open_reserves: 42000, loss_ratio: 38, last_endorsement: '2025-11-10', compliance_flags: [],                     exposure: { locations: 2, sq_ft: 12400, sales: 8400000 } },
+  { id: 'POL-10441', policy_number: 'CNA-CYB-2026-88102',    carrier_ref: 'CNA-CYB-8821', carrier: 'CNA',              carrier_id: 'CAR-03', insured: 'TechCorp Inc',                   client_id: 'CL-8810', agent_id: 'AGT-2038', agent: 'Lockton Companies',       product: 'SecureEdge Cyber',        product_id: 'PRD-CYB',  lob: 'Cyber',             effective: '2026-01-15', expiry: '2027-01-15', days_to_expiry: 271, status: 'Active',  status_color: 'green',  premium: 248000,  prior_premium: 215000,   commission_pct: 15, commission: 37200, billing: 'Agency Bill',   installments: 2, paid_pct: 50, states: ['CA','NY','TX','WA','IL','MA'], coverages: ['Cyber Liability $5M','Network Security $5M','Privacy Liability $5M','Breach Response $2M','Reg Fines $2M','Cyber Crime $500k'], deductible: 50000, open_claims: 1, open_reserves: 420000, loss_ratio: 48, last_endorsement: null, compliance_flags: ['SIU review in progress'], exposure: { records: 2100000, annual_rev: 84000000, employees: 420 } },
+  { id: 'POL-10440', policy_number: 'CHB-DO-2025-10091',      carrier_ref: 'CHB-DO-10091', carrier: 'Chubb',           carrier_id: 'CAR-05', insured: 'TechCorp Inc',                   client_id: 'CL-8810', agent_id: 'AGT-2039', agent: 'Marsh Agency Inc',         product: 'BoardGuard D&O',         product_id: 'PRD-DO',   lob: 'D&O',               effective: '2025-10-01', expiry: '2026-10-01', days_to_expiry: 166, status: 'Active',  status_color: 'green',  premium: 184000,  prior_premium: 148000,   commission_pct: 18, commission: 33120, billing: 'Agency Bill',   installments: 1, paid_pct: 100,states: ['CA','DE'],     coverages: ['Side A $5M','Side B/C $5M','Employment Practices $2M','Fiduciary $1M'], deductible: 100000, open_claims: 1, open_reserves: 850000, loss_ratio: 46, last_endorsement: null, compliance_flags: ['Class-action litigation'], exposure: { board_seats: 9, officer_count: 14, annual_rev: 84000000 } },
+  { id: 'POL-10439', policy_number: 'TRV-AUTO-2026-11223',    carrier_ref: 'TRV-2026-11223', carrier: 'Travelers',       carrier_id: 'CAR-01', insured: 'Delta Logistics',                 client_id: 'CL-1122', agent_id: 'AGT-2038', agent: 'Lockton Companies',       product: 'FleetSafe Auto',          product_id: 'PRD-AUTO', lob: 'Commercial Auto',   effective: '2026-03-01', expiry: '2027-03-01', days_to_expiry: 316, status: 'Active',  status_color: 'green',  premium: 68400,   prior_premium: 62400,   commission_pct: 14, commission: 9576,  billing: 'Direct Bill',   installments: 12,paid_pct: 17, states: ['CA','OR','WA','NV'], coverages: ['Auto Liability $1M','PD $1M','UM/UIM $1M','Medical Pay $10k'], deductible: 1000, open_claims: 2, open_reserves: 4240, loss_ratio: 8, last_endorsement: '2026-03-28', compliance_flags: [],                     exposure: { vehicles: 22, drivers: 28, zip: '94612' } },
+  { id: 'POL-10438', policy_number: 'CNA-GL-2024-33104',     carrier_ref: 'CNA-33104', carrier: 'CNA',               carrier_id: 'CAR-03', insured: 'Coastal Realty',                 client_id: 'CL-3311', agent_id: 'AGT-2040', agent: 'Apex Insurance Services', product: 'GuardPoint GL',           product_id: 'PRD-GL',   lob: 'General Liability',effective: '2024-05-01', expiry: '2025-05-01', days_to_expiry: -352,status: 'Expired',  status_color: 'gray',  premium: 28400,   prior_premium: 26800,   commission_pct: 15, commission: 4260,  billing: 'Agency Bill',   installments: 2, paid_pct: 100,states: ['FL','GA'],      coverages: ['Each Occurrence $1M','Aggregate $2M'], deductible: 2500, open_claims: 0, open_reserves: 0,   loss_ratio: 100,last_endorsement: null, compliance_flags: ['Did not renew'], exposure: { locations: 4, employees: 18 } },
+  { id: 'POL-10437', policy_number: 'ZUR-PRP-2025-60012',    carrier_ref: 'ZUR-60012', carrier: 'Zurich',            carrier_id: 'CAR-06', insured: 'Peninsula Manufacturing',         client_id: 'CL-6001', agent_id: 'AGT-2035', agent: 'Arthur J. Gallagher',      product: 'PropertyGuard',           product_id: 'PRD-PRP',  lob: 'Property',          effective: '2025-07-01', expiry: '2026-07-01', days_to_expiry: 73,  status: 'Active',  status_color: 'green',  premium: 142000,  prior_premium: 128000,   commission_pct: 12, commission: 17040, billing: 'Direct Bill',   installments: 4, paid_pct: 75, states: ['CA'],            coverages: ['Building $12M','BPP $4M','Business Income $2M','EQ Sublimit $1M','Flood Sublimit $500k'], deductible: 25000, open_claims: 1, open_reserves: 272000, loss_ratio: 58, last_endorsement: null, compliance_flags: ['SIU fraud review'], exposure: { locations: 1, sq_ft: 120000, TIV: 16000000 } },
+  { id: 'POL-10436', policy_number: 'TRV-BOP-2025-12884',    carrier_ref: 'TRV-BOP-12884', carrier: 'Travelers',       carrier_id: 'CAR-01', insured: 'Bright Dental Group',             client_id: 'CL-1288', agent_id: 'AGT-2041', agent: 'Brown & Brown',             product: 'MainStreet BOP',          product_id: 'PRD-BOP',  lob: 'BOP',              effective: '2025-11-01', expiry: '2026-11-01', days_to_expiry: 196, status: 'Active',  status_color: 'green',  premium: 14200,   prior_premium: 13400,    commission_pct: 13, commission: 1846,  billing: 'Direct Bill',   installments: 12,paid_pct: 46, states: ['TX'],            coverages: ['Property $500k BPP','Business Income $300k','GL $1M/$2M','Professional Liability $500k'], deductible: 1000, open_claims: 0, open_reserves: 0,  loss_ratio: 12, last_endorsement: null, compliance_flags: [],                     exposure: { locations: 1, sq_ft: 3200, sales: 1800000 } },
+  { id: 'POL-10435', policy_number: 'LIB-WC-2025-55041',     carrier_ref: 'LIB-WC-55041', carrier: 'SEMC / Liberty',   carrier_id: 'CAR-02', insured: 'Summit Industrial',              client_id: 'CL-5504', agent_id: 'AGT-2035', agent: 'Arthur J. Gallagher',      product: 'WorkForce WC — CA Small', product_id: 'PRD-WC-CA',lob: 'Workers Comp',    effective: '2025-08-01', expiry: '2026-08-01', days_to_expiry: 104, status: 'Active',  status_color: 'green',  premium: 98400,   prior_premium: 88400,    commission_pct: 13, commission: 12792, billing: 'Direct Bill',   installments: 12,paid_pct: 67, states: ['CA','OR'],      coverages: ['WC Statutory CA','WC Statutory OR','Employers Liability $1M'], deductible: 0,    open_claims: 1, open_reserves: 34000, loss_ratio: 34, last_endorsement: null, compliance_flags: [],                     exposure: { employees: 82, payroll: 2800000, class_codes: ['3724','8810'] } },
+  { id: 'POL-10434', policy_number: 'HTF-AUTO-2025-31204',   carrier_ref: 'HFD-AUTO-31204', carrier: 'Hartford',        carrier_id: 'CAR-04', insured: 'Ace Courier Services',            client_id: 'CL-3120', agent_id: 'AGT-2042', agent: 'Hub International',         product: 'FleetSafe Auto',          product_id: 'PRD-AUTO', lob: 'Commercial Auto',   effective: '2025-06-15', expiry: '2026-06-15', days_to_expiry: 57,  status: 'Active',  status_color: 'amber',  premium: 92400,   prior_premium: 84200,   commission_pct: 13, commission: 12012, billing: 'Direct Bill',   installments: 12,paid_pct: 83, states: ['IL','IN','WI','MO'], coverages: ['Auto Liability $1M','PD $1M','UM/UIM $250k'], deductible: 1000, open_claims: 0, open_reserves: 0,  loss_ratio: 22, last_endorsement: '2026-01-20', compliance_flags: [],                     exposure: { vehicles: 18, drivers: 24, zip: '60601' } },
+  { id: 'POL-10433', policy_number: 'CNA-UMB-2025-88040',     carrier_ref: 'CNA-UMB-88040', carrier: 'CNA',              carrier_id: 'CAR-03', insured: 'Ridge Builders',                 client_id: 'CL-8804', agent_id: 'AGT-2038', agent: 'Lockton Companies',       product: 'OverShield Umbrella',     product_id: 'PRD-UMB',  lob: 'Umbrella',          effective: '2025-04-01', expiry: '2026-04-01', days_to_expiry: -17, status: 'In Renewal', status_color: 'red',  premium: 42800,   prior_premium: 38200,   commission_pct: 15, commission: 6420,  billing: 'Agency Bill',   installments: 1, paid_pct: 100,states: ['TX','OK','NM','AR','LA'], coverages: ['Umbrella Liability $10M xs Primary'], deductible: 10000, open_claims: 1, open_reserves: 520000, loss_ratio: 78, last_endorsement: null, compliance_flags: ['Attorney represented'], exposure: { locations: 3, employees: 84, sales: 12400000 } },
+  { id: 'POL-10432', policy_number: 'CHB-CYB-2025-18802',    carrier_ref: 'CHB-CYB-18802', carrier: 'Chubb',           carrier_id: 'CAR-05', insured: 'Apex Cloud Services',             client_id: 'CL-1880', agent_id: 'AGT-2039', agent: 'Marsh Agency Inc',         product: 'SecureEdge Cyber (Enterprise)', product_id: 'PRD-CYB-E', lob: 'Cyber',        effective: '2025-10-15', expiry: '2026-10-15', days_to_expiry: 180, status: 'Active',  status_color: 'green',  premium: 384000,  prior_premium: 340000,   commission_pct: 18, commission: 69120, billing: 'Agency Bill',   installments: 1, paid_pct: 100,states: ['CA','WA','NY','TX','MA'], coverages: ['Cyber Liability $10M','Network Security $10M','Biz Interruption $5M','Regulatory $3M','Social Engineering $500k'], deductible: 100000, open_claims: 0, open_reserves: 0,  loss_ratio: 18, last_endorsement: null, compliance_flags: [],                     exposure: { records: 8200000, annual_rev: 248000000, employees: 1200 } },
+  { id: 'POL-10431', policy_number: 'TRV-AUTO-2025-88420',    carrier_ref: 'TRV-88420', carrier: 'Travelers',           carrier_id: 'CAR-01', insured: 'Desert Rides Transport',           client_id: 'CL-8841', agent_id: 'AGT-2037', agent: 'Risk Strategies',          product: 'FleetSafe Auto',          product_id: 'PRD-AUTO', lob: 'Commercial Auto',   effective: '2025-01-15', expiry: '2026-01-15', days_to_expiry: -93, status: 'Reopened Claim', status_color: 'amber',  premium: 62400,   prior_premium: 58400,    commission_pct: 14, commission: 8736, billing: 'Direct Bill',   installments: 12,paid_pct: 100,states: ['NV','UT','AZ'], coverages: ['Auto Liability $1M','PD $1M','UM/UIM $500k','Medical Pay $5k'], deductible: 1000, open_claims: 1, open_reserves: 34000, loss_ratio: 62, last_endorsement: null, compliance_flags: ['Claim reopened'], exposure: { vehicles: 12, drivers: 16, zip: '89101' } },
+  { id: 'POL-10430', policy_number: 'HTF-BOP-2026-90045',    carrier_ref: 'HFD-90045', carrier: 'Hartford',           carrier_id: 'CAR-04', insured: 'Starlight Cafés LLC',              client_id: 'CL-9004', agent_id: 'AGT-2045', agent: 'AssuredPartners',          product: 'MainStreet BOP',          product_id: 'PRD-BOP',  lob: 'BOP',              effective: '2026-02-01', expiry: '2027-02-01', days_to_expiry: 288, status: 'Active',  status_color: 'green',  premium: 18400,   prior_premium: null,    commission_pct: 13, commission: 2392, billing: 'Direct Bill',   installments: 12,paid_pct: 25, states: ['FL','GA'],        coverages: ['Property $500k','BI $250k','GL $1M/$2M','Liquor Liability $500k','Food Spoilage $25k'], deductible: 1000, open_claims: 0, open_reserves: 0,  loss_ratio: 0,  last_endorsement: null, compliance_flags: ['New Business'], exposure: { locations: 3, sq_ft: 6400, sales: 2400000 } },
+  { id: 'POL-10429', policy_number: 'CNA-GL-2026-33201',     carrier_ref: 'CNA-33201', carrier: 'CNA',               carrier_id: 'CAR-03', insured: 'GreenField Landscaping Co',        client_id: 'CL-3320', agent_id: 'AGT-2043', agent: 'Arthur J. Gallagher',      product: 'GuardPoint GL',           product_id: 'PRD-GL',   lob: 'General Liability',effective: '2026-03-15', expiry: '2027-03-15', days_to_expiry: 330, status: 'Active',  status_color: 'green',  premium: 24800,   prior_premium: null,    commission_pct: 15, commission: 3720, billing: 'Agency Bill',   installments: 2, paid_pct: 50, states: ['CA','NV','OR'],  coverages: ['Each Occurrence $1M','Aggregate $2M','Products $1M','Employees Benefits $1M'], deductible: 2500, open_claims: 0, open_reserves: 0,  loss_ratio: 0,  last_endorsement: null, compliance_flags: ['New Business'], exposure: { locations: 2, employees: 22, sales: 1800000 } },
+  { id: 'POL-10428', policy_number: 'LIB-WC-2026-55088',     carrier_ref: 'LIB-WC-55088', carrier: 'SEMC / Liberty',  carrier_id: 'CAR-02', insured: 'Pacific Marine Services',          client_id: 'CL-5508', agent_id: 'AGT-2038', agent: 'Lockton Companies',       product: 'WorkForce WC — CA Small', product_id: 'PRD-WC-CA',lob: 'Workers Comp',    effective: '2026-04-01', expiry: '2027-04-01', days_to_expiry: 347, status: 'Active',  status_color: 'green',  premium: 64200,   prior_premium: null,    commission_pct: 13, commission: 8346, billing: 'Direct Bill',   installments: 12,paid_pct: 8,  states: ['CA'],          coverages: ['WC Statutory CA','Employers Liability $1M/$1M/$1M','USL&H Endorsement'], deductible: 0,    open_claims: 0, open_reserves: 0,  loss_ratio: 0,  last_endorsement: null, compliance_flags: ['New Business'], exposure: { employees: 48, payroll: 2400000, class_codes: ['7317','8810'] } }
+];
+
+export const mgaPolicyDetailCanonical = {
+  policy_id: 'POL-10445',
+  transactions: [
+    { type: 'Issuance',     effective: '2026-01-01', processed: '2025-12-28 14:22', premium: 48400, change: '+48400', actor: 'Mike Torres',   note: 'New business binding completed · DocuSign envelope #CC-8821' },
+    { type: 'Endorsement',  effective: '2026-02-10', processed: '2026-02-10 11:30', premium: 50200, change: '+1800',  actor: 'Mike Torres',   note: 'Added vehicle #8 · 2024 Ford F-250 · Premium recalculated' },
+    { type: 'Endorsement',  effective: '2026-03-01', processed: '2026-03-01 09:45', premium: 49800, change: '-400',   actor: 'Sarah Chen',    note: 'Removed driver (Driver C) · pro-rata adjustment' }
+  ],
+  servicing_history: [
+    { ts: '2026-04-12 16:42', actor: 'Insured (portal)', event: 'Filed claim CLM-MGA-2026-0248 (rear-end collision)' },
+    { ts: '2026-03-15 10:00', actor: 'Agent Olivia (Lockton)', event: 'Requested COI for Port of Sacramento additional insured' },
+    { ts: '2026-03-01 09:45', actor: 'Sarah Chen',      event: 'Endorsement #3 processed — driver removal' },
+    { ts: '2026-02-10 11:30', actor: 'Mike Torres',     event: 'Endorsement #2 processed — vehicle addition' },
+    { ts: '2026-01-05 14:00', actor: 'System',          event: 'First billing installment $12,100 processed via ACH' },
+    { ts: '2025-12-28 14:22', actor: 'Mike Torres',     event: 'Policy bound and issued · declarations + forms sent to insured' }
+  ],
+  risk_profile: {
+    score: 72, tier: 'Standard',
+    drivers_avg_age: 38, drivers_mvr_clean: 17,
+    fleet_avg_age_yrs: 4.2, garaged_in: 'CA', city: 'Sacramento',
+    loss_ratio_36mo: 28, prior_claims_3yr: 2,
+    moderator_notes: 'Clean loss history · young driver percentage low · GPS tracking + 2024 fleet renewal in progress'
+  }
+};
+
+export const mgaPolicyEndorsements = [
+  { id: 'END-88421', policy_id: 'POL-10445', policy_number: 'TRV-AUTO-2026-11445', insured: 'Westshore Logistics',              type: 'Add Vehicle',              description: 'Add 2026 Ford F-250 · VIN 1FT...9812 · Co. truck #15',                 submitted: '2026-04-17 10:00', submitted_by: 'Olivia Sanchez (Lockton)', status: 'Awaiting UW Review', priority: 'Normal', premium_impact: 3200,  effective: '2026-04-20', docs: 2 },
+  { id: 'END-88420', policy_id: 'POL-10441', policy_number: 'CNA-CYB-2026-88102',   insured: 'TechCorp Inc',                     type: 'Increase Limit',            description: 'Increase Cyber Liability limit $5M → $10M · regulatory notification driver',  submitted: '2026-04-16 14:22', submitted_by: 'Sarah Chen',               status: 'Carrier Referred',   priority: 'High',   premium_impact: 48000, effective: '2026-05-01', docs: 4 },
+  { id: 'END-88419', policy_id: 'POL-10443', policy_number: 'CNA-GL-2025-33102',    insured: 'Apex Industries',                  type: 'Add Location',              description: 'Add El Paso, TX (4th location) · 12,000 sq ft office',                  submitted: '2026-04-15 11:22', submitted_by: 'Mike Torres',              status: 'Ready to Issue',      priority: 'Normal', premium_impact: 4800,  effective: '2026-05-01', docs: 3 },
+  { id: 'END-88418', policy_id: 'POL-10444', policy_number: 'SEMC-WC-2025-48821',   insured: 'Magnolia Construction LLC',         type: 'Class Code Change',         description: 'Update class 5474→5403 · payroll reclass (40% of $1.8M)',              submitted: '2026-04-14 09:40', submitted_by: 'Olivia Sanchez (Lockton)', status: 'Awaiting Insured Signature', priority: 'Normal', premium_impact: 12400, effective: '2026-04-01', docs: 5 },
+  { id: 'END-88417', policy_id: 'POL-10442', policy_number: 'HTF-BOP-2025-90112',   insured: 'Harbor Foods',                     type: 'Additional Insured',        description: 'Add Port of Oakland as Additional Insured on all liability lines',      submitted: '2026-04-12 13:15', submitted_by: 'Olivia Sanchez (Lockton)', status: 'Issued',              priority: 'Normal', premium_impact: 0,     effective: '2026-04-12', docs: 2 },
+  { id: 'END-88416', policy_id: 'POL-10439', policy_number: 'TRV-AUTO-2026-11223',   insured: 'Delta Logistics',                  type: 'Name Change',               description: 'Update Named Insured: Delta Logistics LLC → Delta Logistics Inc (corp change)', submitted: '2026-03-28 14:00', submitted_by: 'Olivia Sanchez (Lockton)', status: 'Issued',              priority: 'Low',    premium_impact: 0,     effective: '2026-03-28', docs: 3 },
+  { id: 'END-88415', policy_id: 'POL-10437', policy_number: 'ZUR-PRP-2025-60012',    insured: 'Peninsula Manufacturing',          type: 'Increase Deductible',        description: 'Increase property deductible $25k → $50k · premium credit',             submitted: '2026-03-20 10:30', submitted_by: 'Mike Torres',              status: 'Issued',              priority: 'Normal', premium_impact: -6200, effective: '2026-04-01', docs: 2 },
+  { id: 'END-88414', policy_id: 'POL-10440', policy_number: 'CHB-DO-2025-10091',     insured: 'TechCorp Inc',                     type: 'Acquisition Notice',         description: 'Add newly acquired subsidiary (SecureDot Inc) to D&O coverage',          submitted: '2026-03-15 15:40', submitted_by: 'Sarah Chen',               status: 'Carrier Referred',    priority: 'High',   premium_impact: 18000, effective: '2026-04-01', docs: 6 }
+];
+
+export const mgaCOIRequests = [
+  { id: 'COI-22104', policy_id: 'POL-10444', policy_number: 'SEMC-WC-2025-48821', insured: 'Magnolia Construction LLC',          certificate_holder: 'Port of Sacramento',              type: 'Additional Insured', requested: '2026-04-17 10:15', requested_by: 'Olivia Sanchez (Lockton)', status: 'Issued',   issued: '2026-04-17 10:18', doc_id: 'DOC-54199', wait_sec: 3 },
+  { id: 'COI-22103', policy_id: 'POL-10445', policy_number: 'TRV-AUTO-2026-11445',insured: 'Westshore Logistics',                  certificate_holder: 'Port of Sacramento',              type: 'Certificate Holder', requested: '2026-04-18 09:40', requested_by: 'Olivia Sanchez (Lockton)', status: 'Issued',   issued: '2026-04-18 09:42', doc_id: 'DOC-54310', wait_sec: 2 },
+  { id: 'COI-22102', policy_id: 'POL-10439', policy_number: 'TRV-AUTO-2026-11223',insured: 'Delta Logistics',                      certificate_holder: 'XYZ Shipping Inc',                  type: 'Additional Insured', requested: '2026-04-17 14:20', requested_by: 'Agent Portal',              status: 'Issued',   issued: '2026-04-17 14:22', doc_id: 'DOC-54305', wait_sec: 2 },
+  { id: 'COI-22101', policy_id: 'POL-10442', policy_number: 'HTF-BOP-2025-90112', insured: 'Harbor Foods',                         certificate_holder: 'Walmart Stores Inc',                type: 'Waiver of Subrogation', requested: '2026-04-17 11:05', requested_by: 'Olivia Sanchez (Lockton)', status: 'Pending UW Review', issued: null, doc_id: null, wait_sec: null, note: 'Waiver of Subro endorsement required · routing to UW' },
+  { id: 'COI-22100', policy_id: 'POL-10441', policy_number: 'CNA-CYB-2026-88102',insured: 'TechCorp Inc',                         certificate_holder: 'Microsoft Corporation',              type: 'Additional Insured', requested: '2026-04-17 09:22', requested_by: 'Agent Portal',              status: 'Issued',   issued: '2026-04-17 09:24', doc_id: 'DOC-54302', wait_sec: 2 },
+  { id: 'COI-22099', policy_id: 'POL-10436', policy_number: 'TRV-BOP-2025-12884',insured: 'Bright Dental Group',                   certificate_holder: 'State of Texas DSHS',               type: 'Certificate Holder', requested: '2026-04-16 16:00', requested_by: 'Agent Portal',              status: 'Issued',   issued: '2026-04-16 16:02', doc_id: 'DOC-54300', wait_sec: 2 },
+  { id: 'COI-22098', policy_id: 'POL-10435', policy_number: 'LIB-WC-2025-55041', insured: 'Summit Industrial',                     certificate_holder: 'General Dynamics',                   type: 'Waiver of Subrogation', requested: '2026-04-16 13:40', requested_by: 'Olivia Sanchez (Lockton)', status: 'Issued',   issued: '2026-04-16 13:48', doc_id: 'DOC-54298', wait_sec: 8 },
+  { id: 'COI-22097', policy_id: 'POL-10434', policy_number: 'HTF-AUTO-2025-31204',insured: 'Ace Courier Services',                certificate_holder: 'United Parcel Service (UPS)',        type: 'Additional Insured', requested: '2026-04-16 09:15', requested_by: 'Agent Portal',              status: 'Issued',   issued: '2026-04-16 09:17', doc_id: 'DOC-54295', wait_sec: 2 }
+];
+
+export const mgaPolicyTasks = [
+  { id: 'TSK-44201', policy_id: 'POL-10444', policy_number: 'SEMC-WC-2025-48821', type: 'Renewal Kickoff',           description: 'Policy expires 2026-06-01 · 43 days away · carrier renewal negotiations active',               priority: 'High',    status: 'In Progress', assigned: 'Sarah Chen',        due: '2026-04-22', created: '2026-04-01' },
+  { id: 'TSK-44200', policy_id: 'POL-10443', policy_number: 'CNA-GL-2025-33102',  type: 'Renewal Processing',        description: 'Policy expired 2026-04-01 · in renewal workflow · quote requested from CNA',                    priority: 'High',    status: 'In Progress', assigned: 'Sarah Chen',        due: '2026-04-20', created: '2026-03-15' },
+  { id: 'TSK-44199', policy_id: 'POL-10434', policy_number: 'HTF-AUTO-2025-31204',type: 'Renewal Kickoff',           description: 'Policy expires 2026-06-15 · prepare renewal packet · loss run + MVR update needed',               priority: 'Medium',  status: 'Open',        assigned: 'Mike Torres',       due: '2026-04-25', created: '2026-04-15' },
+  { id: 'TSK-44198', policy_id: 'POL-10441', policy_number: 'CNA-CYB-2026-88102', type: 'Endorsement Processing',    description: 'END-88420 limit increase to $10M · carrier response expected · follow up if no response by 2026-04-25', priority: 'High',    status: 'Waiting',     assigned: 'Sarah Chen',        due: '2026-04-25', created: '2026-04-16' },
+  { id: 'TSK-44197', policy_id: 'POL-10442', policy_number: 'HTF-BOP-2025-90112', type: 'Claim Follow-up',           description: 'CLM-MGA-2026-0244 reserve approval pending · Harbor Foods · update insured',                     priority: 'Normal',  status: 'Open',        assigned: 'Mike Torres',       due: '2026-04-22', created: '2026-04-18' },
+  { id: 'TSK-44196', policy_id: 'POL-10444', policy_number: 'SEMC-WC-2025-48821', type: 'Premium Audit',              description: 'Annual premium audit · collect 2026 payroll data · class code verification',                     priority: 'Normal',  status: 'Open',        assigned: 'Omar Khalid',       due: '2026-05-15', created: '2026-04-10' },
+  { id: 'TSK-44195', policy_id: 'POL-10437', policy_number: 'ZUR-PRP-2025-60012', type: 'SIU Investigation',           description: 'Peninsula Mfg loss · SIU findings expected · review with claims + compliance',                   priority: 'High',    status: 'In Progress', assigned: 'Priya Shah',        due: '2026-04-25', created: '2026-03-22' },
+  { id: 'TSK-44194', policy_id: 'POL-10445', policy_number: 'TRV-AUTO-2026-11445', type: 'COI Coordination',          description: 'Issue 3 COI pack for Westshore · Port of Sacramento (done), Walmart, UPS',                      priority: 'Normal',  status: 'In Progress', assigned: 'Agent (self-service)', due: '2026-04-20', created: '2026-04-18' },
+  { id: 'TSK-44193', policy_id: 'POL-10433', policy_number: 'CNA-UMB-2025-88040', type: 'Renewal Processing',        description: 'Umbrella expired 2026-04-01 · litigation pending · renewal at risk · carrier review',           priority: 'High',    status: 'In Progress', assigned: 'Lisa Park',         due: '2026-04-30', created: '2026-03-20' },
+  { id: 'TSK-44192', policy_id: 'POL-10431', policy_number: 'TRV-AUTO-2025-88420',type: 'Reopened Claim Handling',   description: 'CLM-0234 reopened · new injury disclosed · update insured and agent',                             priority: 'Normal',  status: 'In Progress', assigned: 'Jane Rodriguez',    due: '2026-04-22', created: '2026-04-08' }
+];
+
+export const mgaPoliciesAnalytics = {
+  inforce_by_lob: [
+    { lob: 'Commercial Auto',  count: 620, premium: 14820000 },
+    { lob: 'Workers Comp',     count: 420, premium: 11640000 },
+    { lob: 'General Liability',count: 980, premium:  9420000 },
+    { lob: 'BOP',               count: 1820,premium:  7820000 },
+    { lob: 'Cyber',             count: 380, premium:  6240000 },
+    { lob: 'Property',          count: 182, premium:  3200000 },
+    { lob: 'Umbrella',          count: 244, premium:  2820000 },
+    { lob: 'D&O',               count: 120, premium:  2540000 }
+  ],
+  retention_trend: [
+    { period: '2025 Q1', renewed: 412, not_renewed: 58, retention: 88 },
+    { period: '2025 Q2', renewed: 428, not_renewed: 52, retention: 89 },
+    { period: '2025 Q3', renewed: 442, not_renewed: 48, retention: 90 },
+    { period: '2025 Q4', renewed: 462, not_renewed: 44, retention: 91 },
+    { period: '2026 Q1', renewed: 504, not_renewed: 48, retention: 91 }
+  ],
+  endorsements_by_type: [
+    { type: 'Add Vehicle',           count: 84 },
+    { type: 'Additional Insured',    count: 128 },
+    { type: 'Add Location',          count: 46 },
+    { type: 'Increase Limit',        count: 32 },
+    { type: 'Name Change',            count: 18 },
+    { type: 'Class Code Change',     count: 14 },
+    { type: 'Waiver of Subrogation', count: 62 }
+  ],
+  cancellation_reasons: [
+    { reason: 'Non-payment',                count: 28, pct: 42 },
+    { reason: 'Moved to competitor',        count: 18, pct: 27 },
+    { reason: 'Business closed',            count: 8,  pct: 12 },
+    { reason: 'Outside appetite (mid-term)',count: 6,  pct: 9  },
+    { reason: 'Voluntary (insured)',        count: 4,  pct: 6  },
+    { reason: 'Underwriter request',        count: 2,  pct: 3  }
+  ]
+};
+
+export const mgaDocRetentionRules = [
+  { category: 'Policy Documents',         retention: '10 years after policy expiry',                reg: 'NAIC Model Audit Rule · CA Insurance Code §10509',  auto_archive: true,  auto_delete: false },
+  { category: 'Claims Documents',         retention: '10 years after claim closure',                reg: 'Fair Claims Practices + state SOL',                  auto_archive: true,  auto_delete: false },
+  { category: 'Submission & Underwriting',retention: '7 years after submission close (bound or declined)', reg: 'SOX + carrier contract',                    auto_archive: true,  auto_delete: false },
+  { category: 'Agent & Compliance',        retention: '7 years after contract termination',         reg: 'IRS + state licensing',                            auto_archive: true,  auto_delete: false },
+  { category: 'Carrier Agreements',       retention: '10 years after contract termination',        reg: 'Carrier contractual requirement',                   auto_archive: true,  auto_delete: false },
+  { category: 'Financial Records',         retention: '7 years from fiscal year end',               reg: 'SOX · IRS · trust account rules',                  auto_archive: true,  auto_delete: false },
+  { category: 'Audit / DOI Correspondence',retention: 'Permanent',                                  reg: 'Audit readiness · regulatory response',             auto_archive: false, auto_delete: false },
+  { category: 'PII / Temporary',            retention: '90 days unless linked',                      reg: 'GDPR-aligned · CCPA',                                auto_archive: false, auto_delete: true  }
 ];
