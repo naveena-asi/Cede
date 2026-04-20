@@ -81,6 +81,10 @@ function render() {
     app.innerHTML = renderCarrierPortal() + (state.modal ? renderModal() : '');
     bindCarrier();
     if (state.modal) bindModal();
+  } else if (state.portal === 'synapi') {
+    app.innerHTML = renderSynapiPortal() + (state.modal ? renderModal() : '');
+    bindSynapi();
+    if (state.modal) bindModal();
   }
 }
 
@@ -178,6 +182,14 @@ function renderLogin() {
           <div class="portal-card-info">
             <h3>CarrierQP — Carrier / Insurer Portal</h3>
             <p>Underwriter workbench · delegated authority · treaties · claims · SERFF</p>
+          </div>
+          <span class="portal-card-arrow">→</span>
+        </div>
+        <div class="portal-card synapi-card" data-portal="synapi" id="portal-synapi">
+          <span class="portal-card-icon">⚡</span>
+          <div class="portal-card-info">
+            <h3>Synapi — Insurance API Platform</h3>
+            <p>ACORD-compliant · unified quoting · webhooks · developer portal · audit</p>
           </div>
           <span class="portal-card-arrow">→</span>
         </div>
@@ -34881,6 +34893,2750 @@ function renderCarrierStub(title, phase) {
     <div style="font-size:3rem; margin-bottom:var(--space-md)">🚧</div>
     <h3>${title}</h3>
     <p class="row-sub" style="max-width:480px; margin:var(--space-sm) auto">Fully-wired screen coming in ${phase}. Scaffolding is in place — this is intentional.</p>
+  </section>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════
+// SYNAPI — Insurance API Platform (6th portal)
+// Electric-violet accent · 4 role toggles · scoped .synapi-theme
+// ════════════════════════════════════════════════════════════════
+function synapiRole() { return state.synapiRole || 'consumer'; }
+
+function synapiRuntime() {
+  if (!window.__synapi) {
+    window.__synapi = {
+      approvedRequests: {},
+      rotatedKeys: {},
+      publishedVersions: {},
+      disabledRoutingRules: {},
+      extraTransactions: [],
+      enabledWebhooks: {},
+      resolvedIncidents: {}
+    };
+  }
+  return window.__synapi;
+}
+
+window.synapiFlash = function(obj) { window.setState({ synapiFlash: obj }); };
+
+function synapiFlashBanner() {
+  const f = state.synapiFlash;
+  if (!f) return '';
+  return `
+  <div class="synapi-flash synapi-flash-${f.kind || 'success'}">
+    <span class="synapi-flash-icon">${f.kind === 'warn' ? '⚠️' : f.kind === 'info' ? 'ℹ️' : '✅'}</span>
+    <div class="synapi-flash-body">
+      <strong>${f.title || 'Done'}</strong>
+      ${f.body ? `<span class="synapi-flash-sub">· ${f.body}</span>` : ''}
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({synapiFlash:null})">✕</button>
+  </div>`;
+}
+
+// Helpers (scoped)
+function synapiKPIs(items, cols = 6) {
+  return `<div class="kpi-grid kpi-grid-${cols}">${items.map(k =>
+    `<div class="kpi-card synapi-kpi">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value${k.warning ? ' warning' : ''}">${k.value}</div>
+    </div>`).join('')}</div>`;
+}
+function synapiBadge(status, color) {
+  return `<span class="badge badge-${color}"><span class="badge-dot badge-dot-${color}"></span>${status}</span>`;
+}
+function synapiStatusColor(s) {
+  const map = {
+    'Production':'green','Sandbox':'blue','GA':'green','Beta':'amber','Deprecated':'grey','Active':'green','Paid':'green','Issued':'blue','Pending':'amber','Under review':'amber','Approved':'green','Investigating':'amber','Resolved':'green',
+    '200':'green','201':'green','400':'red','401':'red','403':'red','404':'red','429':'amber','500':'red','502':'red','503':'red','504':'red',
+    'P1':'red','P2':'amber','P3':'blue','P4':'grey'
+  };
+  return map[s] || 'grey';
+}
+function synapiPageHeader(title, subtitle, actions = '') {
+  return `
+  <div class="page-header synapi-page-header">
+    <div>
+      <h1 class="page-title">${title}</h1>
+      ${subtitle ? `<p class="page-subtitle">${subtitle}</p>` : ''}
+    </div>
+    <div class="page-actions">${actions}</div>
+  </div>`;
+}
+
+// ─── Nav ───
+function synapiNav() {
+  const role = synapiRole();
+  const consumerItems = [
+    { icon: '📊', label: 'Dashboard',         screen: 'sn-c-dashboard' },
+    { icon: '📚', label: 'API Catalog',       screen: 'sn-catalog' },
+    { icon: '🧩', label: 'My Apps',           screen: 'sn-apps' },
+    { icon: '🔑', label: 'Keys & Secrets',    screen: 'sn-keys' },
+    { icon: '🗺', label: 'Routing Rules',     screen: 'sn-routing' },
+    { icon: '📜', label: 'Transaction Log',   screen: 'sn-transactions' },
+    { icon: '📡', label: 'Webhooks (in)',     screen: 'sn-webhooks-in' },
+    { icon: '🧪', label: 'Developer Workbench',screen: 'sn-workbench' },
+    { icon: '📖', label: 'Documentation',     screen: 'sn-docs' },
+    { icon: '💳', label: 'Billing & Usage',   screen: 'sn-billing' }
+  ];
+  const publisherItems = [
+    { icon: '📊', label: 'Dashboard',          screen: 'sn-p-dashboard' },
+    { icon: '🔌', label: 'My APIs',            screen: 'sn-my-apis' },
+    { icon: '🏗', label: 'Endpoint Builder',   screen: 'sn-endpoint-builder' },
+    { icon: '🗂', label: 'Schema Mapper',       screen: 'sn-schema-mapper' },
+    { icon: '🛂', label: 'Access Control',     screen: 'sn-access' },
+    { icon: '📤', label: 'Webhooks (out)',     screen: 'sn-webhooks-out' },
+    { icon: '📈', label: 'Analytics',          screen: 'sn-analytics' },
+    { icon: '🧪', label: 'Sandbox Fixtures',   screen: 'sn-sandbox' },
+    { icon: '📖', label: 'Documentation',      screen: 'sn-pub-docs' },
+    { icon: '📨', label: 'Partner Requests',   screen: 'sn-partner-requests' }
+  ];
+  const adminItems = [
+    { icon: '📊', label: 'Dashboard',           screen: 'sn-a-dashboard' },
+    { icon: '🏢', label: 'Partners',            screen: 'sn-partners' },
+    { icon: '📚', label: 'API Catalog (admin)', screen: 'sn-catalog-admin' },
+    { icon: '🕸', label: 'Connections',         screen: 'sn-connections' },
+    { icon: '🔐', label: 'OAuth Apps',          screen: 'sn-oauth-apps' },
+    { icon: '📐', label: 'ACORD Standards',     screen: 'sn-acord' },
+    { icon: '💰', label: 'Billing & Plans',     screen: 'sn-billing-admin' },
+    { icon: '🩺', label: 'Ops Center',          screen: 'sn-ops' },
+    { icon: '📝', label: 'Release Notes',       screen: 'sn-release' },
+    { icon: '⚙️', label: 'Settings',            screen: 'sn-settings' }
+  ];
+  const complianceItems = [
+    { icon: '📊', label: 'Dashboard',          screen: 'sn-x-dashboard' },
+    { icon: '📜', label: 'Audit Log',          screen: 'sn-audit' },
+    { icon: '🛡', label: 'PII & Data Residency',screen: 'sn-pii' },
+    { icon: '📚', label: 'Policy Library',     screen: 'sn-policy-lib' },
+    { icon: '📈', label: 'Reports',            screen: 'sn-reports' }
+  ];
+  const items = role === 'publisher' ? publisherItems
+             : role === 'admin'     ? adminItems
+             : role === 'compliance'? complianceItems
+             : consumerItems;
+  const cta = role === 'publisher' ? '+ New Endpoint'
+           : role === 'admin'     ? '+ Onboard Partner'
+           : role === 'compliance'? '⬇ Export Audit CSV'
+           : '+ New App';
+  const ctaScreen = role === 'publisher' ? 'sn-endpoint-builder'
+                 : role === 'admin'     ? 'sn-partners'
+                 : role === 'compliance'? 'sn-audit'
+                 : 'sn-app-new';
+  return `
+  <nav class="side-nav synapi-side-nav">
+    <div class="synapi-role-toggle">
+      <button class="sr-btn${role==='consumer'?' active':''}"  data-role="consumer">Consumer</button>
+      <button class="sr-btn${role==='publisher'?' active':''}" data-role="publisher">Publisher</button>
+      <button class="sr-btn${role==='admin'?' active':''}"     data-role="admin">Admin</button>
+      <button class="sr-btn${role==='compliance'?' active':''}" data-role="compliance">Compliance</button>
+    </div>
+    ${items.map(i => `
+      <div class="side-nav-item${state.screen === i.screen ? ' active' : ''}" data-screen="${i.screen}">
+        <span class="side-nav-item-icon">${i.icon}</span>
+        <span>${i.label}</span>
+      </div>`).join('')}
+    <div class="side-nav-cta">
+      <button class="btn btn-primary synapi-cta" style="width:100%" onclick="window.setState({screen:'${ctaScreen}'})">${cta}</button>
+    </div>
+  </nav>`;
+}
+
+// ─── Portal shell ───
+function renderSynapiPortal() {
+  const role = synapiRole();
+  const u = role === 'publisher' ? D.SYNAPI_USERS.publisherCa
+         : role === 'admin'      ? D.SYNAPI_USERS.admin
+         : role === 'compliance' ? D.SYNAPI_USERS.compliance
+         : D.SYNAPI_USERS.consumer;
+
+  const screens = {
+    'dashboard':            renderSynapiConsumerDashboard,
+    // Consumer
+    'sn-c-dashboard':       renderSynapiConsumerDashboard,
+    'sn-catalog':           renderSynapiCatalog,
+    'sn-api-detail':        renderSynapiApiDetail,
+    'sn-apps':              renderSynapiApps,
+    'sn-app':               renderSynapiAppDetail,
+    'sn-app-new':           renderSynapiAppNew,
+    'sn-keys':              renderSynapiKeys,
+    'sn-routing':           renderSynapiRouting,
+    'sn-routing-edit':      renderSynapiRoutingEdit,
+    'sn-transactions':      renderSynapiTransactions,
+    'sn-transaction':       renderSynapiTransactionDetail,
+    'sn-webhooks-in':       renderSynapiWebhooksIn,
+    'sn-workbench':         renderSynapiWorkbench,
+    'sn-docs':              renderSynapiDocs,
+    'sn-billing':           renderSynapiBilling,
+    // Publisher
+    'sn-p-dashboard':       renderSynapiPublisherDashboard,
+    'sn-my-apis':           renderSynapiMyApis,
+    'sn-my-api':            renderSynapiMyApiDetail,
+    'sn-endpoint-builder':  renderSynapiEndpointBuilder,
+    'sn-schema-mapper':     renderSynapiSchemaMapper,
+    'sn-access':            renderSynapiAccess,
+    'sn-webhooks-out':      renderSynapiWebhooksOut,
+    'sn-analytics':         renderSynapiAnalytics,
+    'sn-sandbox':           renderSynapiSandbox,
+    'sn-pub-docs':          renderSynapiPubDocs,
+    'sn-partner-requests':  renderSynapiPartnerRequests,
+    'sn-partner-request':   renderSynapiPartnerRequestDetail,
+    // Admin
+    'sn-a-dashboard':       renderSynapiAdminDashboard,
+    'sn-partners':          renderSynapiPartners,
+    'sn-partner':           renderSynapiPartnerDetail,
+    'sn-partner-onboard':   renderSynapiPartnerOnboard,
+    'sn-catalog-admin':     renderSynapiCatalogAdmin,
+    'sn-connections':       renderSynapiConnections,
+    'sn-oauth-apps':        renderSynapiOAuthApps,
+    'sn-acord':             renderSynapiAcord,
+    'sn-acord-schema':      renderSynapiAcordSchema,
+    'sn-billing-admin':     renderSynapiBillingAdmin,
+    'sn-ops':               renderSynapiOps,
+    'sn-incident':          renderSynapiIncidentDetail,
+    'sn-release':           renderSynapiRelease,
+    'sn-settings':          renderSynapiSettings,
+    // Compliance
+    'sn-x-dashboard':       renderSynapiComplianceDashboard,
+    'sn-audit':             renderSynapiAudit,
+    'sn-pii':               renderSynapiPii,
+    'sn-policy-lib':        renderSynapiPolicyLib,
+    'sn-reports':           renderSynapiReports
+  };
+  const roleDefault = role === 'publisher' ? 'sn-p-dashboard'
+                   : role === 'admin'      ? 'sn-a-dashboard'
+                   : role === 'compliance' ? 'sn-x-dashboard'
+                   : 'sn-c-dashboard';
+  const fn = screens[state.screen] || screens[roleDefault];
+  const content = fn();
+
+  return `
+  <div class="synapi-theme portal-shell">
+    <header class="top-bar synapi-top-bar">
+      <div class="top-bar-brand">
+        <span class="brand-icon">⚡</span>
+        <span>SYNAPI</span>
+        <span class="brand-sub">· ${role==='consumer'?'API Consumer':role==='publisher'?'API Publisher':role==='admin'?'Platform Admin':'Compliance & Audit'}</span>
+      </div>
+      <div class="top-bar-right">
+        <button class="btn btn-ghost btn-sm" id="btn-synapi-search">🔎 Search</button>
+        <button class="btn btn-ghost btn-sm" id="btn-synapi-help">Help</button>
+        <div class="user-chip">
+          <span class="avatar avatar-sm">${u.avatar}</span>
+          <div class="user-chip-info">
+            <div class="user-chip-name">${u.name}</div>
+            <div class="user-chip-role">${u.role} · ${u.company}</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-synapi-logout">Logout</button>
+      </div>
+    </header>
+    ${synapiNav()}
+    <main class="portal-main synapi-main">
+      ${synapiFlashBanner()}
+      ${content}
+    </main>
+  </div>`;
+}
+
+// ─── Bindings ───
+function bindSynapi() {
+  document.querySelectorAll('.sr-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const role = btn.dataset.role;
+      const def = role === 'publisher' ? 'sn-p-dashboard'
+                : role === 'admin'      ? 'sn-a-dashboard'
+                : role === 'compliance' ? 'sn-x-dashboard'
+                : 'sn-c-dashboard';
+      setState({ synapiRole: role, screen: def });
+    });
+  });
+  document.querySelectorAll('.synapi-side-nav .side-nav-item').forEach(item => {
+    item.addEventListener('click', () => setState({ screen: item.dataset.screen }));
+  });
+  const lo = document.getElementById('btn-synapi-logout');
+  if (lo) lo.addEventListener('click', () => setState({ portal: null, screen: 'dashboard', synapiRole: null }));
+  const sr = document.getElementById('btn-synapi-search');
+  if (sr) sr.addEventListener('click', () => window.showModal('Search Synapi',
+    `<div class="k-modal-body">
+       <input type="text" placeholder="Search APIs, partners, transactions, schemas, incidents..." style="width:100%; padding:10px; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:8px; color:var(--text-primary);" autofocus>
+       <div style="margin-top:12px">
+         <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px">Quick links</div>
+         <div style="display:flex; flex-wrap:wrap; gap:6px">
+           <span class="konduit-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'sn-catalog'})">API Catalog</span>
+           <span class="konduit-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'sn-transactions'})">Transactions</span>
+           <span class="konduit-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'sn-audit', synapiRole:'compliance'})">Audit</span>
+           <span class="konduit-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'sn-ops', synapiRole:'admin'})">Ops Center</span>
+         </div>
+       </div>
+     </div>`, 'Search', () => window.synapiFlash({kind:'info', title:'Search ran', body:'Federated results would populate'})));
+  const hp = document.getElementById('btn-synapi-help');
+  if (hp) hp.addEventListener('click', () => window.showModal('Synapi Help',
+    `<div class="k-modal-body">
+       <h4 style="margin-bottom:8px">Roles</h4>
+       <ul style="padding-left:20px; color:var(--text-secondary); line-height:1.7">
+         <li><strong>Consumer:</strong> discover APIs, manage apps, build integrations, monitor transactions.</li>
+         <li><strong>Publisher:</strong> expose APIs, manage access, track analytics, handle partner requests.</li>
+         <li><strong>Admin:</strong> onboard partners, curate catalog, monitor ops, manage platform.</li>
+         <li><strong>Compliance:</strong> audit log, PII tracking, policy library, regulatory reports.</li>
+       </ul>
+       <div style="margin-top:12px; color:var(--text-secondary)">📧 devrel@synapi.io · 📞 +1 (332) 555-SYNP</div>
+     </div>`, 'Close', null));
+}
+
+// ─── Phase 0 stub helper ───
+function renderSynapiStub(title, phase) {
+  return `
+  ${synapiPageHeader(title, `${phase} · under construction`)}
+  <section class="card" style="padding:var(--space-xl); text-align:center">
+    <div style="font-size:3rem; margin-bottom:var(--space-md)">🚧</div>
+    <h3>${title}</h3>
+    <p class="row-sub" style="max-width:480px; margin:var(--space-sm) auto">Fully-wired screen coming in ${phase}. Scaffolding is in place — this is intentional.</p>
+  </section>`;
+}
+
+// ─── Stub dashboards per role (Phase 0 — real versions in Phase 1–4) ───
+function renderSynapiConsumerDashboard() {
+  const k = D.synapiDashboardKPIs.consumer;
+  const tx = D.synapiTransactions.slice(0, 6);
+  return `
+  ${synapiPageHeader('Consumer Dashboard', 'Your integrations, transaction volume, errors, and spend.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-catalog'})">📚 Catalog</button>
+     <button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-workbench'})">🧪 Open Workbench</button>`)}
+  ${synapiKPIs(k)}
+  <div class="synapi-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Recent Transactions</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'sn-transactions'});return false;">View all →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>When</th><th>App</th><th>Endpoint</th><th>Status</th><th>Latency</th></tr></thead>
+          <tbody>
+            ${tx.map(t => `
+              <tr class="row-clickable" onclick="window.setState({screen:'sn-transaction', synapiTxId:'${t.id}'})">
+                <td class="row-sub">${t.ts}</td>
+                <td>${t.app}</td>
+                <td><code>${t.endpoint}</code></td>
+                <td>${synapiBadge(t.status, synapiStatusColor(String(t.status)))}</td>
+                <td>${t.latency_ms} ms</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>Active Apps</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'sn-apps'});return false;">Manage →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>App</th><th>Env</th><th>Calls 30d</th></tr></thead>
+          <tbody>
+            ${D.synapiConsumerApps.filter(a => a.partner === 'Lockton Companies').map(a => `
+              <tr class="row-clickable" onclick="window.setState({screen:'sn-app', synapiAppId:'${a.id}'})">
+                <td><strong>${a.name}</strong></td>
+                <td>${synapiBadge(a.env, a.env==='Production'?'green':'blue')}</td>
+                <td>${a.calls_30d.toLocaleString()}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+function renderSynapiPublisherDashboard() {
+  const k = D.synapiDashboardKPIs.publisher;
+  const myApis = D.synapiApis.filter(a => a.partner === 'Summit Fronting Re');
+  const topConsumers = [
+    { consumer: 'Lockton Companies', calls: 42000, err: '0.3%', revenue: '$128k' },
+    { consumer: 'Marsh & McLennan',  calls: 38000, err: '0.4%', revenue: '$112k' },
+    { consumer: 'Aon plc',            calls: 22000, err: '0.2%', revenue: '$84k' },
+    { consumer: 'BoldPenguin',        calls: 18000, err: '0.6%', revenue: '$64k' }
+  ];
+  return `
+  ${synapiPageHeader('Publisher Dashboard', 'Your published APIs, consumer traffic, and revenue.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-analytics'})">📈 Analytics</button>
+     <button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-endpoint-builder'})">+ New Endpoint</button>`)}
+  ${synapiKPIs(k)}
+  <div class="synapi-split-2">
+    <section class="card">
+      <div class="card-header"><h3>My APIs</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'sn-my-apis'});return false;">All →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>API</th><th>Version</th><th>Calls 30d</th><th>p95</th><th>Errors</th></tr></thead>
+          <tbody>
+            ${myApis.slice(0, 6).map(a => `
+              <tr class="row-clickable" onclick="window.setState({screen:'sn-my-api', synapiApiId:'${a.id}'})">
+                <td><strong>${a.name}</strong></td>
+                <td>${a.version} · ${synapiBadge(a.status, synapiStatusColor(a.status))}</td>
+                <td>${a.calls_30d.toLocaleString()}</td>
+                <td>${a.p95_ms} ms</td>
+                <td>${a.error_30d}%</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>Top Consumers</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Consumer</th><th>Calls 30d</th><th>Errors</th><th>Revenue</th></tr></thead>
+          <tbody>
+            ${topConsumers.map(c => `
+              <tr><td><strong>${c.consumer}</strong></td><td>${c.calls.toLocaleString()}</td><td>${c.err}</td><td>${c.revenue}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+function renderSynapiAdminDashboard() {
+  const k = D.synapiDashboardKPIs.admin;
+  const partners = D.synapiPartners.slice(0, 7);
+  const incidents = D.synapiIncidents.slice(0, 4);
+  return `
+  ${synapiPageHeader('Platform Admin — Dashboard', 'Overall health, partner traffic, incidents, revenue.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-ops'})">🩺 Ops Center</button>
+     <button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-partner-onboard'})">+ Onboard Partner</button>`)}
+  ${synapiKPIs(k)}
+  <div class="synapi-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Top Partners</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'sn-partners'});return false;">All →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Partner</th><th>Type</th><th>Plan</th><th>Calls 30d</th></tr></thead>
+          <tbody>
+            ${partners.map(p => `
+              <tr class="row-clickable" onclick="window.setState({screen:'sn-partner', synapiPartnerId:'${p.id}'})">
+                <td><strong>${p.name}</strong></td>
+                <td>${p.type}</td>
+                <td>${p.plan}</td>
+                <td>${p.calls_30d.toLocaleString()}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>Incidents</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'sn-ops'});return false;">All →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>Started</th><th>Severity</th><th>Scope</th><th>Status</th></tr></thead>
+          <tbody>
+            ${incidents.map(i => `
+              <tr class="row-clickable" onclick="window.setState({screen:'sn-incident', synapiIncidentId:'${i.id}'})">
+                <td><strong>${i.id}</strong></td>
+                <td class="row-sub">${i.started}</td>
+                <td>${synapiBadge(i.severity, synapiStatusColor(i.severity))}</td>
+                <td class="row-sub">${i.scope}</td>
+                <td>${synapiBadge(i.status, synapiStatusColor(i.status))}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+function renderSynapiComplianceDashboard() {
+  const k = D.synapiDashboardKPIs.compliance;
+  const audit = D.synapiAuditLog.slice(0, 8);
+  return `
+  ${synapiPageHeader('Compliance & Audit — Dashboard', 'Audit activity, PII accesses, open findings, regulatory posture.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-reports'})">📈 Reports</button>
+     <button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-audit'})">📜 Audit Log</button>`)}
+  ${synapiKPIs(k)}
+  <section class="card">
+    <div class="card-header"><h3>Recent Audit Events</h3>
+      <a href="#" class="link-subtle" onclick="window.setState({screen:'sn-audit'});return false;">Full log →</a>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th><th>PII</th><th>IP</th></tr></thead>
+        <tbody>
+          ${audit.map(a => `
+            <tr>
+              <td class="row-sub">${a.ts}</td>
+              <td>${a.actor}</td>
+              <td><strong>${a.action}</strong></td>
+              <td>${a.target}</td>
+              <td>${a.pii_accessed ? synapiBadge('PII','amber') : synapiBadge('No PII','grey')}</td>
+              <td class="row-sub">${a.ip}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+// ─── Phase 1 — Consumer screens ───
+
+function renderSynapiCatalog() {
+  const filter = state.synapiCatLob || 'All';
+  const typeFilter = state.synapiCatType || 'All';
+  let apis = D.synapiApis;
+  if (filter !== 'All') apis = apis.filter(a => a.lob === filter || a.lob === 'All' || a.lob === 'All LOBs · Claims' || a.lob === 'All LOBs · Policy');
+  if (typeFilter !== 'All') apis = apis.filter(a => {
+    const p = D.synapiPartners.find(x => x.id === a.partnerId);
+    return p && p.type === typeFilter;
+  });
+
+  return `
+  ${synapiPageHeader('API Catalog', `Discover ${D.synapiApis.length} APIs across ${D.synapiPartners.filter(p=>['Carrier','MGA','Reinsurer'].includes(p.type)).length} publishers · all ACORD-compliant.`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-workbench'})">🧪 Try in Workbench</button>`)}
+
+  <section class="card">
+    <div class="card-header"><h3>Filter</h3></div>
+    <div style="display:flex; flex-wrap:wrap; gap:var(--space-md); padding:var(--space-md)">
+      <label style="display:flex; flex-direction:column; gap:4px; font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em">LOB
+        <select onchange="window.setState({synapiCatLob:this.value})">
+          ${['All'].concat(D.SYNAPI_LOBS).map(l => `<option ${l===filter?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </label>
+      <label style="display:flex; flex-direction:column; gap:4px; font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em">Publisher Type
+        <select onchange="window.setState({synapiCatType:this.value})">
+          ${['All','Carrier','MGA','Reinsurer'].map(t => `<option ${t===typeFilter?'selected':''}>${t}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>APIs · ${apis.length} results</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>API</th><th>Publisher</th><th>LOB</th><th>Version</th><th>Status</th><th>Rate Limit</th><th>p95</th><th>Schema</th><th></th></tr></thead>
+        <tbody>
+          ${apis.map(a => `
+            <tr class="row-clickable" onclick="window.setState({screen:'sn-api-detail', synapiApiId:'${a.id}'})">
+              <td><strong>${a.name}</strong><div class="row-sub"><code>${a.endpoint}</code></div></td>
+              <td>${a.partner}</td>
+              <td>${a.lob}</td>
+              <td>${a.version}</td>
+              <td>${synapiBadge(a.status, synapiStatusColor(a.status))}</td>
+              <td class="row-sub">${a.rate_limit}</td>
+              <td class="row-sub">${a.p95_ms} ms</td>
+              <td class="row-sub">${a.acord_schema}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'sn-api-detail', synapiApiId:'${a.id}'})">Open →</button></td>
+            </tr>`).join('') || `<tr><td colspan="9" class="row-sub">No APIs match this filter.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiApiDetail() {
+  const id = state.synapiApiId || 'API-001';
+  const a = D.synapiApis.find(x => x.id === id) || D.synapiApis[0];
+  const sampleReq = `{
+  "namedInsured": "Kroger Real Estate",
+  "effectiveDate": "2026-06-01",
+  "lineOfBusiness": "CommercialProperty",
+  "location": {
+    "addressLine1": "1201 Industrial Blvd",
+    "city": "Cincinnati",
+    "state": "OH",
+    "zip": "45202"
+  },
+  "coverages": [
+    { "coverageCode": "BLDG", "limit": 25000000, "deductible": 10000 },
+    { "coverageCode": "BPP",  "limit": 5000000,  "deductible": 10000 }
+  ],
+  "exposures": { "tiv": 42000000, "construction": "ClassA", "protectionClass": 5 }
+}`;
+  const sampleResp = `{
+  "quoteId": "Q-2026-88421",
+  "premium": { "total": 523300, "currency": "USD" },
+  "terms": { "expiresAt": "2026-05-20T23:59:59Z" },
+  "coverages": [
+    { "coverageCode": "BLDG", "premium": 412800 },
+    { "coverageCode": "BPP",  "premium": 110500 }
+  ],
+  "conditions": ["Wind mitigation survey required prior to bind"]
+}`;
+  return `
+  ${synapiPageHeader(a.name, `${a.partner} · ${a.version} · ${a.acord_schema}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-catalog'})">← Catalog</button>
+     <button class="btn btn-ghost" onclick="window.konduitDownloadFile(a.id+'-openapi.yaml', 'openapi: 3.1.0\\ninfo:\\n  title: '+a.name+'\\n  version: '+a.version+'\\npaths:\\n  '+a.endpoint.split(' ')[1]+':\\n    '+a.endpoint.split(' ')[0].toLowerCase()+':\\n      summary: '+a.name, 'application/x-yaml')">⬇ OpenAPI</button>
+     <button class="btn btn-ghost" onclick="window.konduitDownloadFile(a.id+'-postman.json', JSON.stringify({info:{name:a.name},item:[{name:a.name,request:{method:a.method,header:[],url:a.endpoint}}]}, null, 2), 'application/json')">⬇ Postman</button>
+     <button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-workbench', synapiApiId:'${a.id}'})">🧪 Try in Workbench</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Status',       value: synapiBadge(a.status, synapiStatusColor(a.status)) },
+    { label: 'Auth',         value: a.auth },
+    { label: 'Rate Limit',   value: a.rate_limit },
+    { label: 'p95 Latency',  value: a.p95_ms + ' ms' },
+    { label: 'Error 30d',    value: a.error_30d + '%' },
+    { label: 'Calls 30d',    value: a.calls_30d.toLocaleString() }
+  ])}
+
+  <section class="card">
+    <div class="card-header"><h3>Endpoint</h3></div>
+    <div style="padding:var(--space-md)">
+      <div style="display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-md)">
+        <span class="badge badge-green" style="padding:4px 10px; font-size:0.82rem">${a.method}</span>
+        <code style="font-size:0.95rem; padding:6px 12px">${a.endpoint.split(' ').slice(1).join(' ')}</code>
+      </div>
+      <p class="row-sub" style="line-height:1.7">Authenticated via ${a.auth}. Returns ACORD NGDS ${a.acord_schema} response. Rate limit ${a.rate_limit}. See Developer Workbench to try live.</p>
+    </div>
+  </section>
+
+  <div class="synapi-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Sample Request</h3></div>
+      <pre style="padding:var(--space-md); margin:0; background:#0a0a14; font-family:'Courier New', monospace; font-size:0.78rem; color:#cfd0dc; white-space:pre-wrap; max-height:340px; overflow-y:auto; line-height:1.5">${sampleReq}</pre>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>Sample Response</h3></div>
+      <pre style="padding:var(--space-md); margin:0; background:#0a0a14; font-family:'Courier New', monospace; font-size:0.78rem; color:#cfd0dc; white-space:pre-wrap; max-height:340px; overflow-y:auto; line-height:1.5">${sampleResp}</pre>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Error Codes</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Code</th><th>Meaning</th><th>Retry?</th></tr></thead>
+        <tbody>
+          <tr><td><code>400</code></td><td>Bad request · schema validation failed</td><td>No — fix payload</td></tr>
+          <tr><td><code>401</code></td><td>Missing or invalid OAuth token</td><td>Refresh token and retry</td></tr>
+          <tr><td><code>403</code></td><td>Scope does not include required permission</td><td>Request scope expansion</td></tr>
+          <tr><td><code>404</code></td><td>Resource not found</td><td>No</td></tr>
+          <tr><td><code>429</code></td><td>Rate limited</td><td>Yes · respect Retry-After</td></tr>
+          <tr><td><code>500–504</code></td><td>Upstream carrier error</td><td>Yes · with exponential backoff</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiApps() {
+  const partner = 'Lockton Companies';
+  const apps = D.synapiConsumerApps.filter(a => a.partner === partner);
+  return `
+  ${synapiPageHeader('My Apps', 'OAuth applications registered to your organization.',
+    `<button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-app-new'})">+ New App</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>App</th><th>Environment</th><th>Scopes</th><th>Calls 30d</th><th>Keys</th><th>Created</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${apps.map(a => `
+            <tr class="row-clickable" onclick="window.setState({screen:'sn-app', synapiAppId:'${a.id}'})">
+              <td><strong>${a.name}</strong></td>
+              <td>${synapiBadge(a.env, a.env==='Production'?'green':'blue')}</td>
+              <td class="row-sub">${a.scopes.slice(0,3).join(', ')}${a.scopes.length>3?' +'+(a.scopes.length-3):''}</td>
+              <td>${a.calls_30d.toLocaleString()}</td>
+              <td>${a.keys}</td>
+              <td class="row-sub">${a.created}</td>
+              <td>${synapiBadge(a.status, 'green')}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'sn-app', synapiAppId:'${a.id}'})">Open →</button></td>
+            </tr>`).join('') || `<tr><td colspan="8" class="row-sub">No apps registered yet.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiAppDetail() {
+  const id = state.synapiAppId || 'APP-001';
+  const a = D.synapiConsumerApps.find(x => x.id === id) || D.synapiConsumerApps[0];
+  return `
+  ${synapiPageHeader(a.name, `${a.env} · ${a.partner}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-apps'})">← Apps</button>
+     <button class="btn btn-secondary" onclick="window.setState({screen:'sn-keys', synapiAppId:'${a.id}'})">🔑 Manage Keys</button>
+     <button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-workbench', synapiAppId:'${a.id}'})">🧪 Try</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Environment',  value: synapiBadge(a.env, a.env==='Production'?'green':'blue') },
+    { label: 'Calls 30d',    value: a.calls_30d.toLocaleString() },
+    { label: 'Active Keys',  value: a.keys.toString() },
+    { label: 'Status',       value: synapiBadge(a.status, 'green') }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Scopes</h3></div>
+    <div style="padding:var(--space-md); display:flex; flex-wrap:wrap; gap:6px">
+      ${a.scopes.map(s => `<span class="quality-pill">${s}</span>`).join('')}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>OAuth Config</h3></div>
+    <div style="padding:var(--space-md); font-family:'Courier New', monospace; font-size:0.82rem; line-height:1.7; color:var(--text-secondary)">
+      <div><strong>Client ID:</strong> synapi_cl_${a.id.toLowerCase()}_${Math.random().toString(36).slice(2,10)}</div>
+      <div><strong>Authorization URL:</strong> https://auth.synapi.io/oauth2/authorize</div>
+      <div><strong>Token URL:</strong> https://auth.synapi.io/oauth2/token</div>
+      <div><strong>Redirect URIs:</strong> https://ams.${a.partner.toLowerCase().replace(/\s+/g,'')}.com/oauth/callback</div>
+      <div><strong>Token TTL:</strong> 3600s · Refresh 30d</div>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiAppNew() {
+  return `
+  ${synapiPageHeader('New App', 'Register an OAuth application to access Synapi APIs.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-apps'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:760px">
+    <div class="form-grid">
+      <label>App Name<input type="text" placeholder="e.g. Lockton-AppliedEpic-Prod"></label>
+      <label>Environment<select><option selected>Sandbox</option><option>Production</option></select></label>
+      <label>App Type<select><option>Agency (broker)</option><option>InsurTech</option><option>Embedded partner</option><option>Comparative rater</option></select></label>
+      <label>Owner Email<input type="text" placeholder="dev@yourorg.com"></label>
+      <label class="form-wide">Redirect URI(s)<input type="text" placeholder="https://your-app.com/oauth/callback"></label>
+      <label class="form-wide">Description<textarea rows="3" placeholder="How will this app use Synapi APIs?"></textarea></label>
+    </div>
+    <div style="margin-top:var(--space-md)">
+      <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-secondary); font-weight:600; margin-bottom:var(--space-sm)">Scopes</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px">
+        ${['quote:read','bind:write','endorsement:write','claim:write','docs:read','webhook:subscribe','bordereau:read'].map(s =>
+          `<label style="display:flex; gap:6px; align-items:center; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:999px; cursor:pointer"><input type="checkbox" ${['quote:read','docs:read'].includes(s)?'checked':''}> ${s}</label>`).join('')}
+      </div>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'sn-apps'})">Cancel</button>
+      <button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-apps', synapiFlash:{title:'App created',body:'Sandbox keys generated · visit Keys & Secrets'}})">Create App</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiKeys() {
+  const apps = D.synapiConsumerApps.filter(a => a.partner === 'Lockton Companies');
+  const sampleKey = (env, id) => env === 'Production'
+    ? `synapi_live_${id.toLowerCase()}_6a8c94f••••••••••••2e1b`
+    : `synapi_test_${id.toLowerCase()}_3f7b21d••••••••••••9c4a`;
+
+  return `
+  ${synapiPageHeader('Keys & Secrets', 'Manage OAuth client secrets per app. Rotate regularly · never commit to source.',
+    `<button class="btn btn-primary synapi-cta" onclick="window.showModal('Generate New Key','<div class=k-modal-body><p>Choose which app to generate a new secret for. The secret will be shown once — store it securely.</p><div class=form-grid><label>App<select><option>Lockton-AppliedEpic-Prod</option><option>Lockton-Sandbox</option></select></label><label>Key name<input type=text placeholder=e.g. Rotation-2026-04></label></div></div>','Generate',()=>window.showModal('Your New Secret','<div class=k-modal-body><div style=\\'font-size:0.78rem;color:var(--text-muted);margin-bottom:6px\\'>Shown once — copy now.</div><div style=\\'background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:8px;padding:10px;font-family:monospace;font-size:0.85rem;color:#d8b4fe;word-break:break-all\\'>synapi_live_new_9f3b72e8a1c4d5f7b6e2914a8c3d2f1e</div><button class=\\'btn btn-secondary synapi-cta-outline\\' style=\\'margin-top:10px\\' onclick=\\'navigator.clipboard&&navigator.clipboard.writeText(\"synapi_live_new_9f3b72e8a1c4d5f7b6e2914a8c3d2f1e\");window.synapiFlash({kind:\"info\",title:\"Secret copied to clipboard\"})\\'>📋 Copy</button></div>','Done',null))">+ Generate Key</button>`)}
+
+  ${apps.map(app => `
+    <section class="card">
+      <div class="card-header">
+        <h3>${app.name}</h3>
+        <span>${synapiBadge(app.env, app.env==='Production'?'green':'blue')}</span>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Key ID</th><th>Preview</th><th>Created</th><th>Last used</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>K-${app.id.replace('APP-','')}-01</strong></td>
+              <td><code>${sampleKey(app.env, app.id)}</code></td>
+              <td class="row-sub">${app.created}</td>
+              <td class="row-sub">Just now</td>
+              <td>${synapiBadge('Active','green')}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard&&navigator.clipboard.writeText('${sampleKey(app.env, app.id)}');window.synapiFlash({kind:'info',title:'Key copied'})">📋 Copy</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.showModal('Rotate Key?','<div class=k-modal-body>A new secret will be issued. The old one stays valid for 24h grace. Update your app before grace expires.</div>','Rotate',()=>window.synapiFlash({title:'Key rotated',body:'New secret issued · old key valid for 24h'}))">🔄 Rotate</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.showModal('Revoke Key?','<div class=k-modal-body>This action is immediate and irreversible. Calls using this key will fail with 401.</div>','Revoke',()=>window.synapiFlash({kind:'warn',title:'Key revoked'}))">🚫 Revoke</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>`).join('')}
+  `;
+}
+
+function renderSynapiRouting() {
+  const rt = synapiRuntime();
+  const rules = D.synapiRoutingRules.map(r => rt.disabledRoutingRules[r.id] ? {...r, enabled:false} : r);
+  return `
+  ${synapiPageHeader('Routing Rules', 'Visual rules that fan out unified requests to matching carriers · supports fan-out, fallbacks, and timeouts.',
+    `<button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-routing-edit'})">+ New Rule</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Total Rules',     value: rules.length.toString() },
+    { label: 'Enabled',         value: rules.filter(r=>r.enabled).length.toString() },
+    { label: 'Last triggered',  value: '14:22 today' },
+    { label: 'Rules w/ fan-out',value: rules.filter(r=>r.strategy.includes('fan-out')).length.toString() }
+  ], 4)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Rule</th><th>LOB</th><th>State(s)</th><th>Premium Range</th><th>Carriers</th><th>Strategy</th><th>Timeout</th><th>Enabled</th><th></th></tr></thead>
+        <tbody>
+          ${rules.map(r => `
+            <tr>
+              <td><strong>${r.name}</strong><div class="row-sub">${r.id} · ${r.app}</div></td>
+              <td>${r.lob}</td>
+              <td>${r.state_in.join(', ')}</td>
+              <td class="row-sub">$${(r.premium_min/1000000).toFixed(2)}M – $${(r.premium_max/1000000).toFixed(1)}M</td>
+              <td class="row-sub">${r.carriers.join(', ')}</td>
+              <td>${r.strategy}</td>
+              <td class="row-sub">${r.timeout_ms} ms</td>
+              <td>${synapiBadge(r.enabled?'Active':'Disabled', r.enabled?'green':'grey')}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'sn-routing-edit', synapiRuleId:'${r.id}'})">Edit</button>
+                <button class="btn btn-ghost btn-sm" onclick="(function(){var rt=synapiRuntime();if(rt.disabledRoutingRules['${r.id}']){delete rt.disabledRoutingRules['${r.id}'];}else{rt.disabledRoutingRules['${r.id}']=true;}window.synapiFlash({title:'${r.id} toggled'});})()">${r.enabled?'Disable':'Enable'}</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiRoutingEdit() {
+  const id = state.synapiRuleId;
+  const r = id ? D.synapiRoutingRules.find(x => x.id === id) : null;
+  return `
+  ${synapiPageHeader(r ? `Edit ${r.name}` : 'New Routing Rule', 'When a unified /quote request matches these criteria, fan out to the listed carriers.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-routing'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg)">
+    <div class="form-grid">
+      <label class="form-wide">Rule Name<input type="text" value="${r?r.name:''}" placeholder="e.g. Commercial Property · US · $10M+"></label>
+      <label>LOB<select>${D.SYNAPI_LOBS.map(l => `<option ${r&&r.lob===l?'selected':''}>${l}</option>`).join('')}</select></label>
+      <label>States (comma-separated or "Any")<input type="text" value="${r?r.state_in.join(', '):'Any'}"></label>
+      <label>Premium Min<input type="text" value="${r?'$'+r.premium_min.toLocaleString():'$0'}"></label>
+      <label>Premium Max<input type="text" value="${r?'$'+r.premium_max.toLocaleString():'$0'}"></label>
+      <label>Strategy<select>
+        <option ${r&&r.strategy.includes('Parallel fan-out · return best 3')?'selected':''}>Parallel fan-out · return best 3</option>
+        <option ${r&&r.strategy.includes('Parallel fan-out · return all')?'selected':''}>Parallel fan-out · return all</option>
+        <option ${r&&r.strategy.includes('Parallel fan-out · return top 3 by price')?'selected':''}>Parallel fan-out · return top 3 by price</option>
+        <option ${r&&r.strategy.includes('Sequential')?'selected':''}>Sequential · first success</option>
+        <option ${r&&r.strategy.includes('Single carrier')?'selected':''}>Single carrier</option>
+      </select></label>
+      <label>Timeout (ms)<input type="text" value="${r?r.timeout_ms:'4000'}"></label>
+      <label>Fallback<select>
+        <option ${r&&r.fallback==='Manual review queue'?'selected':''}>Manual review queue</option>
+        <option ${r&&r.fallback==='Decline'?'selected':''}>Decline</option>
+        <option>Retry once</option>
+      </select></label>
+      <label class="form-wide">Carrier Fan-out Order
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; padding:10px; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:8px; min-height:42px; text-transform:none; letter-spacing:0; font-size:0.82rem">
+          ${(r?r.carriers:['Summit Fronting Re','Meridian Specialty']).map(c => `<span class="quality-pill" style="cursor:grab">≡ ${c}</span>`).join('')}
+          <button class="btn btn-ghost btn-sm" onclick="window.synapiFlash({kind:'info',title:'Carrier picker opened'})">+ Add Carrier</button>
+        </div>
+      </label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'sn-routing'})">Cancel</button>
+      <button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-routing', synapiFlash:{title:r?'Rule updated':'Rule created', body:'Takes effect immediately · test with /quote in Workbench'}})">${r?'Save Changes':'Create Rule'}</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiTransactions() {
+  const filter = state.synapiTxFilter || 'All';
+  let tx = D.synapiTransactions;
+  if (filter === 'Errors') tx = tx.filter(t => t.status >= 400);
+  if (filter === 'Webhooks') tx = tx.filter(t => t.endpoint.startsWith('webhook'));
+  if (filter === 'Quote') tx = tx.filter(t => t.endpoint.includes('quote'));
+  if (filter === 'Bind') tx = tx.filter(t => t.endpoint.includes('bind'));
+
+  return `
+  ${synapiPageHeader('Transaction Log', 'Every API call your apps made · click any row for full request/response inspection.',
+    `<button class="btn btn-ghost" onclick="window.konduitDownloadFile('synapi-transactions-'+new Date().toISOString().slice(0,10)+'.csv', 'id,ts,app,method,endpoint,target,status,latency_ms,bytes,error\\n' + D.synapiTransactions.map(t=>[t.id,t.ts,t.app,t.method,t.endpoint,t.target,t.status,t.latency_ms,t.bytes,t.error||''].join(',')).join('\\n'), 'text/csv')">⬇ Export CSV</button>`)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Transactions · ${tx.length}</h3>
+      <label class="konduit-inline-select">Filter:
+        <select onchange="window.setState({synapiTxFilter:this.value})">
+          ${['All','Quote','Bind','Webhooks','Errors'].map(v => `<option ${v===filter?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>ID</th><th>When</th><th>App</th><th>Method</th><th>Endpoint</th><th>Target</th><th>Status</th><th>Latency</th><th>Bytes</th><th></th></tr></thead>
+        <tbody>
+          ${tx.map(t => `
+            <tr class="row-clickable" onclick="window.setState({screen:'sn-transaction', synapiTxId:'${t.id}'})">
+              <td><strong>${t.id}</strong></td>
+              <td class="row-sub">${t.ts}</td>
+              <td>${t.app}</td>
+              <td>${t.method}</td>
+              <td><code>${t.endpoint}</code></td>
+              <td class="row-sub">${t.target}</td>
+              <td>${synapiBadge(t.status, synapiStatusColor(String(t.status)))}</td>
+              <td>${t.latency_ms} ms</td>
+              <td class="row-sub">${(t.bytes/1024).toFixed(1)} KB</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'sn-transaction', synapiTxId:'${t.id}'})">Inspect →</button></td>
+            </tr>`).join('') || `<tr><td colspan="10" class="row-sub">No transactions match.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiTransactionDetail() {
+  const id = state.synapiTxId || 'TX-889142';
+  const t = D.synapiTransactions.find(x => x.id === id) || D.synapiTransactions[0];
+  const format = state.synapiTxFormat || 'json';
+  const jsonReq = `{
+  "namedInsured": "Kroger Real Estate",
+  "effectiveDate": "2026-06-01",
+  "lineOfBusiness": "CommercialProperty",
+  "location": { "addressLine1": "1201 Industrial Blvd", "city": "Cincinnati", "state": "OH", "zip": "45202" },
+  "coverages": [ { "coverageCode": "BLDG", "limit": 25000000, "deductible": 10000 } ],
+  "exposures": { "tiv": 42000000, "construction": "ClassA", "protectionClass": 5 }
+}`;
+  const xmlReq = `<?xml version="1.0"?>
+<ACORD xmlns="http://www.ACORD.org/standards/PC_Surety/ACORD1/xml/">
+  <InsuranceSvcRq>
+    <CommlPolicyQuoteInqRq>
+      <InsuredOrPrincipal>
+        <GeneralPartyInfo>
+          <NameInfo>
+            <CommlName>
+              <CommercialName>Kroger Real Estate</CommercialName>
+            </CommlName>
+          </NameInfo>
+        </GeneralPartyInfo>
+      </InsuredOrPrincipal>
+      <CommlPolicy>
+        <ContractTerm>
+          <EffectiveDt>2026-06-01</EffectiveDt>
+        </ContractTerm>
+      </CommlPolicy>
+    </CommlPolicyQuoteInqRq>
+  </InsuranceSvcRq>
+</ACORD>`;
+  const jsonResp = t.status === 200 || t.status === 201 ? `{
+  "quoteId": "Q-2026-88421",
+  "premium": { "total": 523300, "currency": "USD" },
+  "coverages": [ { "coverageCode": "BLDG", "premium": 412800 } ],
+  "acord_compliance": "NGDS-CP-v1.2"
+}` : `{
+  "error": "${t.error || 'Internal error'}",
+  "code": ${t.status},
+  "correlationId": "${t.id}"
+}`;
+
+  return `
+  ${synapiPageHeader(`Transaction ${t.id}`, `${t.method} ${t.endpoint} · ${t.ts}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-transactions'})">← Log</button>
+     <button class="btn btn-ghost" onclick="window.konduitDownloadFile(t.id+'.json', JSON.stringify(t, null, 2), 'application/json')">⬇ Raw JSON</button>
+     <button class="btn btn-ghost" onclick="(function(){var curl=\`curl -X ${t.method} \\'https://api.synapi.io${t.endpoint}\\' -H \\'Authorization: Bearer \\$SYNAPI_TOKEN\\' -H \\'Content-Type: application/json\\' -d @request.json\`;navigator.clipboard&&navigator.clipboard.writeText(curl);window.synapiFlash({kind:'info',title:'cURL copied to clipboard'});})()">📋 Copy as cURL</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Status',      value: synapiBadge(t.status, synapiStatusColor(String(t.status))) },
+    { label: 'Latency',     value: t.latency_ms + ' ms' },
+    { label: 'Bytes',       value: (t.bytes/1024).toFixed(1) + ' KB' },
+    { label: 'App',         value: t.app },
+    { label: 'Target',      value: t.target },
+    { label: 'Error',       value: t.error || '—' }
+  ])}
+
+  ${t.scenario && t.scenario !== '—' ? `<section class="card" style="padding:var(--space-md); background:var(--s-accent-soft); border:1px solid var(--s-border-accent)">
+    <strong>Scenario:</strong> ${t.scenario}
+  </section>` : ''}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Payload</h3>
+      <div style="display:flex; gap:4px">
+        <button class="btn ${format==='json'?'btn-primary synapi-cta':'btn-ghost'} btn-sm" onclick="window.setState({synapiTxFormat:'json'})">NGDS JSON</button>
+        <button class="btn ${format==='xml'?'btn-primary synapi-cta':'btn-ghost'} btn-sm" onclick="window.setState({synapiTxFormat:'xml'})">AL3 XML</button>
+      </div>
+    </div>
+    <div class="synapi-split-2" style="margin-bottom:0; gap:0">
+      <div style="border-right:1px solid var(--border-subtle)">
+        <div style="padding:10px 14px; background:rgba(124,58,237,0.05); font-size:0.72rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.06em">Request</div>
+        <pre style="padding:var(--space-md); margin:0; background:#0a0a14; font-family:'Courier New', monospace; font-size:0.78rem; color:#cfd0dc; white-space:pre-wrap; max-height:380px; overflow-y:auto; line-height:1.5">${format==='xml'?xmlReq:jsonReq}</pre>
+      </div>
+      <div>
+        <div style="padding:10px 14px; background:rgba(124,58,237,0.05); font-size:0.72rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.06em">Response</div>
+        <pre style="padding:var(--space-md); margin:0; background:#0a0a14; font-family:'Courier New', monospace; font-size:0.78rem; color:#cfd0dc; white-space:pre-wrap; max-height:380px; overflow-y:auto; line-height:1.5">${jsonResp}</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Request Headers</h3></div>
+    <pre style="padding:var(--space-md); margin:0; background:#0a0a14; font-family:'Courier New', monospace; font-size:0.78rem; color:#cfd0dc; line-height:1.5">Authorization: Bearer synapi_live_6••••2e1b
+Content-Type: application/json
+X-Synapi-App: ${t.app}
+X-Correlation-Id: ${t.id}
+X-Synapi-Schema: NGDS-CP-v1.2
+User-Agent: AppliedEpic/2026.04 SynapiSDK/1.4.2</pre>
+  </section>
+  `;
+}
+
+function renderSynapiWebhooksIn() {
+  const webhooks = D.synapiWebhooks.filter(w => ['Marsh-Vertafore-Prod','Aon-Global-Hub','Lockton-AppliedEpic-Prod','BP-Aggregator-Prod'].includes(w.app));
+  return `
+  ${synapiPageHeader('Webhooks (Incoming Subscriptions)', 'Events you subscribe to · Synapi pushes them to your URL with HMAC signing + retry.',
+    `<button class="btn btn-primary synapi-cta" onclick="window.showModal('New Webhook Subscription','<div class=k-modal-body><div class=form-grid><label>App<select><option>Lockton-AppliedEpic-Prod</option><option>Lockton-Sandbox</option></select></label><label>Event<select><option>policy.bound</option><option>endorsement.approved</option><option>claim.fnol</option><option>quote.ready</option><option>policy.cancelled</option></select></label><label class=form-wide>Delivery URL<input type=text placeholder=https://your-app.com/webhooks/synapi></label></div></div>','Subscribe',()=>window.synapiFlash({title:'Webhook subscription created',body:'Test event sent · check delivery log'}))">+ New Subscription</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Active subscriptions', value: webhooks.length.toString() },
+    { label: 'Avg success 24h',      value: '99.7%' },
+    { label: 'In retry queue',       value: '3' },
+    { label: 'Dead-letter queue',    value: '0' }
+  ], 4)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>ID</th><th>App</th><th>Event</th><th>Delivery URL</th><th>Last Delivery</th><th>Success Rate</th><th>Retries</th><th></th></tr></thead>
+        <tbody>
+          ${webhooks.map(w => `
+            <tr>
+              <td><strong>${w.id}</strong></td>
+              <td>${w.app}</td>
+              <td><code>${w.event}</code></td>
+              <td class="row-sub"><code style="font-size:0.72rem">${w.url}</code></td>
+              <td class="row-sub">${w.last_delivery}</td>
+              <td>${w.success_rate}</td>
+              <td>${w.retries}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.synapiFlash({kind:'info',title:'Test event dispatched',body:'Check your endpoint logs for delivery in ~200ms'})">📤 Send Test</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.showModal('Delivery Log','<div class=k-modal-body><table class=data-table><thead><tr><th>When</th><th>Status</th><th>Retries</th></tr></thead><tbody><tr><td>'+w.last_delivery+'</td><td>200 OK</td><td>0</td></tr><tr><td>2026-04-20 13:58:14</td><td>200 OK</td><td>0</td></tr><tr><td>2026-04-20 12:14:02</td><td>502 Bad Gateway</td><td>2 (recovered)</td></tr></tbody></table></div>','Close',null)">📜 Log</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>HMAC Verification (example)</h3></div>
+    <pre style="padding:var(--space-md); margin:0; background:#0a0a14; font-family:'Courier New', monospace; font-size:0.78rem; color:#cfd0dc; line-height:1.5">// Verify the X-Synapi-Signature header on every webhook call
+const expectedSig = crypto
+  .createHmac('sha256', process.env.SYNAPI_WEBHOOK_SECRET)
+  .update(rawBody)
+  .digest('hex');
+
+if (req.headers['x-synapi-signature'] !== expectedSig) {
+  return res.status(401).send('Invalid signature');
+}</pre>
+  </section>
+  `;
+}
+
+function renderSynapiWorkbench() {
+  const apiId = state.synapiApiId || 'API-001';
+  const a = D.synapiApis.find(x => x.id === apiId) || D.synapiApis[0];
+  const scenario = state.synapiScenario || 'success';
+  const scenarios = {
+    success: { status: 200, latency: '680 ms', body: `{
+  "quoteId": "Q-2026-88421",
+  "premium": { "total": 523300, "currency": "USD" },
+  "coverages": [
+    { "coverageCode": "BLDG", "premium": 412800 },
+    { "coverageCode": "BPP", "premium": 110500 }
+  ],
+  "terms": { "expiresAt": "2026-05-20T23:59:59Z" }
+}` },
+    validation: { status: 400, latency: '32 ms', body: `{
+  "error": "validation_failed",
+  "details": [
+    { "field": "location.zip", "message": "ZIP code 00000 is not valid" },
+    { "field": "coverages[0].limit", "message": "Limit exceeds authority ($50M max)" }
+  ]
+}` },
+    ratelimit: { status: 429, latency: '18 ms', body: `{
+  "error": "rate_limit_exceeded",
+  "retryAfterSeconds": 42
+}` },
+    timeout: { status: 504, latency: '4000 ms', body: `{
+  "error": "upstream_timeout",
+  "correlationId": "tx-889139"
+}` }
+  };
+  const sc = scenarios[scenario];
+
+  return `
+  ${synapiPageHeader('Developer Workbench', 'Interactive sandbox · build a request, send it, inspect the mocked response.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-catalog'})">← Catalog</button>
+     <button class="btn btn-ghost" onclick="(function(){var curl=\`curl -X POST \\'https://api.synapi.io${a.endpoint.split(' ')[1]}\\' -H \\'Authorization: Bearer \\$SYNAPI_TOKEN\\' -H \\'Content-Type: application/json\\' -d @body.json\`;navigator.clipboard&&navigator.clipboard.writeText(curl);window.synapiFlash({kind:'info',title:'cURL copied'});})()">📋 Copy cURL</button>`)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Endpoint</h3>
+      <label class="konduit-inline-select">API:
+        <select onchange="window.setState({synapiApiId:this.value})">
+          ${D.synapiApis.map(x => `<option value="${x.id}" ${x.id===a.id?'selected':''}>${x.name} (${x.partner})</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div style="padding:var(--space-md); display:flex; align-items:center; gap:var(--space-sm)">
+      <span class="badge badge-green" style="padding:4px 10px; font-size:0.82rem">${a.method}</span>
+      <code style="font-size:0.95rem; padding:6px 12px">${a.endpoint.split(' ').slice(1).join(' ')}</code>
+      <div style="flex:1"></div>
+      <span class="row-sub">Env: <strong style="color:var(--text-primary)">Sandbox</strong></span>
+    </div>
+  </section>
+
+  <div class="synapi-split-2">
+    <section class="card">
+      <div class="card-header">
+        <h3>Request</h3>
+        <div style="display:flex; gap:4px">
+          <button class="btn ${scenario==='success'?'btn-primary synapi-cta':'btn-ghost'} btn-sm" onclick="window.setState({synapiScenario:'success'})">Success</button>
+          <button class="btn ${scenario==='validation'?'btn-primary synapi-cta':'btn-ghost'} btn-sm" onclick="window.setState({synapiScenario:'validation'})">Validation</button>
+          <button class="btn ${scenario==='ratelimit'?'btn-primary synapi-cta':'btn-ghost'} btn-sm" onclick="window.setState({synapiScenario:'ratelimit'})">429</button>
+          <button class="btn ${scenario==='timeout'?'btn-primary synapi-cta':'btn-ghost'} btn-sm" onclick="window.setState({synapiScenario:'timeout'})">Timeout</button>
+        </div>
+      </div>
+      <textarea style="width:100%; min-height:320px; padding:var(--space-md); border:none; background:#0a0a14; font-family:'Courier New', monospace; font-size:0.78rem; color:#cfd0dc; line-height:1.5; resize:vertical">{
+  "namedInsured": "Kroger Real Estate",
+  "effectiveDate": "2026-06-01",
+  "lineOfBusiness": "CommercialProperty",
+  "location": {
+    "addressLine1": "1201 Industrial Blvd",
+    "city": "Cincinnati",
+    "state": "OH",
+    "zip": "45202"
+  },
+  "coverages": [
+    { "coverageCode": "BLDG", "limit": 25000000, "deductible": 10000 },
+    { "coverageCode": "BPP",  "limit": 5000000,  "deductible": 10000 }
+  ],
+  "exposures": { "tiv": 42000000, "construction": "ClassA", "protectionClass": 5 }
+}</textarea>
+      <div style="padding:var(--space-md); border-top:1px solid var(--border-subtle); display:flex; justify-content:flex-end">
+        <button class="btn btn-primary synapi-cta" onclick="window.synapiFlash({title:'Request sent',body:'Response rendered below · logged to Transaction Log'})">▶ Send Request</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h3>Response</h3>
+        <div style="display:flex; gap:8px; align-items:center">
+          ${synapiBadge(sc.status, synapiStatusColor(String(sc.status)))}
+          <span class="row-sub">${sc.latency}</span>
+        </div>
+      </div>
+      <pre style="padding:var(--space-md); margin:0; min-height:320px; background:#0a0a14; font-family:'Courier New', monospace; font-size:0.78rem; color:#cfd0dc; line-height:1.5; white-space:pre-wrap; overflow-y:auto">${sc.body}</pre>
+      <div style="padding:var(--space-md); border-top:1px solid var(--border-subtle); display:flex; gap:8px; justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="window.konduitDownloadFile('response.json', \`${sc.body.replace(/\`/g, '\\\`')}\`, 'application/json')">⬇ Download JSON</button>
+        <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard&&navigator.clipboard.writeText(\`${sc.body.replace(/\`/g, '\\\`')}\`);window.synapiFlash({kind:'info',title:'Response copied'})">📋 Copy</button>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Generated Code (Node.js)</h3></div>
+    <pre style="padding:var(--space-md); margin:0; background:#0a0a14; font-family:'Courier New', monospace; font-size:0.78rem; color:#cfd0dc; line-height:1.5">import { Synapi } from '@synapi/sdk';
+
+const client = new Synapi({ token: process.env.SYNAPI_TOKEN });
+
+const quote = await client.quotes.commercialProperty({
+  namedInsured: 'Kroger Real Estate',
+  effectiveDate: '2026-06-01',
+  location: { state: 'OH', zip: '45202' },
+  coverages: [{ coverageCode: 'BLDG', limit: 25000000 }],
+  exposures: { tiv: 42000000 }
+});
+
+console.log(quote.premium.total); // 523300</pre>
+  </section>
+  `;
+}
+
+function renderSynapiDocs() {
+  return `
+  ${synapiPageHeader('Documentation', 'Guides, references, and SDKs for every API on Synapi.')}
+
+  <div class="synapi-split-3">
+    ${[
+      { title: 'Getting Started', desc: 'OAuth flow, first API call, sandbox', icon: '🚀', screen: 'sn-workbench' },
+      { title: 'API Reference',   desc: 'Every endpoint with examples',         icon: '📖', screen: 'sn-catalog' },
+      { title: 'ACORD Schemas',   desc: 'NGDS JSON + AL3 XML specs',             icon: '📐', screen: 'sn-catalog' },
+      { title: 'Webhooks',         desc: 'Event types, HMAC, retry semantics',  icon: '📡', screen: 'sn-webhooks-in' },
+      { title: 'Routing Rules',   desc: 'Fan-out, fallbacks, timeouts',          icon: '🗺', screen: 'sn-routing' },
+      { title: 'Error Codes',     desc: 'Complete error taxonomy',                icon: '⚠️', screen: 'sn-docs' },
+      { title: 'Rate Limits',     desc: 'Per-tier caps, burst, backoff',         icon: '🚦', screen: 'sn-docs' },
+      { title: 'SDKs',             desc: 'Node, Python, Java, .NET, Ruby',       icon: '📦', screen: 'sn-docs' }
+    ].map(d => `
+      <section class="card" style="padding:var(--space-lg); cursor:pointer" onclick="window.setState({screen:'${d.screen}'})">
+        <div style="font-size:2rem; margin-bottom:var(--space-sm)">${d.icon}</div>
+        <h3 style="margin-bottom:4px">${d.title}</h3>
+        <p class="row-sub">${d.desc}</p>
+      </section>`).join('')}
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>SDK Downloads</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Language</th><th>Version</th><th>Install</th><th></th></tr></thead>
+        <tbody>
+          ${[
+            { lang: 'Node.js', ver: '1.4.2', cmd: 'npm install @synapi/sdk',    ext: 'tgz' },
+            { lang: 'Python',  ver: '1.3.8', cmd: 'pip install synapi-sdk',     ext: 'whl' },
+            { lang: 'Java',    ver: '1.2.0', cmd: 'implementation "io.synapi:sdk:1.2.0"', ext: 'jar' },
+            { lang: '.NET',    ver: '1.1.4', cmd: 'dotnet add package Synapi.Sdk --version 1.1.4', ext: 'nupkg' },
+            { lang: 'Ruby',    ver: '1.0.9', cmd: 'gem install synapi',          ext: 'gem' },
+            { lang: 'Go',      ver: '0.8.2 (beta)', cmd: 'go get github.com/synapi/go-sdk', ext: 'zip' }
+          ].map(s => `
+            <tr>
+              <td><strong>${s.lang}</strong></td>
+              <td>${s.ver}</td>
+              <td><code>${s.cmd}</code></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.konduitDownloadFile('synapi-sdk-'+'${s.lang.toLowerCase()}'+'-${s.ver}.${s.ext}.txt', 'Synapi SDK stub — see install command for real package.', 'text/plain')">⬇ Stub</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiBilling() {
+  const myPlan = D.synapiBillingPlans.find(p => p.name === 'Scale');
+  const invoices = D.synapiInvoices.filter(i => i.partner === 'Lockton Companies').concat([
+    { id: 'INV-2026-03-LOCK', partner: 'Lockton Companies', period: 'Mar 2026', calls: '1,280,000', amount: '$9,680.00', status: 'Paid' },
+    { id: 'INV-2026-02-LOCK', partner: 'Lockton Companies', period: 'Feb 2026', calls: '1,180,000', amount: '$9,080.00', status: 'Paid' },
+    { id: 'INV-2026-01-LOCK', partner: 'Lockton Companies', period: 'Jan 2026', calls: '1,020,000', amount: '$8,120.00', status: 'Paid' }
+  ]);
+
+  return `
+  ${synapiPageHeader('Billing & Usage', 'Current tier, invoices, consumption, budget alerts.',
+    `<button class="btn btn-ghost" onclick="window.synapiFlash({kind:'info', title:'Payment method modal would open'})">💳 Payment Method</button>
+     <button class="btn btn-primary synapi-cta" onclick="window.synapiFlash({title:'Plan change scheduled',body:'Upgrade effective next cycle · prorated charge applied'})">⬆ Upgrade Plan</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Current plan',      value: myPlan.name },
+    { label: 'Included calls',    value: myPlan.included_calls },
+    { label: 'MTD calls',         value: '1,420,000' },
+    { label: 'Overage MTD',       value: '0 calls' },
+    { label: 'MTD spend',         value: '$10,250' },
+    { label: 'SLA attainment',    value: '99.96%' }
+  ])}
+
+  <div class="synapi-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Consumption by Partner</h3></div>
+      <div style="padding:var(--space-md)">
+        ${[
+          { partner: 'Summit Fronting Re', calls: 420000, pct: 30 },
+          { partner: 'Meridian Specialty', calls: 380000, pct: 27 },
+          { partner: 'Pacific Paper Group',calls: 240000, pct: 17 },
+          { partner: 'Harbor Program',     calls: 180000, pct: 13 },
+          { partner: 'Nordic Global Re',   calls: 120000, pct: 8 },
+          { partner: 'Others',             calls: 80000,  pct: 5 }
+        ].map(p => `
+          <div style="display:grid; grid-template-columns:180px 1fr 100px; gap:var(--space-md); align-items:center; margin-bottom:8px">
+            <div style="color:var(--text-secondary); font-size:0.85rem">${p.partner}</div>
+            <div style="height:20px; background:var(--bg-card); border-radius:4px; overflow:hidden"><div style="height:100%; background:linear-gradient(90deg, var(--s-accent), #a78bfa); width:${p.pct*3}%"></div></div>
+            <div style="text-align:right; font-weight:600">${p.calls.toLocaleString()}</div>
+          </div>`).join('')}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Budget Alerts</h3></div>
+      <div style="padding:var(--space-md); display:flex; flex-direction:column; gap:var(--space-sm)">
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>Notify at 75% of monthly budget</span><input type="checkbox" checked></label>
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>Notify at 100% of monthly budget</span><input type="checkbox" checked></label>
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>Auto-upgrade on sustained overage</span><input type="checkbox"></label>
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>Weekly spend digest</span><input type="checkbox" checked></label>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Invoice History</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Invoice</th><th>Period</th><th>Calls</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${invoices.map(i => `
+            <tr>
+              <td><strong>${i.id}</strong></td>
+              <td>${i.period}</td>
+              <td>${i.calls}</td>
+              <td>${i.amount}</td>
+              <td>${synapiBadge(i.status, synapiStatusColor(i.status))}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewInvoice('${i.id}', '${i.period.split(' ')[1]}-${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(i.period.split(' ')[0])+1}-01', '${i.period}', '${i.amount}')">View</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+// ─── Phase 2 — Publisher screens ───
+
+function renderSynapiMyApis() {
+  const myApis = D.synapiApis.filter(a => a.partner === 'Summit Fronting Re');
+  return `
+  ${synapiPageHeader('My APIs', 'APIs you publish · versioning, status, traffic, error rate.',
+    `<button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-endpoint-builder'})">+ New Endpoint</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Total APIs',        value: myApis.length.toString() },
+    { label: 'GA',                value: myApis.filter(a=>a.status==='GA').length.toString() },
+    { label: 'Beta',              value: myApis.filter(a=>a.status==='Beta').length.toString() },
+    { label: 'Deprecated',        value: myApis.filter(a=>a.status==='Deprecated').length.toString() },
+    { label: 'Calls 30d',         value: myApis.reduce((s,a)=>s+a.calls_30d,0).toLocaleString() },
+    { label: 'Avg p95',           value: Math.round(myApis.reduce((s,a)=>s+a.p95_ms,0)/myApis.length) + ' ms' }
+  ])}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>API</th><th>Endpoint</th><th>Version</th><th>Status</th><th>LOB</th><th>Rate Limit</th><th>Calls 30d</th><th>p95</th><th>Errors</th><th></th></tr></thead>
+        <tbody>
+          ${myApis.map(a => `
+            <tr class="row-clickable" onclick="window.setState({screen:'sn-my-api', synapiApiId:'${a.id}'})">
+              <td><strong>${a.name}</strong></td>
+              <td><code>${a.endpoint.split(' ')[1]}</code></td>
+              <td>${a.version}</td>
+              <td>${synapiBadge(a.status, synapiStatusColor(a.status))}</td>
+              <td>${a.lob}</td>
+              <td class="row-sub">${a.rate_limit}</td>
+              <td>${a.calls_30d.toLocaleString()}</td>
+              <td>${a.p95_ms} ms</td>
+              <td>${a.error_30d}%</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'sn-my-api', synapiApiId:'${a.id}'})">Manage →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiMyApiDetail() {
+  const id = state.synapiApiId || 'API-001';
+  const a = D.synapiApis.find(x => x.id === id) || D.synapiApis[0];
+  return `
+  ${synapiPageHeader(a.name, `${a.endpoint} · ${a.version}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-my-apis'})">← My APIs</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'sn-endpoint-builder', synapiApiId:'${a.id}'})">✏️ Edit</button>
+     ${a.status === 'GA' ? `<button class="btn btn-secondary" onclick="window.showModal('Deprecate ${a.name}?','<div class=k-modal-body><p>Publish a 90-day sunset notice. Consumers will see a deprecation badge and migration guidance.</p></div>','Deprecate',()=>window.synapiFlash({kind:'warn',title:'${a.id} scheduled for sunset',body:'Sunset date: 2026-07-${new Date().getDate().toString().padStart(2,'0')} · consumers notified'}))">⚠️ Deprecate</button>` : ''}
+     <button class="btn btn-primary synapi-cta" onclick="window.synapiFlash({title:'New draft started',body:'v1.3 draft opened in Endpoint Builder'});window.setState({screen:'sn-endpoint-builder', synapiApiId:'${a.id}'})">+ New Version</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Status',       value: synapiBadge(a.status, synapiStatusColor(a.status)) },
+    { label: 'Version',      value: a.version },
+    { label: 'Calls 30d',    value: a.calls_30d.toLocaleString() },
+    { label: 'p95',          value: a.p95_ms + ' ms' },
+    { label: 'Error rate',   value: a.error_30d + '%' },
+    { label: 'Rate limit',   value: a.rate_limit }
+  ])}
+
+  <div class="synapi-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Version History</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Version</th><th>Status</th><th>Published</th><th>Calls 30d</th></tr></thead>
+          <tbody>
+            <tr><td><strong>${a.version}</strong></td><td>${synapiBadge(a.status, synapiStatusColor(a.status))}</td><td>2025-11-01</td><td>${a.calls_30d.toLocaleString()}</td></tr>
+            ${a.version === 'v2' ? `<tr><td>v1</td><td>${synapiBadge('Deprecated','grey')}</td><td>2024-09-15</td><td>2,400</td></tr>` : ''}
+            <tr><td>v1.3 draft</td><td>${synapiBadge('Draft','blue')}</td><td>2026-04-20</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>ACORD Schema Mapping</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'sn-schema-mapper', synapiApiId:'${a.id}'});return false;">Edit →</a>
+      </div>
+      <div style="padding:var(--space-md); font-family:'Courier New', monospace; font-size:0.82rem; line-height:1.7; color:var(--text-secondary)">
+        <div><strong>Canonical schema:</strong> ${a.acord_schema}</div>
+        <div><strong>Format:</strong> ${a.acord_schema.startsWith('NGDS')?'JSON (NGDS)':'XML (AL3)'}</div>
+        <div><strong>Internal fields mapped:</strong> 48</div>
+        <div><strong>Custom extensions:</strong> 3</div>
+        <div><strong>Last validated:</strong> 2026-04-19</div>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+function renderSynapiEndpointBuilder() {
+  const step = state.synapiBuilderStep || 1;
+  const stepLabels = ['Basics','Request Schema','Response Schema','ACORD Mapping','Rate Limits','Sandbox Fixtures','Docs & Examples','Publish'];
+  const body = step === 1 ? `
+    <div class="form-grid">
+      <label>Endpoint Name<input type="text" placeholder="e.g. Commercial Property Quote"></label>
+      <label>Path<input type="text" placeholder="/v1/carriers/summit/quote/commercial-property"></label>
+      <label>Method<select><option>GET</option><option selected>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option></select></label>
+      <label>Version<input type="text" placeholder="v1"></label>
+      <label>LOB<select>${D.SYNAPI_LOBS.map(l => `<option>${l}</option>`).join('')}</select></label>
+      <label>Authentication<select><option>OAuth 2.0</option><option>OAuth 2.0 + mTLS</option><option>API Key</option></select></label>
+      <label class="form-wide">Description<textarea rows="3" placeholder="What this endpoint does · who should call it"></textarea></label>
+    </div>`
+  : step === 2 ? `
+    <div style="padding:var(--space-sm) 0 var(--space-md); color:var(--text-secondary)">Upload an OpenAPI 3.1 request schema or author it inline.</div>
+    <textarea style="width:100%; min-height:280px; padding:var(--space-md); border:1px solid var(--border-subtle); background:#0a0a14; font-family:'Courier New', monospace; font-size:0.78rem; color:#cfd0dc; line-height:1.5; border-radius:8px">{
+  "type": "object",
+  "required": ["namedInsured", "effectiveDate", "lineOfBusiness", "location"],
+  "properties": {
+    "namedInsured": { "type": "string" },
+    "effectiveDate": { "type": "string", "format": "date" },
+    "lineOfBusiness": { "type": "string", "enum": ["CommercialProperty"] },
+    "location": { "$ref": "#/definitions/Location" },
+    "coverages": { "type": "array", "items": { "$ref": "#/definitions/Coverage" } },
+    "exposures": { "$ref": "#/definitions/PropertyExposure" }
+  }
+}</textarea>`
+  : step === 3 ? `
+    <textarea style="width:100%; min-height:280px; padding:var(--space-md); border:1px solid var(--border-subtle); background:#0a0a14; font-family:'Courier New', monospace; font-size:0.78rem; color:#cfd0dc; line-height:1.5; border-radius:8px">{
+  "type": "object",
+  "required": ["quoteId", "premium", "terms"],
+  "properties": {
+    "quoteId": { "type": "string", "pattern": "^Q-[0-9]{4}-[0-9]+$" },
+    "premium": { "type": "object", "properties": { "total": { "type": "number" }, "currency": { "type": "string" } } },
+    "terms": { "type": "object", "properties": { "expiresAt": { "type": "string", "format": "date-time" } } },
+    "coverages": { "type": "array", "items": { "$ref": "#/definitions/CoveragePremium" } },
+    "conditions": { "type": "array", "items": { "type": "string" } }
+  }
+}</textarea>`
+  : step === 4 ? `
+    <div style="padding:var(--space-sm) 0 var(--space-md); color:var(--text-secondary)">Map your internal PAS fields to ACORD canonical fields.</div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>ACORD Field</th><th>Direction</th><th>Your Internal Field</th><th>Transform</th></tr></thead>
+        <tbody>
+          <tr><td><code>namedInsured</code></td><td>→</td><td><code>policy.insured_name</code></td><td class="row-sub">Direct</td></tr>
+          <tr><td><code>effectiveDate</code></td><td>→</td><td><code>policy.eff_date</code></td><td class="row-sub">ISO 8601</td></tr>
+          <tr><td><code>location.addressLine1</code></td><td>→</td><td><code>property.addr_1</code></td><td class="row-sub">Direct</td></tr>
+          <tr><td><code>coverages[].coverageCode</code></td><td>↔</td><td><code>cov.code</code></td><td class="row-sub">Lookup: BLDG→B1, BPP→B2</td></tr>
+          <tr><td><code>exposures.tiv</code></td><td>↔</td><td><code>property.total_tiv_usd</code></td><td class="row-sub">Currency normalized USD</td></tr>
+          <tr><td><code>premium.total</code></td><td>←</td><td><code>quote.total_premium</code></td><td class="row-sub">Direct</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="row-sub" style="margin-top:var(--space-md)">Schema: NGDS-CP-v1.2 · 6 fields mapped · 0 unmapped required fields</p>`
+  : step === 5 ? `
+    <div class="form-grid">
+      <label>Default Rate Limit<input type="text" placeholder="100 rpm"></label>
+      <label>Burst Limit<input type="text" placeholder="300 requests / 10s"></label>
+      <label>Per-app override<select><option>Allow per-consumer override</option><option>Strict · no override</option></select></label>
+      <label>Timeout (ms)<input type="text" placeholder="4000"></label>
+      <label>Quota (monthly)<input type="text" placeholder="100,000 included / month"></label>
+      <label>Overage Policy<select><option>Soft cap · alert</option><option>Hard cap · 429</option></select></label>
+    </div>`
+  : step === 6 ? `
+    <div style="padding:var(--space-sm) 0 var(--space-md); color:var(--text-secondary)">Canned scenarios consumers can select in the sandbox.</div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Scenario</th><th>Response</th><th>Latency</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Success · standard risk</strong></td><td>200 with quote</td><td>680 ms</td><td>${synapiBadge('Active','green')}</td></tr>
+          <tr><td><strong>Validation failure</strong></td><td>400 with field errors</td><td>32 ms</td><td>${synapiBadge('Active','green')}</td></tr>
+          <tr><td><strong>Rate limited</strong></td><td>429 with Retry-After</td><td>18 ms</td><td>${synapiBadge('Active','green')}</td></tr>
+          <tr><td><strong>Upstream timeout</strong></td><td>504</td><td>4000 ms</td><td>${synapiBadge('Active','green')}</td></tr>
+          <tr><td><strong>Partial coverage decline</strong></td><td>200 with conditions</td><td>840 ms</td><td>${synapiBadge('Draft','amber')}</td></tr>
+        </tbody>
+      </table>
+    </div>`
+  : step === 7 ? `
+    <div class="form-grid">
+      <label class="form-wide">Short Description<textarea rows="3" placeholder="One-paragraph summary for catalog listing"></textarea></label>
+      <label class="form-wide">Full Documentation (Markdown)<textarea rows="6" placeholder="# Endpoint Name\n\n## Overview\n..."></textarea></label>
+      <label class="form-wide">Code Sample (Node.js)<textarea rows="5" placeholder="const quote = await client.quotes..."></textarea></label>
+      <label>Tags<input type="text" placeholder="commercial-property, quote, real-time"></label>
+      <label>Visibility<select><option>Public catalog</option><option>Partners only</option><option>Allow-list only</option></select></label>
+    </div>`
+  : `
+    <section class="card" style="padding:var(--space-md); background:var(--s-accent-soft); border:1px solid var(--s-border-accent); margin:0">
+      <h4 style="color:var(--s-accent); margin-bottom:var(--space-sm)">Ready to publish</h4>
+      <ul style="padding-left:20px; color:var(--text-secondary); line-height:1.7">
+        <li>Request/response schemas validated · 0 errors</li>
+        <li>ACORD mapping complete · 48 fields mapped</li>
+        <li>4 sandbox scenarios available</li>
+        <li>Rate limits + quotas configured</li>
+        <li>Docs ready for catalog</li>
+      </ul>
+    </section>
+    <div class="form-grid" style="margin-top:var(--space-md)">
+      <label>Publish Target<select><option>Sandbox</option><option>Sandbox + Production</option></select></label>
+      <label>Announcement<select><option>Changelog entry + email to subscribers</option><option>Silent release</option></select></label>
+    </div>`;
+
+  return `
+  ${synapiPageHeader('Endpoint Builder', `Step ${step} of 8 — ${stepLabels[step-1]}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-my-apis'})">Cancel</button>`)}
+  <section class="card">
+    <div class="synapi-stepper" style="grid-template-columns:repeat(8,1fr)">
+      ${stepLabels.map((l,i) => {
+        const n = i+1;
+        const cls = n < step ? 'done' : n === step ? 'active' : 'pending';
+        return `<div class="synapi-step ${cls}" onclick="window.setState({synapiBuilderStep:${n}})"><span class="synapi-step-num">${n}</span><span style="font-size:0.72rem">${l}</span></div>`;
+      }).join('')}
+    </div>
+    <div class="synapi-wizard-body">${body}</div>
+    <div class="synapi-wizard-actions">
+      <button class="btn btn-secondary" ${step===1?'disabled':''} onclick="window.setState({synapiBuilderStep:${Math.max(1, step-1)}})">← Back</button>
+      <div style="flex:1"></div>
+      ${step < 8
+        ? `<button class="btn btn-primary synapi-cta" onclick="window.setState({synapiBuilderStep:${step+1}})">Continue →</button>`
+        : `<button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-my-apis', synapiBuilderStep:1, synapiFlash:{title:'Endpoint published to Sandbox',body:'Consumers can try it immediately · promote to Production when ready'}})">🚀 Publish</button>`}
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiSchemaMapper() {
+  return `
+  ${synapiPageHeader('Schema Mapper', 'Map your internal PAS fields to ACORD canonical schemas · validate completeness.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-my-apis'})">← My APIs</button>
+     <button class="btn btn-primary synapi-cta" onclick="window.synapiFlash({title:'Mapping saved',body:'Schema validated · 48 fields mapped · 0 errors'})">💾 Save Mapping</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Schema',        value: 'NGDS-CP v1.2' },
+    { label: 'Fields total',  value: '64' },
+    { label: 'Mapped',        value: '48' },
+    { label: 'Unmapped req.', value: '0' },
+    { label: 'Transforms',    value: '12' },
+    { label: 'Validated',     value: '2026-04-19' }
+  ])}
+
+  <section class="card">
+    <div class="card-header"><h3>Field Mapping</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>ACORD Canonical</th><th>Required</th><th>Direction</th><th>Your Field</th><th>Transform</th><th>Status</th></tr></thead>
+        <tbody>
+          ${[
+            ['namedInsured','Yes','→','policy.insured_name','Direct','Mapped'],
+            ['effectiveDate','Yes','→','policy.eff_date','ISO 8601 normalize','Mapped'],
+            ['lineOfBusiness','Yes','→','policy.lob_code','Lookup: CP→CommercialProperty','Mapped'],
+            ['location.addressLine1','Yes','→','property.addr_1','Direct','Mapped'],
+            ['location.city','Yes','→','property.city','Direct','Mapped'],
+            ['location.state','Yes','→','property.state_code','Direct','Mapped'],
+            ['location.zip','Yes','→','property.zip5','5-digit ZIP pad','Mapped'],
+            ['coverages[].coverageCode','Yes','↔','cov.code','Lookup table (28 entries)','Mapped'],
+            ['coverages[].limit','Yes','↔','cov.limit_usd','Currency normalize','Mapped'],
+            ['coverages[].deductible','No','↔','cov.ded_usd','Currency normalize','Mapped'],
+            ['exposures.tiv','Yes','↔','property.total_tiv','USD','Mapped'],
+            ['exposures.construction','No','↔','property.constr_class','Lookup: A–F','Mapped'],
+            ['exposures.protectionClass','No','↔','property.prot_class','1–10 range','Mapped'],
+            ['exposures.windMitigation','No','↔','property.wind_mit','Optional object','Mapped'],
+            ['premium.total','Yes','←','quote.total_premium','Direct','Mapped'],
+            ['premium.currency','Yes','←','quote.currency','Default USD','Mapped']
+          ].map(([c,req,dir,int,trans,status]) => `
+            <tr>
+              <td><code>${c}</code></td>
+              <td>${req==='Yes'?synapiBadge('Required','amber'):synapiBadge('Optional','grey')}</td>
+              <td style="font-family:monospace">${dir}</td>
+              <td><code>${int}</code></td>
+              <td class="row-sub">${trans}</td>
+              <td>${synapiBadge(status,'green')}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiAccess() {
+  return `
+  ${synapiPageHeader('Access Control', 'Which consumer apps can call your APIs · scopes · quotas · rate limits per consumer.')}
+
+  ${synapiKPIs([
+    { label: 'Apps with access', value: '8' },
+    { label: 'Total calls 30d',  value: '142k' },
+    { label: 'Scopes granted',    value: '32' },
+    { label: 'Auto-approve',     value: 'Disabled' }
+  ], 4)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>App</th><th>Partner</th><th>Scopes</th><th>Calls 30d</th><th>Rate Limit (override)</th><th>Quota</th><th></th></tr></thead>
+        <tbody>
+          ${D.synapiConsumerApps.filter(a => ['Production','Sandbox'].includes(a.env)).map(a => `
+            <tr>
+              <td><strong>${a.name}</strong></td>
+              <td>${a.partner}</td>
+              <td class="row-sub">${a.scopes.slice(0,2).join(', ')}${a.scopes.length>2?' +'+(a.scopes.length-2):''}</td>
+              <td>${a.calls_30d.toLocaleString()}</td>
+              <td class="row-sub">${a.env==='Production' ? 'Default (100 rpm)' : 'Sandbox (unlimited)'}</td>
+              <td class="row-sub">${a.env==='Production' ? '1M / mo' : '—'}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.showModal('Override Rate Limit for '+a.name,'<div class=k-modal-body><div class=form-grid><label>Rate Limit (rpm)<input type=text value=100></label><label>Burst<input type=text value=300></label><label>Monthly Quota<input type=text value=1000000></label><label>Until<input type=text placeholder=YYYY-MM-DD></label></div></div>','Apply',()=>window.synapiFlash({title:'Override applied',body:a.name+' updated'}))">⚙️ Limits</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.showModal('Revoke Access?','<div class=k-modal-body>This revokes '+a.name+'\\'s access to your APIs. Takes effect immediately.</div>','Revoke',()=>window.synapiFlash({kind:'warn',title:'Access revoked'}))">🚫 Revoke</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiWebhooksOut() {
+  const events = [
+    { event: 'policy.bound',         subscribers: 4, fired_24h: 128, success: '99.8%' },
+    { event: 'policy.cancelled',     subscribers: 3, fired_24h: 8,   success: '100%' },
+    { event: 'endorsement.approved',subscribers: 4, fired_24h: 42,  success: '99.7%' },
+    { event: 'endorsement.issued',  subscribers: 3, fired_24h: 38,  success: '100%' },
+    { event: 'claim.fnol',           subscribers: 5, fired_24h: 14,  success: '99.5%' },
+    { event: 'claim.reserve.adjusted', subscribers: 3, fired_24h: 6, success: '100%' },
+    { event: 'claim.payment.issued', subscribers: 3, fired_24h: 11,  success: '100%' },
+    { event: 'quote.ready',         subscribers: 2, fired_24h: 214, success: '99.6%' },
+    { event: 'bordereau.posted',    subscribers: 4, fired_24h: 3,   success: '100%' }
+  ];
+  return `
+  ${synapiPageHeader('Webhooks (Outgoing Events)', 'Events you publish · subscribers · delivery health.',
+    `<button class="btn btn-primary synapi-cta" onclick="window.showModal('Publish New Event Type','<div class=k-modal-body><div class=form-grid><label>Event name<input type=text placeholder=my.event></label><label>Trigger<select><option>Manual</option><option>Automatic on state change</option></select></label><label class=form-wide>Payload schema (JSON)<textarea rows=5 placeholder={...}></textarea></label></div></div>','Publish',()=>window.synapiFlash({title:'Event type published',body:'Consumers can subscribe immediately'}))">+ New Event Type</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Event types',     value: events.length.toString() },
+    { label: 'Fired 24h',       value: events.reduce((s,e)=>s+e.fired_24h,0).toString() },
+    { label: 'Subscribers',     value: '18' },
+    { label: 'Avg delivery',    value: '180 ms' }
+  ], 4)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Event</th><th>Subscribers</th><th>Fired 24h</th><th>Success Rate</th><th></th></tr></thead>
+        <tbody>
+          ${events.map(e => `
+            <tr>
+              <td><code>${e.event}</code></td>
+              <td>${e.subscribers}</td>
+              <td>${e.fired_24h}</td>
+              <td>${e.success}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.synapiFlash({kind:'info',title:'Test event dispatched',body:'Fired to '+${e.subscribers}+' subscribers'})">📤 Test</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.showModal('Payload Schema · '+'${e.event}','<div class=k-modal-body><pre style=\\'background:#0a0a14;padding:14px;border-radius:8px;font-family:monospace;font-size:0.78rem;color:#cfd0dc;white-space:pre-wrap\\'>{\\n  &quot;event&quot;: &quot;'+'${e.event}'+'&quot;,\\n  &quot;ts&quot;: &quot;2026-04-20T14:22:11Z&quot;,\\n  &quot;data&quot;: { ... }\\n}</pre></div>','Close',null)">📐 Schema</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiAnalytics() {
+  const myApis = D.synapiApis.filter(a => a.partner === 'Summit Fronting Re');
+  return `
+  ${synapiPageHeader('Analytics', 'Your API traffic, latency distribution, error breakdown by consumer.')}
+
+  ${synapiKPIs([
+    { label: 'Calls 30d',        value: '142,000' },
+    { label: 'p50 latency',       value: '310 ms' },
+    { label: 'p95 latency',       value: '820 ms' },
+    { label: 'p99 latency',       value: '1,480 ms' },
+    { label: 'Error rate',        value: '0.38%' },
+    { label: 'SLA attainment',    value: '99.97%' }
+  ])}
+
+  <div class="synapi-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Calls by Endpoint</h3></div>
+      <div style="padding:var(--space-md)">
+        ${myApis.map(a => {
+          const maxCalls = Math.max(...myApis.map(x => x.calls_30d));
+          const pct = (a.calls_30d / maxCalls * 100).toFixed(1);
+          return `<div style="display:grid; grid-template-columns:200px 1fr 90px; gap:var(--space-md); align-items:center; margin-bottom:8px">
+            <div style="color:var(--text-secondary); font-size:0.85rem">${a.name}</div>
+            <div style="height:20px; background:var(--bg-card); border-radius:4px; overflow:hidden"><div style="height:100%; background:linear-gradient(90deg, var(--s-accent), #a78bfa); width:${pct}%"></div></div>
+            <div style="text-align:right; font-weight:600">${(a.calls_30d/1000).toFixed(1)}k</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Error Breakdown (30d)</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>HTTP Code</th><th>Count</th><th>% of errors</th><th>Top cause</th></tr></thead>
+          <tbody>
+            <tr><td><code>400</code></td><td>184</td><td>34%</td><td class="row-sub">Validation — invalid ZIP/DOT</td></tr>
+            <tr><td><code>401</code></td><td>42</td><td>8%</td><td class="row-sub">Expired token</td></tr>
+            <tr><td><code>403</code></td><td>18</td><td>3%</td><td class="row-sub">Scope missing</td></tr>
+            <tr><td><code>429</code></td><td>72</td><td>13%</td><td class="row-sub">Rate limit hit · BoldPenguin</td></tr>
+            <tr><td><code>500</code></td><td>8</td><td>1.5%</td><td class="row-sub">Internal carrier error</td></tr>
+            <tr><td><code>502</code></td><td>24</td><td>4.4%</td><td class="row-sub">Upstream carrier unreachable</td></tr>
+            <tr><td><code>504</code></td><td>192</td><td>36%</td><td class="row-sub">Upstream timeout (Nordic Aviation)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Top Consumers</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Consumer</th><th>App</th><th>Calls 30d</th><th>Error rate</th><th>p95</th><th>Revenue share</th></tr></thead>
+        <tbody>
+          ${[
+            { c: 'Lockton Companies',  app: 'Lockton-AppliedEpic-Prod', calls: 42000, err: '0.3%', p95: '820 ms', rev: '$128k' },
+            { c: 'Marsh & McLennan',   app: 'Marsh-Vertafore-Prod',     calls: 38000, err: '0.4%', p95: '760 ms', rev: '$112k' },
+            { c: 'Aon plc',             app: 'Aon-Global-Hub',           calls: 22000, err: '0.2%', p95: '680 ms', rev: '$84k' },
+            { c: 'BoldPenguin',        app: 'BP-Aggregator-Prod',      calls: 18000, err: '0.6%', p95: '1,240 ms', rev: '$64k' },
+            { c: 'WTW',                 app: 'WTW-Connect',              calls: 14000, err: '0.3%', p95: '710 ms', rev: '$52k' },
+            { c: 'NestLease',           app: 'NestLease-Embedded',       calls: 8000,  err: '0.5%', p95: '640 ms', rev: '$28k' }
+          ].map(c => `<tr><td><strong>${c.c}</strong></td><td class="row-sub">${c.app}</td><td>${c.calls.toLocaleString()}</td><td>${c.err}</td><td>${c.p95}</td><td>${c.rev}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiSandbox() {
+  return `
+  ${synapiPageHeader('Sandbox Fixtures', 'Canned scenarios consumers can run against your endpoints in sandbox.',
+    `<button class="btn btn-primary synapi-cta" onclick="window.synapiFlash({title:'Fixture draft opened'})">+ New Fixture</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Total fixtures',  value: '32' },
+    { label: 'Active',          value: '28' },
+    { label: 'Draft',           value: '4' },
+    { label: 'Triggered 24h',   value: '642' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Fixtures by Endpoint</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Endpoint</th><th>Scenario</th><th>Response Code</th><th>Latency</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${[
+            ['/v1/carriers/summit/quote/commercial-property','Success · standard risk','200','680 ms','Active'],
+            ['/v1/carriers/summit/quote/commercial-property','Validation · invalid ZIP','400','32 ms','Active'],
+            ['/v1/carriers/summit/quote/commercial-property','Rate limit · quota exceeded','429','18 ms','Active'],
+            ['/v1/carriers/summit/quote/commercial-property','Timeout · upstream slow','504','4000 ms','Active'],
+            ['/v1/carriers/summit/bind/commercial-property','Success · bound with docs','201','1,240 ms','Active'],
+            ['/v1/carriers/summit/bind/commercial-property','Quote expired','410','42 ms','Active'],
+            ['/v1/carriers/summit/endorsement','Success · premium delta','200','420 ms','Active'],
+            ['/v1/carriers/summit/endorsement','Authority exceeded · referral','202','340 ms','Active'],
+            ['/v1/carriers/summit/fnol','Success · claim created','201','380 ms','Active'],
+            ['/v1/carriers/summit/bordereau/premium','Success · bordereau accepted','202','2,100 ms','Draft']
+          ].map(r => `
+            <tr>
+              <td><code>${r[0]}</code></td>
+              <td>${r[1]}</td>
+              <td>${synapiBadge(r[2], synapiStatusColor(r[2]))}</td>
+              <td class="row-sub">${r[3]}</td>
+              <td>${synapiBadge(r[4], r[4]==='Active'?'green':'amber')}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.synapiFlash({kind:'info',title:'Fixture editor opened'})">Edit</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiPubDocs() {
+  return `
+  ${synapiPageHeader('Documentation', 'Publish docs + code samples that consumers see in the Catalog.',
+    `<button class="btn btn-primary synapi-cta" onclick="window.synapiFlash({title:'Docs saved',body:'Live in consumer catalog immediately'})">💾 Publish</button>`)}
+
+  <section class="card" style="padding:var(--space-lg)">
+    <div class="form-grid">
+      <label>API<select>${D.synapiApis.filter(a => a.partner === 'Summit Fronting Re').map(a => `<option>${a.name}</option>`).join('')}</select></label>
+      <label>Language (code samples)<select><option>Node.js</option><option>Python</option><option>Java</option><option>.NET</option><option>Ruby</option><option>cURL</option></select></label>
+      <label class="form-wide">Overview (Markdown)<textarea rows="5" placeholder="# Commercial Property Quote\n\nReal-time quote endpoint for US commercial property risks $5M–$50M TIV..."></textarea></label>
+      <label class="form-wide">Authentication<textarea rows="3" placeholder="This endpoint requires OAuth 2.0 with scope quote:read..."></textarea></label>
+      <label class="form-wide">Request Example<textarea rows="5" placeholder="const quote = await client.quotes.commercialProperty({...})"></textarea></label>
+      <label class="form-wide">Response Example<textarea rows="5" placeholder="{ quoteId: 'Q-2026-...', premium: {...} }"></textarea></label>
+      <label class="form-wide">Error Handling<textarea rows="3" placeholder="400 — validation; 401 — token expired; ..."></textarea></label>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiPartnerRequests() {
+  const rt = synapiRuntime();
+  const requests = D.synapiPartnerRequests.map(r => rt.approvedRequests[r.id] ? {...r, status:'Approved'} : r);
+  return `
+  ${synapiPageHeader('Partner Requests', 'Consumers requesting production access, scope changes, or rate-limit adjustments.')}
+
+  ${synapiKPIs([
+    { label: 'Pending review',  value: requests.filter(r=>r.status==='Under review').length.toString(), warning:true },
+    { label: 'Approved 30d',    value: requests.filter(r=>r.status==='Approved').length.toString() },
+    { label: 'Avg response',    value: '18 hours' },
+    { label: 'Denied 30d',      value: '0' }
+  ], 4)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Request</th><th>Partner</th><th>Type</th><th>Scope</th><th>Requested</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${requests.map(r => `
+            <tr class="row-clickable" onclick="window.setState({screen:'sn-partner-request', synapiPreqId:'${r.id}'})">
+              <td><strong>${r.id}</strong></td>
+              <td>${r.partner}</td>
+              <td>${r.type}</td>
+              <td class="row-sub">${r.scope}</td>
+              <td class="row-sub">${r.requested}</td>
+              <td>${synapiBadge(r.status, synapiStatusColor(r.status))}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'sn-partner-request', synapiPreqId:'${r.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiPartnerRequestDetail() {
+  const id = state.synapiPreqId || 'PREQ-017';
+  const r = D.synapiPartnerRequests.find(x => x.id === id) || D.synapiPartnerRequests[0];
+  return `
+  ${synapiPageHeader(r.id, `${r.partner} · ${r.type}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-partner-requests'})">← Requests</button>
+     <button class="btn btn-secondary" onclick="window.showModal('Decline Request?','<div class=k-modal-body><textarea rows=4 placeholder=Reason for decline (shared with partner) style=\\'width:100%;padding:10px;background:var(--bg-input);border:1px solid var(--border-subtle);border-radius:8px;color:var(--text-primary)\\'></textarea></div>','Decline',()=>window.setState({screen:'sn-partner-requests', synapiFlash:{kind:'warn',title:'Request declined',body:'Partner notified'}}))">🚫 Decline</button>
+     <button class="btn btn-primary synapi-cta" onclick="(function(){synapiRuntime().approvedRequests['${r.id}']=true;window.setState({screen:'sn-partner-requests', synapiFlash:{title:'Request approved',body:r.partner+' · '+r.scope+' is now active'}});})()">✅ Approve</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Status',       value: synapiBadge(r.status, synapiStatusColor(r.status)) },
+    { label: 'Requested',    value: r.requested },
+    { label: 'Approver',     value: r.approver },
+    { label: 'Type',         value: r.type }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Scope & Note</h3></div>
+    <div style="padding:var(--space-md)">
+      <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em">Requested scope</div>
+      <div style="font-family:'Courier New', monospace; padding:10px; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:8px; margin-top:6px">${r.scope}</div>
+      <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-top:var(--space-md)">Note</div>
+      <div style="color:var(--text-secondary); line-height:1.7; margin-top:6px">${r.note}</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Partner Context</h3></div>
+    <div class="synapi-detail-row" style="padding:var(--space-md); display:grid; grid-template-columns:repeat(2,1fr); gap:var(--space-sm) var(--space-lg); color:var(--text-secondary); font-size:0.85rem">
+      <div><strong>Partner:</strong> ${r.partner}</div>
+      <div><strong>Plan:</strong> Pro</div>
+      <div><strong>Sandbox calls 30d:</strong> 3,200</div>
+      <div><strong>Sandbox error rate:</strong> 0.4%</div>
+      <div><strong>Use case:</strong> Telematics-driven trucking quotes</div>
+      <div><strong>Contract signed:</strong> 2026-03-22</div>
+    </div>
+  </section>
+  `;
+}
+
+// ─── Phase 3 — Platform Admin screens ───
+
+function renderSynapiPartners() {
+  const filter = state.synapiPartnerFilter || 'All';
+  let partners = D.synapiPartners;
+  if (filter !== 'All') partners = partners.filter(p => p.type === filter);
+
+  return `
+  ${synapiPageHeader('Partners', 'All organizations on Synapi — carriers, MGAs, reinsurers, brokers, InsurTechs.',
+    `<button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-partner-onboard'})">+ Onboard Partner</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Total partners',   value: partners.length.toString() },
+    { label: 'In production',    value: partners.filter(p=>p.status==='Production').length.toString() },
+    { label: 'In sandbox',       value: partners.filter(p=>p.status==='Sandbox').length.toString() },
+    { label: 'Top plan',         value: 'Enterprise (4)' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Partners · ${partners.length}</h3>
+      <label class="konduit-inline-select">Type:
+        <select onchange="window.setState({synapiPartnerFilter:this.value})">
+          ${['All','Carrier','MGA','Reinsurer','Broker','InsurTech','Embedded','Aggregator'].map(t => `<option ${t===filter?'selected':''}>${t}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Partner</th><th>Type</th><th>Status</th><th>Plan</th><th>Calls 30d</th><th>Uptime</th><th>Since</th><th>Region</th><th></th></tr></thead>
+        <tbody>
+          ${partners.map(p => `
+            <tr class="row-clickable" onclick="window.setState({screen:'sn-partner', synapiPartnerId:'${p.id}'})">
+              <td><strong>${p.name}</strong><div class="row-sub">${p.id}</div></td>
+              <td>${p.type}</td>
+              <td>${synapiBadge(p.status, synapiStatusColor(p.status))}</td>
+              <td>${p.plan}</td>
+              <td>${p.calls_30d.toLocaleString()}</td>
+              <td>${p.uptime}</td>
+              <td class="row-sub">${p.since}</td>
+              <td class="row-sub">${p.region}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'sn-partner', synapiPartnerId:'${p.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiPartnerDetail() {
+  const id = state.synapiPartnerId || 'P-001';
+  const p = D.synapiPartners.find(x => x.id === id) || D.synapiPartners[0];
+  const apis = D.synapiApis.filter(a => a.partnerId === p.id);
+  const apps = D.synapiConsumerApps.filter(a => a.partnerId === p.id);
+  return `
+  ${synapiPageHeader(p.name, `${p.id} · ${p.type} · ${p.region}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-partners'})">← Partners</button>
+     <button class="btn btn-secondary" onclick="window.showModal('Pause Partner?','<div class=k-modal-body>All API calls from this partner will return 403. Existing integrations continue until paused.</div>','Pause',()=>window.synapiFlash({kind:'warn',title:p.name+' paused'}))">⏸ Pause</button>
+     <button class="btn btn-primary synapi-cta" onclick="window.synapiFlash({title:'Plan change scheduled',body:'Effective next billing cycle'})">⬆ Change Plan</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Status',       value: synapiBadge(p.status, synapiStatusColor(p.status)) },
+    { label: 'Plan',         value: p.plan },
+    { label: 'Calls 30d',    value: p.calls_30d.toLocaleString() },
+    { label: 'Uptime',       value: p.uptime },
+    { label: 'Since',        value: p.since },
+    { label: 'GWP (if publisher)', value: p.gwp_api || '—' }
+  ])}
+
+  ${apis.length > 0 ? `
+  <section class="card">
+    <div class="card-header"><h3>Published APIs (${apis.length})</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>API</th><th>Version</th><th>Status</th><th>Calls 30d</th><th>p95</th></tr></thead>
+        <tbody>
+          ${apis.slice(0, 8).map(a => `
+            <tr class="row-clickable" onclick="window.setState({screen:'sn-api-detail', synapiApiId:'${a.id}'})">
+              <td><strong>${a.name}</strong></td>
+              <td>${a.version}</td>
+              <td>${synapiBadge(a.status, synapiStatusColor(a.status))}</td>
+              <td>${a.calls_30d.toLocaleString()}</td>
+              <td>${a.p95_ms} ms</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>` : ''}
+
+  ${apps.length > 0 ? `
+  <section class="card">
+    <div class="card-header"><h3>Registered Apps (${apps.length})</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>App</th><th>Environment</th><th>Calls 30d</th><th>Scopes</th></tr></thead>
+        <tbody>
+          ${apps.map(a => `
+            <tr class="row-clickable" onclick="window.setState({screen:'sn-oauth-apps', synapiAppId:'${a.id}'})">
+              <td><strong>${a.name}</strong></td>
+              <td>${synapiBadge(a.env, a.env==='Production'?'green':'blue')}</td>
+              <td>${a.calls_30d.toLocaleString()}</td>
+              <td class="row-sub">${a.scopes.length} scope(s)</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>` : ''}
+
+  <div class="synapi-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Contract</h3></div>
+      <div style="padding:var(--space-md); color:var(--text-secondary); font-size:0.85rem; line-height:1.7">
+        <div><strong>MSA signed:</strong> ${p.since}</div>
+        <div><strong>DPA:</strong> On file</div>
+        <div><strong>SOC2 Type II shared:</strong> Yes</div>
+        <div><strong>BAA:</strong> Not required</div>
+        <div><strong>Auto-renew:</strong> Yes · annual</div>
+        <div><strong>Primary contact:</strong> integrations@${p.name.toLowerCase().replace(/\s+/g,'').replace(/[^a-z]/g,'')}.com</div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>Billing Snapshot</h3></div>
+      <div style="padding:var(--space-md); color:var(--text-secondary); font-size:0.85rem; line-height:1.7">
+        <div><strong>Plan:</strong> ${p.plan}</div>
+        <div><strong>MTD spend:</strong> $${Math.round(p.calls_30d * 0.006).toLocaleString()}</div>
+        <div><strong>YTD revenue:</strong> $${(p.calls_30d * 0.006 * 3).toFixed(0).toLocaleString()}</div>
+        <div><strong>Payment method:</strong> ACH on file</div>
+        <div><strong>Next invoice:</strong> 2026-05-01</div>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+function renderSynapiPartnerOnboard() {
+  const step = state.synapiOnbStep || 1;
+  const stepLabels = ['Apply','Contracts','Technical Fit','Sandbox','Certification','Production','Go-live'];
+  const body = step === 1 ? `
+    <div class="form-grid">
+      <label>Organization Name<input type="text" placeholder="e.g. Heritage Capital"></label>
+      <label>Type<select><option>Carrier</option><option>MGA</option><option>Reinsurer</option><option>Broker</option><option>InsurTech</option><option>Embedded partner</option><option>Aggregator</option></select></label>
+      <label>Region<select><option>US Nationwide</option><option>US + EU</option><option>US + Global</option><option>Lloyd's / UK</option><option>Bermuda</option></select></label>
+      <label>Primary contact<input type="text" placeholder="name@org.com"></label>
+      <label>Target plan<select><option>Starter</option><option selected>Pro</option><option>Scale</option><option>Enterprise</option></select></label>
+      <label class="form-wide">Use case summary<textarea rows="4" placeholder="Describe intended integration and expected volume"></textarea></label>
+    </div>`
+  : step === 2 ? `
+    <div style="padding:var(--space-sm) 0 var(--space-md); color:var(--text-secondary)">Generated contracts — route to legal for review and signing.</div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Document</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><strong>Master Services Agreement (MSA)</strong></td><td>${synapiBadge('Sent for signature','amber')}</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('MSA_draft.pdf','Program Deck','3.2 MB','Standard Synapi MSA')">📄 Preview</button></td></tr>
+          <tr><td><strong>Data Processing Agreement (DPA)</strong></td><td>${synapiBadge('Sent for signature','amber')}</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('DPA_draft.pdf','Program Deck','1.8 MB','Standard DPA')">📄 Preview</button></td></tr>
+          <tr><td><strong>Acceptable Use Policy</strong></td><td>${synapiBadge('Auto-accepted on signup','green')}</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('AUP.pdf','Program Deck','420 KB','AUP')">📄 View</button></td></tr>
+        </tbody>
+      </table>
+    </div>`
+  : step === 3 ? `
+    <div class="form-grid">
+      <label>Authentication Mode<select><option>OAuth 2.0 (standard)</option><option>OAuth 2.0 + mTLS (Enterprise)</option></select></label>
+      <label>Expected peak RPS<input type="text" placeholder="50"></label>
+      <label>Production IPs (CIDR)<input type="text" placeholder="10.20.0.0/16"></label>
+      <label>Webhook ingress URL<input type="text" placeholder="https://your-api/synapi/hooks"></label>
+      <label>ACORD schema preference<select><option>NGDS (JSON)</option><option>AL3 (XML, legacy)</option></select></label>
+      <label>Data residency<select><option>US-only</option><option>US + EU</option><option>Flexible</option></select></label>
+    </div>`
+  : step === 4 ? `
+    <div style="padding:var(--space-sm) 0; color:var(--text-secondary)">Sandbox provisioned — keys issued and docs accessible.</div>
+    <section class="card" style="padding:var(--space-lg); background:var(--s-accent-soft); border:1px solid var(--s-border-accent); margin:var(--space-md) 0">
+      <div style="font-family:'Courier New', monospace; font-size:0.82rem; color:var(--text-primary); line-height:1.8">
+        <div><strong>Sandbox client ID:</strong> synapi_cl_sandbox_7f3a82c1d5e9</div>
+        <div><strong>Sandbox secret:</strong> synapi_test_5b••••••••••••9a2c</div>
+        <div><strong>Auth URL:</strong> https://auth.synapi.io/oauth2/authorize</div>
+        <div><strong>Token URL:</strong> https://auth.synapi.io/oauth2/token</div>
+        <div><strong>Docs:</strong> https://docs.synapi.io</div>
+      </div>
+    </section>`
+  : step === 5 ? `
+    <div style="padding:var(--space-sm) 0; color:var(--text-secondary)">Certification checklist — confirm production readiness.</div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Check</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Sandbox integration passes all 5 scenarios</td><td>${synapiBadge('Pass','green')}</td></tr>
+          <tr><td>ACORD schema validation clean</td><td>${synapiBadge('Pass','green')}</td></tr>
+          <tr><td>OAuth token refresh implemented correctly</td><td>${synapiBadge('Pass','green')}</td></tr>
+          <tr><td>Webhook HMAC verification in place</td><td>${synapiBadge('Pass','green')}</td></tr>
+          <tr><td>Retry / exponential backoff on 5xx</td><td>${synapiBadge('Pass','green')}</td></tr>
+          <tr><td>Rate-limit handling (429 + Retry-After)</td><td>${synapiBadge('Pass','green')}</td></tr>
+          <tr><td>PII handling policy documented</td><td>${synapiBadge('Pass','green')}</td></tr>
+        </tbody>
+      </table>
+    </div>`
+  : step === 6 ? `
+    <div style="padding:var(--space-sm) 0; color:var(--text-secondary)">Production keys will be issued on promotion.</div>
+    <div class="form-grid">
+      <label>Production rate limit<input type="text" value="100 rpm"></label>
+      <label>Monthly quota<input type="text" value="1,000,000 calls"></label>
+      <label>On-call notifications to<input type="text" placeholder="ops@partner.com"></label>
+      <label>Billing start<input type="text" value="2026-05-01"></label>
+    </div>`
+  : `
+    <section class="card" style="padding:var(--space-lg); background:var(--s-accent-soft); border:1px solid var(--s-border-accent); margin:0; text-align:center">
+      <div style="font-size:3rem">🚀</div>
+      <h3 style="margin-top:var(--space-sm)">Ready for go-live</h3>
+      <p class="row-sub" style="max-width:500px; margin:var(--space-sm) auto">On completion: production keys issued · partner listed in public catalog · announcement posted to changelog · partner success scheduled for 30/60/90-day reviews.</p>
+    </section>`;
+
+  return `
+  ${synapiPageHeader('Onboard Partner', `Step ${step} of 7 — ${stepLabels[step-1]}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-partners'})">Cancel</button>`)}
+  <section class="card">
+    <div class="synapi-stepper" style="grid-template-columns:repeat(7,1fr)">
+      ${stepLabels.map((l,i) => {
+        const n = i+1;
+        const cls = n < step ? 'done' : n === step ? 'active' : 'pending';
+        return `<div class="synapi-step ${cls}" onclick="window.setState({synapiOnbStep:${n}})"><span class="synapi-step-num">${n}</span><span style="font-size:0.72rem">${l}</span></div>`;
+      }).join('')}
+    </div>
+    <div class="synapi-wizard-body">${body}</div>
+    <div class="synapi-wizard-actions">
+      <button class="btn btn-secondary" ${step===1?'disabled':''} onclick="window.setState({synapiOnbStep:${Math.max(1, step-1)}})">← Back</button>
+      <div style="flex:1"></div>
+      ${step < 7
+        ? `<button class="btn btn-primary synapi-cta" onclick="window.setState({synapiOnbStep:${step+1}})">Continue →</button>`
+        : `<button class="btn btn-primary synapi-cta" onclick="window.setState({screen:'sn-partners', synapiOnbStep:1, synapiFlash:{title:'Partner live',body:'Listed in catalog · production keys issued · billing activated'}})">🚀 Promote to Production</button>`}
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiCatalogAdmin() {
+  return `
+  ${synapiPageHeader('Catalog Admin', 'Curate the public catalog · feature APIs · category management · visibility.')}
+
+  ${synapiKPIs([
+    { label: 'Published APIs',  value: D.synapiApis.filter(a=>a.status==='GA'||a.status==='Beta').length.toString() },
+    { label: 'Featured',        value: '4' },
+    { label: 'Hidden',          value: '2' },
+    { label: 'Categories',      value: '12' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Curation Queue</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>API</th><th>Publisher</th><th>Status</th><th>Visibility</th><th>Featured</th><th></th></tr></thead>
+        <tbody>
+          ${D.synapiApis.slice(0, 12).map(a => `
+            <tr>
+              <td><strong>${a.name}</strong></td>
+              <td>${a.partner}</td>
+              <td>${synapiBadge(a.status, synapiStatusColor(a.status))}</td>
+              <td>${synapiBadge('Public','green')}</td>
+              <td>${a.id === 'API-001' || a.id === 'API-011' ? '⭐' : ''}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.synapiFlash({title:'Featured toggled'})">⭐ Toggle Feature</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.synapiFlash({kind:'warn',title:'Visibility updated'})">👁 Hide</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Categories</h3></div>
+    <div style="padding:var(--space-md); display:flex; flex-wrap:wrap; gap:8px">
+      ${['Commercial Property','Workers Comp','Cyber','Transportation','Aviation','Marine','Surety','Environmental','D&O/E&O','CAT Personal Lines','Reinsurance','Bordereau'].map(c => `<span class="quality-pill">${c}</span>`).join('')}
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiConnections() {
+  return `
+  ${synapiPageHeader('Connections', 'Integration graph · who calls whom · traffic volume between parties.')}
+
+  ${synapiKPIs([
+    { label: 'Active connections', value: '42' },
+    { label: 'Top edge',           value: 'Lockton → Summit' },
+    { label: 'New 30d',            value: '6' },
+    { label: 'Inactive 30d',       value: '3' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Top Connections by Volume</h3></div>
+    <div style="padding:var(--space-md)">
+      ${[
+        { from: 'Lockton Companies',  to: 'Summit Fronting Re',      calls: 42000, pct: 100 },
+        { from: 'Marsh & McLennan',   to: 'Summit Fronting Re',      calls: 38000, pct: 90 },
+        { from: 'Aon plc',             to: 'Summit Fronting Re',      calls: 22000, pct: 52 },
+        { from: 'Marsh & McLennan',   to: 'Nordic Global Re',        calls: 18000, pct: 43 },
+        { from: 'BoldPenguin',        to: 'Meridian Specialty',      calls: 16000, pct: 38 },
+        { from: 'Lockton Companies',  to: 'Meridian Specialty',      calls: 14000, pct: 33 },
+        { from: 'WTW',                 to: 'Pacific Paper Group',     calls: 12000, pct: 28 },
+        { from: 'NestLease',           to: 'Summit Fronting Re',      calls: 8000,  pct: 19 },
+        { from: 'FleetForward',       to: 'Northstar MGA',           calls: 3200,  pct: 8 }
+      ].map(c => `
+        <div style="display:grid; grid-template-columns:240px 1fr 90px; gap:var(--space-md); align-items:center; margin-bottom:8px">
+          <div style="font-size:0.85rem"><strong>${c.from}</strong> <span class="row-sub">→</span> <strong>${c.to}</strong></div>
+          <div style="height:20px; background:var(--bg-card); border-radius:4px; overflow:hidden"><div style="height:100%; background:linear-gradient(90deg, var(--s-accent), #a78bfa); width:${c.pct}%"></div></div>
+          <div style="text-align:right; font-weight:600">${c.calls.toLocaleString()}</div>
+        </div>`).join('')}
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiOAuthApps() {
+  const rt = synapiRuntime();
+  return `
+  ${synapiPageHeader('OAuth Apps', 'All registered OAuth applications across partners · approvals, scopes, revocations.')}
+
+  ${synapiKPIs([
+    { label: 'Total apps',        value: D.synapiConsumerApps.length.toString() },
+    { label: 'Production',        value: D.synapiConsumerApps.filter(a=>a.env==='Production').length.toString() },
+    { label: 'Sandbox',           value: D.synapiConsumerApps.filter(a=>a.env==='Sandbox').length.toString() },
+    { label: 'Pending approval',  value: '2', warning:true }
+  ], 4)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>App</th><th>Partner</th><th>Env</th><th>Scopes</th><th>Calls 30d</th><th>Created</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${D.synapiConsumerApps.map(a => `
+            <tr>
+              <td><strong>${a.name}</strong></td>
+              <td>${a.partner}</td>
+              <td>${synapiBadge(a.env, a.env==='Production'?'green':'blue')}</td>
+              <td class="row-sub">${a.scopes.length} scope(s)</td>
+              <td>${a.calls_30d.toLocaleString()}</td>
+              <td class="row-sub">${a.created}</td>
+              <td>${synapiBadge(a.status, 'green')}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.showModal('Scopes for '+a.name,'<div class=k-modal-body>'+'${a.scopes.join(', ')}'+'</div>','Close',null)">🔍 Scopes</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.showModal('Suspend App?','<div class=k-modal-body>All calls from this app will return 403 immediately.</div>','Suspend',()=>window.synapiFlash({kind:'warn',title:a.name+' suspended'}))">⏸ Suspend</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiAcord() {
+  return `
+  ${synapiPageHeader('ACORD Standards', 'Canonical schemas used for transformation · NGDS JSON + AL3 XML.',
+    `<button class="btn btn-primary synapi-cta" onclick="window.synapiFlash({title:'Schema draft opened'})">+ New Schema Version</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Active schemas',   value: D.synapiAcordSchemas.filter(s => s.version !== '1.1' || s.id !== 'NGDS-CP-v1.1').length.toString() },
+    { label: 'NGDS (JSON)',      value: D.synapiAcordSchemas.filter(s=>s.family==='NGDS').length.toString() },
+    { label: 'AL3 (XML)',        value: D.synapiAcordSchemas.filter(s=>s.family==='AL3').length.toString() },
+    { label: 'Updated 30d',      value: '3' }
+  ], 4)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Schema</th><th>Family</th><th>LOB</th><th>Version</th><th>Format</th><th>Consumers</th><th>Published</th><th></th></tr></thead>
+        <tbody>
+          ${D.synapiAcordSchemas.map(s => `
+            <tr class="row-clickable" onclick="window.setState({screen:'sn-acord-schema', synapiSchemaId:'${s.id}'})">
+              <td><strong>${s.id}</strong></td>
+              <td>${synapiBadge(s.family, s.family==='NGDS'?'green':'amber')}</td>
+              <td>${s.lob}</td>
+              <td>${s.version}</td>
+              <td>${s.format}</td>
+              <td>${s.consumers}</td>
+              <td class="row-sub">${s.published}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'sn-acord-schema', synapiSchemaId:'${s.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiAcordSchema() {
+  const id = state.synapiSchemaId || 'NGDS-CP-v1.2';
+  const s = D.synapiAcordSchemas.find(x => x.id === id) || D.synapiAcordSchemas[0];
+  const sample = s.family === 'NGDS' ? `{
+  "$schema": "https://schemas.synapi.io/acord/${s.id}.json",
+  "namedInsured": "string",
+  "effectiveDate": "date",
+  "location": {
+    "addressLine1": "string",
+    "city": "string",
+    "state": "state_code",
+    "zip": "5-digit"
+  },
+  "coverages": [{
+    "coverageCode": "BLDG | BPP | ...",
+    "limit": "number",
+    "deductible": "number"
+  }],
+  "exposures": { ... }
+}` : `<?xml version="1.0" encoding="UTF-8"?>
+<ACORD xmlns="http://www.ACORD.org/standards/PC_Surety/ACORD1/xml/">
+  <InsuranceSvcRq>
+    <CommlPolicyQuoteInqRq>
+      <InsuredOrPrincipal>...</InsuredOrPrincipal>
+      <CommlPolicy>...</CommlPolicy>
+    </CommlPolicyQuoteInqRq>
+  </InsuranceSvcRq>
+</ACORD>`;
+
+  return `
+  ${synapiPageHeader(s.id, `${s.family} · ${s.lob} · v${s.version}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-acord'})">← Schemas</button>
+     <button class="btn btn-ghost" onclick="window.konduitDownloadFile(s.id+'.'+s.format.toLowerCase(), '${sample.replace(/'/g, "\\'").replace(/\n/g, '\\n')}', s.format==='JSON'?'application/json':'application/xml')">⬇ Download</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Family',          value: s.family },
+    { label: 'Format',          value: s.format },
+    { label: 'Version',         value: s.version },
+    { label: 'Consumers',       value: s.consumers.toString() },
+    { label: 'Published',       value: s.published },
+    { label: 'Status',          value: synapiBadge('Active','green') }
+  ])}
+
+  <section class="card">
+    <div class="card-header"><h3>Change Log</h3></div>
+    <div style="padding:var(--space-md); color:var(--text-secondary); line-height:1.7">
+      <strong>From previous version:</strong> ${s.diff_to_prev}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Schema (${s.format})</h3></div>
+    <pre style="padding:var(--space-md); margin:0; background:#0a0a14; font-family:'Courier New', monospace; font-size:0.78rem; color:#cfd0dc; white-space:pre-wrap; max-height:400px; overflow-y:auto; line-height:1.5">${sample}</pre>
+  </section>
+  `;
+}
+
+function renderSynapiBillingAdmin() {
+  return `
+  ${synapiPageHeader('Billing & Plans', 'Plan tiers, metering, invoicing.',
+    `<button class="btn btn-ghost" onclick="window.konduitDownloadFile('synapi-invoices-'+new Date().toISOString().slice(0,10)+'.csv', 'id,partner,period,calls,amount,status\\n' + D.synapiInvoices.map(i=>[i.id,i.partner,i.period,i.calls,i.amount,i.status].join(',')).join('\\n'), 'text/csv')">⬇ Invoices CSV</button>`)}
+
+  ${synapiKPIs([
+    { label: 'MRR',              value: '$186k' },
+    { label: 'Invoices issued',  value: D.synapiInvoices.length.toString() },
+    { label: 'Outstanding',      value: '$18,480' },
+    { label: 'Overdue',          value: '0' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Plan Tiers</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Plan</th><th>Price</th><th>Included Calls</th><th>Overage</th><th>SLA</th><th>Seats</th><th>Support</th></tr></thead>
+        <tbody>
+          ${D.synapiBillingPlans.map(p => `
+            <tr>
+              <td><strong>${p.name}</strong></td>
+              <td>${p.price}</td>
+              <td>${p.included_calls}</td>
+              <td>${p.overage}</td>
+              <td>${p.sla}</td>
+              <td>${p.seats}</td>
+              <td>${p.support}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Recent Invoices</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Invoice</th><th>Partner</th><th>Period</th><th>Calls</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.synapiInvoices.map(i => `
+            <tr>
+              <td><strong>${i.id}</strong></td>
+              <td>${i.partner}</td>
+              <td>${i.period}</td>
+              <td>${i.calls}</td>
+              <td>${i.amount}</td>
+              <td>${synapiBadge(i.status, synapiStatusColor(i.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiOps() {
+  const rt = synapiRuntime();
+  const incidents = D.synapiIncidents.map(i => rt.resolvedIncidents[i.id] ? {...i, status:'Resolved'} : i);
+
+  return `
+  ${synapiPageHeader('Ops Center', 'Platform health, incidents, deployments, SLA tracking.',
+    `<button class="btn btn-ghost" onclick="window.synapiFlash({kind:'info',title:'Status page updated'})">🩺 Update Status Page</button>
+     <button class="btn btn-primary synapi-cta" onclick="window.synapiFlash({title:'New incident opened',body:'INC-2026-046 created · on-call paged'})">+ Open Incident</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Uptime 30d',       value: '99.98%' },
+    { label: 'p95 latency',       value: '820 ms' },
+    { label: 'Error rate 30d',   value: '0.38%' },
+    { label: 'Active incidents',  value: incidents.filter(i=>i.status==='Investigating').length.toString(), warning:true },
+    { label: 'Deploys 30d',      value: '24' },
+    { label: 'SLA breaches',     value: '0' }
+  ])}
+
+  <section class="card">
+    <div class="card-header"><h3>Incidents</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>ID</th><th>Started</th><th>Duration</th><th>Severity</th><th>Scope</th><th>Summary</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${incidents.map(i => `
+            <tr class="row-clickable" onclick="window.setState({screen:'sn-incident', synapiIncidentId:'${i.id}'})">
+              <td><strong>${i.id}</strong></td>
+              <td class="row-sub">${i.started}</td>
+              <td>${i.duration_min ? i.duration_min+' min' : 'Ongoing'}</td>
+              <td>${synapiBadge(i.severity, synapiStatusColor(i.severity))}</td>
+              <td class="row-sub">${i.scope}</td>
+              <td class="row-sub">${i.summary}</td>
+              <td>${synapiBadge(i.status, synapiStatusColor(i.status))}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'sn-incident', synapiIncidentId:'${i.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>SLA by Tier (YTD)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Tier</th><th>Target</th><th>Attained</th><th>Credit Rate</th><th>Breach</th><th>Partners</th></tr></thead>
+        <tbody>
+          ${D.synapiSla.map(s => `
+            <tr>
+              <td><strong>${s.tier}</strong></td>
+              <td>${s.uptime_target}</td>
+              <td>${s.uptime_ytd}</td>
+              <td class="row-sub">${s.credit_rate}</td>
+              <td>${s.breach ? synapiBadge('Breached','red') : synapiBadge('Met','green')}</td>
+              <td>${s.partners}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiIncidentDetail() {
+  const id = state.synapiIncidentId || 'INC-2026-045';
+  const i = D.synapiIncidents.find(x => x.id === id) || D.synapiIncidents[0];
+  const rt = synapiRuntime();
+  const isResolved = rt.resolvedIncidents[i.id] || i.status === 'Resolved';
+
+  return `
+  ${synapiPageHeader(i.id, `${i.severity} · ${i.scope}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'sn-ops'})">← Ops</button>
+     <button class="btn btn-ghost" onclick="window.konduitDownloadFile(i.id+'-RCA.md', '# '+i.id+' — Root Cause Analysis\\n\\n## Summary\\n'+i.summary+'\\n\\n## Timeline\\n- Detected: '+i.started+'\\n- Resolved: '+(i.resolved||'Ongoing')+'\\n\\n## Root cause\\n(investigation in progress)\\n\\n## Remediation\\n- Apply fix\\n- Improve monitoring\\n- Communicate to affected partners', 'text/markdown')">⬇ RCA (Markdown)</button>
+     ${!isResolved ? `<button class="btn btn-primary synapi-cta" onclick="(function(){synapiRuntime().resolvedIncidents['${i.id}']=true;window.setState({screen:'sn-ops', synapiFlash:{title:i.id+' resolved',body:'SLA credits auto-calculated · partners notified'}});})()">✅ Resolve Incident</button>`:''}`)}
+
+  ${synapiKPIs([
+    { label: 'Status',          value: synapiBadge(isResolved?'Resolved':i.status, synapiStatusColor(isResolved?'Resolved':i.status)) },
+    { label: 'Severity',        value: synapiBadge(i.severity, synapiStatusColor(i.severity)) },
+    { label: 'Duration',        value: i.duration_min ? i.duration_min+' min' : 'Ongoing' },
+    { label: 'Started',         value: i.started },
+    { label: 'SLA credit',       value: i.sla_credit_triggered ? 'Triggered' : 'No' },
+    { label: 'Affected partners',value: '6' }
+  ])}
+
+  <div class="synapi-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Timeline</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>When</th><th>Event</th><th>Actor</th></tr></thead>
+          <tbody>
+            <tr><td class="row-sub">${i.started}</td><td><strong>Incident detected</strong></td><td>Auto-monitor</td></tr>
+            <tr><td class="row-sub">${i.started.replace(/:(\d+)$/, m => ':' + (parseInt(m.slice(1))+2).toString().padStart(2,'0'))}</td><td>Status page updated</td><td>Riley Okafor (Ops)</td></tr>
+            <tr><td class="row-sub">${i.started.replace(/:(\d+)$/, m => ':' + (parseInt(m.slice(1))+4).toString().padStart(2,'0'))}</td><td>Affected partners notified</td><td>Auto-dispatch</td></tr>
+            ${i.resolved ? `<tr><td class="row-sub">${i.resolved}</td><td><strong>Incident resolved</strong></td><td>Riley Okafor (Ops)</td></tr>` : ''}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Root Cause</h3></div>
+      <div style="padding:var(--space-md); color:var(--text-secondary); line-height:1.7">
+        ${isResolved ? i.summary + '. Root cause identified as upstream carrier API timeout. Mitigated by increasing gateway timeout for this endpoint from 3s to 5s and adding a circuit breaker.' : i.summary + ' — investigation in progress. Upstream carrier observability shows elevated 4xx rate on trucking endpoint validation logic.'}
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Affected Consumers</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Consumer</th><th>Impact</th><th>SLA Credit</th><th>Notified</th></tr></thead>
+        <tbody>
+          <tr><td>Marsh & McLennan</td><td>3 failed quotes</td><td>${i.sla_credit_triggered?'$124':'—'}</td><td>${synapiBadge('Sent','green')}</td></tr>
+          <tr><td>Aon plc</td><td>2 failed quotes</td><td>${i.sla_credit_triggered?'$84':'—'}</td><td>${synapiBadge('Sent','green')}</td></tr>
+          <tr><td>Lockton Companies</td><td>1 failed quote</td><td>${i.sla_credit_triggered?'$42':'—'}</td><td>${synapiBadge('Sent','green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiRelease() {
+  return `
+  ${synapiPageHeader('Release Notes', 'Platform and schema releases · consumer-facing changelog.',
+    `<button class="btn btn-ghost" onclick="window.konduitDownloadFile('changelog.md', '# Synapi Changelog\\n\\n' + D.synapiChangelog.map(c=>'## '+c.date+' — '+c.title+' ('+c.type+', '+c.scope+')\\n\\n'+c.summary).join('\\n\\n'), 'text/markdown')">⬇ Full Changelog (MD)</button>
+     <button class="btn btn-primary synapi-cta" onclick="window.synapiFlash({title:'Draft entry saved'})">+ New Entry</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Date</th><th>Type</th><th>Title</th><th>Scope</th><th>Summary</th></tr></thead>
+        <tbody>
+          ${D.synapiChangelog.map(c => `
+            <tr>
+              <td class="row-sub">${c.date}</td>
+              <td>${synapiBadge(c.type, c.type==='Incident'?'red':c.type==='Deprecation'?'amber':c.type==='Feature'?'green':'blue')}</td>
+              <td><strong>${c.title}</strong></td>
+              <td>${c.scope}</td>
+              <td class="row-sub">${c.summary}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiSettings() {
+  return `
+  ${synapiPageHeader('Platform Settings', 'Integrations, users, feature flags, platform-wide config.')}
+
+  <div class="synapi-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Integrations</h3></div>
+      <div style="padding:var(--space-md); display:flex; flex-direction:column; gap:var(--space-sm)">
+        ${D.synapiIntegrations.map(i => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-subtle)">
+            <div>
+              <strong>${i.name}</strong>
+              <div class="row-sub">${i.purpose}</div>
+            </div>
+            <div>${synapiBadge(i.status, i.status==='Connected'?'green':i.status==='Pending'?'amber':'grey')}</div>
+          </div>`).join('')}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Feature Flags</h3></div>
+      <div style="padding:var(--space-md); display:flex; flex-direction:column; gap:var(--space-sm)">
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>Event-driven webhooks (vs polling)</span><input type="checkbox" checked></label>
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>mTLS for Enterprise partners</span><input type="checkbox" checked></label>
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>Auto-assign partner success on onboarding</span><input type="checkbox" checked></label>
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>Public status page</span><input type="checkbox" checked></label>
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>Deprecation migration tracker</span><input type="checkbox" checked></label>
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>AI-assisted schema mapping (beta)</span><input type="checkbox"></label>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+// ─── Phase 4 — Compliance / Audit screens ───
+
+function renderSynapiAudit() {
+  const filter = state.synapiAuditFilter || 'All';
+  let log = D.synapiAuditLog;
+  if (filter === 'PII') log = log.filter(a => a.pii_accessed);
+  if (filter === 'API calls') log = log.filter(a => a.action.startsWith('API call'));
+  if (filter === 'Admin') log = log.filter(a => a.actor.includes('Platform') || a.actor.includes('Casey') || a.actor.includes('Helen'));
+
+  return `
+  ${synapiPageHeader('Audit Log', 'Immutable record of every platform action · queryable · exportable for regulatory review.',
+    `<button class="btn btn-ghost" onclick="window.konduitDownloadFile('synapi-audit-'+new Date().toISOString().slice(0,10)+'.csv', 'ts,actor,action,target,ip,pii_accessed\\n' + D.synapiAuditLog.map(a=>[a.ts,a.actor,a.action,a.target,a.ip,a.pii_accessed].join(',')).join('\\n'), 'text/csv')">⬇ Export CSV</button>
+     <button class="btn btn-primary synapi-cta" onclick="window.showModal('Custom Audit Export','<div class=k-modal-body><div class=form-grid><label>Partner<select><option>All</option><option>Lockton Companies</option><option>Marsh</option></select></label><label>Date range<input type=text placeholder=2026-01-01..2026-04-20></label><label>Action type<select><option>All</option><option>API calls</option><option>PII access</option><option>Admin</option></select></label><label>Include PII<select><option>Masked</option><option>Unmasked (requires scope)</option></select></label></div></div>','Generate Signed Export',()=>window.synapiFlash({title:'Signed export generated',body:'Signed URL valid for 7 days · logged to audit'}))">+ Custom Export</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Total events 30d', value: '42,800' },
+    { label: 'PII accesses',     value: '12,640' },
+    { label: 'Export requests',  value: '8' },
+    { label: 'DOI inquiries',    value: '0' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Events · ${log.length}</h3>
+      <label class="konduit-inline-select">Filter:
+        <select onchange="window.setState({synapiAuditFilter:this.value})">
+          ${['All','API calls','PII','Admin'].map(v => `<option ${v===filter?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th><th>IP</th><th>PII</th></tr></thead>
+        <tbody>
+          ${log.map(a => `
+            <tr>
+              <td class="row-sub">${a.ts}</td>
+              <td>${a.actor}</td>
+              <td><strong>${a.action}</strong></td>
+              <td>${a.target}</td>
+              <td class="row-sub">${a.ip}</td>
+              <td>${a.pii_accessed ? synapiBadge('PII','amber') : synapiBadge('None','grey')}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiPii() {
+  return `
+  ${synapiPageHeader('PII & Data Residency', 'Where PII flows · encryption status · jurisdictional controls.')}
+
+  ${synapiKPIs([
+    { label: 'Data residency',  value: 'US-primary · EU replica' },
+    { label: 'Encryption in transit',  value: 'TLS 1.3' },
+    { label: 'Encryption at rest',     value: 'AES-256 · KMS' },
+    { label: 'PII scrub rules',   value: '28 active' }
+  ], 4)}
+
+  <div class="synapi-split-2">
+    <section class="card">
+      <div class="card-header"><h3>PII Fields Tracked</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Field</th><th>Category</th><th>Masking</th><th>Retention</th></tr></thead>
+          <tbody>
+            <tr><td><code>namedInsured</code></td><td>Business name</td><td>Visible (non-PII for commercial)</td><td>7 years</td></tr>
+            <tr><td><code>driver.firstName</code></td><td>PII · name</td><td>Masked in UI · accessible with scope</td><td>7 years</td></tr>
+            <tr><td><code>driver.ssn</code></td><td>PII · sensitive</td><td>Tokenized · never shown in UI</td><td>7 years</td></tr>
+            <tr><td><code>driver.dob</code></td><td>PII · date</td><td>Masked · last-4 digit format</td><td>7 years</td></tr>
+            <tr><td><code>location.addressLine1</code></td><td>PII · address</td><td>Visible after NDA</td><td>10 years (policy period + 3)</td></tr>
+            <tr><td><code>payment.account_number</code></td><td>PCI</td><td>Last-4 only</td><td>Never stored raw · Stripe token</td></tr>
+            <tr><td><code>claim.injury_details</code></td><td>PHI</td><td>Restricted access</td><td>Statutory WC retention</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Data Residency Map</h3></div>
+      <div style="padding:var(--space-md); color:var(--text-secondary); line-height:1.9">
+        <div><strong>Primary storage:</strong> US-East-1 (AWS)</div>
+        <div><strong>Replica:</strong> US-West-2 (DR)</div>
+        <div><strong>EU replica:</strong> eu-central-1 (for EU partners)</div>
+        <div><strong>Cross-border transfers:</strong> SCCs signed · DPF self-cert</div>
+        <div><strong>Key management:</strong> AWS KMS · per-partner CMK</div>
+        <div><strong>Backup retention:</strong> 90 days encrypted</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Scrub Rules</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Rule</th><th>Applies to</th><th>Action</th><th>Active</th></tr></thead>
+        <tbody>
+          <tr><td>SSN pattern</td><td>All request bodies</td><td>Tokenize before logging</td><td>${synapiBadge('Active','green')}</td></tr>
+          <tr><td>Credit card (PAN)</td><td>All request bodies</td><td>Reject + 400 error</td><td>${synapiBadge('Active','green')}</td></tr>
+          <tr><td>Email address</td><td>Audit log</td><td>Hash (SHA-256)</td><td>${synapiBadge('Active','green')}</td></tr>
+          <tr><td>Phone number</td><td>Audit log</td><td>Last-4 masking</td><td>${synapiBadge('Active','green')}</td></tr>
+          <tr><td>IP address (EU)</td><td>Geo-IP match</td><td>Truncate last octet</td><td>${synapiBadge('Active','green')}</td></tr>
+          <tr><td>DOB</td><td>Audit log</td><td>Store year only</td><td>${synapiBadge('Active','green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiPolicyLib() {
+  return `
+  ${synapiPageHeader('Policy Library', 'Privacy policies, BAAs, DPAs, ACORD certifications, SOC2 evidence.')}
+
+  <div class="synapi-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Contracts & Agreements</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Document</th><th>Version</th><th>Last updated</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><strong>Master Services Agreement (MSA)</strong></td><td>v4.2</td><td>2026-02-10</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('MSA-v4.2.pdf','Program Deck','3.2 MB','Standard MSA')">View</button></td></tr>
+            <tr><td><strong>Data Processing Agreement (DPA)</strong></td><td>v3.8</td><td>2026-01-22</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('DPA-v3.8.pdf','Program Deck','1.8 MB','Standard DPA')">View</button></td></tr>
+            <tr><td><strong>Business Associate Agreement (BAA)</strong></td><td>v2.1</td><td>2025-11-30</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('BAA-v2.1.pdf','Program Deck','1.4 MB','Standard BAA — HIPAA')">View</button></td></tr>
+            <tr><td><strong>Privacy Policy</strong></td><td>v5.0</td><td>2026-03-15</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('Privacy-v5.0.pdf','Program Deck','820 KB','Public privacy policy')">View</button></td></tr>
+            <tr><td><strong>Acceptable Use Policy</strong></td><td>v2.3</td><td>2025-12-10</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('AUP-v2.3.pdf','Program Deck','420 KB','AUP')">View</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Certifications & Evidence</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Artifact</th><th>Issuer</th><th>Valid until</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><strong>SOC 2 Type II</strong></td><td>Prescient Assurance</td><td>2027-03-31</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('SOC2-Type-II-2026.pdf','Program Deck','4.8 MB','SOC2 Type II report')">View</button></td></tr>
+            <tr><td><strong>ISO 27001</strong></td><td>Schellman</td><td>2026-11-15</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('ISO-27001-2025.pdf','Program Deck','2.1 MB','ISO cert')">View</button></td></tr>
+            <tr><td><strong>PCI-DSS (SAQ-A)</strong></td><td>Stripe attestation</td><td>2026-09-30</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('PCI-DSS-SAQ.pdf','Program Deck','1.2 MB','PCI attestation')">View</button></td></tr>
+            <tr><td><strong>ACORD NGDS certification</strong></td><td>ACORD</td><td>2027-01-01</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('ACORD-NGDS-cert.pdf','Program Deck','640 KB','ACORD compliance cert')">View</button></td></tr>
+            <tr><td><strong>HIPAA Security Attestation</strong></td><td>Drata-managed</td><td>2026-12-31</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('HIPAA-attestation.pdf','Program Deck','920 KB','HIPAA attestation')">View</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Attestations & Policies</h3></div>
+    <div style="padding:var(--space-md); display:flex; flex-direction:column; gap:var(--space-sm)">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-subtle)"><span><strong>Annual employee security training</strong></span><span>${synapiBadge('100% complete','green')}</span></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-subtle)"><span><strong>Vendor risk assessments (Q1)</strong></span><span>${synapiBadge('14 of 14','green')}</span></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-subtle)"><span><strong>Quarterly access reviews</strong></span><span>${synapiBadge('Q1 complete','green')}</span></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-subtle)"><span><strong>Incident response runbook review</strong></span><span>${synapiBadge('Due 2026-05-15','amber')}</span></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0"><span><strong>Data retention policy</strong></span><span>${synapiBadge('Approved · 2026-02-10','green')}</span></div>
+    </div>
+  </section>
+  `;
+}
+
+function renderSynapiReports() {
+  return `
+  ${synapiPageHeader('Reports', 'Regulatory exports and custom queries · market conduct, NAIC data calls, SOC2 evidence, partner-level summaries.',
+    `<button class="btn btn-primary synapi-cta" onclick="window.synapiFlash({title:'Report builder opened'})">+ Custom Report</button>`)}
+
+  ${synapiKPIs([
+    { label: 'Reports YTD',      value: '24' },
+    { label: 'NAIC data calls',  value: '3' },
+    { label: 'DOI requests',     value: '2' },
+    { label: 'Avg turnaround',    value: '18 hours' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Standard Reports</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Report</th><th>Cadence</th><th>Last run</th><th>Format</th><th></th></tr></thead>
+        <tbody>
+          ${[
+            ['Market Conduct — Quote/Bind Activity', 'Quarterly', '2026-04-01', 'CSV + PDF narrative'],
+            ['NAIC Data Call — Cyber',               'Annual',    '2025-12-15', 'XML'],
+            ['SOC2 Evidence Export',                  'Continuous','2026-04-20', 'PDF'],
+            ['Partner-level API Usage',               'Monthly',   '2026-04-01', 'CSV'],
+            ['PII Access Summary',                    'Monthly',   '2026-04-01', 'CSV'],
+            ['Uptime / SLA Attainment',               'Monthly',   '2026-04-01', 'PDF'],
+            ['ACORD Schema Coverage',                 'Quarterly', '2026-04-01', 'PDF'],
+            ['Consent & Scope Changes',               'On demand', '2026-03-15', 'CSV']
+          ].map(r => `
+            <tr>
+              <td><strong>${r[0]}</strong></td>
+              <td>${r[1]}</td>
+              <td class="row-sub">${r[2]}</td>
+              <td class="row-sub">${r[3]}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.konduitDownloadFile(r[0].toLowerCase().replace(/\\s+/g,'-')+'.csv', 'Header1,Header2,Header3\\nSample,Data,Row\\nAnother,Sample,Row', 'text/csv')">⬇ CSV</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.synapiFlash({title:'Report ran',body:'Saved to reports library'})">▶ Run</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Recent Exports</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Export ID</th><th>Requested by</th><th>Scope</th><th>Requested</th><th>Expires</th></tr></thead>
+        <tbody>
+          <tr><td><strong>EXP-2026-14</strong></td><td>Helen Becker</td><td>Q1 market conduct — Summit</td><td>2026-04-20</td><td>2026-04-27</td></tr>
+          <tr><td><strong>EXP-2026-13</strong></td><td>Helen Becker</td><td>Annual NAIC Cyber data call</td><td>2025-12-15</td><td>2026-01-15</td></tr>
+          <tr><td><strong>EXP-2026-12</strong></td><td>Casey Wu</td><td>SOC2 evidence batch</td><td>2026-03-31</td><td>2026-04-30</td></tr>
+          <tr><td><strong>EXP-2026-11</strong></td><td>Dana Robinson</td><td>Partner Lockton — Q1 usage</td><td>2026-04-02</td><td>2026-05-02</td></tr>
+        </tbody>
+      </table>
+    </div>
   </section>
   `;
 }

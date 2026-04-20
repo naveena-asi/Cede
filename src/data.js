@@ -6599,3 +6599,259 @@ export const carrierIntegrations = [
   { name: 'OFAC / sanctions',     purpose: 'Clearance screening',   status: 'Connected',    since: '2024-10-05' },
   { name: 'SICS (Swiss Re)',      purpose: 'Reinsurance accounting', status: 'Not connected', since: null }
 ];
+
+/* ============================================================
+   SYNAPI — Data Layer (Insurance API Platform, 6th portal)
+   The API fabric underneath all other portals
+   ============================================================ */
+
+export const SYNAPI_USERS = {
+  consumer:    { name: 'Jordan Park',    role: 'Agency Tech Lead',       company: 'Lockton',             avatar: 'JP' },
+  dev:         { name: 'Ravi Nair',      role: 'Senior Developer',       company: 'Lockton',             avatar: 'RN' },
+  publisherCa: { name: 'Alex Chen',      role: 'Integration Manager',    company: 'Summit Fronting Re',  avatar: 'AC' },
+  publisherMg: { name: 'Evan Harlow',    role: 'MGA Integration Lead',   company: 'Meridian Specialty',  avatar: 'EH' },
+  admin:       { name: 'Casey Wu',       role: 'Platform Admin',         company: 'Synapi',              avatar: 'CW' },
+  devAdv:      { name: 'Morgan Lee',     role: 'Developer Advocate',     company: 'Synapi',              avatar: 'ML' },
+  partnerSucc: { name: 'Dana Robinson',  role: 'Partner Success',        company: 'Synapi',              avatar: 'DR' },
+  ops:         { name: 'Riley Okafor',   role: 'Platform Ops / SRE',     company: 'Synapi',              avatar: 'RO' },
+  compliance:  { name: 'Helen Becker',   role: 'Compliance Officer',     company: 'Synapi',              avatar: 'HB' }
+};
+
+export const synapiPartners = [
+  // Carriers
+  { id: 'P-001', name: 'Summit Fronting Re',       type: 'Carrier',  status: 'Production', plan: 'Scale',       gwp_api: '$82M', calls_30d: 142000, uptime: '99.98%', since: '2024-10-01', region: 'US Nationwide' },
+  { id: 'P-002', name: 'Nordic Global Re',          type: 'Carrier',  status: 'Production', plan: 'Enterprise',  gwp_api: '$64M', calls_30d: 88000,  uptime: '99.97%', since: '2024-11-15', region: 'US + EU' },
+  { id: 'P-003', name: 'Pacific Paper Group',       type: 'Carrier',  status: 'Production', plan: 'Pro',         gwp_api: '$38M', calls_30d: 64000,  uptime: '99.95%', since: '2024-12-10', region: 'US West' },
+  { id: 'P-004', name: 'Munich Re America',         type: 'Reinsurer',status: 'Production', plan: 'Enterprise',  gwp_api: '$124M',calls_30d: 42000,  uptime: '99.99%', since: '2024-08-01', region: 'US + Global' },
+  { id: 'P-005', name: 'Gateway Re (Bermuda)',      type: 'Reinsurer',status: 'Production', plan: 'Scale',       gwp_api: '$58M', calls_30d: 18000,  uptime: '99.96%', since: '2025-01-15', region: 'Bermuda' },
+  { id: 'P-006', name: "Syndicate 4488 — Lloyd's",  type: 'Carrier',  status: 'Production', plan: 'Pro',         gwp_api: '$22M', calls_30d: 24000,  uptime: '99.94%', since: '2025-02-01', region: "Lloyd's / UK" },
+  // MGAs
+  { id: 'P-010', name: 'Meridian Specialty Underwriters', type: 'MGA', status: 'Production', plan: 'Pro',        gwp_api: '$42M', calls_30d: 58000,  uptime: '99.97%', since: '2025-01-01', region: 'US SE' },
+  { id: 'P-011', name: 'Harbor Program Partners',         type: 'MGA', status: 'Production', plan: 'Pro',        gwp_api: '$48M', calls_30d: 48000,  uptime: '99.96%', since: '2024-11-01', region: 'US West' },
+  { id: 'P-012', name: 'Northstar Transportation MGA',    type: 'MGA', status: 'Production', plan: 'Pro',        gwp_api: '$54M', calls_30d: 42000,  uptime: '99.95%', since: '2024-12-20', region: 'US Midwest' },
+  { id: 'P-013', name: 'Atlas Surety Group',              type: 'MGA', status: 'Production', plan: 'Starter',    gwp_api: '$15M', calls_30d: 11000,  uptime: '99.92%', since: '2025-03-01', region: 'US Nationwide' },
+  // Brokers (consumers)
+  { id: 'P-020', name: 'Marsh & McLennan',          type: 'Broker',   status: 'Production', plan: 'Enterprise',  gwp_api: null,   calls_30d: 94000,  uptime: '—',       since: '2024-09-01', region: 'Global' },
+  { id: 'P-021', name: 'Aon plc',                   type: 'Broker',   status: 'Production', plan: 'Enterprise',  gwp_api: null,   calls_30d: 72000,  uptime: '—',       since: '2024-10-10', region: 'Global' },
+  { id: 'P-022', name: 'Lockton Companies',         type: 'Broker',   status: 'Production', plan: 'Scale',       gwp_api: null,   calls_30d: 68000,  uptime: '—',       since: '2024-09-15', region: 'Global' },
+  { id: 'P-023', name: 'Willis Towers Watson',      type: 'Broker',   status: 'Production', plan: 'Scale',       gwp_api: null,   calls_30d: 48000,  uptime: '—',       since: '2024-11-01', region: 'Global' },
+  // InsurTechs / Embedded
+  { id: 'P-030', name: 'NestLease (real estate)',   type: 'Embedded', status: 'Production', plan: 'Pro',         gwp_api: null,   calls_30d: 22000,  uptime: '—',       since: '2025-02-14', region: 'US' },
+  { id: 'P-031', name: 'FleetForward (telematics)', type: 'InsurTech',status: 'Sandbox',    plan: 'Starter',     gwp_api: null,   calls_30d: 3200,   uptime: '—',       since: '2026-03-20', region: 'US' },
+  { id: 'P-032', name: 'BoldPenguin Exchange',      type: 'Aggregator',status:'Production', plan: 'Scale',       gwp_api: null,   calls_30d: 28000,  uptime: '—',       since: '2025-01-20', region: 'US' }
+];
+
+export const SYNAPI_LOBS = ['Commercial Property','Workers Compensation','Cyber','Transportation','Aviation','Casualty / GL','E&O','D&O','Marine','Surety','Environmental','CAT Personal Lines','Homeowners','Auto'];
+
+export const synapiApis = [
+  { id: 'API-001', partnerId: 'P-001', partner: 'Summit Fronting Re',      name: 'Commercial Property — Quote',    endpoint: 'POST /v1/carriers/summit/quote/commercial-property', method: 'POST', version: 'v1',     status: 'GA',         lob: 'Commercial Property',     auth: 'OAuth 2.0', rate_limit: '100 rpm',  p95_ms: 680,  error_30d: 0.4,  calls_30d: 42000, acord_schema: 'NGDS-CP-v1.2',  sandbox: true },
+  { id: 'API-002', partnerId: 'P-001', partner: 'Summit Fronting Re',      name: 'Commercial Property — Bind',     endpoint: 'POST /v1/carriers/summit/bind/commercial-property', method: 'POST', version: 'v1',     status: 'GA',         lob: 'Commercial Property',     auth: 'OAuth 2.0', rate_limit: '50 rpm',   p95_ms: 1240, error_30d: 0.2,  calls_30d: 8400,  acord_schema: 'NGDS-CP-v1.2',  sandbox: true },
+  { id: 'API-003', partnerId: 'P-001', partner: 'Summit Fronting Re',      name: 'Policy — Endorsement',           endpoint: 'POST /v1/carriers/summit/endorsement',               method: 'POST', version: 'v1',     status: 'GA',         lob: 'All',                     auth: 'OAuth 2.0', rate_limit: '100 rpm',  p95_ms: 420,  error_30d: 0.3,  calls_30d: 3200,  acord_schema: 'NGDS-POL-v1.1', sandbox: true },
+  { id: 'API-004', partnerId: 'P-001', partner: 'Summit Fronting Re',      name: 'Claim — FNOL',                   endpoint: 'POST /v1/carriers/summit/fnol',                      method: 'POST', version: 'v1',     status: 'GA',         lob: 'All',                     auth: 'OAuth 2.0', rate_limit: '200 rpm',  p95_ms: 380,  error_30d: 0.5,  calls_30d: 1800,  acord_schema: 'NGDS-CLM-v1.0', sandbox: true },
+  { id: 'API-005', partnerId: 'P-001', partner: 'Summit Fronting Re',      name: 'Bordereau — Premium',             endpoint: 'POST /v1/carriers/summit/bordereau/premium',         method: 'POST', version: 'v1',     status: 'GA',         lob: 'All',                     auth: 'OAuth 2.0 + mTLS', rate_limit: '10 rpm', p95_ms: 2100, error_30d: 0.1, calls_30d: 320,  acord_schema: 'AL3-BDX-2019',  sandbox: true },
+  { id: 'API-006', partnerId: 'P-002', partner: 'Nordic Global Re',        name: 'Aviation — Quote',               endpoint: 'POST /v1/carriers/nordic/quote/aviation',           method: 'POST', version: 'v1',     status: 'GA',         lob: 'Aviation',                auth: 'OAuth 2.0', rate_limit: '50 rpm',   p95_ms: 920,  error_30d: 0.6,  calls_30d: 8800,  acord_schema: 'NGDS-AV-v1.0',  sandbox: true },
+  { id: 'API-007', partnerId: 'P-002', partner: 'Nordic Global Re',        name: 'Property CAT — Bind',            endpoint: 'POST /v1/carriers/nordic/bind/property-cat',         method: 'POST', version: 'v1',     status: 'Beta',       lob: 'CAT Commercial',          auth: 'OAuth 2.0', rate_limit: '25 rpm',   p95_ms: 1820, error_30d: 1.2,  calls_30d: 1200,  acord_schema: 'NGDS-CP-v1.2',  sandbox: true },
+  { id: 'API-008', partnerId: 'P-003', partner: 'Pacific Paper Group',     name: 'Workers Comp — Quote',           endpoint: 'POST /v1/carriers/pacific/quote/wc',                 method: 'POST', version: 'v1',     status: 'GA',         lob: 'Workers Compensation',    auth: 'OAuth 2.0', rate_limit: '100 rpm',  p95_ms: 740,  error_30d: 0.3,  calls_30d: 22000, acord_schema: 'NGDS-WC-v1.1',  sandbox: true },
+  { id: 'API-009', partnerId: 'P-003', partner: 'Pacific Paper Group',     name: 'Workers Comp — Bind',            endpoint: 'POST /v1/carriers/pacific/bind/wc',                  method: 'POST', version: 'v1',     status: 'GA',         lob: 'Workers Compensation',    auth: 'OAuth 2.0', rate_limit: '50 rpm',   p95_ms: 1180, error_30d: 0.2,  calls_30d: 4200,  acord_schema: 'NGDS-WC-v1.1',  sandbox: true },
+  { id: 'API-010', partnerId: 'P-004', partner: 'Munich Re America',       name: 'Treaty — Ceded Bordereau',       endpoint: 'POST /v1/reinsurers/munich-re/bordereau/ceded',     method: 'POST', version: 'v1',     status: 'GA',         lob: 'All',                     auth: 'OAuth 2.0 + mTLS', rate_limit: '5 rpm',  p95_ms: 3200, error_30d: 0.1, calls_30d: 120,  acord_schema: 'AL3-RE-BDX-2020',sandbox: true },
+  { id: 'API-011', partnerId: 'P-010', partner: 'Meridian Specialty',       name: 'Program — Quote (broker)',       endpoint: 'POST /v1/mgas/meridian/quote',                       method: 'POST', version: 'v2',     status: 'GA',         lob: 'Commercial Property',     auth: 'OAuth 2.0', rate_limit: '150 rpm',  p95_ms: 580,  error_30d: 0.2,  calls_30d: 38000, acord_schema: 'NGDS-CP-v1.2',  sandbox: true },
+  { id: 'API-012', partnerId: 'P-010', partner: 'Meridian Specialty',       name: 'Program — Bind (broker)',        endpoint: 'POST /v1/mgas/meridian/bind',                        method: 'POST', version: 'v2',     status: 'GA',         lob: 'Commercial Property',     auth: 'OAuth 2.0', rate_limit: '75 rpm',   p95_ms: 1020, error_30d: 0.3,  calls_30d: 4800,  acord_schema: 'NGDS-CP-v1.2',  sandbox: true },
+  { id: 'API-013', partnerId: 'P-010', partner: 'Meridian Specialty',       name: 'Program — Quote (broker)',       endpoint: 'POST /v1/mgas/meridian/quote',                       method: 'POST', version: 'v1',     status: 'Deprecated', lob: 'Commercial Property',     auth: 'OAuth 2.0', rate_limit: '150 rpm',  p95_ms: 620,  error_30d: 0.3,  calls_30d: 2400,  acord_schema: 'NGDS-CP-v1.1',  sandbox: true },
+  { id: 'API-014', partnerId: 'P-011', partner: 'Harbor Program Partners',  name: 'WC Program — Quote',             endpoint: 'POST /v1/mgas/harbor/quote/wc',                     method: 'POST', version: 'v1',     status: 'GA',         lob: 'Workers Compensation',    auth: 'OAuth 2.0', rate_limit: '100 rpm',  p95_ms: 660,  error_30d: 0.4,  calls_30d: 18000, acord_schema: 'NGDS-WC-v1.1',  sandbox: true },
+  { id: 'API-015', partnerId: 'P-012', partner: 'Northstar MGA',            name: 'Trucking — Quote',               endpoint: 'POST /v1/mgas/northstar/quote/trucking',            method: 'POST', version: 'v1',     status: 'GA',         lob: 'Transportation',          auth: 'OAuth 2.0', rate_limit: '80 rpm',   p95_ms: 810,  error_30d: 0.5,  calls_30d: 12000, acord_schema: 'NGDS-TR-v1.0',  sandbox: true },
+  { id: 'API-016', partnerId: 'P-013', partner: 'Atlas Surety',             name: 'Surety — Quote',                 endpoint: 'POST /v1/mgas/atlas/quote/surety',                  method: 'POST', version: 'v1',     status: 'GA',         lob: 'Surety',                  auth: 'OAuth 2.0', rate_limit: '100 rpm',  p95_ms: 520,  error_30d: 0.2,  calls_30d: 7200,  acord_schema: 'NGDS-SU-v1.0',  sandbox: true },
+  { id: 'API-017', partnerId: 'P-006', partner: "Syndicate 4488 — Lloyd's", name: 'Specialty Cyber — Quote',        endpoint: 'POST /v1/carriers/lloyds-4488/quote/cyber',        method: 'POST', version: 'v1',     status: 'Beta',       lob: 'Cyber',                   auth: 'OAuth 2.0', rate_limit: '40 rpm',   p95_ms: 1140, error_30d: 0.8,  calls_30d: 2200,  acord_schema: 'NGDS-CY-v1.0',  sandbox: true },
+  { id: 'API-018', partnerId: 'P-005', partner: 'Gateway Re',               name: 'CAT XoL — Quote (fac)',          endpoint: 'POST /v1/reinsurers/gateway/quote/fac',             method: 'POST', version: 'v1',     status: 'GA',         lob: 'CAT Commercial',          auth: 'OAuth 2.0', rate_limit: '20 rpm',   p95_ms: 1480, error_30d: 0.4,  calls_30d: 840,   acord_schema: 'NGDS-RE-v1.0',  sandbox: true },
+  { id: 'API-019', partnerId: 'P-001', partner: 'Summit Fronting Re',      name: 'Docs — Fetch declarations',       endpoint: 'GET /v1/carriers/summit/policy/{id}/declarations',  method: 'GET',  version: 'v1',     status: 'GA',         lob: 'All',                     auth: 'OAuth 2.0', rate_limit: '500 rpm',  p95_ms: 140,  error_30d: 0.1,  calls_30d: 48000, acord_schema: 'NGDS-DOC-v1.0', sandbox: true },
+  { id: 'API-020', partnerId: 'P-010', partner: 'Meridian Specialty',       name: 'Program — Endorsement',          endpoint: 'POST /v1/mgas/meridian/endorsement',                 method: 'POST', version: 'v1',     status: 'GA',         lob: 'Commercial Property',     auth: 'OAuth 2.0', rate_limit: '80 rpm',   p95_ms: 520,  error_30d: 0.3,  calls_30d: 1800,  acord_schema: 'NGDS-POL-v1.1', sandbox: true }
+];
+
+export const synapiConsumerApps = [
+  { id: 'APP-001', partnerId: 'P-022', partner: 'Lockton Companies',        name: 'Lockton-AppliedEpic-Prod',   env: 'Production', scopes: ['quote:read','bind:write','endorsement:write','docs:read'], created: '2024-09-15', calls_30d: 42000, keys: 2, status: 'Active' },
+  { id: 'APP-002', partnerId: 'P-022', partner: 'Lockton Companies',        name: 'Lockton-Sandbox',             env: 'Sandbox',    scopes: ['quote:read','bind:write'],                                    created: '2024-09-15', calls_30d: 8200,  keys: 1, status: 'Active' },
+  { id: 'APP-003', partnerId: 'P-020', partner: 'Marsh & McLennan',          name: 'Marsh-Vertafore-Prod',        env: 'Production', scopes: ['quote:read','bind:write','endorsement:write','docs:read','webhook:subscribe'], created: '2024-09-01', calls_30d: 68000, keys: 3, status: 'Active' },
+  { id: 'APP-004', partnerId: 'P-021', partner: 'Aon plc',                  name: 'Aon-Global-Hub',              env: 'Production', scopes: ['quote:read','bind:write','claim:write','webhook:subscribe'],   created: '2024-10-10', calls_30d: 52000, keys: 2, status: 'Active' },
+  { id: 'APP-005', partnerId: 'P-023', partner: 'Willis Towers Watson',      name: 'WTW-Connect',                 env: 'Production', scopes: ['quote:read','bind:write','docs:read'],                         created: '2024-11-01', calls_30d: 38000, keys: 2, status: 'Active' },
+  { id: 'APP-006', partnerId: 'P-030', partner: 'NestLease',                name: 'NestLease-Embedded',          env: 'Production', scopes: ['quote:read','bind:write'],                                    created: '2025-02-14', calls_30d: 18000, keys: 1, status: 'Active' },
+  { id: 'APP-007', partnerId: 'P-031', partner: 'FleetForward',             name: 'FleetForward-Telematics',      env: 'Sandbox',    scopes: ['quote:read'],                                                 created: '2026-03-20', calls_30d: 3200,  keys: 1, status: 'Active' },
+  { id: 'APP-008', partnerId: 'P-032', partner: 'BoldPenguin Exchange',    name: 'BP-Aggregator-Prod',           env: 'Production', scopes: ['quote:read','bind:write','webhook:subscribe'],                created: '2025-01-20', calls_30d: 28000, keys: 2, status: 'Active' }
+];
+
+export const synapiRoutingRules = [
+  { id: 'RR-01', app: 'Lockton-AppliedEpic-Prod', name: 'Commercial Property · US · $10M+', lob: 'Commercial Property', state_in: ['Any'],         premium_min: 10000000, premium_max: 100000000, carriers: ['Summit Fronting Re','Nordic Global Re','Meridian Specialty'], strategy: 'Parallel fan-out · return best 3', timeout_ms: 4000, fallback: 'Manual review queue', enabled: true },
+  { id: 'RR-02', app: 'Lockton-AppliedEpic-Prod', name: 'Workers Comp · West · $1M–$5M',    lob: 'Workers Compensation',state_in: ['CA','OR','WA'], premium_min: 1000000,  premium_max: 5000000,   carriers: ['Pacific Paper Group','Harbor Program Partners'],             strategy: 'Parallel fan-out · return all', timeout_ms: 3500, fallback: 'Pacific Paper Group',      enabled: true },
+  { id: 'RR-03', app: 'Marsh-Vertafore-Prod',     name: 'Transportation · US',               lob: 'Transportation',      state_in: ['Any'],         premium_min: 500000,   premium_max: 50000000,  carriers: ['Northstar MGA','Summit Fronting Re'],                        strategy: 'Sequential · first success', timeout_ms: 5000, fallback: 'Manual review queue', enabled: true },
+  { id: 'RR-04', app: 'Marsh-Vertafore-Prod',     name: 'Aviation · global',                 lob: 'Aviation',            state_in: ['Any'],         premium_min: 100000,   premium_max: 20000000,  carriers: ['Nordic Global Re'],                                          strategy: 'Single carrier',             timeout_ms: 4000, fallback: 'Decline',             enabled: true },
+  { id: 'RR-05', app: 'Aon-Global-Hub',           name: 'Cyber · SME',                       lob: 'Cyber',               state_in: ['Any'],         premium_min: 50000,    premium_max: 1000000,   carriers: ["Syndicate 4488 — Lloyd's"],                                   strategy: 'Single carrier',             timeout_ms: 3000, fallback: 'Decline',             enabled: true },
+  { id: 'RR-06', app: 'BP-Aggregator-Prod',       name: 'SME package · multi-line',          lob: 'Commercial Property', state_in: ['Any'],         premium_min: 25000,    premium_max: 500000,    carriers: ['Summit Fronting Re','Meridian Specialty','Pacific Paper Group','Harbor Program Partners'], strategy: 'Parallel fan-out · return top 3 by price', timeout_ms: 5000, fallback: 'Manual review queue', enabled: true },
+  { id: 'RR-07', app: 'NestLease-Embedded',       name: 'Homeowners · embedded',             lob: 'Homeowners',          state_in: ['CA','TX','FL','NY'], premium_min: 500, premium_max: 10000,  carriers: ['Summit Fronting Re','Heritage Property MGA'],                 strategy: 'Single carrier (cheapest)',  timeout_ms: 2000, fallback: 'Decline',             enabled: true },
+  { id: 'RR-08', app: 'Lockton-AppliedEpic-Prod', name: 'Surety · contract bonds',           lob: 'Surety',              state_in: ['Any'],         premium_min: 10000,    premium_max: 2000000,   carriers: ['Atlas Surety'],                                               strategy: 'Single carrier',             timeout_ms: 3000, fallback: 'Decline',             enabled: false }
+];
+
+export const synapiTransactions = [
+  { id: 'TX-889142', ts: '2026-04-20 14:22:11', app: 'Lockton-AppliedEpic-Prod', direction: 'out', method: 'POST', endpoint: '/v1/synapi/quote', target: 'Multi-fan-out (RR-01)', status: 200, latency_ms: 2840, bytes: 24580, error: null,             scenario: 'Commercial Property · Kroger Real Estate · $42M TIV · 3 carrier responses' },
+  { id: 'TX-889141', ts: '2026-04-20 14:22:08', app: 'Lockton-AppliedEpic-Prod', direction: 'out', method: 'POST', endpoint: '/v1/carriers/summit/quote/commercial-property', target: 'Summit Fronting Re', status: 200, latency_ms: 680,  bytes: 8420,  error: null,             scenario: '—' },
+  { id: 'TX-889140', ts: '2026-04-20 14:22:08', app: 'Lockton-AppliedEpic-Prod', direction: 'out', method: 'POST', endpoint: '/v1/mgas/meridian/quote', target: 'Meridian Specialty', status: 200, latency_ms: 580,  bytes: 8120,  error: null,             scenario: '—' },
+  { id: 'TX-889139', ts: '2026-04-20 14:22:08', app: 'Lockton-AppliedEpic-Prod', direction: 'out', method: 'POST', endpoint: '/v1/carriers/nordic/quote/aviation', target: 'Nordic Global Re', status: 504, latency_ms: 4000, bytes: 0,     error: 'Gateway timeout', scenario: '—' },
+  { id: 'TX-889138', ts: '2026-04-20 14:18:02', app: 'Marsh-Vertafore-Prod',     direction: 'out', method: 'POST', endpoint: '/v1/synapi/bind',   target: 'Summit Fronting Re', status: 201, latency_ms: 1240, bytes: 12800, error: null,             scenario: 'Bind · POL-2026-0421 · $284,000' },
+  { id: 'TX-889137', ts: '2026-04-20 14:15:47', app: 'Lockton-AppliedEpic-Prod', direction: 'in',  method: 'POST', endpoint: 'webhook:policy.bound', target: 'Lockton AMS', status: 200, latency_ms: 240, bytes: 4120, error: null,         scenario: 'Event fanout · POL-2026-0421' },
+  { id: 'TX-889136', ts: '2026-04-20 14:12:19', app: 'NestLease-Embedded',      direction: 'out', method: 'POST', endpoint: '/v1/synapi/quote',  target: 'Summit Fronting Re', status: 200, latency_ms: 820, bytes: 4200,  error: null,             scenario: 'Homeowners · embedded at lease signing' },
+  { id: 'TX-889135', ts: '2026-04-20 14:10:08', app: 'Aon-Global-Hub',           direction: 'out', method: 'POST', endpoint: '/v1/carriers/lloyds-4488/quote/cyber', target: "Syndicate 4488 — Lloyd's", status: 200, latency_ms: 1140, bytes: 6800, error: null,         scenario: 'Cyber SME · $2M limit' },
+  { id: 'TX-889134', ts: '2026-04-20 14:08:44', app: 'Marsh-Vertafore-Prod',     direction: 'out', method: 'POST', endpoint: '/v1/carriers/summit/fnol', target: 'Summit Fronting Re', status: 201, latency_ms: 380, bytes: 2400, error: null,         scenario: 'FNOL · CLM-2026-0129' },
+  { id: 'TX-889133', ts: '2026-04-20 14:05:22', app: 'BP-Aggregator-Prod',      direction: 'out', method: 'POST', endpoint: '/v1/synapi/quote',  target: 'Multi-fan-out (RR-06)', status: 200, latency_ms: 3280, bytes: 28400, error: null,             scenario: 'SME package · 4 carrier responses · top 3 returned' },
+  { id: 'TX-889132', ts: '2026-04-20 14:02:01', app: 'WTW-Connect',              direction: 'out', method: 'POST', endpoint: '/v1/carriers/pacific/quote/wc', target: 'Pacific Paper Group', status: 200, latency_ms: 740, bytes: 7200, error: null,   scenario: 'WC · hospitality chain · CA' },
+  { id: 'TX-889131', ts: '2026-04-20 13:58:14', app: 'Lockton-AppliedEpic-Prod', direction: 'out', method: 'GET',  endpoint: '/v1/carriers/summit/policy/POL-2026-0421/declarations', target: 'Summit Fronting Re', status: 200, latency_ms: 140, bytes: 2100, error: null, scenario: 'Declarations PDF retrieval' },
+  { id: 'TX-889130', ts: '2026-04-20 13:55:02', app: 'Marsh-Vertafore-Prod',     direction: 'out', method: 'POST', endpoint: '/v1/mgas/northstar/quote/trucking', target: 'Northstar MGA', status: 400, latency_ms: 120, bytes: 340, error: 'Invalid DOT number format', scenario: 'Validation failure on DOT number' },
+  { id: 'TX-889129', ts: '2026-04-20 13:52:44', app: 'FleetForward-Telematics',  direction: 'out', method: 'POST', endpoint: '/v1/mgas/northstar/quote/trucking', target: 'Northstar MGA', status: 200, latency_ms: 810, bytes: 5200, error: null,         scenario: 'Telematics-scored fleet · 180 units' },
+  { id: 'TX-889128', ts: '2026-04-20 13:50:18', app: 'Lockton-AppliedEpic-Prod', direction: 'out', method: 'POST', endpoint: '/v1/mgas/atlas/quote/surety', target: 'Atlas Surety', status: 200, latency_ms: 520, bytes: 3200, error: null,         scenario: 'Contract bond · contractor' },
+  { id: 'TX-889127', ts: '2026-04-20 13:48:02', app: 'Marsh-Vertafore-Prod',     direction: 'out', method: 'POST', endpoint: '/v1/mgas/meridian/endorsement', target: 'Meridian Specialty', status: 200, latency_ms: 520, bytes: 4200, error: null,         scenario: 'Endorsement · add insured' },
+  { id: 'TX-889126', ts: '2026-04-20 13:45:33', app: 'Aon-Global-Hub',           direction: 'in',  method: 'POST', endpoint: 'webhook:endorsement.approved', target: 'Aon-Global-Hub', status: 200, latency_ms: 180, bytes: 3200, error: null, scenario: 'Event fanout · END-2026-0080' },
+  { id: 'TX-889125', ts: '2026-04-20 13:42:14', app: 'BP-Aggregator-Prod',      direction: 'out', method: 'POST', endpoint: '/v1/reinsurers/gateway/quote/fac', target: 'Gateway Re', status: 200, latency_ms: 1480, bytes: 9800, error: null,         scenario: 'Facultative reinsurance quote · coastal' }
+];
+
+export const synapiWebhooks = [
+  { id: 'WH-01', app: 'Marsh-Vertafore-Prod',     event: 'policy.bound',        url: 'https://api.marsh.internal/synapi/events',      last_delivery: '2026-04-20 14:15:47', success_rate: '99.8%', retries: 0 },
+  { id: 'WH-02', app: 'Marsh-Vertafore-Prod',     event: 'endorsement.approved',url: 'https://api.marsh.internal/synapi/events',      last_delivery: '2026-04-20 13:45:33', success_rate: '99.7%', retries: 1 },
+  { id: 'WH-03', app: 'Aon-Global-Hub',           event: 'policy.bound',        url: 'https://hub.aon.com/insurance/events',          last_delivery: '2026-04-20 14:15:47', success_rate: '99.9%', retries: 0 },
+  { id: 'WH-04', app: 'Aon-Global-Hub',           event: 'claim.fnol',          url: 'https://hub.aon.com/insurance/events',          last_delivery: '2026-04-20 14:08:44', success_rate: '99.5%', retries: 2 },
+  { id: 'WH-05', app: 'Lockton-AppliedEpic-Prod', event: 'policy.bound',        url: 'https://ams.lockton.internal/webhooks/synapi',  last_delivery: '2026-04-20 14:15:47', success_rate: '98.2%', retries: 3 },
+  { id: 'WH-06', app: 'BP-Aggregator-Prod',      event: 'quote.ready',         url: 'https://exchange.boldpenguin.com/hooks/synapi',last_delivery: '2026-04-20 13:42:14', success_rate: '99.6%', retries: 1 }
+];
+
+export const synapiAcordSchemas = [
+  { id: 'NGDS-CP-v1.2',    family: 'NGDS', lob: 'Commercial Property',     version: '1.2', published: '2025-11-01', consumers: 12, diff_to_prev: 'Added windMitigation{} object; optional buildingCodePlus{}', format: 'JSON' },
+  { id: 'NGDS-CP-v1.1',    family: 'NGDS', lob: 'Commercial Property',     version: '1.1', published: '2025-03-15', consumers: 3,  diff_to_prev: 'Previous baseline',                                            format: 'JSON' },
+  { id: 'NGDS-WC-v1.1',    family: 'NGDS', lob: 'Workers Compensation',    version: '1.1', published: '2025-09-20', consumers: 8,  diff_to_prev: 'Added classCodes[] array with NCCI mappings',                  format: 'JSON' },
+  { id: 'NGDS-CY-v1.0',    family: 'NGDS', lob: 'Cyber',                   version: '1.0', published: '2025-06-10', consumers: 6,  diff_to_prev: 'Initial release',                                              format: 'JSON' },
+  { id: 'NGDS-AV-v1.0',    family: 'NGDS', lob: 'Aviation',                version: '1.0', published: '2025-05-01', consumers: 2,  diff_to_prev: 'Initial release',                                              format: 'JSON' },
+  { id: 'NGDS-TR-v1.0',    family: 'NGDS', lob: 'Transportation',          version: '1.0', published: '2025-04-15', consumers: 4,  diff_to_prev: 'Initial release',                                              format: 'JSON' },
+  { id: 'NGDS-SU-v1.0',    family: 'NGDS', lob: 'Surety',                  version: '1.0', published: '2025-08-01', consumers: 2,  diff_to_prev: 'Initial release',                                              format: 'JSON' },
+  { id: 'NGDS-CLM-v1.0',   family: 'NGDS', lob: 'All LOBs · Claims',        version: '1.0', published: '2025-07-01', consumers: 9,  diff_to_prev: 'Initial release',                                              format: 'JSON' },
+  { id: 'NGDS-POL-v1.1',   family: 'NGDS', lob: 'All LOBs · Policy',        version: '1.1', published: '2025-10-01', consumers: 10, diff_to_prev: 'Added endorsement delta object',                                format: 'JSON' },
+  { id: 'NGDS-DOC-v1.0',   family: 'NGDS', lob: 'Documents',               version: '1.0', published: '2025-05-20', consumers: 11, diff_to_prev: 'Initial release',                                              format: 'JSON' },
+  { id: 'NGDS-RE-v1.0',    family: 'NGDS', lob: 'Reinsurance',             version: '1.0', published: '2025-09-01', consumers: 3,  diff_to_prev: 'Initial release',                                              format: 'JSON' },
+  { id: 'AL3-BDX-2019',    family: 'AL3',  lob: 'Bordereau (Premium)',      version: '2019', published: '2019-01-01', consumers: 7,  diff_to_prev: 'Legacy format · still required by some reinsurers',           format: 'XML' },
+  { id: 'AL3-RE-BDX-2020', family: 'AL3',  lob: 'Bordereau (Reinsurance)',  version: '2020', published: '2020-06-15', consumers: 4,  diff_to_prev: 'Legacy format · reinsurer-standard',                          format: 'XML' }
+];
+
+export const synapiIncidents = [
+  { id: 'INC-2026-042', started: '2026-04-19 16:42', resolved: '2026-04-19 17:18', duration_min: 36,  severity: 'P2', scope: 'Nordic Global Re · Aviation quote endpoint',   summary: 'Elevated p95 latency — upstream carrier timeout', status: 'Resolved',    sla_credit_triggered: true },
+  { id: 'INC-2026-041', started: '2026-04-14 09:02', resolved: '2026-04-14 09:14', duration_min: 12,  severity: 'P3', scope: 'Webhooks · Marsh delivery',                     summary: 'Temporary DNS resolution failure for subscriber', status: 'Resolved',    sla_credit_triggered: false },
+  { id: 'INC-2026-040', started: '2026-04-02 11:22', resolved: '2026-04-02 13:08', duration_min: 106, severity: 'P1', scope: 'Platform-wide · OAuth token refresh',           summary: 'Token rotation rollout introduced regression',     status: 'Resolved',    sla_credit_triggered: true  },
+  { id: 'INC-2026-045', started: '2026-04-20 13:58', resolved: null,               duration_min: null,severity: 'P3', scope: 'Northstar MGA · 4xx validation rate spike',     summary: 'Investigating elevated 400s on trucking endpoint', status: 'Investigating', sla_credit_triggered: false }
+];
+
+export const synapiSla = [
+  { tier: 'Enterprise', uptime_target: '99.99%', uptime_ytd: '99.987%', credit_rate: '10% per 0.1% miss', breach: false, partners: 4 },
+  { tier: 'Scale',      uptime_target: '99.95%', uptime_ytd: '99.962%', credit_rate: '5% per 0.1% miss',  breach: false, partners: 6 },
+  { tier: 'Pro',        uptime_target: '99.9%',  uptime_ytd: '99.94%',  credit_rate: '2% per 0.1% miss',  breach: false, partners: 8 },
+  { tier: 'Starter',    uptime_target: '99.5%',  uptime_ytd: '99.82%',  credit_rate: 'Best effort',       breach: false, partners: 2 }
+];
+
+export const synapiBillingPlans = [
+  { name: 'Starter',    price: '$500/mo',      included_calls: '25k / mo',   overage: '$0.01 / call',   support: 'Community',       sla: '99.5%',  seats: '3',   sandbox: true },
+  { name: 'Pro',        price: '$2,500/mo',    included_calls: '250k / mo',  overage: '$0.006 / call',  support: 'Email',           sla: '99.9%',  seats: '10',  sandbox: true },
+  { name: 'Scale',      price: '$8,000/mo',    included_calls: '1.5M / mo',  overage: '$0.004 / call',  support: 'Priority',        sla: '99.95%', seats: '25',  sandbox: true },
+  { name: 'Enterprise', price: 'Custom',       included_calls: 'Unlimited',  overage: 'Included',       support: 'Dedicated CSM',   sla: '99.99%', seats: 'Custom', sandbox: true }
+];
+
+export const synapiInvoices = [
+  { id: 'INV-2026-04-LOCK',   partner: 'Lockton Companies',   period: 'Apr 2026', calls: '1,420,000', amount: '$10,250.00', status: 'Paid' },
+  { id: 'INV-2026-04-MARSH',  partner: 'Marsh & McLennan',    period: 'Apr 2026', calls: '2,340,000', amount: '$14,800.00', status: 'Paid' },
+  { id: 'INV-2026-04-AON',    partner: 'Aon plc',             period: 'Apr 2026', calls: '1,680,000', amount: '$11,200.00', status: 'Issued' },
+  { id: 'INV-2026-04-WTW',    partner: 'Willis Towers Watson',period: 'Apr 2026', calls: '980,000',   amount: '$7,280.00',  status: 'Issued' },
+  { id: 'INV-2026-04-BP',     partner: 'BoldPenguin Exchange',period: 'Apr 2026', calls: '620,000',   amount: '$5,880.00',  status: 'Paid' },
+  { id: 'INV-2026-04-NEST',   partner: 'NestLease',           period: 'Apr 2026', calls: '480,000',   amount: '$4,380.00',  status: 'Paid' }
+];
+
+export const synapiAuditLog = [
+  { ts: '2026-04-20 14:22:11', actor: 'Jordan Park (Lockton)',   action: 'API call · /v1/synapi/quote',           target: 'TX-889142', ip: '10.22.4.12',  pii_accessed: true  },
+  { ts: '2026-04-20 14:18:02', actor: 'Marsh-Vertafore-Prod',    action: 'API call · /v1/synapi/bind',            target: 'TX-889138', ip: '10.44.8.18',  pii_accessed: true  },
+  { ts: '2026-04-20 14:15:47', actor: 'Synapi webhook delivery', action: 'Webhook dispatched · policy.bound',     target: 'WH-01, WH-03, WH-05', ip: 'internal', pii_accessed: false },
+  { ts: '2026-04-20 13:48:02', actor: 'Alex Chen (Summit)',      action: 'Endpoint published · v1.3 draft',       target: 'API-001',   ip: '10.2.4.12',   pii_accessed: false },
+  { ts: '2026-04-20 13:22:18', actor: 'Casey Wu (Platform)',     action: 'Partner approved · production access', target: 'P-031',     ip: '10.99.1.4',   pii_accessed: false },
+  { ts: '2026-04-20 12:08:44', actor: 'Helen Becker (Compliance)',action: 'Audit export · Q1 market conduct',     target: 'EXP-2026-14', ip: '10.99.2.18',  pii_accessed: true  },
+  { ts: '2026-04-20 11:42:01', actor: 'Ravi Nair (Lockton)',     action: 'Key rotated · Lockton-AppliedEpic-Prod',target: 'APP-001',   ip: '10.22.4.18',  pii_accessed: false },
+  { ts: '2026-04-20 10:04:02', actor: 'Morgan Lee (Synapi)',     action: 'Changelog published · v1.2 NGDS-CP',    target: 'NGDS-CP-v1.2',ip: '10.99.3.8',  pii_accessed: false },
+  { ts: '2026-04-20 09:22:33', actor: 'Dana Robinson (Synapi)',  action: 'Partner request · FleetForward prod',  target: 'PREQ-018',  ip: '10.99.4.2',   pii_accessed: false },
+  { ts: '2026-04-20 08:14:02', actor: 'Riley Okafor (Synapi)',   action: 'Incident opened · INC-2026-045',        target: 'INC-2026-045', ip: '10.99.5.14', pii_accessed: false }
+];
+
+export const synapiPartnerRequests = [
+  { id: 'PREQ-018', partner: 'FleetForward', type: 'Production access',        requested: '2026-04-20', approver: 'Casey Wu',    scope: 'quote:read',              status: 'Approved',  note: 'Telematics use case validated in sandbox · 3.2k calls/month' },
+  { id: 'PREQ-017', partner: 'FleetForward', type: 'Scope expansion',          requested: '2026-04-18', approver: 'Casey Wu',    scope: 'bind:write',              status: 'Under review', note: 'Pending legal review of bind scope for telematics partner' },
+  { id: 'PREQ-016', partner: 'BoldPenguin',  type: 'Rate-limit increase',     requested: '2026-04-15', approver: 'Alex Chen (Summit)', scope: '200→500 rpm on Summit CP quote', status: 'Approved',  note: 'Peak volume during storm season' },
+  { id: 'PREQ-015', partner: 'NestLease',    type: 'New LOB · Homeowners',    requested: '2026-04-10', approver: 'Casey Wu',    scope: 'homeowners:quote',        status: 'Approved',  note: 'Partner with Heritage Property MGA' },
+  { id: 'PREQ-014', partner: 'NewPartner Co',type: 'Sandbox access',          requested: '2026-04-08', approver: 'Dana Robinson',scope: 'quote:read (sandbox)',   status: 'Under review', note: 'Evaluating for insurtech startup' },
+  { id: 'PREQ-013', partner: 'Marsh',        type: 'Webhook endpoint add',    requested: '2026-04-04', approver: 'Casey Wu',    scope: 'claim.fnol webhook',       status: 'Approved',  note: 'Routed to Aon-Global-Hub' }
+];
+
+export const synapiChangelog = [
+  { date: '2026-04-20', type: 'Schema',       title: 'NGDS-CP v1.2 published',            scope: 'Commercial Property',       summary: 'Added windMitigation{} object and optional buildingCodePlus{} field.' },
+  { date: '2026-04-18', type: 'Endpoint',     title: 'Summit · v1.3 draft in sandbox',    scope: 'Summit Fronting Re',        summary: 'New facultative-reinsurance endpoint opens for beta partners.' },
+  { date: '2026-04-15', type: 'SLA',          title: 'Enterprise uptime target raised',    scope: 'Enterprise tier',            summary: 'Uptime commitment moved from 99.95% to 99.99% with stricter credit schedule.' },
+  { date: '2026-04-10', type: 'Deprecation',  title: 'v1 Meridian quote sunset — 90 days', scope: 'Meridian Specialty',        summary: 'v1 will return 410 Gone from 2026-07-10. Consumers must migrate to v2.' },
+  { date: '2026-04-05', type: 'Feature',      title: 'Routing rules visual editor',        scope: 'Consumer portal',            summary: 'No-code rule builder now available for all Scale and Enterprise consumers.' },
+  { date: '2026-03-22', type: 'Incident',     title: 'P1 token refresh regression · resolved', scope: 'Platform-wide',         summary: 'INC-2026-040 RCA published. SLA credits applied to affected partners.' },
+  { date: '2026-03-15', type: 'Integration',  title: 'Datadog exporter GA',                 scope: 'Observability',              summary: 'Stream metrics directly to your Datadog workspace.' },
+  { date: '2026-03-01', type: 'Schema',       title: 'NGDS-WC v1.1 published',              scope: 'Workers Compensation',       summary: 'Added NCCI class codes array. Backwards-compatible.' },
+  { date: '2026-02-18', type: 'Feature',      title: 'OpenAPI spec download',              scope: 'Publisher portal',           summary: 'Publishers can now export OpenAPI 3.1 YAML for each endpoint.' },
+  { date: '2026-02-10', type: 'Partner',      title: 'BoldPenguin Exchange integrated',    scope: 'Aggregators',                summary: 'Synapi now federates BoldPenguin routing for SME submissions.' }
+];
+
+export const synapiIntegrations = [
+  { name: 'ACORD NGDS',            purpose: 'JSON canonical schemas',         status: 'Connected',    since: '2024-09-01' },
+  { name: 'ACORD AL3',              purpose: 'Legacy XML batch (reinsurance)', status: 'Connected',    since: '2024-09-01' },
+  { name: 'SERFF (NAIC)',           purpose: 'Rate & form filings relay',      status: 'Connected',    since: '2024-11-01' },
+  { name: 'NIPR',                   purpose: 'Producer license lookup',        status: 'Connected',    since: '2024-10-15' },
+  { name: 'ISO ERC',                purpose: 'Loss costs · forms',             status: 'Connected',    since: '2024-10-22' },
+  { name: 'RMS / AIR',              purpose: 'CAT modeling feeds',              status: 'Connected',    since: '2025-01-10' },
+  { name: 'Stripe',                 purpose: 'Metering · invoicing',           status: 'Connected',    since: '2024-09-01' },
+  { name: 'Okta',                   purpose: 'Partner SSO',                     status: 'Connected',    since: '2024-10-01' },
+  { name: 'Microsoft Entra',        purpose: 'Partner SSO (alt)',               status: 'Connected',    since: '2024-11-15' },
+  { name: 'Datadog',                purpose: 'Observability export',           status: 'Connected',    since: '2026-03-15' },
+  { name: 'New Relic',              purpose: 'Observability export (alt)',     status: 'Pending',      since: null },
+  { name: 'SendGrid',               purpose: 'Email · webhook fallback',       status: 'Connected',    since: '2024-10-01' },
+  { name: 'Twilio',                 purpose: 'SMS · voice OTP',                status: 'Connected',    since: '2024-11-01' },
+  { name: 'Drata',                  purpose: 'SOC2 evidence collection',       status: 'Connected',    since: '2025-01-01' },
+  { name: 'AWS KMS',                purpose: 'PII encryption · key mgmt',      status: 'Connected',    since: '2024-09-01' },
+  { name: 'Applied Epic connector', purpose: 'AMS integration (broker-side)',  status: 'Connected',    since: '2024-10-20' },
+  { name: 'Vertafore connector',    purpose: 'AMS integration (broker-side)',  status: 'Connected',    since: '2024-11-05' },
+  { name: 'Hawksoft connector',     purpose: 'AMS integration (broker-side)',  status: 'Pending',      since: null },
+  { name: 'EZLynx connector',       purpose: 'AMS integration (broker-side)',  status: 'Pending',      since: null }
+];
+
+export const synapiDashboardKPIs = {
+  admin: [
+    { label: 'Calls / day (avg)',   value: '1.24M' },
+    { label: 'p95 latency',         value: '820 ms' },
+    { label: 'Error rate 30d',       value: '0.38%' },
+    { label: 'Active partners',      value: '17' },
+    { label: 'Uptime YTD',           value: '99.98%' },
+    { label: 'MRR',                  value: '$186k' }
+  ],
+  publisher: [
+    { label: 'My calls / day',       value: '142k' },
+    { label: 'p95 latency',           value: '680 ms' },
+    { label: 'Error rate 30d',        value: '0.4%' },
+    { label: 'Top consumer',          value: 'Lockton' },
+    { label: 'Revenue YTD',           value: '$428k' },
+    { label: 'Pending requests',      value: '2', warning: true }
+  ],
+  consumer: [
+    { label: 'My calls / day',       value: '68k' },
+    { label: 'Bind ratio',           value: '34%' },
+    { label: 'Error rate 30d',       value: '0.6%' },
+    { label: 'Active apps',           value: '2' },
+    { label: 'MTD spend',            value: '$10,250' },
+    { label: 'SLA attainment',       value: '99.96%' }
+  ],
+  compliance: [
+    { label: 'Audit events 30d',     value: '42,800' },
+    { label: 'PII accesses',         value: '12,640' },
+    { label: 'Open findings',        value: '2', warning: true },
+    { label: 'Reports pending',      value: '1' },
+    { label: 'Data residency OK',    value: 'Yes' },
+    { label: 'SOC2 last evidence',   value: '2026-03-31' }
+  ]
+};
