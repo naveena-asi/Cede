@@ -77,6 +77,10 @@ function render() {
     app.innerHTML = renderKonduitPortal() + (state.modal ? renderModal() : '');
     bindKonduit();
     if (state.modal) bindModal();
+  } else if (state.portal === 'carrier') {
+    app.innerHTML = renderCarrierPortal() + (state.modal ? renderModal() : '');
+    bindCarrier();
+    if (state.modal) bindModal();
   }
 }
 
@@ -166,6 +170,14 @@ function renderLogin() {
           <div class="portal-card-info">
             <h3>Konduit Capacity — MGA ↔ Capacity Marketplace</h3>
             <p>AI submissions · benchmarks · NDA-gated deal flow</p>
+          </div>
+          <span class="portal-card-arrow">→</span>
+        </div>
+        <div class="portal-card carrier-card" data-portal="carrier" id="portal-carrier">
+          <span class="portal-card-icon">🛡️</span>
+          <div class="portal-card-info">
+            <h3>CarrierQP — Carrier / Insurer Portal</h3>
+            <p>Underwriter workbench · delegated authority · treaties · claims · SERFF</p>
           </div>
           <span class="portal-card-arrow">→</span>
         </div>
@@ -31802,6 +31814,3073 @@ function renderKonduitSeats() {
       <button class="btn btn-secondary" onclick="window.setState({screen:'k-admin-org', konduitOrgName:'${org.replace(/'/g, "\\'")}'})">Cancel</button>
       <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-admin-org', konduitOrgName:'${org.replace(/'/g, "\\'")}', konduitFlash:{title:'Seats added',body:'+4 seats · $1,000/mo added to next invoice'}})">Add Seats</button>
     </div>
+  </section>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════
+// CARRIER QP — Carrier / Insurer Portal
+// Role-toggled · deep sapphire accent · scoped .carrier-theme
+// ════════════════════════════════════════════════════════════════
+function carrierRole() { return state.carrierRole || 'uw'; }
+
+function carrierRuntime() {
+  if (!window.__carrier) {
+    window.__carrier = {
+      flash: null,
+      // mutable side-effect stores (replace toasts with state changes)
+      boundSubIds: {},
+      declinedSubIds: {},
+      quotedSubIds: {},
+      approvedEndIds: {},
+      issuedEndIds: {},
+      approvedFilings: {},
+      reconciledBordereau: {},
+      settledClaims: {},
+      publishedPolicies: {}
+    };
+  }
+  return window.__carrier;
+}
+
+window.carrierFlash = function(obj) {
+  window.setState({ carrierFlash: obj });
+};
+
+function carrierFlashBanner() {
+  const f = state.carrierFlash;
+  if (!f) return '';
+  return `
+  <div class="carrier-flash carrier-flash-${f.kind || 'success'}">
+    <span class="carrier-flash-icon">${f.kind === 'warn' ? '⚠️' : f.kind === 'info' ? 'ℹ️' : '✅'}</span>
+    <div class="carrier-flash-body">
+      <strong>${f.title || 'Done'}</strong>
+      ${f.body ? `<span class="carrier-flash-sub">· ${f.body}</span>` : ''}
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({carrierFlash:null})">✕</button>
+  </div>`;
+}
+
+// ─── Helpers (scoped to carrier theme) ───
+function carrierKPIs(items, cols = 6) {
+  return `<div class="kpi-grid kpi-grid-${cols}">${items.map(k =>
+    `<div class="kpi-card carrier-kpi">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value${k.warning ? ' warning' : ''}">${k.value}</div>
+    </div>`
+  ).join('')}</div>`;
+}
+
+function carrierBadge(status, color) {
+  return `<span class="badge badge-${color}"><span class="badge-dot badge-dot-${color}"></span>${status}</span>`;
+}
+
+function carrierStatusColor(s) {
+  const map = {
+    'New':'blue','Triaged':'amber','In UW':'amber','Quoted':'blue','Referred':'amber','Bound':'green','Declined':'red',
+    'Active':'green','Expired':'grey','Renewing':'amber','Non-renewed':'red','Non-renewal notice':'red','Re-bound':'green','Re-underwriting':'amber','Pre-renewal review':'blue',
+    'Open':'amber','Closed':'green','Litigated':'red',
+    'Reconciled':'green','Exception':'red','Pending':'amber','Paused':'grey',
+    'Approved':'green','Objection':'red','Withdrawn':'grey','Submitted':'blue',
+    'Billed':'amber','Collected':'green','Disputed':'red','Aged >90':'red',
+    'Pursuing':'amber','Recovered':'green','Litigating':'red',
+    'Active · reporting':'amber',
+    'Investigating':'amber','Responded':'blue','Review':'amber','Suspended':'red'
+  };
+  return map[s] || 'grey';
+}
+
+function carrierPageHeader(title, subtitle, actions = '') {
+  return `
+  <div class="page-header carrier-page-header">
+    <div>
+      <h1 class="page-title">${title}</h1>
+      ${subtitle ? `<p class="page-subtitle">${subtitle}</p>` : ''}
+    </div>
+    <div class="page-actions">${actions}</div>
+  </div>`;
+}
+
+// ─── Nav ───
+function carrierNav() {
+  const role = carrierRole();
+  const uwItems = [
+    { icon: '📊', label: 'Dashboard',          screen: 'c-dashboard' },
+    { icon: '📥', label: 'Submissions',        screen: 'c-submissions' },
+    { icon: '🧰', label: 'UW Workbench',       screen: 'c-workbench' },
+    { icon: '📋', label: 'Quotes',             screen: 'c-quotes' },
+    { icon: '📑', label: 'Policies (In-force)',screen: 'c-policies' },
+    { icon: '✏️', label: 'Endorsements',       screen: 'c-endorsements' },
+    { icon: '🔄', label: 'Renewals',           screen: 'c-renewals' },
+    { icon: '🎯', label: 'Appetite & Rules',   screen: 'c-appetite' },
+    { icon: '🤝', label: 'Delegated MGAs',     screen: 'c-mgas' },
+    { icon: '📊', label: 'Bordereau Inbox',    screen: 'c-bordereau' },
+    { icon: '🏢', label: 'Producers',          screen: 'c-producers' },
+    { icon: '📜', label: 'Rate & Form Filings',screen: 'c-filings' },
+    { icon: '📈', label: 'Reports',            screen: 'c-reports' },
+    { icon: '⚙️', label: 'Settings',           screen: 'c-settings' }
+  ];
+  const reinsItems = [
+    { icon: '📊', label: 'Dashboard',          screen: 'c-reins-dashboard' },
+    { icon: '📜', label: 'Treaties',           screen: 'c-treaties' },
+    { icon: '📤', label: 'Ceded Bordereau',    screen: 'c-ceded' },
+    { icon: '💰', label: 'Recoverables',       screen: 'c-recoverables' },
+    { icon: '♻️', label: 'Retrocession',       screen: 'c-retro' },
+    { icon: '🌪', label: 'CAT Management',     screen: 'c-cat' },
+    { icon: '📐', label: 'Reserving',          screen: 'c-reserving' },
+    { icon: '💵', label: 'Financials',         screen: 'c-financials' },
+    { icon: '🏦', label: 'Trust & Collateral', screen: 'c-trust' },
+    { icon: '📝', label: 'Statutory Reporting',screen: 'c-statutory' },
+    { icon: '⚙️', label: 'Settings',           screen: 'c-settings' }
+  ];
+  const claimsItems = [
+    { icon: '📊', label: 'Claims Dashboard',   screen: 'c-claims-dashboard' },
+    { icon: '🛡', label: 'Claims List',         screen: 'c-claims' },
+    { icon: '♻️', label: 'Subrogation',        screen: 'c-subrogation' },
+    { icon: '⚖️', label: 'Litigation',         screen: 'c-litigation' },
+    { icon: '🌪', label: 'CAT Event Center',   screen: 'c-cat-events' },
+    { icon: '📜', label: 'SERFF Filings',      screen: 'c-filings' },
+    { icon: '📨', label: 'Complaints',         screen: 'c-complaints' },
+    { icon: '📚', label: 'Compliance Library', screen: 'c-compliance' },
+    { icon: '📜', label: 'Audit Log',          screen: 'c-audit' },
+    { icon: '⚙️', label: 'Settings',           screen: 'c-settings' }
+  ];
+  const retroItems = [
+    { icon: '📊', label: 'Dashboard',             screen: 'c-retro-dashboard' },
+    { icon: '📦', label: 'Ceded Book Summary',    screen: 'c-retro-book' },
+    { icon: '📥', label: 'Premium Bordereau (in)',screen: 'c-retro-premium' },
+    { icon: '📥', label: 'Claims Bordereau (in)', screen: 'c-retro-claims' },
+    { icon: '💰', label: 'Recoverables',          screen: 'c-retro-recoverables' },
+    { icon: '📈', label: 'Treaty Performance',    screen: 'c-retro-performance' }
+  ];
+  const items = role === 'reins' ? reinsItems : role === 'claims' ? claimsItems : role === 'retro' ? retroItems : uwItems;
+  const cta = role === 'reins' ? '+ New Treaty' : role === 'claims' ? '+ New FNOL' : role === 'retro' ? '📥 Latest Bordereau' : '+ New Submission';
+  const ctaScreen = role === 'reins' ? 'c-treaty-new' : role === 'claims' ? 'c-fnol' : role === 'retro' ? 'c-retro-premium' : 'c-submission-new';
+
+  return `
+  <nav class="side-nav carrier-side-nav">
+    <div class="carrier-role-toggle">
+      <button class="cr-btn${role==='uw'?' active':''}" data-role="uw">UW Ops</button>
+      <button class="cr-btn${role==='reins'?' active':''}" data-role="reins">Reinsurance</button>
+      <button class="cr-btn${role==='claims'?' active':''}" data-role="claims">Claims</button>
+      <button class="cr-btn${role==='retro'?' active':''}" data-role="retro">Retro View</button>
+    </div>
+    ${items.map(i => `
+      <div class="side-nav-item${state.screen === i.screen ? ' active' : ''}" data-screen="${i.screen}">
+        <span class="side-nav-item-icon">${i.icon}</span>
+        <span>${i.label}</span>
+      </div>`).join('')}
+    <div class="side-nav-cta">
+      <button class="btn btn-primary carrier-cta" style="width:100%" onclick="window.setState({screen:'${ctaScreen}'})">${cta}</button>
+    </div>
+  </nav>`;
+}
+
+// ─── Portal shell ───
+function renderCarrierPortal() {
+  const role = carrierRole();
+  const u = role === 'reins' ? D.CARRIER_USERS.reinsHead
+          : role === 'claims' ? D.CARRIER_USERS.claims
+          : role === 'retro'  ? D.CARRIER_USERS.retro
+          : D.CARRIER_USERS.uw;
+
+  const screens = {
+    // UW Ops
+    'dashboard':          renderCarrierDashboard,
+    'c-dashboard':        renderCarrierDashboard,
+    'c-submissions':      renderCarrierSubmissions,
+    'c-submission':       renderCarrierSubmissionDetail,
+    'c-submission-new':   renderCarrierSubmissionNew,
+    'c-workbench':        renderCarrierWorkbench,
+    'c-quotes':           renderCarrierQuotes,
+    'c-policies':         renderCarrierPolicies,
+    'c-policy':           renderCarrierPolicyDetail,
+    'c-endorsements':     renderCarrierEndorsements,
+    'c-endorsement':      renderCarrierEndorsementDetail,
+    'c-endorsement-new':  renderCarrierEndorsementNew,
+    'c-renewals':         renderCarrierRenewals,
+    'c-renewal':          renderCarrierRenewalDetail,
+    'c-appetite':         renderCarrierAppetite,
+    'c-mgas':             renderCarrierMGAs,
+    'c-mga':              renderCarrierMGADetail,
+    'c-bordereau':        renderCarrierBordereau,
+    'c-bordereau-detail': renderCarrierBordereauDetail,
+    'c-producers':        renderCarrierProducers,
+    'c-producer':         renderCarrierProducerDetail,
+    'c-filings':          renderCarrierFilings,
+    'c-filing':           renderCarrierFilingDetail,
+    'c-filing-new':       renderCarrierFilingNew,
+    'c-reports':          renderCarrierReports,
+    'c-settings':         renderCarrierSettings,
+
+    // Reinsurance & Finance
+    'c-reins-dashboard':  renderCarrierReinsDashboard,
+    'c-treaties':         renderCarrierTreaties,
+    'c-treaty':           renderCarrierTreatyDetail,
+    'c-treaty-new':       renderCarrierTreatyNew,
+    'c-ceded':            renderCarrierCeded,
+    'c-recoverables':     renderCarrierRecoverables,
+    'c-retro':            renderCarrierRetrocession,
+    'c-cat':              renderCarrierCATMgmt,
+    'c-reserving':        renderCarrierReserving,
+    'c-financials':       renderCarrierFinancials,
+    'c-trust':            renderCarrierTrust,
+    'c-statutory':        renderCarrierStatutory,
+
+    // Claims & Compliance
+    'c-claims-dashboard': renderCarrierClaimsDashboard,
+    'c-claims':           renderCarrierClaims,
+    'c-claim':            renderCarrierClaimDetail,
+    'c-fnol':             renderCarrierFnol,
+    'c-reserve-adjust':   renderCarrierReserveAdjust,
+    'c-payment-issue':    renderCarrierPaymentIssue,
+    'c-subrogation':      renderCarrierSubrogation,
+    'c-litigation':       renderCarrierLitigation,
+    'c-litigation-detail':renderCarrierLitigationDetail,
+    'c-cat-events':       renderCarrierCATEvents,
+    'c-cat-event':        renderCarrierCATEventDetail,
+    'c-complaints':       renderCarrierComplaints,
+    'c-complaint':        renderCarrierComplaintDetail,
+    'c-compliance':       renderCarrierCompliance,
+    'c-audit':            renderCarrierAudit,
+
+    // Retro view (read-only)
+    'c-retro-dashboard':  renderCarrierRetroDashboard,
+    'c-retro-book':       renderCarrierRetroBook,
+    'c-retro-premium':    renderCarrierRetroPremium,
+    'c-retro-claims':     renderCarrierRetroClaims,
+    'c-retro-recoverables': renderCarrierRetroRecoverables,
+    'c-retro-performance':renderCarrierRetroPerformance
+  };
+
+  const roleDefault = role === 'reins' ? 'c-reins-dashboard'
+                    : role === 'claims' ? 'c-claims-dashboard'
+                    : role === 'retro'  ? 'c-retro-dashboard'
+                    : 'c-dashboard';
+  const fn = screens[state.screen] || screens[roleDefault];
+  const content = fn();
+
+  return `
+  <div class="carrier-theme portal-shell">
+    <header class="top-bar carrier-top-bar">
+      <div class="top-bar-brand">
+        <span class="brand-icon">🛡️</span>
+        <span>CARRIER QP</span>
+        <span class="brand-sub">· ${role==='uw'?'Underwriting Operations':role==='reins'?'Reinsurance & Finance':role==='claims'?'Claims & Compliance':'Retrocession View'}</span>
+      </div>
+      <div class="top-bar-right">
+        <button class="btn btn-ghost btn-sm" id="btn-carrier-search">🔎 Search</button>
+        <button class="btn btn-ghost btn-sm" id="btn-carrier-help">Help</button>
+        <div class="user-chip">
+          <span class="avatar avatar-sm">${u.avatar}</span>
+          <div class="user-chip-info">
+            <div class="user-chip-name">${u.name}</div>
+            <div class="user-chip-role">${u.role} · ${u.company}</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-carrier-logout">Logout</button>
+      </div>
+    </header>
+    ${carrierNav()}
+    <main class="portal-main carrier-main">
+      ${carrierFlashBanner()}
+      ${content}
+    </main>
+  </div>`;
+}
+
+// ─── Bindings ───
+function bindCarrier() {
+  // Role toggle
+  document.querySelectorAll('.cr-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const role = btn.dataset.role;
+      const def = role === 'reins' ? 'c-reins-dashboard'
+                : role === 'claims' ? 'c-claims-dashboard'
+                : role === 'retro'  ? 'c-retro-dashboard'
+                : 'c-dashboard';
+      setState({ carrierRole: role, screen: def });
+    });
+  });
+  // Sidenav
+  document.querySelectorAll('.carrier-side-nav .side-nav-item').forEach(item => {
+    item.addEventListener('click', () => setState({ screen: item.dataset.screen }));
+  });
+  // Top bar
+  const lo = document.getElementById('btn-carrier-logout');
+  if (lo) lo.addEventListener('click', () => setState({ portal: null, screen: 'dashboard', carrierRole: null }));
+  const sr = document.getElementById('btn-carrier-search');
+  if (sr) sr.addEventListener('click', () => window.showModal('Search CarrierQP',
+    `<div class="k-modal-body">
+       <input type="text" placeholder="Search submissions, policies, claims, MGAs, filings..." style="width:100%; padding:10px; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:8px; color:var(--text-primary);" autofocus>
+       <div style="margin-top:12px">
+         <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px">Quick links</div>
+         <div style="display:flex; flex-wrap:wrap; gap:6px">
+           <span class="konduit-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'c-submissions'})">Submissions Queue</span>
+           <span class="konduit-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'c-policies'})">In-force Policies</span>
+           <span class="konduit-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'c-claims', carrierRole:'claims'})">Claims</span>
+           <span class="konduit-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'c-mgas'})">Delegated MGAs</span>
+         </div>
+       </div>
+     </div>`, 'Search', () => window.carrierFlash({ kind:'info', title:'Search ran', body:'Results would populate' })));
+  const hp = document.getElementById('btn-carrier-help');
+  if (hp) hp.addEventListener('click', () => window.showModal('CarrierQP Help',
+    `<div class="k-modal-body">
+       <h4 style="margin-bottom:8px">Getting started</h4>
+       <ul style="padding-left:20px; color:var(--text-secondary); line-height:1.7">
+         <li><strong>UW Ops:</strong> triage new submissions, quote/bind, manage in-force book, oversee delegated MGAs.</li>
+         <li><strong>Reinsurance:</strong> treaty layers, ceded bordereau, recoverables, CAT exposure, reserving.</li>
+         <li><strong>Claims:</strong> FNOL → reserve → payments → subrogation → litigation → CAT events.</li>
+         <li><strong>Retro View:</strong> what your reinsurance panel sees as read-only ceded activity.</li>
+       </ul>
+       <div style="margin-top:12px; color:var(--text-secondary)">📧 support@carrierqp.com · 📞 +1 (332) 555-CARR</div>
+     </div>`, 'Close', null));
+}
+
+// ─── Phase 0 stub: UW Ops Dashboard ───
+function renderCarrierDashboard() {
+  const kpis = D.carrierDashboardKPIs.uw;
+  const subs = D.carrierSubmissions.slice(0, 6);
+  const audit = D.carrierAuditLog.slice(0, 6);
+  return `
+  ${carrierPageHeader('Underwriting Operations', 'Submissions, quotes, and portfolio health at a glance.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-workbench'})">🧰 Workbench</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-submission-new'})">+ New Submission</button>`)}
+
+  ${carrierKPIs(kpis, 6)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Submissions Queue (top 6)</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'c-submissions'});return false;">View all →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Submission</th><th>Insured</th><th>LOB</th><th>Premium</th><th>Status</th></tr></thead>
+          <tbody>
+            ${subs.map(s => `
+              <tr class="row-clickable" onclick="window.setState({screen:'c-submission', carrierSubId:'${s.id}'})">
+                <td><strong>${s.id}</strong><div class="row-sub">${s.channel}</div></td>
+                <td>${s.insured}</td>
+                <td>${s.lob}</td>
+                <td>${s.premium_est}</td>
+                <td>${carrierBadge(s.status, carrierStatusColor(s.status))}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Recent Audit Events</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'c-audit'});return false;">Full log →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th></tr></thead>
+          <tbody>
+            ${audit.map(a => `
+              <tr>
+                <td class="row-sub">${a.ts}</td>
+                <td>${a.actor}</td>
+                <td><strong>${a.action}</strong></td>
+                <td>${a.target}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+// ─── Phase 1 — UW Operations: Submissions / Workbench / Quotes / Policies / Endorsements / Renewals / Appetite ───
+
+function renderCarrierSubmissions() {
+  const rt = carrierRuntime();
+  const filter = state.carrierSubFilter || 'All';
+  let subs = D.carrierSubmissions.slice();
+  subs = subs.map(s => {
+    if (rt.boundSubIds[s.id])    return {...s, status:'Bound'};
+    if (rt.declinedSubIds[s.id]) return {...s, status:'Declined'};
+    if (rt.quotedSubIds[s.id])   return {...s, status:'Quoted'};
+    return s;
+  });
+  if (filter !== 'All') subs = subs.filter(s => s.status === filter);
+
+  return `
+  ${carrierPageHeader('Submissions', 'New business inbound — clearance, triage, assignment, and routing to the UW workbench.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-workbench'})">🧰 Workbench</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-submission-new'})">+ New Submission</button>`)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Queue · ${subs.length} items</h3>
+      <label class="konduit-inline-select">Status:
+        <select onchange="window.setState({carrierSubFilter:this.value})">
+          ${['All','New','Triaged','In UW','Quoted','Referred','Bound','Declined'].map(v => `<option ${v===filter?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Submission</th><th>Insured</th><th>LOB</th><th>State</th><th>Premium</th><th>Channel</th><th>Appetite</th><th>Clearance</th><th>Assigned</th><th>Status</th><th>Age</th><th></th></tr></thead>
+        <tbody>
+          ${subs.map(s => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-submission', carrierSubId:'${s.id}'})">
+              <td><strong>${s.id}</strong><div class="row-sub">${s.received}</div></td>
+              <td>${s.insured}</td>
+              <td>${s.lob}</td>
+              <td>${s.state}</td>
+              <td>${s.premium_est}</td>
+              <td>${s.channel}</td>
+              <td>${carrierBadge(s.appetite, s.appetite==='In'?'green':s.appetite==='Out'?'red':'amber')}</td>
+              <td>${carrierBadge(s.clearance, s.clearance==='Clear'?'green':'amber')}</td>
+              <td>${s.assigned}</td>
+              <td>${carrierBadge(s.status, carrierStatusColor(s.status))}</td>
+              <td>${s.days_in_queue}d</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'c-submission', carrierSubId:'${s.id}'})">Open →</button></td>
+            </tr>`).join('') || `<tr><td colspan="12" class="row-sub">No submissions match this filter.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierSubmissionDetail() {
+  const id = state.carrierSubId || 'SUB-2026-1142';
+  const s = D.carrierSubmissions.find(x => x.id === id) || D.carrierSubmissions[0];
+  const rt = carrierRuntime();
+  const isBound    = rt.boundSubIds[s.id];
+  const isDeclined = rt.declinedSubIds[s.id];
+  const isQuoted   = rt.quotedSubIds[s.id] || s.status === 'Quoted';
+  const effectiveStatus = isBound?'Bound':isDeclined?'Declined':isQuoted?'Quoted':s.status;
+
+  const clearanceChecks = [
+    { label: 'Duplicate-risk check (ISO AIR)', status: s.clearance === 'Clear' ? 'Pass' : 'Review', detail: s.clearance === 'Clear' ? 'No prior submission for this insured in 90d' : 'Possible match — requires review' },
+    { label: 'Appetite match', status: s.appetite === 'In' ? 'Pass' : s.appetite === 'Refer' ? 'Refer' : 'Fail', detail: `LOB: ${s.lob} · State: ${s.state}` },
+    { label: 'Producer licensing (NIPR)',      status: 'Pass', detail: 'Active license · appointed for LOB' },
+    { label: 'OFAC / sanctions screening',     status: 'Pass', detail: 'No hits' },
+    { label: 'Financial strength (A.M. Best)', status: 'Pass', detail: 'Rated producer A+' }
+  ];
+
+  return `
+  ${carrierPageHeader(`${s.id} · ${s.insured}`, `${s.lob} · ${s.state} · ${s.channel} · received ${s.received}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-submissions'})">← Queue</button>
+     ${!isBound && !isDeclined ? `<button class="btn btn-secondary" onclick="(function(){carrierRuntime().declinedSubIds['${s.id}']=true;window.setState({screen:'c-submissions', carrierFlash:{kind:'warn',title:'${s.id} declined',body:'Decline letter will be issued to ${s.channel}'}});})()">Decline</button>
+     <button class="btn btn-secondary" onclick="window.setState({screen:'c-workbench', carrierSubId:'${s.id}'})">🧰 Open in Workbench</button>
+     ${!isQuoted ? `<button class="btn btn-primary carrier-cta" onclick="(function(){carrierRuntime().quotedSubIds['${s.id}']=true;window.setState({screen:'c-submission', carrierSubId:'${s.id}', carrierFlash:{title:'Quote generated',body:'${s.id} moved to Quoted status · valid 30 days'}});})()">💰 Quote</button>`
+     : `<button class="btn btn-primary carrier-cta" onclick="(function(){carrierRuntime().boundSubIds['${s.id}']=true;window.setState({screen:'c-submission', carrierSubId:'${s.id}', carrierFlash:{title:'Policy bound',body:'${s.id} bound · policy number will be issued · bordereau cycle begins'}});})()">✅ Bind</button>`}
+     ` : ''}`)}
+
+  ${carrierKPIs([
+    { label: 'Status',          value: carrierBadge(effectiveStatus, carrierStatusColor(effectiveStatus)) },
+    { label: 'Premium Est',     value: s.premium_est },
+    { label: 'Appetite',        value: s.appetite },
+    { label: 'Clearance',       value: s.clearance },
+    { label: 'Priority',        value: s.priority },
+    { label: 'Age in Queue',    value: `${s.days_in_queue} days`, warning: s.days_in_queue > 5 }
+  ], 6)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Clearance Checks</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Check</th><th>Status</th><th>Detail</th></tr></thead>
+          <tbody>
+            ${clearanceChecks.map(c => `
+              <tr>
+                <td><strong>${c.label}</strong></td>
+                <td>${carrierBadge(c.status, c.status==='Pass'?'green':c.status==='Fail'?'red':'amber')}</td>
+                <td class="row-sub">${c.detail}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Submission Meta</h3></div>
+      <div class="carrier-detail-row">
+        <div><strong>Insured:</strong> ${s.insured}</div>
+        <div><strong>Line of Business:</strong> ${s.lob}</div>
+        <div><strong>State:</strong> ${s.state}</div>
+        <div><strong>Channel:</strong> ${s.channel}</div>
+        <div><strong>Received:</strong> ${s.received}</div>
+        <div><strong>Assigned UW:</strong> ${s.assigned}</div>
+        <div><strong>Priority:</strong> ${s.priority}</div>
+        <div><strong>Premium (indicated):</strong> ${s.premium_est}</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>UW Notes & Next Actions</h3></div>
+    <div style="padding:var(--space-md)">
+      <textarea rows="4" style="width:100%; padding:10px; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:8px; color:var(--text-primary); font-family:inherit" placeholder="Notes for this submission — loss-run needed, inspection ordered, referral rationale, etc.">Requested 3-year loss runs from MGA. Inspection scheduled for ${s.state} location. No prior losses indicated in submission.</textarea>
+      <div style="text-align:right; margin-top:8px; display:flex; gap:8px; justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="window.carrierFlash({title:'Loss runs requested',body:'MGA notified · 2 business day turnaround'})">Request Loss Runs</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.carrierFlash({title:'Inspection ordered',body:'Engineer dispatched · report expected in 7 days'})">Order Inspection</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.carrierFlash({title:'Referred to Senior UW',body:'Priya Raman assigned'})">Refer to Sr UW</button>
+        <button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'Notes saved'})">Save Notes</button>
+      </div>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierSubmissionNew() {
+  return `
+  ${carrierPageHeader('New Submission', 'Manually intake a submission (e.g., via email, fax, or carrier portal upload).',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-submissions'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:860px">
+    <div class="form-grid">
+      <label>Insured Name<input type="text" placeholder="e.g. Acme Holdings LLC"></label>
+      <label>Channel<select><option>Broker</option><option>MGA</option><option>Wholesale</option><option>Direct</option></select></label>
+      <label>Line of Business<select>${D.CARRIER_LOBS.map(l => `<option>${l}</option>`).join('')}</select></label>
+      <label>State<select>${D.CARRIER_STATES.map(s => `<option>${s}</option>`).join('')}</select></label>
+      <label>Premium Estimate<input type="text" placeholder="$0"></label>
+      <label>Effective Date<input type="text" placeholder="YYYY-MM-DD"></label>
+      <label>Priority<select><option>Normal</option><option>High</option><option>Low</option></select></label>
+      <label>Assigned UW<select><option>Alex Chen</option><option>Priya Raman</option><option>Morgan Whitaker</option></select></label>
+      <label class="form-wide">Producer / MGA contact<input type="text" placeholder="name@broker.com"></label>
+      <label class="form-wide">Submission narrative<textarea rows="4" placeholder="Describe the risk — classes of business, exposure, prior carrier, reasons for change..."></textarea></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'c-submissions'})">Cancel</button>
+      <button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-submissions', carrierFlash:{title:'Submission created',body:'SUB-2026-1143 · routed to UW Alex Chen'}})">Create & Route</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierWorkbench() {
+  const rt = carrierRuntime();
+  const openSubs = D.carrierSubmissions.filter(s => !rt.boundSubIds[s.id] && !rt.declinedSubIds[s.id] && s.status !== 'Bound' && s.status !== 'Declined' && s.status !== 'Quoted');
+  const active = state.carrierSubId || (openSubs[0] && openSubs[0].id) || D.carrierSubmissions[0].id;
+  const s = D.carrierSubmissions.find(x => x.id === active) || D.carrierSubmissions[0];
+
+  // Pre-computed mock pricing indications (plausible)
+  const indicatedPremium = parseInt(String(s.premium_est).replace(/[$,]/g,'')) || 0;
+  const modeled = Math.round(indicatedPremium * 1.08);
+  const isoLossCost = Math.round(indicatedPremium * 0.72);
+  const claimsFreq = 0.042;
+  const lossRatioExpected = 54.2;
+
+  return `
+  ${carrierPageHeader('Underwriter Workbench', `${s.id} · ${s.insured} · ${s.lob} · ${s.state}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-submissions'})">← Queue</button>
+     <button class="btn btn-secondary" onclick="(function(){carrierRuntime().declinedSubIds['${s.id}']=true;window.setState({screen:'c-submissions', carrierFlash:{kind:'warn',title:'${s.id} declined'}});})()">Decline</button>
+     <button class="btn btn-primary carrier-cta" onclick="(function(){carrierRuntime().quotedSubIds['${s.id}']=true;window.setState({screen:'c-submission', carrierSubId:'${s.id}', carrierFlash:{title:'Quote generated',body:'Offer sent via email + MGA portal'}});})()">💰 Generate Quote</button>`)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Queue — pick a submission</h3></div>
+      <div class="table-scroll" style="max-height:260px">
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>Insured</th><th>LOB</th><th>Premium</th></tr></thead>
+          <tbody>
+            ${openSubs.map(x => `
+              <tr class="row-clickable ${x.id===s.id?'active':''}" onclick="window.setState({screen:'c-workbench', carrierSubId:'${x.id}'})">
+                <td><strong>${x.id}</strong></td>
+                <td>${x.insured}</td>
+                <td>${x.lob}</td>
+                <td>${x.premium_est}</td>
+              </tr>`).join('') || `<tr><td colspan="4" class="row-sub">No open submissions.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Pricing Indications</h3></div>
+      <div class="carrier-detail-row">
+        <div><strong>Submission premium:</strong> ${s.premium_est}</div>
+        <div><strong>Modeled premium:</strong> $${modeled.toLocaleString()}</div>
+        <div><strong>ISO loss cost:</strong> $${isoLossCost.toLocaleString()}</div>
+        <div><strong>Expected claim freq:</strong> ${(claimsFreq*100).toFixed(1)}%</div>
+        <div><strong>Expected LR:</strong> ${lossRatioExpected}%</div>
+        <div><strong>Ceding recommendation:</strong> 65% QS + $5M xs retention</div>
+      </div>
+    </section>
+  </div>
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Risk Analysis</h3></div>
+      <div class="form-grid" style="padding:var(--space-md)">
+        <label>TIV / Exposure<input type="text" value="$42,000,000"></label>
+        <label>Construction class<select><option>Class A wind-resistive</option><option>Class B masonry non-combustible</option><option>Class C joisted masonry</option><option>Class D frame</option></select></label>
+        <label>Protection class<select><option>PC 1-4 · Superior</option><option selected>PC 5-6 · Good</option><option>PC 7-9 · Average</option></select></label>
+        <label>Sprinkler coverage<select><option selected>Fully sprinkled</option><option>Partially</option><option>None</option></select></label>
+        <label>Distance to coast (mi)<input type="text" value="12.4"></label>
+        <label>Wildfire zone<select><option>None</option><option selected>Zone 1-2</option><option>Zone 3+</option></select></label>
+        <label>Prior 5-yr loss ratio<input type="text" value="48.2%"></label>
+        <label>Prior carrier<input type="text" value="Zurich · mutual non-renewal"></label>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Rating Output</h3></div>
+      <div style="padding:var(--space-md)">
+        <pre style="background:#0a0a14; border:1px solid var(--border-subtle); border-radius:8px; padding:14px; font-family:'Courier New', monospace; font-size:0.76rem; color:#cfd0dc; white-space:pre-wrap; line-height:1.5">BASE RATE            $ 0.84 / $100 TIV
+CONSTRUCTION MOD     × 0.92
+PROTECTION MOD       × 1.04
+SPRINKLER CREDIT     × 0.88
+COASTAL MOD          × 1.18
+WILDFIRE MOD         × 1.05
+LOSS HISTORY MOD     × 0.96
+SCHEDULE CREDIT      × 0.95
+──────────────────── ─────
+ADJUSTED RATE        $ 0.89 / $100 TIV
+TIV                  $42,000,000
+──────────────────── ─────
+INDICATED PREMIUM    $  373,800
+EXPENSES (A&O)       $   82,200  (22%)
+COMMISSION           $   52,400  (14%)
+PROFIT LOAD          $   14,900  (4%)
+──────────────────── ─────
+QUOTED PREMIUM       $  523,300</pre>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Authority Check</h3></div>
+    <div class="carrier-detail-row">
+      <div><strong>Your authority:</strong> $25M per risk · $50M aggregate</div>
+      <div><strong>This submission:</strong> $42M TIV · within authority</div>
+      <div><strong>Referral triggered:</strong> ${s.appetite === 'Refer' ? 'Yes — routed to Sr UW' : 'No'}</div>
+      <div><strong>Committee required:</strong> No (< $50M TIV)</div>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierQuotes() {
+  const rt = carrierRuntime();
+  const quotes = D.carrierSubmissions.filter(s => s.status === 'Quoted' || rt.quotedSubIds[s.id]);
+  return `
+  ${carrierPageHeader('Quotes', 'Open quotes — track hit ratio, expiring offers, and conversion.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-submissions'})">← Submissions</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Open quotes',    value: quotes.length.toString() },
+    { label: 'Total quoted $', value: '$1.4M' },
+    { label: 'Hit ratio (30d)',value: '34%' },
+    { label: 'Expiring < 7d',  value: '2', warning: true }
+  ], 4)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Quote ID</th><th>Insured</th><th>LOB</th><th>State</th><th>Premium</th><th>Issued</th><th>Expires</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${quotes.map(q => `
+            <tr>
+              <td><strong>${q.id}</strong></td>
+              <td>${q.insured}</td>
+              <td>${q.lob}</td>
+              <td>${q.state}</td>
+              <td>${q.premium_est}</td>
+              <td>${q.received.split(' ')[0]}</td>
+              <td class="row-sub">30 days</td>
+              <td>${carrierBadge('Quoted','blue')}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'c-submission', carrierSubId:'${q.id}'})">Open →</button>
+                <button class="btn btn-primary btn-sm carrier-cta" onclick="(function(){carrierRuntime().boundSubIds['${q.id}']=true;window.setState({screen:'c-policies', carrierFlash:{title:'Bound · ${q.id}',body:'Policy number issued · effective immediately'}});})()">Bind</button>
+              </td>
+            </tr>`).join('') || `<tr><td colspan="9" class="row-sub">No open quotes.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierPolicies() {
+  const filter = state.carrierPolFilter || 'All';
+  let pols = D.carrierPolicies;
+  if (filter !== 'All') pols = pols.filter(p => p.status === filter);
+
+  return `
+  ${carrierPageHeader('Policies (In-force)', 'Full book — policies issued directly or via delegated MGAs.',
+    `<button class="btn btn-ghost" onclick="window.konduitDownloadFile('carrier-inforce-book.csv', ['id,insured,lob,state,effective,expiry,premium,status,mga,ceded_pct,loss_ratio'].concat(D.carrierPolicies.map(p=>[p.id,p.insured,p.lob,p.state,p.effective,p.expiry,p.premium,p.status,p.mga,p.ceded_pct,p.loss_ratio].join(','))).join('\\n'), 'text/csv')">⬇ Export CSV</button>`)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>In-force Book · ${pols.length} policies</h3>
+      <label class="konduit-inline-select">Status:
+        <select onchange="window.setState({carrierPolFilter:this.value})">
+          ${['All','Active','Renewing','Expired','Non-renewed','Non-renewal notice'].map(v => `<option ${v===filter?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Policy</th><th>Insured</th><th>LOB</th><th>State</th><th>Effective</th><th>Expiry</th><th>Premium</th><th>MGA</th><th>Ceded</th><th>LR</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${pols.map(p => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-policy', carrierPolId:'${p.id}'})">
+              <td><strong>${p.id}</strong>${p.has_open_claim?' <span class="badge badge-amber" style="margin-left:4px">🛡 Claim</span>':''}</td>
+              <td>${p.insured}</td>
+              <td>${p.lob}</td>
+              <td>${p.state}</td>
+              <td>${p.effective}</td>
+              <td>${p.expiry}</td>
+              <td>${p.premium}</td>
+              <td>${p.mga}</td>
+              <td>${p.ceded_pct}</td>
+              <td>${p.loss_ratio}</td>
+              <td>${carrierBadge(p.status, carrierStatusColor(p.status))}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'c-policy', carrierPolId:'${p.id}'})">Open →</button></td>
+            </tr>`).join('') || `<tr><td colspan="12" class="row-sub">No policies match this filter.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierPolicyDetail() {
+  const id = state.carrierPolId || 'POL-2026-0421';
+  const p = D.carrierPolicies.find(x => x.id === id) || D.carrierPolicies[0];
+  const ends = D.carrierEndorsements.filter(e => e.policy === id);
+  const claims = D.carrierClaims.filter(c => c.policy === id);
+
+  return `
+  ${carrierPageHeader(`${p.id} · ${p.insured}`, `${p.lob} · ${p.state} · ${p.effective} → ${p.expiry} · via ${p.mga}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-policies'})">← Policies</button>
+     <button class="btn btn-secondary" onclick="window.setState({screen:'c-endorsement-new', carrierPolId:'${p.id}'})">✏️ + Endorsement</button>
+     <button class="btn btn-secondary" onclick="window.setState({screen:'c-renewals'})">🔄 Renewal</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.konduitViewDoc('${p.id}_Declarations.pdf','Program Deck','2.1 MB','Declarations page for ${p.insured}')">📄 View Declarations</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Status',      value: carrierBadge(p.status, carrierStatusColor(p.status)) },
+    { label: 'Premium',     value: p.premium },
+    { label: 'Retention',   value: p.retention },
+    { label: 'Ceded %',     value: p.ceded_pct },
+    { label: 'Loss Ratio',  value: p.loss_ratio },
+    { label: 'UW',          value: p.uw }
+  ], 6)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Endorsements (${ends.length})</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'c-endorsements'});return false;">All →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>Type</th><th>Effective</th><th>Premium Δ</th><th>Status</th></tr></thead>
+          <tbody>
+            ${ends.map(e => `
+              <tr class="row-clickable" onclick="window.setState({screen:'c-endorsement', carrierEndId:'${e.id}'})">
+                <td><strong>${e.id}</strong></td>
+                <td>${e.type}</td>
+                <td>${e.effective}</td>
+                <td>${e.premium_change}</td>
+                <td>${carrierBadge(e.status, e.status==='Issued'||e.status==='Approved'?'green':'amber')}</td>
+              </tr>`).join('') || `<tr><td colspan="5" class="row-sub">No endorsements yet.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Claims (${claims.length})</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'c-claims', carrierRole:'claims'});return false;">All →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Claim</th><th>DOL</th><th>Cause</th><th>Paid</th><th>Reserve</th><th>Status</th></tr></thead>
+          <tbody>
+            ${claims.map(c => `
+              <tr class="row-clickable" onclick="window.setState({screen:'c-claim', carrierClaimId:'${c.id}', carrierRole:'claims'})">
+                <td><strong>${c.id}</strong></td>
+                <td>${c.dol}</td>
+                <td>${c.cause}</td>
+                <td>${c.paid}</td>
+                <td>${c.reserved}</td>
+                <td>${carrierBadge(c.status, carrierStatusColor(c.status))}</td>
+              </tr>`).join('') || `<tr><td colspan="6" class="row-sub">No claims.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Reinsurance Cession</h3></div>
+    <div class="carrier-detail-row">
+      <div><strong>Treaty:</strong> TR-2026-001 · Property QS + XoL</div>
+      <div><strong>Reinsurer:</strong> Munich Re America</div>
+      <div><strong>Quota-share:</strong> ${p.ceded_pct}</div>
+      <div><strong>Retention:</strong> ${p.retention}</div>
+      <div><strong>XoL layer:</strong> $5M xs $5M</div>
+      <div><strong>Reinstatements used:</strong> 0 of 2</div>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierEndorsements() {
+  const filter = state.carrierEndFilter || 'All';
+  let ends = D.carrierEndorsements;
+  if (filter !== 'All') ends = ends.filter(e => e.status === filter);
+
+  return `
+  ${carrierPageHeader('Endorsements & Servicing', 'Mid-term changes — review, approve, issue, or decline.',
+    `<button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-endorsement-new'})">+ New Endorsement</button>`)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Endorsements · ${ends.length}</h3>
+      <label class="konduit-inline-select">Status:
+        <select onchange="window.setState({carrierEndFilter:this.value})">
+          ${['All','In UW','Approved','Issued'].map(v => `<option ${v===filter?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>ID</th><th>Policy</th><th>Insured</th><th>Type</th><th>Effective</th><th>Premium Δ</th><th>Requested by</th><th>Status</th><th>Age</th><th></th></tr></thead>
+        <tbody>
+          ${ends.map(e => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-endorsement', carrierEndId:'${e.id}'})">
+              <td><strong>${e.id}</strong></td>
+              <td>${e.policy}</td>
+              <td>${e.insured}</td>
+              <td>${e.type}</td>
+              <td>${e.effective}</td>
+              <td>${e.premium_change}</td>
+              <td>${e.requested_by}</td>
+              <td>${carrierBadge(e.status, e.status==='Issued'?'green':e.status==='Approved'?'blue':'amber')}</td>
+              <td>${e.days}d</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'c-endorsement', carrierEndId:'${e.id}'})">Open →</button></td>
+            </tr>`).join('') || `<tr><td colspan="10" class="row-sub">No endorsements match this filter.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierEndorsementDetail() {
+  const id = state.carrierEndId || 'END-2026-0081';
+  const e = D.carrierEndorsements.find(x => x.id === id) || D.carrierEndorsements[0];
+  const rt = carrierRuntime();
+  const isApproved = rt.approvedEndIds[e.id] || e.status === 'Approved' || e.status === 'Issued';
+  const isIssued   = rt.issuedEndIds[e.id] || e.status === 'Issued';
+
+  return `
+  ${carrierPageHeader(`${e.id} · ${e.type}`, `${e.policy} · ${e.insured} · effective ${e.effective}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-endorsements'})">← Endorsements</button>
+     ${!isApproved ? `<button class="btn btn-secondary" onclick="window.carrierFlash({kind:'warn',title:'Declined',body:'Insured will be notified'})">Decline</button>
+     <button class="btn btn-primary carrier-cta" onclick="(function(){carrierRuntime().approvedEndIds['${e.id}']=true;window.setState({screen:'c-endorsement', carrierEndId:'${e.id}', carrierFlash:{title:'${e.id} approved',body:'Premium recalculated · documents queued for e-sign'}});})()">✅ Approve</button>`
+     : !isIssued ? `<button class="btn btn-primary carrier-cta" onclick="(function(){carrierRuntime().issuedEndIds['${e.id}']=true;window.setState({screen:'c-endorsement', carrierEndId:'${e.id}', carrierFlash:{title:'Endorsement issued',body:'Policy updated · insured notified · bordereau cycle included'}});})()">📤 Issue</button>`
+     : ''}`)}
+
+  ${carrierKPIs([
+    { label: 'Status',          value: carrierBadge(isIssued?'Issued':isApproved?'Approved':e.status, isIssued?'green':isApproved?'blue':'amber') },
+    { label: 'Premium Change',  value: e.premium_change },
+    { label: 'Effective',       value: e.effective },
+    { label: 'Age',             value: `${e.days} days` },
+    { label: 'Requested By',    value: e.requested_by },
+    { label: 'Type',            value: e.type }
+  ], 6)}
+
+  <section class="card">
+    <div class="card-header"><h3>Coverage Impact</h3></div>
+    <div class="carrier-detail-row">
+      <div><strong>Policy:</strong> ${e.policy}</div>
+      <div><strong>Insured:</strong> ${e.insured}</div>
+      <div><strong>Endorsement type:</strong> ${e.type}</div>
+      <div><strong>Premium change:</strong> ${e.premium_change}</div>
+      <div><strong>Pro-rata factor:</strong> 0.47</div>
+      <div><strong>Policy period:</strong> remaining ~170 days</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Authority Check</h3></div>
+    <div class="carrier-detail-row">
+      <div><strong>Change magnitude:</strong> ${e.premium_change.startsWith('+$')?'Increase':e.premium_change.startsWith('-$')?'Decrease':'No-charge'}</div>
+      <div><strong>Authority limit:</strong> $50k premium Δ</div>
+      <div><strong>Within authority:</strong> ${Math.abs(parseInt(String(e.premium_change).replace(/[^\d]/g,'')) || 0) < 50000 ? 'Yes' : 'Refer to Sr UW'}</div>
+      <div><strong>Reinsurance impact:</strong> Cession updated automatically</div>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierEndorsementNew() {
+  const pid = state.carrierPolId || 'POL-2026-0421';
+  const p = D.carrierPolicies.find(x => x.id === pid) || D.carrierPolicies[0];
+  return `
+  ${carrierPageHeader('New Endorsement', `For ${p.id} · ${p.insured}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-policy', carrierPolId:'${p.id}'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:760px">
+    <div class="form-grid">
+      <label>Policy<input type="text" value="${p.id}" disabled></label>
+      <label>Insured<input type="text" value="${p.insured}" disabled></label>
+      <label>Endorsement Type<select>
+        <option>Add location</option>
+        <option>Delete location</option>
+        <option>Increase limit</option>
+        <option>Decrease limit</option>
+        <option>Add additional insured</option>
+        <option>Add lienholder</option>
+        <option>Change deductible</option>
+        <option>Named-insured change</option>
+        <option>Coverage extension</option>
+        <option>Cancellation request</option>
+      </select></label>
+      <label>Effective Date<input type="text" placeholder="YYYY-MM-DD"></label>
+      <label>Requested By<select><option>Insured</option><option>MGA</option><option>Broker</option></select></label>
+      <label>Premium Impact Estimate<input type="text" placeholder="+$0 / -$0 / $0"></label>
+      <label class="form-wide">Description<textarea rows="4" placeholder="Details of the change — new location address, updated limits, etc."></textarea></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'c-policy', carrierPolId:'${p.id}'})">Cancel</button>
+      <button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-endorsements', carrierFlash:{title:'Endorsement request created',body:'Routed to UW review · expected decision in 2 business days'}})">Create Request</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierRenewals() {
+  const filter = state.carrierRenFilter || 'All';
+  let rens = D.carrierRenewals;
+  if (filter !== 'All') rens = rens.filter(r => r.status === filter);
+
+  return `
+  ${carrierPageHeader('Renewals', 'Upcoming renewals with loss-experience triggered rate actions.',
+    `<button class="btn btn-ghost" onclick="window.konduitDownloadFile('carrier-renewals.csv', ['id,policy,insured,lob,expiry,days,status,rate_change,loss_ratio,premium_new'].concat(D.carrierRenewals.map(r=>[r.id,r.policy,r.insured,r.lob,r.expiry,r.days,r.status,r.rate_change,r.loss_ratio,r.premium_new].join(','))).join('\\n'), 'text/csv')">⬇ Export CSV</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Due < 30d',       value: rens.filter(r => r.days <= 30 && r.days > 0).length.toString(), warning: true },
+    { label: 'Due 30–90d',      value: rens.filter(r => r.days > 30 && r.days <= 90).length.toString() },
+    { label: 'Re-underwriting', value: rens.filter(r => r.status === 'Re-underwriting').length.toString() },
+    { label: 'Non-renewed YTD', value: rens.filter(r => r.status === 'Non-renewed' || r.status === 'Non-renewal notice').length.toString() }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Renewal Pipeline · ${rens.length}</h3>
+      <label class="konduit-inline-select">Status:
+        <select onchange="window.setState({carrierRenFilter:this.value})">
+          ${['All','Pre-renewal review','Re-underwriting','Quoted','Re-bound','Non-renewal notice','Non-renewed'].map(v => `<option ${v===filter?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Ren ID</th><th>Policy</th><th>Insured</th><th>LOB</th><th>Expiry</th><th>Days</th><th>LR</th><th>Rate Δ</th><th>Premium</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${rens.map(r => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-renewal', carrierRenId:'${r.id}'})">
+              <td><strong>${r.id}</strong></td>
+              <td>${r.policy}</td>
+              <td>${r.insured}</td>
+              <td>${r.lob}</td>
+              <td>${r.expiry}</td>
+              <td>${r.days}d</td>
+              <td>${r.loss_ratio}</td>
+              <td>${r.rate_change}</td>
+              <td>${r.premium_new}</td>
+              <td>${carrierBadge(r.status, carrierStatusColor(r.status))}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'c-renewal', carrierRenId:'${r.id}'})">Open →</button></td>
+            </tr>`).join('') || `<tr><td colspan="11" class="row-sub">No renewals in this filter.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierRenewalDetail() {
+  const id = state.carrierRenId || 'REN-2026-03';
+  const r = D.carrierRenewals.find(x => x.id === id) || D.carrierRenewals[0];
+  return `
+  ${carrierPageHeader(`${r.id} · ${r.insured}`, `${r.lob} · expiry ${r.expiry} · ${r.days} days`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-renewals'})">← Renewals</button>
+     <button class="btn btn-secondary" onclick="window.carrierFlash({kind:'warn',title:'Non-renewal notice sent',body:'Insured receives 60-day non-renewal · per ${r.insured ? 'state' : ''} notice rules'})">📬 Non-renew</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-renewals', carrierFlash:{title:'${r.id} re-bound',body:'Renewal policy issued · premium ${r.premium_new} · effective ${r.expiry}'}})">✅ Re-bind</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Status',       value: carrierBadge(r.status, carrierStatusColor(r.status)) },
+    { label: 'Rate Change',  value: r.rate_change },
+    { label: 'Prior LR',     value: r.loss_ratio },
+    { label: 'New Premium',  value: r.premium_new }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Re-underwriting Summary</h3></div>
+    <div style="padding:var(--space-md); color:var(--text-secondary); line-height:1.7">
+      ${r.loss_ratio.replace('%','') > 70
+        ? `Elevated loss ratio of ${r.loss_ratio} requires rate adequacy action. Proposed ${r.rate_change} uplift justified by 3-year trended loss cost. Consider tightening concentration caps and raising deductibles.`
+        : `Loss performance within acceptable band. Mild rate adjustment of ${r.rate_change} to reflect book trend. Standard renewal terms recommended.`}
+    </div>
+    <div class="carrier-detail-row">
+      <div><strong>Current premium:</strong> policy record</div>
+      <div><strong>Proposed premium:</strong> ${r.premium_new}</div>
+      <div><strong>Loss ratio (3-yr):</strong> ${r.loss_ratio}</div>
+      <div><strong>Concentration change:</strong> Unchanged</div>
+      <div><strong>Deductible change:</strong> Unchanged</div>
+      <div><strong>Reinsurance impact:</strong> Cession unchanged</div>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierAppetite() {
+  const filter = state.carrierAppetiteLobFilter || 'All';
+  let rows = D.carrierAppetite;
+  if (filter !== 'All') rows = rows.filter(r => r.lob === filter);
+
+  return `
+  ${carrierPageHeader('Appetite & Rules', 'Declared appetite by LOB × state × class — drives auto-triage and referral triggers.',
+    `<button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'Appetite rule draft saved',body:'Will be reviewed by CUO before activation'})">+ New Rule</button>`)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Appetite matrix · ${rows.length} rules</h3>
+      <label class="konduit-inline-select">LOB:
+        <select onchange="window.setState({carrierAppetiteLobFilter:this.value})">
+          <option>All</option>
+          ${[...new Set(D.carrierAppetite.map(r=>r.lob))].map(l => `<option ${l===filter?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>LOB</th><th>State</th><th>Class</th><th>Status</th><th>Authority</th><th>Notes</th></tr></thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr>
+              <td><strong>${r.lob}</strong></td>
+              <td>${r.state}</td>
+              <td>${r.class}</td>
+              <td>${carrierBadge(r.status, r.status==='In'?'green':r.status==='Out'?'red':'amber')}</td>
+              <td>${r.authority}</td>
+              <td class="row-sub">${r.notes || '—'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierReports() {
+  return `
+  ${carrierPageHeader('Reports', 'Portfolio analytics — new-business funnel, rate adequacy, geographic concentration.')}
+
+  ${carrierKPIs([
+    { label: 'Submissions received (30d)', value: '142' },
+    { label: 'Quotes issued (30d)',        value: '48' },
+    { label: 'Bind ratio',                 value: '34%' },
+    { label: 'Avg quote turnaround',       value: '2.3d' },
+    { label: 'Avg bind turnaround',        value: '5.1d' },
+    { label: 'Decline rate',               value: '18%' }
+  ], 6)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>GWP by LOB</h3></div>
+      <div style="padding:var(--space-md)">
+        ${D.carrierFinancials.by_lob.map(l => {
+          const maxDwp = Math.max(...D.carrierFinancials.by_lob.map(x => x.dwp));
+          const pct = (l.dwp / maxDwp * 100).toFixed(1);
+          return `<div style="display:grid; grid-template-columns:180px 1fr 110px; gap:var(--space-md); align-items:center; margin-bottom:8px">
+            <div style="color:var(--text-secondary); font-size:0.85rem">${l.lob}</div>
+            <div style="height:18px; background:var(--bg-card); border-radius:4px; overflow:hidden"><div style="height:100%; background:linear-gradient(90deg, var(--c-accent), #6688ff); width:${pct}%"></div></div>
+            <div style="text-align:right; font-weight:600">$${l.dwp}M</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Loss Ratio by LOB</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>LOB</th><th>GWP</th><th>NEP</th><th>LR</th><th>CR</th></tr></thead>
+          <tbody>
+            ${D.carrierFinancials.by_lob.map(l => `
+              <tr>
+                <td><strong>${l.lob}</strong></td>
+                <td>$${l.dwp}M</td>
+                <td>$${l.nep}M</td>
+                <td style="color:${l.lr > 65 ? 'var(--status-red)' : l.lr > 55 ? 'var(--status-amber)' : 'var(--status-green)'}">${l.lr}%</td>
+                <td>${l.cr}%</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+function renderCarrierSettings() {
+  return `
+  ${carrierPageHeader('Settings', 'Integrations, notifications, and team access.')}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Integrations</h3></div>
+      <div style="padding:var(--space-md); display:flex; flex-direction:column; gap:var(--space-sm)">
+        ${D.carrierIntegrations.map(i => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-subtle)">
+            <div>
+              <strong>${i.name}</strong>
+              <div class="row-sub">${i.purpose}</div>
+            </div>
+            <div>${carrierBadge(i.status, i.status==='Connected'?'green':i.status==='Pending'?'amber':'grey')}</div>
+          </div>`).join('')}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Notifications</h3></div>
+      <div style="padding:var(--space-md); display:flex; flex-direction:column; gap:var(--space-sm)">
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>New submission assigned to me</span><input type="checkbox" checked></label>
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>Referral decision required</span><input type="checkbox" checked></label>
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>Bordereau exception flagged</span><input type="checkbox" checked></label>
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>Large loss (> $100k)</span><input type="checkbox" checked></label>
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>SERFF filing status change</span><input type="checkbox"></label>
+        <label style="display:flex; justify-content:space-between; align-items:center"><span>Weekly portfolio digest</span><input type="checkbox" checked></label>
+      </div>
+    </section>
+  </div>
+  `;
+}
+// ─── Phase 2 — Delegated Authority (MGAs), Bordereau, Producers ───
+
+function renderCarrierMGAs() {
+  const mgas = D.carrierMGAs;
+  return `
+  ${carrierPageHeader('Delegated Authority — MGAs', 'MGAs underwriting under your paper · authority, performance, treaty, audits.',
+    `<button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'Onboarding flow drafted',body:'New MGA packet will be generated for counsel review'})">+ Onboard MGA</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Active MGAs',       value: mgas.filter(m=>m.status==='Active').length.toString() },
+    { label: 'GWP YTD',           value: '$288M' },
+    { label: 'Avg loss ratio',    value: '55.8%' },
+    { label: 'Audits due <60d',   value: '2', warning: true }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Portfolio · ${mgas.length} MGAs</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>MGA</th><th>LOBs</th><th>GWP YTD</th><th>Policies</th><th>Treaty</th><th>Authority</th><th>LR</th><th>CR</th><th>Scorecard</th><th>Audit Due</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${mgas.map(m => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-mga', carrierMgaId:'${m.id}'})">
+              <td><strong>${m.name}</strong><div class="row-sub">${m.id} · since ${m.since}</div></td>
+              <td>${m.lobs.join(', ')}</td>
+              <td>${m.gwp_ytd}</td>
+              <td>${m.policies}</td>
+              <td>${m.treaty}</td>
+              <td>${m.authority}</td>
+              <td>${m.loss_ratio}</td>
+              <td>${m.combined_ratio}</td>
+              <td><span class="quality-pill">${m.scorecard}</span></td>
+              <td>${m.audit_due}</td>
+              <td>${carrierBadge(m.status, m.status==='Active'?'green':'amber')}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'c-mga', carrierMgaId:'${m.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierMGADetail() {
+  const id = state.carrierMgaId || 'MGA-01';
+  const m = D.carrierMGAs.find(x => x.id === id) || D.carrierMGAs[0];
+  const pols = D.carrierPolicies.filter(p => p.mga && m.name.startsWith(p.mga.split(' ')[0]));
+  const brd  = D.carrierBordereau.filter(b => b.mga === m.name);
+
+  return `
+  ${carrierPageHeader(`${m.name}`, `${m.id} · since ${m.since} · ${m.lobs.join(', ')}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-mgas'})">← MGAs</button>
+     <button class="btn btn-secondary" onclick="window.carrierFlash({kind:'info',title:'Audit scheduled',body:'On-site audit opened for ${m.audit_due} · auditor assigned'})">📋 Schedule Audit</button>
+     ${m.status==='Active'
+       ? `<button class="btn btn-secondary" onclick="window.showModal('Pause MGA?', '<div class=k-modal-body>New submissions from this MGA will be auto-declined. In-force book unaffected until renewal.</div>', 'Pause', () => window.carrierFlash({kind:'warn', title:'${m.name} paused', body:'Auto-decline active · renewal review required'}))">⏸ Pause</button>`
+       : `<button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'${m.name} reactivated',body:'Submissions can flow again under prior authority'})">▶ Reactivate</button>`}`)}
+
+  ${carrierKPIs([
+    { label: 'GWP YTD',       value: m.gwp_ytd },
+    { label: 'Policies',      value: m.policies.toString() },
+    { label: 'Loss Ratio',    value: m.loss_ratio },
+    { label: 'Combined',      value: m.combined_ratio },
+    { label: 'Authority',     value: m.authority },
+    { label: 'Scorecard',     value: m.scorecard }
+  ], 6)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Authority Matrix</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Class</th><th>Limit</th><th>Decision</th></tr></thead>
+          <tbody>
+            <tr><td>In-appetite · in-state</td><td>${m.authority}</td><td>${carrierBadge('Auto-bind','green')}</td></tr>
+            <tr><td>In-appetite · new state</td><td>$10M / risk</td><td>${carrierBadge('Refer','amber')}</td></tr>
+            <tr><td>Refer appetite</td><td>Sr UW only</td><td>${carrierBadge('Refer','amber')}</td></tr>
+            <tr><td>Out of appetite</td><td>—</td><td>${carrierBadge('Decline','red')}</td></tr>
+            <tr><td>Excess limits</td><td>Committee</td><td>${carrierBadge('Committee','red')}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Treaty & Cession</h3></div>
+      <div class="carrier-detail-row">
+        <div><strong>Treaty:</strong> ${m.treaty}</div>
+        <div><strong>Bordereau cadence:</strong> ${m.bordereau_cadence}</div>
+        <div><strong>Next audit:</strong> ${m.audit_due}</div>
+        <div><strong>Commission:</strong> 22% / 28% / 32% tier</div>
+        <div><strong>Profit comm:</strong> 15% above 60% LR</div>
+        <div><strong>Onboarded:</strong> ${m.since}</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Policies in force (${pols.length})</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Policy</th><th>Insured</th><th>LOB</th><th>State</th><th>Premium</th><th>Ceded</th><th>LR</th><th>Status</th></tr></thead>
+        <tbody>
+          ${pols.map(p => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-policy', carrierPolId:'${p.id}'})">
+              <td><strong>${p.id}</strong></td>
+              <td>${p.insured}</td>
+              <td>${p.lob}</td>
+              <td>${p.state}</td>
+              <td>${p.premium}</td>
+              <td>${p.ceded_pct}</td>
+              <td>${p.loss_ratio}</td>
+              <td>${carrierBadge(p.status, carrierStatusColor(p.status))}</td>
+            </tr>`).join('') || `<tr><td colspan="8" class="row-sub">No policies currently.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Recent Bordereau (${brd.length})</h3>
+      <a href="#" class="link-subtle" onclick="window.setState({screen:'c-bordereau'});return false;">All →</a>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>ID</th><th>Period</th><th>Type</th><th>GWP</th><th>Variance</th><th>Status</th></tr></thead>
+        <tbody>
+          ${brd.map(b => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-bordereau-detail', carrierBrdId:'${b.id}'})">
+              <td><strong>${b.id}</strong></td>
+              <td>${b.period}</td>
+              <td>${b.type}</td>
+              <td>${b.gwp}</td>
+              <td>${b.variance}</td>
+              <td>${carrierBadge(b.status, carrierStatusColor(b.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierBordereau() {
+  const rt = carrierRuntime();
+  const filter = state.carrierBrdFilter || 'All';
+  let brd = D.carrierBordereau.map(b => rt.reconciledBordereau[b.id] ? {...b, status:'Reconciled'} : b);
+  if (filter !== 'All') brd = brd.filter(b => b.status === filter);
+
+  return `
+  ${carrierPageHeader('Bordereau Inbox', 'Monthly bordereau from delegated MGAs · reconciliation · exceptions · cede downstream.',
+    `<button class="btn btn-ghost" onclick="window.konduitExportBordereau('2026-03')">⬇ Sample CSV</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'Reconciliation run',body:'All pending bordereau processed · 1 exception flagged'})">▶ Run Reconciliation</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Received (Mar)',  value: brd.filter(b=>b.received).length.toString() },
+    { label: 'Reconciled',      value: brd.filter(b=>b.status==='Reconciled').length.toString() },
+    { label: 'Exceptions',      value: brd.filter(b=>b.status==='Exception').length.toString(), warning: true },
+    { label: 'Pending',         value: brd.filter(b=>b.status==='Pending' || b.status==='Paused').length.toString() }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Bordereau · ${brd.length}</h3>
+      <label class="konduit-inline-select">Status:
+        <select onchange="window.setState({carrierBrdFilter:this.value})">
+          ${['All','Reconciled','Exception','Pending','Paused'].map(v => `<option ${v===filter?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>ID</th><th>MGA</th><th>Period</th><th>Type</th><th>GWP</th><th>Net</th><th>Comm</th><th>Claims</th><th>Variance</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${brd.map(b => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-bordereau-detail', carrierBrdId:'${b.id}'})">
+              <td><strong>${b.id}</strong></td>
+              <td>${b.mga}</td>
+              <td>${b.period}</td>
+              <td>${b.type}</td>
+              <td>${b.gwp}</td>
+              <td>${b.net}</td>
+              <td>${b.commissions}</td>
+              <td>${b.claims}</td>
+              <td style="color:${b.variance === '—' ? 'var(--text-muted)' : parseFloat(b.variance) > 3 ? 'var(--status-red)' : parseFloat(b.variance) > 1 ? 'var(--status-amber)' : 'var(--status-green)'}">${b.variance}</td>
+              <td>${carrierBadge(b.status, carrierStatusColor(b.status))}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'c-bordereau-detail', carrierBrdId:'${b.id}'})">Open →</button></td>
+            </tr>`).join('') || `<tr><td colspan="11" class="row-sub">No bordereau match this filter.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierBordereauDetail() {
+  const id = state.carrierBrdId || 'BDX-2026-03-01';
+  const b = D.carrierBordereau.find(x => x.id === id) || D.carrierBordereau[0];
+  const rt = carrierRuntime();
+  const isRecon = rt.reconciledBordereau[b.id] || b.status === 'Reconciled';
+
+  const policyRows = [
+    { policy: 'POL-2026-0421', insured: 'Kroger Real Estate',    mga_reported_gwp: '$284,000', carrier_book_gwp: '$284,000', delta: '$0',    match: true },
+    { policy: 'POL-2026-0422', insured: 'Prologis Trust',         mga_reported_gwp: '$512,000', carrier_book_gwp: '$512,000', delta: '$0',    match: true },
+    { policy: 'POL-2026-0419', insured: 'Westbrook Hospitality', mga_reported_gwp: '$98,000',  carrier_book_gwp: '$98,000',  delta: '$0',    match: true },
+    { policy: 'POL-2026-0420', insured: 'Magnolia Construction',  mga_reported_gwp: '$147,000', carrier_book_gwp: '$144,500', delta: '$2,500',match: false }
+  ];
+
+  return `
+  ${carrierPageHeader(`${b.id}`, `${b.mga} · ${b.period} · ${b.type} bordereau`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-bordereau'})">← Inbox</button>
+     <button class="btn btn-ghost" onclick="window.konduitExportBordereau('${b.period.replace(' ','-').toLowerCase()}')">⬇ Export CSV</button>
+     ${!isRecon
+       ? `<button class="btn btn-secondary" onclick="window.carrierFlash({kind:'warn',title:'Exception raised to MGA',body:'Discrepancy flagged · awaiting MGA response'})">🚩 Raise Exception</button>
+          <button class="btn btn-primary carrier-cta" onclick="(function(){carrierRuntime().reconciledBordereau['${b.id}']=true;window.setState({screen:'c-bordereau', carrierFlash:{title:'${b.id} reconciled',body:'Cede triggered to reinsurance treaty · commissions payable updated'}});})()">✅ Reconcile</button>`
+       : ''}`)}
+
+  ${carrierKPIs([
+    { label: 'Status',       value: carrierBadge(isRecon?'Reconciled':b.status, carrierStatusColor(isRecon?'Reconciled':b.status)) },
+    { label: 'Gross Written',value: b.gwp },
+    { label: 'Net to Cap',   value: b.net },
+    { label: 'Commissions',  value: b.commissions },
+    { label: 'Claims',       value: b.claims },
+    { label: 'Variance',     value: b.variance, warning: b.variance !== '0.0%' && parseFloat(b.variance) > 1 }
+  ], 6)}
+
+  <section class="card">
+    <div class="card-header"><h3>Policy-level reconciliation</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Policy</th><th>Insured</th><th>MGA reported GWP</th><th>Carrier book GWP</th><th>Δ</th><th>Match</th></tr></thead>
+        <tbody>
+          ${policyRows.map(r => `
+            <tr>
+              <td><strong>${r.policy}</strong></td>
+              <td>${r.insured}</td>
+              <td>${r.mga_reported_gwp}</td>
+              <td>${r.carrier_book_gwp}</td>
+              <td>${r.delta}</td>
+              <td>${r.match ? carrierBadge('Match','green') : carrierBadge('Variance','red')}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Downstream cede preview</h3></div>
+    <div class="carrier-detail-row">
+      <div><strong>Treaty:</strong> TR-2026-001 (Property QS + XoL)</div>
+      <div><strong>Quota share:</strong> 65%</div>
+      <div><strong>Ceded premium:</strong> $3,120,000</div>
+      <div><strong>Ceded commission:</strong> $1,050,000</div>
+      <div><strong>Ceded claims:</strong> $260,000</div>
+      <div><strong>Reinsurer:</strong> Munich Re America</div>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierProducers() {
+  const prods = D.carrierProducers;
+  return `
+  ${carrierPageHeader('Producers', 'Appointed agencies · NIPR licensing · commissions · performance.',
+    `<button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'New appointment form opened',body:'NIPR license check will run automatically'})">+ New Appointment</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Active',           value: prods.filter(p=>p.status==='Active').length.toString() },
+    { label: 'Commissions YTD',  value: '$11.2M' },
+    { label: 'Expiring licenses',value: prods.filter(p=>p.license==='NIPR-EXPIRING').length.toString(), warning: true },
+    { label: 'Suspended',        value: prods.filter(p=>p.status==='Suspended').length.toString() }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Directory · ${prods.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Producer</th><th>Type</th><th>License</th><th>Appts</th><th>GWP YTD</th><th>LR</th><th>Commissions</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${prods.map(p => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-producer', carrierPrdId:'${p.id}'})">
+              <td><strong>${p.name}</strong><div class="row-sub">${p.id}</div></td>
+              <td>${p.type}</td>
+              <td>${carrierBadge(p.license, p.license==='NIPR-ACTIVE'?'green':p.license==='NIPR-EXPIRING'?'amber':'red')}</td>
+              <td>${p.appointments}</td>
+              <td>${p.gwp_ytd}</td>
+              <td>${p.lr}</td>
+              <td>${p.commissions_ytd}</td>
+              <td>${carrierBadge(p.status, p.status==='Active'?'green':p.status==='Review'?'amber':'red')}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'c-producer', carrierPrdId:'${p.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierProducerDetail() {
+  const id = state.carrierPrdId || 'PRD-001';
+  const p = D.carrierProducers.find(x => x.id === id) || D.carrierProducers[0];
+  return `
+  ${carrierPageHeader(`${p.name}`, `${p.id} · ${p.type} · ${p.appointments} state appointments`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-producers'})">← Producers</button>
+     ${p.license!=='NIPR-ACTIVE' ? `<button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'NIPR re-check requested',body:'License status will refresh within 24h'})">🔍 Re-check NIPR</button>`:''}
+     ${p.status==='Active' ? `<button class="btn btn-secondary" onclick="window.showModal('Suspend Appointment?','<div class=k-modal-body>Producer cannot submit new business. In-force policies unaffected.</div>','Suspend',()=>window.carrierFlash({kind:'warn',title:'${p.name} suspended'}))">⏸ Suspend</button>`:''}`)}
+
+  ${carrierKPIs([
+    { label: 'Type',         value: p.type },
+    { label: 'Licenses',     value: carrierBadge(p.license, p.license==='NIPR-ACTIVE'?'green':p.license==='NIPR-EXPIRING'?'amber':'red') },
+    { label: 'Appointments', value: p.appointments.toString() },
+    { label: 'GWP YTD',      value: p.gwp_ytd },
+    { label: 'Loss Ratio',   value: p.lr },
+    { label: 'Commissions',  value: p.commissions_ytd }
+  ], 6)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Appointments by State</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>State</th><th>LOB(s)</th><th>Effective</th><th>Status</th></tr></thead>
+          <tbody>
+            ${['NY','CA','TX','FL','IL'].map(st => `
+              <tr>
+                <td><strong>${st}</strong></td>
+                <td>Commercial Property, Casualty / GL, Workers Comp</td>
+                <td>2024-06-01</td>
+                <td>${carrierBadge('Active','green')}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Commission Schedule</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>LOB</th><th>New Biz</th><th>Renewal</th><th>Profit Share</th></tr></thead>
+          <tbody>
+            <tr><td>Commercial Property</td><td>15%</td><td>13%</td><td>2% above 55% LR</td></tr>
+            <tr><td>Casualty / GL</td><td>14%</td><td>12%</td><td>2% above 60% LR</td></tr>
+            <tr><td>Workers Compensation</td><td>12%</td><td>11%</td><td>None</td></tr>
+            <tr><td>Transportation</td><td>13%</td><td>12%</td><td>1.5% above 62% LR</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Policies placed</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Policy</th><th>Insured</th><th>LOB</th><th>State</th><th>Premium</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.carrierPolicies.slice(0, 6).map(pol => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-policy', carrierPolId:'${pol.id}'})">
+              <td><strong>${pol.id}</strong></td>
+              <td>${pol.insured}</td>
+              <td>${pol.lob}</td>
+              <td>${pol.state}</td>
+              <td>${pol.premium}</td>
+              <td>${carrierBadge(pol.status, carrierStatusColor(pol.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+// ─── Phase 5 — SERFF Filings ───
+function renderCarrierFilings() {
+  const rt = carrierRuntime();
+  const filter = state.carrierFilingFilter || 'All';
+  let filings = D.carrierSerffFilings.map(f => rt.approvedFilings[f.id] ? {...f, status:'Approved'} : f);
+  if (filter !== 'All') filings = filings.filter(f => f.status === filter);
+
+  return `
+  ${carrierPageHeader('Rate & Form Filings', 'SERFF filings to state DOIs · rate manual · forms · compliance calendar.',
+    `<button class="btn btn-ghost" onclick="window.konduitDownloadFile('serff-filings.csv', 'id,state,lob,type,filing_no,status,filed,effective,rate_change\\n' + D.carrierSerffFilings.map(f=>[f.id,f.state,f.lob,f.type,f.filing_no,f.status,f.filed,f.effective,f.rate_change].join(',')).join('\\n'), 'text/csv')">⬇ Export CSV</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-filing-new'})">+ New Filing</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Total filings',   value: filings.length.toString() },
+    { label: 'Approved',        value: filings.filter(f=>f.status==='Approved').length.toString() },
+    { label: 'Pending / Object',value: filings.filter(f=>f.status==='Pending'||f.status==='Objection').length.toString(), warning:true },
+    { label: 'Effective < 60d', value: '3' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>SERFF Filings · ${filings.length}</h3>
+      <label class="konduit-inline-select">Status:
+        <select onchange="window.setState({carrierFilingFilter:this.value})">
+          ${['All','Approved','Pending','Objection','Withdrawn'].map(v=>`<option ${v===filter?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Filing</th><th>State</th><th>LOB</th><th>Type</th><th>Filing No</th><th>Rate Δ</th><th>Filed</th><th>Effective</th><th>DOI Contact</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${filings.map(f => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-filing', carrierFilingId:'${f.id}'})">
+              <td><strong>${f.id}</strong></td>
+              <td>${f.state}</td>
+              <td>${f.lob}</td>
+              <td>${f.type}</td>
+              <td>${f.filing_no}</td>
+              <td>${f.rate_change}</td>
+              <td>${f.filed}</td>
+              <td>${f.effective}</td>
+              <td class="row-sub">${f.doi_contact}</td>
+              <td>${carrierBadge(f.status, carrierStatusColor(f.status))}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'c-filing', carrierFilingId:'${f.id}'})">Open →</button></td>
+            </tr>`).join('') || `<tr><td colspan="11" class="row-sub">No filings in this filter.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierFilingDetail() {
+  const id = state.carrierFilingId || 'SRF-2026-TX-01';
+  const f = D.carrierSerffFilings.find(x => x.id === id) || D.carrierSerffFilings[0];
+  const rt = carrierRuntime();
+  const isApproved = rt.approvedFilings[f.id] || f.status === 'Approved';
+
+  return `
+  ${carrierPageHeader(`${f.filing_no}`, `${f.state} · ${f.lob} · ${f.type} filing · filed ${f.filed}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-filings'})">← Filings</button>
+     <button class="btn btn-ghost" onclick="window.konduitViewDoc(f.filing_no+'.pdf','Program Deck','3.2 MB','SERFF submission packet')">📄 View Packet</button>
+     ${!isApproved ? `<button class="btn btn-secondary" onclick="window.carrierFlash({kind:'warn',title:'Response drafted',body:'DOI objection response ready for review'})">↩ Respond to Objection</button>
+     <button class="btn btn-primary carrier-cta" onclick="(function(){carrierRuntime().approvedFilings['${f.id}']=true;window.setState({screen:'c-filings', carrierFlash:{title:'${f.filing_no} approved',body:'${f.state} DOI approval logged · effective ${f.effective}'}});})()">✅ Mark Approved</button>` : ''}`)}
+
+  ${carrierKPIs([
+    { label: 'State',          value: f.state },
+    { label: 'Rate Change',    value: f.rate_change },
+    { label: 'Filed',          value: f.filed },
+    { label: 'Effective',      value: f.effective },
+    { label: 'Status',         value: carrierBadge(isApproved?'Approved':f.status, carrierStatusColor(isApproved?'Approved':f.status)) },
+    { label: 'DOI Contact',    value: f.doi_contact.split('·')[1] ? f.doi_contact.split('·')[1].trim() : f.doi_contact }
+  ], 6)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Filing Metadata</h3></div>
+      <div class="carrier-detail-row">
+        <div><strong>SERFF Filing No:</strong> ${f.filing_no}</div>
+        <div><strong>Type:</strong> ${f.type}</div>
+        <div><strong>Line of Business:</strong> ${f.lob}</div>
+        <div><strong>Form:</strong> ${f.form}</div>
+        <div><strong>DOI Contact:</strong> ${f.doi_contact}</div>
+        <div><strong>Expected review cycle:</strong> 30-60 days</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>DOI Correspondence</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>When</th><th>Direction</th><th>Subject</th></tr></thead>
+          <tbody>
+            <tr><td>${f.filed}</td><td>Outbound</td><td>Rate filing submission</td></tr>
+            <tr><td>${f.filed}</td><td>Inbound</td><td>Acknowledgement of filing receipt</td></tr>
+            ${f.status === 'Objection' ? `<tr><td>2026-03-22</td><td>Inbound</td><td>Objection letter — additional actuarial support requested</td></tr>`:''}
+            ${f.status === 'Approved' ? `<tr><td>${f.effective}</td><td>Inbound</td><td>Approval letter — effective ${f.effective}</td></tr>`:''}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Actuarial Support</h3></div>
+    <div style="padding:var(--space-md)">
+      <div style="color:var(--text-secondary); line-height:1.7">Rate indication of ${f.rate_change} supported by 3-year trended loss ratio analysis, exposure-adjusted frequency trends, and pure-premium development factors. Signed Statement of Actuarial Opinion attached.</div>
+      <div style="margin-top:var(--space-md); display:flex; gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('SAO_'+f.filing_no+'.pdf','Actuarial','1.2 MB','Statement of Actuarial Opinion')">📄 SAO</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('rate-indication.xlsx','Actuarial','840 KB','Rate indication workbook')">📊 Rate Indication</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('loss-triangle.pdf','Actuarial','2.1 MB','Loss development triangles')">📐 Triangles</button>
+      </div>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierFilingNew() {
+  return `
+  ${carrierPageHeader('New SERFF Filing', 'Draft a new rate or form filing · submit to state DOI via SERFF.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-filings'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:760px">
+    <div class="form-grid">
+      <label>State<select>${D.CARRIER_STATES.map(s=>`<option>${s}</option>`).join('')}</select></label>
+      <label>LOB<select>${D.CARRIER_LOBS.map(l=>`<option>${l}</option>`).join('')}</select></label>
+      <label>Filing Type<select><option>Rate</option><option>Form</option><option>Rate + Form</option><option>Rule</option></select></label>
+      <label>Rate Change<input type="text" placeholder="+0% / -0%"></label>
+      <label>Proposed Effective Date<input type="text" placeholder="YYYY-MM-DD"></label>
+      <label>Form Version<input type="text" placeholder="e.g. CP 00 10 10 12"></label>
+      <label class="form-wide">Filing Memo (narrative for DOI)<textarea rows="5" placeholder="Describe the change, rationale, actuarial support, and expected market impact..."></textarea></label>
+      <label class="form-wide"><span style="display:flex; align-items:center; gap:8px"><input type="checkbox" checked>Attach Statement of Actuarial Opinion</span></label>
+      <label class="form-wide"><span style="display:flex; align-items:center; gap:8px"><input type="checkbox" checked>Attach rate indication workbook</span></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'c-filings'})">Save Draft</button>
+      <button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-filings', carrierFlash:{title:'Filing submitted to SERFF',body:'DOI will acknowledge within 2 business days'}})">Submit to SERFF</button>
+    </div>
+  </section>
+  `;
+}
+
+// ─── Phase 4 — Reinsurance & Finance ───
+
+function renderCarrierReinsDashboard() {
+  const kpis = D.carrierDashboardKPIs.reins;
+  const treaties = D.carrierTreaties.slice(0, 6);
+  return `
+  ${carrierPageHeader('Reinsurance & Finance', 'Treaty book · ceded exposure · recoverables · CAT posture · reserving posture.')}
+  ${carrierKPIs(kpis, 6)}
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Active Treaties</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'c-treaties'});return false;">All →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Treaty</th><th>LOB</th><th>Type</th><th>Reinsurer</th><th>Ceded YTD</th><th>Recoverables</th></tr></thead>
+          <tbody>
+            ${treaties.map(t => `
+              <tr class="row-clickable" onclick="window.setState({screen:'c-treaty', carrierTreatyId:'${t.id}'})">
+                <td><strong>${t.id}</strong><div class="row-sub">${t.name}</div></td>
+                <td>${t.lob}</td>
+                <td>${t.type}</td>
+                <td>${t.reinsurer}</td>
+                <td>${t.ceded_premium}</td>
+                <td>${t.recoverables}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Recoverables Aging</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'c-recoverables'});return false;">All →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Claim</th><th>Reinsurer</th><th>Amount</th><th>Aged</th><th>Status</th></tr></thead>
+          <tbody>
+            ${D.carrierRecoverables.slice(0, 6).map(r => `
+              <tr>
+                <td><strong>${r.claim}</strong></td>
+                <td>${r.reinsurer}</td>
+                <td>${r.amount}</td>
+                <td>${r.aged_days}d</td>
+                <td>${carrierBadge(r.status, carrierStatusColor(r.status))}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+function renderCarrierTreaties() {
+  return `
+  ${carrierPageHeader('Treaties', 'Inwards-cede (what we buy) · QS, XoL, Full-stack, Stop-loss, Facultative.',
+    `<button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-treaty-new'})">+ New Treaty</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Active Book · ${D.carrierTreaties.length} treaties</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Treaty</th><th>LOB</th><th>Type</th><th>Share</th><th>Layer</th><th>Reinsurer</th><th>Inception</th><th>Expiry</th><th>Ceded YTD</th><th>Recoverables</th><th></th></tr></thead>
+        <tbody>
+          ${D.carrierTreaties.map(t => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-treaty', carrierTreatyId:'${t.id}'})">
+              <td><strong>${t.id}</strong><div class="row-sub">${t.name}</div></td>
+              <td>${t.lob}</td>
+              <td>${t.type}</td>
+              <td>${t.share}</td>
+              <td>${t.layer}</td>
+              <td>${t.reinsurer}</td>
+              <td>${t.inception}</td>
+              <td>${t.expiry}</td>
+              <td>${t.ceded_premium}</td>
+              <td>${t.recoverables}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'c-treaty', carrierTreatyId:'${t.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierTreatyDetail() {
+  const id = state.carrierTreatyId || 'TR-2026-001';
+  const t = D.carrierTreaties.find(x => x.id === id) || D.carrierTreaties[0];
+  return `
+  ${carrierPageHeader(`${t.id} · ${t.name}`, `${t.reinsurer} · ${t.inception} → ${t.expiry}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-treaties'})">← Treaties</button>
+     <button class="btn btn-ghost" onclick="window.konduitViewDoc(t.id+'_slip.pdf','Program Deck','3.4 MB','Treaty slip and wording')">📄 Slip Doc</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'Renewal workflow started',body:'120-day renewal — actuarial model triggered'})">🔄 Start Renewal</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Type',            value: t.type },
+    { label: 'Share / Layer',   value: `${t.share} · ${t.layer}` },
+    { label: 'Ceded Premium',   value: t.ceded_premium },
+    { label: 'Recoverables',    value: t.recoverables },
+    { label: 'Reinstatements',  value: t.reinstatements },
+    { label: 'Status',          value: carrierBadge(t.status, 'green') }
+  ], 6)}
+
+  <section class="card">
+    <div class="card-header"><h3>Slip Terms</h3></div>
+    <div class="carrier-detail-row">
+      <div><strong>Reinsurer:</strong> ${t.reinsurer}</div>
+      <div><strong>Broker:</strong> Guy Carpenter</div>
+      <div><strong>Governing law:</strong> Delaware</div>
+      <div><strong>Inception:</strong> ${t.inception}</div>
+      <div><strong>Expiry:</strong> ${t.expiry}</div>
+      <div><strong>Currency:</strong> USD</div>
+      <div><strong>Brokerage:</strong> 2.5%</div>
+      <div><strong>Reporting cadence:</strong> Quarterly</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Quarterly Performance</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Quarter</th><th>Ceded Premium</th><th>Ceded Losses</th><th>Loss Ratio</th><th>Commissions</th></tr></thead>
+        <tbody>
+          <tr><td>Q1 2026</td><td>$10.5M</td><td>$5.8M</td><td>55.2%</td><td>$3.4M</td></tr>
+          <tr><td>Q4 2025</td><td>$10.1M</td><td>$6.2M</td><td>61.4%</td><td>$3.3M</td></tr>
+          <tr><td>Q3 2025</td><td>$9.8M</td><td>$5.4M</td><td>55.1%</td><td>$3.2M</td></tr>
+          <tr><td>Q2 2025</td><td>$9.6M</td><td>$4.9M</td><td>51.0%</td><td>$3.1M</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierTreatyNew() {
+  return `
+  ${carrierPageHeader('New Treaty', 'Draft a new reinsurance treaty · route to broker for placement',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-treaties'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:820px">
+    <div class="form-grid">
+      <label>Treaty Name<input type="text" placeholder="e.g. Property CAT XoL 2027"></label>
+      <label>Line of Business<select>${D.CARRIER_LOBS.map(l=>`<option>${l}</option>`).join('')}</select></label>
+      <label>Type<select><option>Quota Share</option><option>XoL</option><option>Surplus</option><option>Stop-Loss</option><option>Facultative</option><option>Full-stack</option></select></label>
+      <label>Inception<input type="text" placeholder="YYYY-MM-DD"></label>
+      <label>Expiry<input type="text" placeholder="YYYY-MM-DD"></label>
+      <label>Placement Broker<input type="text" value="Guy Carpenter"></label>
+      <label>Target Reinsurer(s)<input type="text" placeholder="Munich Re · Swiss Re · Lloyd's"></label>
+      <label>Target Share / Layer<input type="text" placeholder="65% · $5M xs $5M"></label>
+      <label>Ceding Commission<input type="text" placeholder="28%"></label>
+      <label>Profit Commission<input type="text" placeholder="15% above 60% LR"></label>
+      <label class="form-wide">Conditions Precedent<textarea rows="3" placeholder="Actuarial sign-off · collateral · treaty wording"></textarea></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'c-treaties'})">Save Draft</button>
+      <button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-treaties', carrierFlash:{title:'Treaty draft routed to broker',body:'Guy Carpenter will negotiate · target close 90 days'}})">Route to Broker</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierCeded() {
+  return `
+  ${carrierPageHeader('Ceded Bordereau', 'Downstream bordereau going out to reinsurers · generated from reconciled MGA bordereau.',
+    `<button class="btn btn-ghost" onclick="window.konduitExportBordereau('2026-Q1-ceded')">⬇ Export Q1 CSV</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'Ceded bordereau generated',body:'Queued for Q2 delivery · reinsurers notified'})">Generate Next Quarter</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Ceded YTD',     value: '$178M' },
+    { label: 'Ceded Claims',  value: '$32.4M' },
+    { label: 'Ceding Comm',   value: '$45.6M' },
+    { label: 'Statements out',value: '7 of 7' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Ceded out by Reinsurer</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Reinsurer</th><th>Treaty</th><th>Ceded Premium YTD</th><th>Ceded Losses</th><th>Ceding Comm</th><th>Statements</th></tr></thead>
+        <tbody>
+          ${D.carrierRetroPanel.map(r => `
+            <tr>
+              <td><strong>${r.reinsurer}</strong></td>
+              <td>${r.treaty}</td>
+              <td>${r.ceded_ytd}</td>
+              <td>—</td>
+              <td>—</td>
+              <td>${r.statements_delivered}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierRecoverables() {
+  const filter = state.carrierRcvFilter || 'All';
+  let rows = D.carrierRecoverables;
+  if (filter !== 'All') rows = rows.filter(r => r.status === filter);
+
+  return `
+  ${carrierPageHeader('Reinsurance Recoverables', 'Claims ceded to reinsurers · bill · collect · disputes.',
+    `<button class="btn btn-ghost" onclick="window.konduitDownloadFile('recoverables-aging.csv', 'claim,reinsurer,amount,aged,status\\n' + D.carrierRecoverables.map(r=>[r.claim,r.reinsurer,r.amount,r.aged_days,r.status].join(',')).join('\\n'), 'text/csv')">⬇ Aging CSV</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'Bills issued',body:'Pending recoverables billed to 3 reinsurers'})">Bill Pending</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Total outstanding', value: '$12.4M' },
+    { label: 'Billed',            value: rows.filter(r=>r.status==='Billed').length.toString() },
+    { label: 'Disputed',          value: rows.filter(r=>r.status==='Disputed').length.toString(), warning:true },
+    { label: 'Aged > 90d',        value: rows.filter(r=>r.aged_days>90).length.toString(), warning:true }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Recoverables · ${rows.length}</h3>
+      <label class="konduit-inline-select">Status:
+        <select onchange="window.setState({carrierRcvFilter:this.value})">
+          ${['All','Billed','Collected','Disputed','Aged >90'].map(v=>`<option ${v===filter?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>ID</th><th>Treaty</th><th>Reinsurer</th><th>Claim</th><th>Amount</th><th>Aged</th><th>Status</th><th>Notes</th></tr></thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr>
+              <td><strong>${r.id}</strong></td>
+              <td>${r.treaty}</td>
+              <td>${r.reinsurer}</td>
+              <td>${r.claim}</td>
+              <td>${r.amount}</td>
+              <td style="color:${r.aged_days>90?'var(--status-red)':r.aged_days>60?'var(--status-amber)':'var(--text-primary)'}">${r.aged_days}d</td>
+              <td>${carrierBadge(r.status, carrierStatusColor(r.status))}</td>
+              <td class="row-sub">${r.notes}</td>
+            </tr>`).join('') || `<tr><td colspan="8" class="row-sub">No recoverables in this filter.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierRetrocession() {
+  return `
+  ${carrierPageHeader('Retrocession', 'What we buy to protect our net — facultative, treaty, ILS, and CAT bonds.')}
+
+  ${carrierKPIs([
+    { label: 'Treaty retro',       value: '$42M ceded' },
+    { label: 'Facultative',        value: '$8M ceded' },
+    { label: 'CAT bond collateral',value: '$25M' },
+    { label: 'ILS capacity',       value: '$15M' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Retro Panel · what we cede upstream</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Reinsurer</th><th>Treaty</th><th>Ceded YTD</th><th>Recoverables</th><th>Next Statement</th></tr></thead>
+        <tbody>
+          ${D.carrierRetroPanel.map(r => `
+            <tr>
+              <td><strong>${r.reinsurer}</strong></td>
+              <td>${r.treaty}</td>
+              <td>${r.ceded_ytd}</td>
+              <td>${r.recoverables}</td>
+              <td>${r.next_statement}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierCATMgmt() {
+  const events = D.carrierCATEvents;
+  return `
+  ${carrierPageHeader('CAT Management', 'Aggregate exposure · PML modeling · treaty layer utilization.',
+    `<button class="btn btn-ghost" onclick="window.konduitViewDoc('PML_1in250.pdf','Actuarial','1.8 MB','RMS PML report')">📊 PML Report</button>`)}
+
+  ${carrierKPIs([
+    { label: '1-in-100 PML',    value: '$62M' },
+    { label: '1-in-250 PML',    value: '$94M' },
+    { label: '1-in-500 PML',    value: '$128M' },
+    { label: 'Aggregate exposure',value: '$4.2B TIV' },
+    { label: 'Active CAT events',value: events.filter(e=>e.status.includes('Active')).length.toString(), warning:true },
+    { label: 'Reinsurance protection',value: '$75M layer' }
+  ], 6)}
+
+  <section class="card">
+    <div class="card-header"><h3>Peril Exposure</h3></div>
+    <div style="padding:var(--space-md)">
+      ${[
+        { peril: 'Hurricane (SE US)',  pml: 94, max: 128 },
+        { peril: 'Earthquake (CA/OR)', pml: 58, max: 128 },
+        { peril: 'Wildfire (West)',    pml: 41, max: 128 },
+        { peril: 'Severe storms (TX/OK)', pml: 32, max: 128 },
+        { peril: 'Winter storm (NE/MW)',  pml: 19, max: 128 }
+      ].map(p => `
+        <div style="display:grid; grid-template-columns:200px 1fr 90px; gap:var(--space-md); align-items:center; margin-bottom:8px">
+          <div style="color:var(--text-secondary); font-size:0.85rem">${p.peril}</div>
+          <div style="height:20px; background:var(--bg-card); border-radius:4px; overflow:hidden"><div style="height:100%; background:linear-gradient(90deg, var(--c-accent), var(--status-amber)); width:${(p.pml/p.max*100).toFixed(1)}%"></div></div>
+          <div style="text-align:right; font-weight:600">$${p.pml}M</div>
+        </div>`).join('')}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Treaty Layer Utilization</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Treaty</th><th>LOB</th><th>Capacity</th><th>Burn</th><th>Reinstatements</th></tr></thead>
+        <tbody>
+          ${D.carrierTreaties.filter(t => t.type === 'XoL (CAT)' || t.type === 'Surplus' || t.type === 'Quota Share + XoL').map(t => `
+            <tr>
+              <td><strong>${t.id}</strong><div class="row-sub">${t.name}</div></td>
+              <td>${t.lob}</td>
+              <td>${t.layer}</td>
+              <td>42%</td>
+              <td>${t.reinstatements}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierReserving() {
+  const tri = D.carrierReserveTriangles;
+  return `
+  ${carrierPageHeader('Reserving', 'Case reserves · IBNR · ULAE · loss development triangles.',
+    `<button class="btn btn-ghost" onclick="window.konduitDownloadFile('triangle-commercial-property.csv', tri.years.map((y,i)=>[y].concat(tri.paid[i].map(v=>v||'')).join(',')).join('\\n'), 'text/csv')">⬇ Triangle CSV</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Case Reserves', value: '$31.2M' },
+    { label: 'IBNR',          value: '$22.8M' },
+    { label: 'ULAE',          value: '$6.8M' },
+    { label: 'Total Reserves',value: '$60.8M' },
+    { label: 'Reserve Adequacy', value: '+2.3%' },
+    { label: 'Development (LDF)', value: '1.001' }
+  ], 6)}
+
+  <section class="card">
+    <div class="card-header"><h3>Loss Triangle · ${tri.lob} · Paid ($000)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Accident Year</th>${tri.months.map(m=>`<th>${m} months</th>`).join('')}<th>Ultimate LR</th></tr></thead>
+        <tbody>
+          ${tri.years.map((y,i) => `
+            <tr>
+              <td><strong>${y}</strong></td>
+              ${tri.paid[i].map(v => `<td style="font-family:monospace">${v ? v.toLocaleString() : '—'}</td>`).join('')}
+              <td>${tri.ultimate_lr[i]}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Loss Triangle · Incurred ($000)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Accident Year</th>${tri.months.map(m=>`<th>${m} months</th>`).join('')}</tr></thead>
+        <tbody>
+          ${tri.years.map((y,i) => `
+            <tr>
+              <td><strong>${y}</strong></td>
+              ${tri.incurred[i].map(v => `<td style="font-family:monospace">${v ? v.toLocaleString() : '—'}</td>`).join('')}
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierFinancials() {
+  const f = D.carrierFinancials;
+  return `
+  ${carrierPageHeader('Financials', 'Direct written premium · net earned premium · loss and combined ratios.',
+    `<button class="btn btn-ghost" onclick="window.konduitViewDoc('carrier-pnl-ytd.pdf','Financials','2.8 MB','Year-to-date P&L')">📄 YTD P&L</button>`)}
+
+  ${carrierKPIs([
+    { label: 'DWP YTD',          value: `$${f.ytd.dwp}M` },
+    { label: 'NWP YTD',          value: `$${f.ytd.nwp}M` },
+    { label: 'NEP YTD',          value: `$${f.ytd.nep}M` },
+    { label: 'Losses Incurred',  value: `$${f.ytd.losses_incurred}M` },
+    { label: 'Loss Ratio',       value: `${f.ytd.loss_ratio}%` },
+    { label: 'Combined Ratio',   value: `${f.ytd.combined_ratio}%` }
+  ], 6)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>GWP & NEP by LOB</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>LOB</th><th>DWP</th><th>NEP</th><th>LR</th><th>CR</th></tr></thead>
+          <tbody>
+            ${f.by_lob.map(l => `
+              <tr>
+                <td><strong>${l.lob}</strong></td>
+                <td>$${l.dwp}M</td>
+                <td>$${l.nep}M</td>
+                <td style="color:${l.lr>65?'var(--status-red)':l.lr>55?'var(--status-amber)':'var(--status-green)'}">${l.lr}%</td>
+                <td>${l.cr}%</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Reserves & Cash</h3></div>
+      <div class="carrier-detail-row">
+        <div><strong>Commissions payable:</strong> $${f.ytd.commissions_payable}M</div>
+        <div><strong>Claims paid YTD:</strong> $${f.ytd.claims_paid_ytd}M</div>
+        <div><strong>Case reserves:</strong> $${f.ytd.case_reserves}M</div>
+        <div><strong>IBNR:</strong> $${f.ytd.ibnr}M</div>
+        <div><strong>ULAE:</strong> $${f.ytd.ulae}M</div>
+        <div><strong>Cash surplus:</strong> $${f.ytd.cash_surplus}M</div>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+function renderCarrierTrust() {
+  return `
+  ${carrierPageHeader('Trust & Collateral', 'LOCs · funds-withheld · trust account balances · collateral obligations.')}
+
+  ${carrierKPIs([
+    { label: 'LOC balances',     value: '$42M' },
+    { label: 'Funds withheld',   value: '$18M' },
+    { label: 'Trust accounts',   value: '$124M' },
+    { label: 'Expiring LOCs <60d',value: '1', warning:true }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Letters of Credit</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>LOC #</th><th>Bank</th><th>Amount</th><th>Purpose</th><th>Expiry</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>LOC-2026-01</strong></td><td>JP Morgan Chase</td><td>$15,000,000</td><td>Munich Re collateral</td><td>2026-12-31</td><td>${carrierBadge('Active','green')}</td></tr>
+          <tr><td><strong>LOC-2026-02</strong></td><td>Bank of America</td><td>$10,000,000</td><td>Pacific Paper collateral</td><td>2026-12-31</td><td>${carrierBadge('Active','green')}</td></tr>
+          <tr><td><strong>LOC-2025-14</strong></td><td>Citi</td><td>$7,500,000</td><td>Lloyd's Trust</td><td>2026-06-15</td><td>${carrierBadge('Expiring','amber')}</td></tr>
+          <tr><td><strong>LOC-2026-03</strong></td><td>HSBC</td><td>$5,000,000</td><td>Summit Retro</td><td>2026-12-31</td><td>${carrierBadge('Active','green')}</td></tr>
+          <tr><td><strong>LOC-2026-04</strong></td><td>Deutsche Bank</td><td>$4,500,000</td><td>Gateway Re</td><td>2026-12-31</td><td>${carrierBadge('Active','green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Trust Accounts</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Account</th><th>Trustee</th><th>Balance</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><strong>TRUST-001</strong></td><td>Wells Fargo Trust</td><td>$54,000,000</td><td>Claims reserve</td></tr>
+          <tr><td><strong>TRUST-002</strong></td><td>State Street</td><td>$32,000,000</td><td>CAT reserve</td></tr>
+          <tr><td><strong>TRUST-003</strong></td><td>BNY Mellon</td><td>$25,000,000</td><td>Regulatory deposit</td></tr>
+          <tr><td><strong>TRUST-004</strong></td><td>Northern Trust</td><td>$13,000,000</td><td>Ceded premium trust</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierStatutory() {
+  return `
+  ${carrierPageHeader('Statutory Reporting', 'Yellow Book · Schedule P · RBC · SAO · quarterly blanks.',
+    `<button class="btn btn-ghost" onclick="window.konduitViewDoc('Yellow_Book_2025.pdf','Financials','14.8 MB','NAIC annual statement')">📄 Yellow Book</button>
+     <button class="btn btn-ghost" onclick="window.konduitViewDoc('Schedule_P_2025.pdf','Financials','8.4 MB','Schedule P loss development')">📄 Schedule P</button>`)}
+
+  ${carrierKPIs([
+    { label: 'RBC Ratio',        value: '412%' },
+    { label: 'Authorized Control Level', value: '$78M' },
+    { label: 'Total Adjusted Capital',   value: '$322M' },
+    { label: 'Surplus to Policyholders', value: '$244M' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Filings Calendar</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Filing</th><th>Frequency</th><th>Next Due</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Annual Statement (Yellow Book)</strong></td><td>Annual</td><td>2027-03-01</td><td>${carrierBadge('Scheduled','blue')}</td></tr>
+          <tr><td><strong>Schedule P</strong></td><td>Annual</td><td>2027-03-01</td><td>${carrierBadge('Scheduled','blue')}</td></tr>
+          <tr><td><strong>RBC Report</strong></td><td>Annual</td><td>2027-03-01</td><td>${carrierBadge('Scheduled','blue')}</td></tr>
+          <tr><td><strong>Statement of Actuarial Opinion</strong></td><td>Annual</td><td>2027-03-01</td><td>${carrierBadge('Scheduled','blue')}</td></tr>
+          <tr><td><strong>Q1 Quarterly Blank</strong></td><td>Quarterly</td><td>2026-05-15</td><td>${carrierBadge('Drafting','amber')}</td></tr>
+          <tr><td><strong>Market Conduct Annual Statement</strong></td><td>Annual</td><td>2027-04-30</td><td>${carrierBadge('Scheduled','blue')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Quarterly Metrics</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Quarter</th><th>DWP</th><th>NEP</th><th>Losses</th><th>LR</th><th>CR</th><th>RBC</th></tr></thead>
+        <tbody>
+          <tr><td>Q1 2026</td><td>$122M</td><td>$34M</td><td>$19.2M</td><td>56.5%</td><td>85.2%</td><td>412%</td></tr>
+          <tr><td>Q4 2025</td><td>$114M</td><td>$32M</td><td>$18.4M</td><td>57.5%</td><td>86.1%</td><td>408%</td></tr>
+          <tr><td>Q3 2025</td><td>$108M</td><td>$30M</td><td>$18.0M</td><td>60.0%</td><td>88.2%</td><td>398%</td></tr>
+          <tr><td>Q2 2025</td><td>$102M</td><td>$29M</td><td>$17.1M</td><td>59.0%</td><td>87.5%</td><td>402%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+// ─── Phase 3 — Claims / Subrogation / Litigation / CAT ───
+
+function renderCarrierClaimsDashboard() {
+  const kpis = D.carrierDashboardKPIs.claims;
+  const claims = D.carrierClaims.slice(0, 6);
+  const cats = D.carrierCATEvents;
+  return `
+  ${carrierPageHeader('Claims Dashboard', 'Portfolio health across claims, reserves, and litigation exposure.',
+    `<button class="btn btn-ghost" onclick="window.konduitExportLossRun()">⬇ Loss Run CSV</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-fnol'})">+ New FNOL</button>`)}
+
+  ${carrierKPIs(kpis, 6)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Recent Claims</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'c-claims'});return false;">All →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Claim</th><th>Insured</th><th>LOB</th><th>DOL</th><th>Paid</th><th>Reserve</th><th>Status</th></tr></thead>
+          <tbody>
+            ${claims.map(c => `
+              <tr class="row-clickable" onclick="window.setState({screen:'c-claim', carrierClaimId:'${c.id}'})">
+                <td><strong>${c.id}</strong></td>
+                <td>${c.insured}</td>
+                <td>${c.lob}</td>
+                <td>${c.dol}</td>
+                <td>${c.paid}</td>
+                <td>${c.reserved}</td>
+                <td>${carrierBadge(c.status, carrierStatusColor(c.status))}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Active CAT Events</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'c-cat-events'});return false;">All events →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Event</th><th>Date</th><th>Peril</th><th>Region</th><th>Claims</th><th>Incurred</th></tr></thead>
+          <tbody>
+            ${cats.map(c => `
+              <tr class="row-clickable" onclick="window.setState({screen:'c-cat-event', carrierCatId:'${c.id}'})">
+                <td><strong>${c.name}</strong></td>
+                <td>${c.date}</td>
+                <td>${c.peril}</td>
+                <td>${c.region}</td>
+                <td>${c.total_claims}</td>
+                <td>${c.gross_incurred}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+function renderCarrierClaims() {
+  const filter = state.carrierClaimFilter || 'All';
+  let claims = D.carrierClaims;
+  if (filter === 'Open') claims = claims.filter(c => c.status === 'Open' || c.status === 'Litigated');
+  else if (filter === 'Closed') claims = claims.filter(c => c.status === 'Closed');
+  else if (filter === 'Litigated') claims = claims.filter(c => c.litigation);
+  else if (filter === 'CAT') claims = claims.filter(c => c.severity === 'CAT');
+
+  return `
+  ${carrierPageHeader('Claims Register', 'All claims across bound business · reserves, payments, subrogation, litigation.',
+    `<button class="btn btn-ghost" onclick="window.konduitExportLossRun()">⬇ Loss Run CSV</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-fnol'})">+ New FNOL</button>`)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Claims · ${claims.length}</h3>
+      <label class="konduit-inline-select">View:
+        <select onchange="window.setState({carrierClaimFilter:this.value})">
+          ${['All','Open','Closed','Litigated','CAT'].map(v => `<option ${v===filter?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Claim</th><th>Policy</th><th>Insured</th><th>LOB</th><th>State</th><th>DOL</th><th>Cause</th><th>Paid</th><th>Reserve</th><th>Severity</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${claims.map(c => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-claim', carrierClaimId:'${c.id}'})">
+              <td><strong>${c.id}</strong>${c.litigation?' ⚖️':''}${c.subrogation?' ♻️':''}</td>
+              <td>${c.policy}</td>
+              <td>${c.insured}</td>
+              <td>${c.lob}</td>
+              <td>${c.state}</td>
+              <td>${c.dol}</td>
+              <td>${c.cause}</td>
+              <td>${c.paid}</td>
+              <td>${c.reserved}</td>
+              <td>${carrierBadge(c.severity, c.severity==='CAT'?'red':c.severity==='Large'?'amber':'grey')}</td>
+              <td>${carrierBadge(c.status, carrierStatusColor(c.status))}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'c-claim', carrierClaimId:'${c.id}'})">Open →</button></td>
+            </tr>`).join('') || `<tr><td colspan="12" class="row-sub">No claims match.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierClaimDetail() {
+  const id = state.carrierClaimId || 'CLM-2026-0128';
+  const c = D.carrierClaims.find(x => x.id === id) || D.carrierClaims[0];
+  const treaty = D.carrierTreaties.find(t => t.id === c.treaty);
+  const rt = carrierRuntime();
+  const isSettled = rt.settledClaims[c.id];
+
+  return `
+  ${carrierPageHeader(`${c.id}`, `${c.insured} · ${c.lob} · DOL ${c.dol} · ${c.cause}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-claims'})">← Claims</button>
+     <button class="btn btn-secondary" onclick="window.setState({screen:'c-reserve-adjust', carrierClaimId:'${c.id}'})">Adjust Reserve</button>
+     <button class="btn btn-secondary" onclick="window.setState({screen:'c-payment-issue', carrierClaimId:'${c.id}'})">+ Issue Payment</button>
+     ${!isSettled && c.status!=='Closed' ? `<button class="btn btn-primary carrier-cta" onclick="(function(){carrierRuntime().settledClaims['${c.id}']=true;window.setState({screen:'c-claims', carrierFlash:{title:'${c.id} settled & closed',body:'Final payment issued · reinsurance ceded'}});})()">✅ Settle & Close</button>`:''}`)}
+
+  ${carrierKPIs([
+    { label: 'Status',    value: carrierBadge(isSettled?'Closed':c.status, carrierStatusColor(isSettled?'Closed':c.status)) },
+    { label: 'Paid',      value: c.paid },
+    { label: 'Reserve',   value: c.reserved },
+    { label: 'Adjuster',  value: c.adjuster },
+    { label: 'Severity',  value: carrierBadge(c.severity, c.severity==='CAT'?'red':c.severity==='Large'?'amber':'grey') },
+    { label: 'DOL',       value: c.dol }
+  ], 6)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Coverage</h3></div>
+      <div class="carrier-detail-row">
+        <div><strong>Policy:</strong> ${c.policy}</div>
+        <div><strong>Insured:</strong> ${c.insured}</div>
+        <div><strong>LOB:</strong> ${c.lob}</div>
+        <div><strong>State:</strong> ${c.state}</div>
+        <div><strong>Cause:</strong> ${c.cause}</div>
+        <div><strong>Coverage trigger:</strong> Named peril · occurrence</div>
+        <div><strong>Deductible:</strong> $10,000</div>
+        <div><strong>Sub-limit:</strong> N/A</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Reinsurance Cession</h3></div>
+      <div class="carrier-detail-row">
+        <div><strong>Treaty:</strong> ${treaty ? treaty.name : '—'}</div>
+        <div><strong>Reinsurer:</strong> ${treaty ? treaty.reinsurer : '—'}</div>
+        <div><strong>Attachment point:</strong> ${treaty ? treaty.layer : '—'}</div>
+        <div><strong>Recoverable status:</strong> ${carrierBadge('Billed','amber')}</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Timeline</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Event</th><th>Actor</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>${c.dol}</td><td><strong>FNOL received</strong></td><td>${c.adjuster}</td><td class="row-sub">Initial report logged</td></tr>
+          <tr><td>${c.dol.replace(/\d+$/, (n) => String(parseInt(n)+1).padStart(2,'0'))}</td><td>Coverage confirmed</td><td>Alex Chen (UW)</td><td class="row-sub">Peril covered under policy form</td></tr>
+          <tr><td>${c.dol.replace(/\d+$/, (n) => String(parseInt(n)+3).padStart(2,'0'))}</td><td>Initial reserve set</td><td>${c.adjuster}</td><td class="row-sub">Reserve: ${c.reserved}</td></tr>
+          <tr><td>${c.dol.replace(/\d+$/, (n) => String(parseInt(n)+5).padStart(2,'0'))}</td><td>Adjuster assigned</td><td>Daniel Ortega</td><td class="row-sub">${c.adjuster} on site</td></tr>
+          <tr><td>${c.dol.replace(/\d+$/, (n) => String(parseInt(n)+8).padStart(2,'0'))}</td><td>First payment</td><td>${c.adjuster}</td><td class="row-sub">Paid: ${c.paid}</td></tr>
+          ${c.litigation ? `<tr><td>${c.dol.replace(/\d+$/, (n) => String(parseInt(n)+14).padStart(2,'0'))}</td><td><strong>Litigation filed</strong></td><td>Defense counsel</td><td class="row-sub">Moved to litigation queue</td></tr>`:''}
+          ${c.subrogation ? `<tr><td>${c.dol.replace(/\d+$/, (n) => String(parseInt(n)+18).padStart(2,'0'))}</td><td>Subrogation opened</td><td>Recovery team</td><td class="row-sub">Third-party pursuit active</td></tr>`:''}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierFnol() {
+  const step = state.carrierFnolStep || 1;
+  const stepLabels = ['Policy & Insured','Loss Details','Damage/Injury','Documents','Review & Submit'];
+  const body = step === 1 ? `
+    <div class="form-grid">
+      <label>Policy<select>${D.carrierPolicies.filter(p => p.status==='Active').map(p => `<option>${p.id} · ${p.insured}</option>`).join('')}</select></label>
+      <label>Insured Contact<input type="text" placeholder="contact@insured.com"></label>
+      <label>Reporter<input type="text" value="${D.CARRIER_USERS.claims.name}"></label>
+      <label>Channel<select><option>Insured direct</option><option>MGA</option><option>Broker</option><option>Adjuster</option></select></label>
+    </div>`
+  : step === 2 ? `
+    <div class="form-grid">
+      <label>Date of Loss<input type="text" placeholder="YYYY-MM-DD"></label>
+      <label>Time of Loss<input type="text" placeholder="HH:MM"></label>
+      <label>Location<input type="text" placeholder="Street, City, State"></label>
+      <label>Cause<select><option>Wind</option><option>Water damage</option><option>Fire</option><option>Collision</option><option>Theft</option><option>Liability</option><option>Cyber incident</option><option>Other</option></select></label>
+      <label class="form-wide">Description<textarea rows="4" placeholder="Narrative of what happened"></textarea></label>
+    </div>`
+  : step === 3 ? `
+    <div class="form-grid">
+      <label>Est. Property Damage<input type="text" placeholder="$0"></label>
+      <label>Bodily Injury?<select><option>No</option><option>Yes · reported</option><option>Yes · hospitalized</option><option>Yes · fatality</option></select></label>
+      <label>Business Interruption<input type="text" placeholder="days"></label>
+      <label>Police Report<input type="text" placeholder="Report #"></label>
+    </div>`
+  : step === 4 ? `
+    <section class="card" style="margin:0; padding:var(--space-xl); text-align:center; background:var(--c-accent-soft); border:2px dashed var(--c-border-accent)">
+      <div style="font-size:2rem">📎</div>
+      <h3 style="margin-top:var(--space-sm)">Attach photos, police/fire reports, estimates, medical records</h3>
+      <p class="row-sub">Drag & drop or click to browse — JPG, PDF, MP4 up to 25 MB each</p>
+      <button class="btn btn-primary carrier-cta" style="margin-top:var(--space-sm)">Browse Files</button>
+    </section>`
+  : `
+    <div style="padding:var(--space-md); background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md)">
+      <h4 style="margin-bottom:var(--space-sm)">Ready to submit FNOL</h4>
+      <ul style="padding-left:20px; color:var(--text-secondary); line-height:1.7">
+        <li>Claim ID will be issued (CLM-2026-XXXX)</li>
+        <li>Adjuster auto-assigned by LOB + region</li>
+        <li>Initial reserve set by cause-of-loss lookup</li>
+        <li>Reinsurance treaty auto-attached for ceding</li>
+        <li>Insured receives acknowledgement email</li>
+        <li>CAT aggregation auto-updated if CAT-tagged</li>
+      </ul>
+    </div>`;
+
+  return `
+  ${carrierPageHeader('First Notice of Loss (FNOL)', `Step ${step} of 5 — ${stepLabels[step-1]}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-claims'})">Cancel</button>`)}
+
+  <section class="card">
+    <div class="carrier-stepper">
+      ${stepLabels.map((l,i) => {
+        const n = i+1;
+        const cls = n < step ? 'done' : n === step ? 'active' : 'pending';
+        return `<div class="carrier-step ${cls}"><span class="carrier-step-num">${n}</span><span>${l}</span></div>`;
+      }).join('')}
+    </div>
+    <div class="carrier-wizard-body">${body}</div>
+    <div class="carrier-wizard-actions">
+      <button class="btn btn-secondary" ${step===1?'disabled':''} onclick="window.setState({carrierFnolStep:${Math.max(1, step-1)}})">← Back</button>
+      <div style="flex:1"></div>
+      ${step < 5
+        ? `<button class="btn btn-primary carrier-cta" onclick="window.setState({carrierFnolStep:${step+1}})">Continue →</button>`
+        : `<button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-claims', carrierFnolStep:1, carrierFlash:{title:'FNOL submitted',body:'Claim CLM-2026-0129 created · adjuster auto-assigned · treaty cession logged'}})">Submit FNOL</button>`}
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierReserveAdjust() {
+  const cid = state.carrierClaimId || 'CLM-2026-0128';
+  const c = D.carrierClaims.find(x => x.id === cid) || D.carrierClaims[0];
+  return `
+  ${carrierPageHeader(`Adjust Reserve · ${cid}`, 'Update reserve estimate · capacity and bordereau notified',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-claim', carrierClaimId:'${cid}'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:720px">
+    <div class="form-grid">
+      <label>Current Reserve<input type="text" value="${c.reserved}" disabled></label>
+      <label>New Reserve<input type="text" placeholder="$0"></label>
+      <label>Reason<select><option>New adjuster report</option><option>Additional damage discovered</option><option>Litigation filed</option><option>Actuarial re-estimate</option><option>Coverage analysis update</option></select></label>
+      <label>Effective<input type="text" value="${new Date().toISOString().slice(0,10)}"></label>
+      <label class="form-wide">Justification<textarea rows="4" placeholder="Detail the reason for the reserve movement"></textarea></label>
+    </div>
+    <div style="margin-top:var(--space-md); display:flex; flex-direction:column; gap:var(--space-sm)">
+      <label style="display:flex; gap:8px"><input type="checkbox" checked>Notify reinsurer (required for > $50k change)</label>
+      <label style="display:flex; gap:8px"><input type="checkbox" checked>Attach to claim file</label>
+      <label style="display:flex; gap:8px"><input type="checkbox" checked>Update current-period bordereau</label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'c-claim', carrierClaimId:'${cid}'})">Cancel</button>
+      <button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-claim', carrierClaimId:'${cid}', carrierFlash:{title:'Reserve adjusted',body:'Capacity notified · bordereau updated'}})">Save Adjustment</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierPaymentIssue() {
+  const cid = state.carrierClaimId || 'CLM-2026-0128';
+  return `
+  ${carrierPageHeader(`Issue Payment · ${cid}`, 'Create a claim payment · auto-logged to bordereau and reinsurance cede',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-claim', carrierClaimId:'${cid}'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:720px">
+    <div class="form-grid">
+      <label>Payment Type<select><option>Initial</option><option selected>Interim</option><option>Final</option><option>Expense</option><option>Supplemental</option></select></label>
+      <label>Amount<input type="text" placeholder="$0"></label>
+      <label>Payee<input type="text" placeholder="Insured / Vendor / Medical Provider / Attorney"></label>
+      <label>Payee Type<select><option>Insured</option><option>Vendor</option><option>Medical Provider</option><option>Attorney</option><option>Adjuster</option></select></label>
+      <label>Method<select><option>ACH</option><option>Check</option><option>Wire</option></select></label>
+      <label>Payment Date<input type="text" value="${new Date().toISOString().slice(0,10)}"></label>
+      <label class="form-wide">Reference / Notes<textarea rows="3" placeholder="Invoice #, settlement agreement, etc."></textarea></label>
+    </div>
+    <div style="margin-top:var(--space-md); display:flex; flex-direction:column; gap:var(--space-sm)">
+      <label style="display:flex; gap:8px"><input type="checkbox" checked>Auto-deduct from reserve</label>
+      <label style="display:flex; gap:8px"><input type="checkbox" checked>Include in next bordereau</label>
+      <label style="display:flex; gap:8px"><input type="checkbox" checked>Email receipt to payee</label>
+      <label style="display:flex; gap:8px"><input type="checkbox" checked>Trigger reinsurance recoverable billing if layer breached</label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'c-claim', carrierClaimId:'${cid}'})">Cancel</button>
+      <button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-claim', carrierClaimId:'${cid}', carrierFlash:{title:'Payment issued',body:'Logged to bordereau · reinsurance recoverable billed'}})">Issue Payment</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierSubrogation() {
+  const subs = D.carrierSubrogation;
+  return `
+  ${carrierPageHeader('Subrogation & Recovery', 'Third-party pursuit · salvage · recovery receivables.',
+    `<button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'New subrogation opened',body:'Case assigned to in-house recovery team'})">+ Open Subro</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Active pursuits', value: subs.filter(s=>s.status==='Pursuing').length.toString() },
+    { label: 'In litigation',   value: subs.filter(s=>s.status==='Litigating').length.toString() },
+    { label: 'Recovered YTD',   value: '$64k' },
+    { label: 'Recovery ratio',  value: '78%' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Pursuit Pipeline</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Subro</th><th>Claim</th><th>Insured</th><th>Target</th><th>Paid</th><th>Sought</th><th>Status</th><th>Attorney</th><th>Notes</th></tr></thead>
+        <tbody>
+          ${subs.map(s => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-claim', carrierClaimId:'${s.claim}'})">
+              <td><strong>${s.id}</strong></td>
+              <td>${s.claim}</td>
+              <td>${s.insured}</td>
+              <td>${s.target}</td>
+              <td>${s.amount_paid}</td>
+              <td>${s.recovery_sought}</td>
+              <td>${carrierBadge(s.status, carrierStatusColor(s.status))}</td>
+              <td>${s.attorney}</td>
+              <td class="row-sub">${s.notes}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierLitigation() {
+  const lits = D.carrierLitigation;
+  return `
+  ${carrierPageHeader('Litigation Management', 'Open cases · defense panel · LEDES billing.',
+    `<button class="btn btn-ghost" onclick="window.konduitDownloadFile('ledes-ytd.csv', 'case,invoice,date,amount\\nLIT-01,INV-001,2026-03-15,$18200\\nLIT-02,INV-014,2026-02-28,$12400', 'text/csv')">⬇ LEDES YTD</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Open cases',      value: lits.length.toString() },
+    { label: 'Case reserves',   value: '$800k' },
+    { label: 'LEDES YTD',       value: '$65,200' },
+    { label: 'Trials next 90d', value: '2', warning: true }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Cases</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Case ID</th><th>Claim</th><th>Court</th><th>Stage</th><th>Filed</th><th>Trial</th><th>Defense</th><th>Reserve</th><th>LEDES YTD</th><th></th></tr></thead>
+        <tbody>
+          ${lits.map(l => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-litigation-detail', carrierLitId:'${l.id}'})">
+              <td><strong>${l.id}</strong></td>
+              <td>${l.claim}</td>
+              <td>${l.court}</td>
+              <td>${carrierBadge(l.stage, l.stage==='Trial'?'red':l.stage==='Mediation'?'amber':'blue')}</td>
+              <td>${l.filed}</td>
+              <td>${l.trial_date}</td>
+              <td>${l.defense}</td>
+              <td>${l.reserve}</td>
+              <td>${l.ledes_ytd}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'c-litigation-detail', carrierLitId:'${l.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierLitigationDetail() {
+  const id = state.carrierLitId || 'LIT-01';
+  const l = D.carrierLitigation.find(x => x.id === id) || D.carrierLitigation[0];
+  return `
+  ${carrierPageHeader(`${l.case}`, `${l.id} · ${l.court} · ${l.stage}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-litigation'})">← Litigation</button>
+     <button class="btn btn-secondary" onclick="window.konduitViewDoc('case-status-report.pdf','Litigation','1.2 MB','Case status report')">📄 Case Report</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'Reserve increase requested',body:'Routed to claims manager'})">↑ Request Reserve Increase</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Stage',      value: carrierBadge(l.stage, l.stage==='Trial'?'red':l.stage==='Mediation'?'amber':'blue') },
+    { label: 'Filed',      value: l.filed },
+    { label: 'Trial Date', value: l.trial_date },
+    { label: 'Reserve',    value: l.reserve },
+    { label: 'LEDES YTD',  value: l.ledes_ytd },
+    { label: 'Defense',    value: l.defense }
+  ], 6)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Case Documents</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Doc</th><th>Filed</th><th>Type</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><strong>Complaint.pdf</strong></td><td>${l.filed}</td><td>Complaint</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('Complaint.pdf','Litigation','1.4 MB','Plaintiff complaint')">View</button></td></tr>
+            <tr><td><strong>Answer.pdf</strong></td><td>2026-02-12</td><td>Answer</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('Answer.pdf','Litigation','820 KB','Carrier answer')">View</button></td></tr>
+            <tr><td><strong>Discovery-Req.pdf</strong></td><td>2026-03-02</td><td>Discovery</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('Discovery-Req.pdf','Litigation','2.1 MB','Discovery requests')">View</button></td></tr>
+            <tr><td><strong>LEDES-INV-014.xml</strong></td><td>2026-03-31</td><td>Invoice</td><td><button class="btn btn-ghost btn-sm" onclick="window.konduitDownloadFile('LEDES-INV-014.xml','<?xml version=&quot;1.0&quot;?><ledes1998b><invoice_id>INV-014</invoice_id><case>${l.id}</case><amount>12400</amount></ledes1998b>','text/xml')">⬇ XML</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Budget & Billing</h3></div>
+      <div class="carrier-detail-row">
+        <div><strong>Defense counsel:</strong> ${l.defense}</div>
+        <div><strong>Litigation budget:</strong> $75,000</div>
+        <div><strong>LEDES YTD:</strong> ${l.ledes_ytd}</div>
+        <div><strong>% budget used:</strong> 57%</div>
+        <div><strong>Reserve:</strong> ${l.reserve}</div>
+        <div><strong>Next budget review:</strong> 2026-06-01</div>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+function renderCarrierCATEvents() {
+  const cats = D.carrierCATEvents;
+  return `
+  ${carrierPageHeader('CAT Event Center', 'Declared catastrophe events · aggregated exposure · treaty burn · reinstatements.',
+    `<button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'New CAT event declared',body:'CAT code assigned · aggregation activated'})">+ Declare CAT</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Active events',     value: cats.filter(c=>c.status.includes('Active')).length.toString(), warning:true },
+    { label: 'Total claims',      value: cats.reduce((s,c)=>s+c.total_claims,0).toString() },
+    { label: 'Gross incurred',    value: '$42.4M' },
+    { label: 'Net retained',      value: '$14.4M' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Events</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Event</th><th>Date</th><th>Peril</th><th>Region</th><th>Claims</th><th>Gross</th><th>Net</th><th>Reinsurance</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${cats.map(c => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-cat-event', carrierCatId:'${c.id}'})">
+              <td><strong>${c.name}</strong><div class="row-sub">${c.id}</div></td>
+              <td>${c.date}</td>
+              <td>${c.peril}</td>
+              <td>${c.region}</td>
+              <td>${c.total_claims}</td>
+              <td>${c.gross_incurred}</td>
+              <td>${c.net}</td>
+              <td class="row-sub">${c.reinsurance}</td>
+              <td>${carrierBadge(c.status, c.status.includes('Active')?'amber':'green')}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'c-cat-event', carrierCatId:'${c.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierCATEventDetail() {
+  const id = state.carrierCatId || 'CAT-2026-001';
+  const c = D.carrierCATEvents.find(x => x.id === id) || D.carrierCATEvents[0];
+  const related = D.carrierClaims.filter(cl => cl.severity === 'CAT');
+  return `
+  ${carrierPageHeader(`${c.name} · ${c.id}`, `${c.date} · ${c.peril} · ${c.region}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-cat-events'})">← Events</button>
+     <button class="btn btn-secondary" onclick="window.konduitExportLossRun()">⬇ Event Loss Run</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'Reinstatement premium calculated',body:'Layer TR-2026-007 · $1.2M premium due'})">Trigger Reinstatement</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Total Claims',    value: c.total_claims.toString() },
+    { label: 'Gross Incurred',  value: c.gross_incurred },
+    { label: 'Net Retained',    value: c.net },
+    { label: 'Reinsurance',     value: c.reinsurance.split('·')[0].trim() },
+    { label: 'Reinstatements',  value: c.reinstatement },
+    { label: 'Status',          value: carrierBadge(c.status, c.status.includes('Active')?'amber':'green') }
+  ], 6)}
+
+  <section class="card">
+    <div class="card-header"><h3>Treaty Burn</h3></div>
+    <div style="padding:var(--space-md)">
+      <div style="color:var(--text-secondary); line-height:1.7">
+        Event losses pierced CAT layer (TR-2026-007: $50M xs $25M). Layer 1 reinstatement already used for Hurricane Delta prior attachment; 1 free reinstatement remains.
+      </div>
+      <div style="margin-top:var(--space-md); height:24px; background:var(--bg-card); border-radius:4px; overflow:hidden">
+        <div style="height:100%; background:linear-gradient(90deg, var(--c-accent), var(--status-amber)); width:42%"></div>
+      </div>
+      <div style="margin-top:6px; font-size:0.82rem; color:var(--text-muted)">Layer burn: 42% of $50M capacity used ($21M)</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Related Claims (${related.length})</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Claim</th><th>Insured</th><th>State</th><th>Cause</th><th>Paid</th><th>Reserve</th></tr></thead>
+        <tbody>
+          ${related.map(r => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-claim', carrierClaimId:'${r.id}'})">
+              <td><strong>${r.id}</strong></td>
+              <td>${r.insured}</td>
+              <td>${r.state}</td>
+              <td>${r.cause}</td>
+              <td>${r.paid}</td>
+              <td>${r.reserved}</td>
+            </tr>`).join('') || `<tr><td colspan="6" class="row-sub">No CAT claims tagged yet.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+// ─── Complaints / Compliance / Audit ───
+
+function renderCarrierComplaints() {
+  const cmps = D.carrierComplaints;
+  return `
+  ${carrierPageHeader('DOI Complaints', 'Consumer complaints filed with State Departments of Insurance.',
+    `<button class="btn btn-primary carrier-cta" onclick="window.carrierFlash({title:'Acknowledged DOI receipt',body:'Response will be drafted for compliance review'})">+ Log Complaint</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Open',          value: cmps.filter(c=>c.status==='Open'||c.status==='Investigating').length.toString(), warning:true },
+    { label: 'Responded',     value: cmps.filter(c=>c.status==='Responded').length.toString() },
+    { label: 'Closed',        value: cmps.filter(c=>c.status==='Closed').length.toString() },
+    { label: 'SLA risk <7d',  value: '1', warning:true }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Complaints · ${cmps.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>ID</th><th>State</th><th>Insured</th><th>Subject</th><th>Filed</th><th>Deadline</th><th>Reviewer</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${cmps.map(c => `
+            <tr class="row-clickable" onclick="window.setState({screen:'c-complaint', carrierComplaintId:'${c.id}'})">
+              <td><strong>${c.id}</strong></td>
+              <td>${c.state}</td>
+              <td>${c.insured}</td>
+              <td>${c.subject}</td>
+              <td>${c.filed}</td>
+              <td>${c.deadline}</td>
+              <td>${c.reviewer}</td>
+              <td>${carrierBadge(c.status, carrierStatusColor(c.status))}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.setState({screen:'c-complaint', carrierComplaintId:'${c.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierComplaintDetail() {
+  const id = state.carrierComplaintId || 'COM-2026-01';
+  const c = D.carrierComplaints.find(x => x.id === id) || D.carrierComplaints[0];
+  return `
+  ${carrierPageHeader(`${c.id} · ${c.state} DOI`, `${c.subject} · filed ${c.filed}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'c-complaints'})">← Complaints</button>
+     <button class="btn btn-secondary" onclick="window.carrierFlash({title:'Response saved as draft',body:'Ready for compliance review'})">Save Draft</button>
+     <button class="btn btn-primary carrier-cta" onclick="window.setState({screen:'c-complaints', carrierFlash:{title:'Response sent to DOI',body:'Complaint marked Responded · 10-day clock stopped'}})">📤 Send Response</button>`)}
+
+  ${carrierKPIs([
+    { label: 'State',     value: c.state },
+    { label: 'Status',    value: carrierBadge(c.status, carrierStatusColor(c.status)) },
+    { label: 'Filed',     value: c.filed },
+    { label: 'Deadline',  value: c.deadline },
+    { label: 'Reviewer',  value: c.reviewer },
+    { label: 'SLA',       value: '8 days remaining', warning: true }
+  ], 6)}
+
+  <section class="card">
+    <div class="card-header"><h3>Complaint & Response</h3></div>
+    <div style="padding:var(--space-md)">
+      <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-md)">
+        <div style="font-size:0.72rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.06em">Complaint narrative</div>
+        <div style="margin-top:6px; color:var(--text-secondary); line-height:1.7">${c.notes}</div>
+      </div>
+      <label style="font-size:0.75rem; text-transform:uppercase; color:var(--text-secondary); font-weight:600">Draft Response</label>
+      <textarea rows="8" style="width:100%; margin-top:6px; padding:10px; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:8px; color:var(--text-primary); font-family:inherit">Thank you for your correspondence regarding claim ${c.insured}. Our records indicate that the claim was assigned to an adjuster within 48 hours of FNOL, and all coverage questions have been addressed in writing. We will provide a claim handling timeline and supporting documentation by ${c.deadline}.</textarea>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierCompliance() {
+  return `
+  ${carrierPageHeader('Compliance Library', 'OFAC/sanctions · regulatory calendar · policy attestations.')}
+
+  ${carrierKPIs([
+    { label: 'OFAC screening (30d)',  value: '482 runs · 0 hits' },
+    { label: 'Open attestations',     value: '3', warning:true },
+    { label: 'Upcoming regs <30d',    value: '2' },
+    { label: 'Audits pending',        value: '1' }
+  ], 4)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Regulatory Calendar</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Item</th><th>Jurisdiction</th><th>Due</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Market Conduct Survey</strong></td><td>NY DFS</td><td>2026-05-15</td><td>${carrierBadge('Drafting','amber')}</td></tr>
+            <tr><td><strong>NAIC ORSA Summary Report</strong></td><td>Domicile</td><td>2026-12-15</td><td>${carrierBadge('Scheduled','blue')}</td></tr>
+            <tr><td><strong>Privacy Notice Update (CA CCPA)</strong></td><td>CA</td><td>2026-07-01</td><td>${carrierBadge('In Review','amber')}</td></tr>
+            <tr><td><strong>NAIC Data Call — Cyber</strong></td><td>NAIC</td><td>2026-08-15</td><td>${carrierBadge('Scheduled','blue')}</td></tr>
+            <tr><td><strong>Annual Financial Examination</strong></td><td>Domicile</td><td>2026-09-01</td><td>${carrierBadge('Scheduled','blue')}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Policy Attestations</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Policy</th><th>Frequency</th><th>Last</th><th>Next</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Privacy & Data Handling</strong></td><td>Annual</td><td>2025-11-01</td><td>2026-11-01</td></tr>
+            <tr><td><strong>Anti-Bribery / FCPA</strong></td><td>Annual</td><td>2025-12-15</td><td>2026-12-15</td></tr>
+            <tr><td><strong>OFAC / Sanctions Policy</strong></td><td>Annual</td><td>2025-10-01</td><td>2026-10-01</td></tr>
+            <tr><td><strong>Code of Conduct</strong></td><td>Annual</td><td>2026-01-15</td><td>2027-01-15</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>OFAC / Sanctions Runs (last 10)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Insured / Counterparty</th><th>Source</th><th>Result</th></tr></thead>
+        <tbody>
+          ${D.carrierSubmissions.slice(0,10).map(s => `
+            <tr>
+              <td class="row-sub">${s.received}</td>
+              <td>${s.insured}</td>
+              <td>Submission intake</td>
+              <td>${carrierBadge('No hits','green')}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierAudit() {
+  return `
+  ${carrierPageHeader('Audit Log', 'Immutable record of every platform action.',
+    `<button class="btn btn-ghost" onclick="window.konduitDownloadFile('carrier-audit-'+new Date().toISOString().slice(0,10)+'.csv', 'ts,actor,action,target,ip\\n' + D.carrierAuditLog.map(a=>[a.ts,a.actor,a.action,a.target,a.ip].join(',')).join('\\n'), 'text/csv')">⬇ Export CSV</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th><th>IP</th></tr></thead>
+        <tbody>
+          ${D.carrierAuditLog.map(a => `
+            <tr>
+              <td class="row-sub">${a.ts}</td>
+              <td>${a.actor}</td>
+              <td><strong>${a.action}</strong></td>
+              <td>${a.target}</td>
+              <td class="row-sub">${a.ip}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+// ─── Phase 6 — Retrocession / Reinsurer-facing view (read-only) ───
+
+function renderCarrierRetroDashboard() {
+  const kpis = D.carrierDashboardKPIs.retro;
+  return `
+  ${carrierPageHeader('Reinsurer View', 'Read-only view of what your carrier has ceded to your treaty position.',
+    `<button class="btn btn-ghost" onclick="window.konduitDownloadFile('munich-re-q1-statement.txt', 'Q1 2026 Ceded Bordereau Summary\\n\\nCarrier: Summit Fronting Re\\nTreaty: TR-2026-001 · Property QS + XoL\\nQuarter: Q1 2026\\n\\nCeded Premium: $10,500,000\\nCeded Losses: $5,800,000\\nCommissions: $3,400,000\\nLoss Ratio: 55.2%', 'text/plain')">⬇ Q1 Statement</button>`)}
+  ${carrierKPIs(kpis, 6)}
+
+  <div class="carrier-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Open Items</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Item</th><th>Type</th><th>Amount</th><th>Age</th></tr></thead>
+          <tbody>
+            <tr><td>Q2 claims bordereau</td><td>Expected</td><td>—</td><td>Due 30d</td></tr>
+            <tr><td>Recoverable RCV-2026-01 (Gulf Coast)</td><td>Billed</td><td>$1,200,000</td><td>18d</td></tr>
+            <tr><td>Recoverable RCV-2026-07 (Northstar)</td><td>Disputed</td><td>$320,000</td><td>95d</td></tr>
+            <tr><td>Premium reconciliation Jan-Mar</td><td>In progress</td><td>$10.5M</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Treaty Performance</h3></div>
+      <div class="carrier-detail-row">
+        <div><strong>Quarterly Loss Ratio (YTD):</strong> 55.2%</div>
+        <div><strong>Cumulative burn layer (XoL):</strong> 0%</div>
+        <div><strong>Reinstatements used:</strong> 0 of 2</div>
+        <div><strong>Next renewal:</strong> 2027-01-01</div>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+function renderCarrierRetroBook() {
+  return `
+  ${carrierPageHeader('Ceded Book Summary', 'Policies ceded to you by Summit Fronting Re (this carrier).')}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Policy</th><th>Insured</th><th>LOB</th><th>State</th><th>Gross Premium</th><th>Ceded %</th><th>Ceded to you</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.carrierPolicies.filter(p => p.ceded_pct !== '0%' && p.status === 'Active').map(p => {
+            const grossAmount = parseInt(p.premium.replace(/[$,]/g, ''));
+            const cededPct = parseInt(p.ceded_pct.replace('%',''));
+            const cededAmount = Math.round(grossAmount * cededPct / 100);
+            return `<tr>
+              <td><strong>${p.id}</strong></td>
+              <td>${p.insured}</td>
+              <td>${p.lob}</td>
+              <td>${p.state}</td>
+              <td>${p.premium}</td>
+              <td>${p.ceded_pct}</td>
+              <td>$${cededAmount.toLocaleString()}</td>
+              <td>${carrierBadge(p.status, 'green')}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierRetroPremium() {
+  return `
+  ${carrierPageHeader('Premium Bordereau — Inbound', 'Monthly premium statements received from the carrier you reinsure.',
+    `<button class="btn btn-ghost" onclick="window.konduitExportBordereau('retro-inbound')">⬇ Export CSV</button>`)}
+
+  ${carrierKPIs([
+    { label: 'Ceded Premium YTD',  value: '$86M' },
+    { label: 'Commissions Out YTD',value: '$24.2M' },
+    { label: 'Latest statement',   value: 'Mar 2026' },
+    { label: 'Next due',           value: 'Apr 30' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Received Statements</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Period</th><th>Carrier</th><th>Ceded Premium</th><th>Commissions</th><th>Net to Reinsurer</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Mar 2026</td><td>Summit Fronting Re</td><td>$10.5M</td><td>$2.9M</td><td>$7.6M</td><td>${carrierBadge('Reconciled','green')}</td></tr>
+          <tr><td>Feb 2026</td><td>Summit Fronting Re</td><td>$9.8M</td><td>$2.7M</td><td>$7.1M</td><td>${carrierBadge('Reconciled','green')}</td></tr>
+          <tr><td>Jan 2026</td><td>Summit Fronting Re</td><td>$9.2M</td><td>$2.5M</td><td>$6.7M</td><td>${carrierBadge('Reconciled','green')}</td></tr>
+          <tr><td>Dec 2025</td><td>Summit Fronting Re</td><td>$8.4M</td><td>$2.3M</td><td>$6.1M</td><td>${carrierBadge('Reconciled','green')}</td></tr>
+          <tr><td>Nov 2025</td><td>Summit Fronting Re</td><td>$8.2M</td><td>$2.2M</td><td>$6.0M</td><td>${carrierBadge('Reconciled','green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierRetroClaims() {
+  return `
+  ${carrierPageHeader('Claims Bordereau — Inbound', 'Claims reported to you by the carrier for your treaty share.')}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Claim</th><th>Policy</th><th>Insured</th><th>LOB</th><th>DOL</th><th>Your share</th><th>Ceded Paid</th><th>Ceded Reserve</th></tr></thead>
+        <tbody>
+          ${D.carrierClaims.slice(0, 10).map(c => `
+            <tr>
+              <td><strong>${c.id}</strong></td>
+              <td>${c.policy}</td>
+              <td>${c.insured}</td>
+              <td>${c.lob}</td>
+              <td>${c.dol}</td>
+              <td>65%</td>
+              <td>$${(parseInt(c.paid.replace(/[$,]/g,''))*0.65).toLocaleString('en-US',{maximumFractionDigits:0})}</td>
+              <td>$${(parseInt(c.reserved.replace(/[$,]/g,''))*0.65).toLocaleString('en-US',{maximumFractionDigits:0})}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierRetroRecoverables() {
+  return `
+  ${carrierPageHeader('Recoverables — Outstanding to you', 'Claim payments carrier has billed you for recovery.')}
+
+  ${carrierKPIs([
+    { label: 'Total outstanding', value: '$4.1M' },
+    { label: 'Billed',            value: '3' },
+    { label: 'In dispute',        value: '1', warning:true },
+    { label: 'Aged > 90d',        value: '1' }
+  ], 4)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Recoverable ID</th><th>Claim</th><th>Amount</th><th>Aged</th><th>Status</th><th>Carrier Notes</th></tr></thead>
+        <tbody>
+          ${D.carrierRecoverables.filter(r => r.reinsurer === 'Munich Re America').map(r => `
+            <tr>
+              <td><strong>${r.id}</strong></td>
+              <td>${r.claim}</td>
+              <td>${r.amount}</td>
+              <td>${r.aged_days}d</td>
+              <td>${carrierBadge(r.status, carrierStatusColor(r.status))}</td>
+              <td class="row-sub">${r.notes}</td>
+            </tr>`).join('') || `<tr><td colspan="6" class="row-sub">No recoverables outstanding.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierRetroPerformance() {
+  return `
+  ${carrierPageHeader('Treaty Performance', 'By LOB and accident year — your share of the carrier\'s book.')}
+
+  ${carrierKPIs([
+    { label: 'Ceded LR YTD',     value: '55.2%' },
+    { label: 'Ceded CR YTD',     value: '88.4%' },
+    { label: 'Profit commission',value: '$1.8M earned' },
+    { label: 'Treaty term',      value: '2026-01 → 2026-12' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Performance by LOB (YTD)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>LOB</th><th>Ceded Premium</th><th>Ceded Losses</th><th>Loss Ratio</th><th>Combined</th></tr></thead>
+        <tbody>
+          <tr><td>Commercial Property</td><td>$42M</td><td>$21.8M</td><td>52.0%</td><td>86.2%</td></tr>
+          <tr><td>CAT Personal Lines</td><td>$8M</td><td>$4.6M</td><td>57.9%</td><td>93.2%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Performance by Accident Year</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>AY</th><th>Ceded Premium</th><th>Ultimate Ceded Losses</th><th>Loss Ratio</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>2026 (YTD)</td><td>$10.5M</td><td>$5.8M</td><td>55.2%</td><td>${carrierBadge('In progress','blue')}</td></tr>
+          <tr><td>2025</td><td>$39.8M</td><td>$22.6M</td><td>56.8%</td><td>${carrierBadge('Closed','green')}</td></tr>
+          <tr><td>2024</td><td>$36.2M</td><td>$19.4M</td><td>53.6%</td><td>${carrierBadge('Closed','green')}</td></tr>
+          <tr><td>2023</td><td>$32.4M</td><td>$18.1M</td><td>55.9%</td><td>${carrierBadge('Closed','green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderCarrierStub(title, phase) {
+  return `
+  ${carrierPageHeader(title, `${phase} · under construction`)}
+  <section class="card" style="padding:var(--space-xl); text-align:center">
+    <div style="font-size:3rem; margin-bottom:var(--space-md)">🚧</div>
+    <h3>${title}</h3>
+    <p class="row-sub" style="max-width:480px; margin:var(--space-sm) auto">Fully-wired screen coming in ${phase}. Scaffolding is in place — this is intentional.</p>
   </section>
   `;
 }

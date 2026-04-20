@@ -6251,3 +6251,351 @@ export const konduitOnboardingSteps = [
   { step: 5, label: 'Quality review',            description: 'Konduit pre-publication QA',           status: 'pending' },
   { step: 6, label: 'Publish to marketplace',    description: 'Go live to matched capacity',          status: 'pending' }
 ];
+
+/* ============================================================
+   CARRIER QP — Data Layer (Carrier / Insurer portal)
+   Carrier-side counterpart to MGA portal · issues the paper
+   ============================================================ */
+
+export const CARRIER_USERS = {
+  uw:         { name: 'Alex Chen',        role: 'Line Underwriter',     company: 'Summit Fronting Re',  avatar: 'AC' },
+  cuo:        { name: 'Morgan Whitaker',  role: 'Chief Underwriting Officer', company: 'Summit Fronting Re', avatar: 'MW' },
+  srUw:       { name: 'Priya Raman',      role: 'Senior UW / Referral Authority', company: 'Summit Fronting Re', avatar: 'PR' },
+  claims:     { name: 'Daniel Ortega',    role: 'Claims Manager',       company: 'Summit Fronting Re',  avatar: 'DO' },
+  actuary:    { name: 'Ingrid Lindqvist', role: 'Chief Actuary',        company: 'Summit Fronting Re',  avatar: 'IL' },
+  reinsHead:  { name: 'Sanjay Rao',       role: 'Head of Reinsurance',  company: 'Summit Fronting Re',  avatar: 'SR' },
+  compliance: { name: 'Helen Becker',     role: 'Compliance Officer',   company: 'Summit Fronting Re',  avatar: 'HB' },
+  retro:      { name: 'Munich Re US',     role: 'Reinsurer View',       company: 'Munich Re America',    avatar: 'MR' }
+};
+
+export const CARRIER_LOBS = [
+  'Commercial Property','CAT Commercial','CAT Personal Lines','Cyber','Casualty / GL','E&O','D&O',
+  'Marine','Transportation','Workers Compensation','Aviation','Healthcare','Surety','Construction',
+  'Environmental','Specialty','Personal Auto','Homeowners'
+];
+
+export const CARRIER_STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
+
+export const carrierDashboardKPIs = {
+  uw: [
+    { label: 'Submissions in queue', value: '23', warning: true },
+    { label: 'Quotes open',          value: '47' },
+    { label: 'Bind ratio (30d)',     value: '34%' },
+    { label: 'Avg UW turnaround',    value: '2.3 days' },
+    { label: 'Portfolio GWP',        value: '$482M' },
+    { label: 'YTD loss ratio',       value: '56.8%' }
+  ],
+  reins: [
+    { label: 'Ceded premium YTD',    value: '$178M' },
+    { label: 'Recoverables open',    value: '$12.4M' },
+    { label: 'Active treaties',      value: '7' },
+    { label: 'CAT 1-in-250 PML',     value: '$94M' },
+    { label: 'Retention vs target',  value: '97%' },
+    { label: 'Treaty renewals <120d',value: '2', warning: true }
+  ],
+  claims: [
+    { label: 'Open claims',          value: '384', warning: true },
+    { label: 'Paid YTD',             value: '$48.9M' },
+    { label: 'Case reserves',        value: '$31.2M' },
+    { label: 'IBNR',                 value: '$22.8M' },
+    { label: 'Avg close cycle',      value: '67 days' },
+    { label: 'Litigation open',      value: '18' }
+  ],
+  retro: [
+    { label: 'Ceded to me (inforce)',value: '$86M' },
+    { label: 'Claims bordereau',     value: '3 pending' },
+    { label: 'Recoverables due',     value: '$4.1M' },
+    { label: 'Treaty layer burn',    value: '42%' },
+    { label: 'Last statement',       value: '2026-03-31' },
+    { label: 'Next reconciliation',  value: 'Apr 30' }
+  ]
+};
+
+export const carrierAppetite = [
+  { lob: 'Commercial Property', state: 'All', class: 'Habitational — Class A', status: 'In', authority: '$25M/risk', notes: 'Preferred if IAS > 85' },
+  { lob: 'Commercial Property', state: 'FL',  class: 'Coastal residential',    status: 'Refer', authority: 'Sr UW only', notes: 'Wind-pool check required' },
+  { lob: 'Commercial Property', state: 'CA',  class: 'Wildfire zone 3+',       status: 'Out',   authority: '—', notes: 'Non-renewable' },
+  { lob: 'Cyber',               state: 'All', class: 'SME < $100M rev',        status: 'In',    authority: '$5M/risk', notes: 'MFA required on all endpoints' },
+  { lob: 'Cyber',               state: 'All', class: 'Healthcare SMB',         status: 'Refer', authority: 'Sr UW only', notes: 'PHI exposure review' },
+  { lob: 'Workers Compensation',state: 'All', class: 'Hospitality',            status: 'In',    authority: '$3M retention', notes: '' },
+  { lob: 'Workers Compensation',state: 'NY',  class: 'Construction Class 5+',  status: 'Refer', authority: 'Sr UW only', notes: 'Scaffold law exposure' },
+  { lob: 'Marine',              state: 'All', class: 'Stock throughput',       status: 'In',    authority: '$10M/risk', notes: '' },
+  { lob: 'Transportation',      state: 'All', class: 'Long-haul trucking',     status: 'In',    authority: '$5M/unit', notes: 'Telematics required' },
+  { lob: 'Aviation',            state: 'All', class: 'Part 91/135',            status: 'In',    authority: '$15M/risk', notes: '' },
+  { lob: 'Aviation',            state: 'All', class: 'Rotor-wing EMS',         status: 'Refer', authority: 'Sr UW only', notes: 'Loss-run required' },
+  { lob: 'Surety',              state: 'All', class: 'Contract < $5M',         status: 'In',    authority: '$2M/bond', notes: '' },
+  { lob: 'Environmental',       state: 'All', class: 'Contractors pollution', status: 'In',    authority: '$10M/risk', notes: '' },
+  { lob: 'D&O',                 state: 'All', class: 'Public co < $500M cap',  status: 'Refer', authority: 'Sr UW only', notes: '10-K review' }
+];
+
+export const carrierSubmissions = [
+  { id: 'SUB-2026-1142', received: '2026-04-20 09:14', insured: 'Kroger Real Estate',          lob: 'Commercial Property', state: 'OH', premium_est: '$284,000', channel: 'MGA · Meridian Specialty', status: 'New',         assigned: 'Alex Chen',    appetite: 'In',    clearance: 'Clear',      priority: 'Normal', days_in_queue: 0 },
+  { id: 'SUB-2026-1141', received: '2026-04-19 16:22', insured: 'Prologis Trust',               lob: 'Commercial Property', state: 'CA', premium_est: '$512,000', channel: 'Broker · Marsh',            status: 'Triaged',     assigned: 'Alex Chen',    appetite: 'In',    clearance: 'Clear',      priority: 'High',   days_in_queue: 1 },
+  { id: 'SUB-2026-1140', received: '2026-04-19 11:08', insured: 'Harbor Logistics',             lob: 'Transportation',      state: 'IL', premium_est: '$221,000', channel: 'MGA · Northstar',           status: 'In UW',       assigned: 'Priya Raman',  appetite: 'In',    clearance: 'Clear',      priority: 'Normal', days_in_queue: 1 },
+  { id: 'SUB-2026-1139', received: '2026-04-18 14:47', insured: 'Westbrook Hospitality',        lob: 'Workers Compensation',state: 'CA', premium_est: '$98,000',  channel: 'MGA · Harbor Program',      status: 'In UW',       assigned: 'Alex Chen',    appetite: 'In',    clearance: 'Clear',      priority: 'Normal', days_in_queue: 2 },
+  { id: 'SUB-2026-1138', received: '2026-04-18 10:33', insured: 'Magnolia Construction',        lob: 'Casualty / GL',       state: 'GA', premium_est: '$147,000', channel: 'Broker · Aon',               status: 'Referred',    assigned: 'Priya Raman',  appetite: 'Refer', clearance: 'Clear',      priority: 'High',   days_in_queue: 2 },
+  { id: 'SUB-2026-1137', received: '2026-04-17 16:04', insured: 'Gulf Coast Condo Assoc',       lob: 'Commercial Property', state: 'FL', premium_est: '$420,000', channel: 'MGA · Meridian Specialty', status: 'Referred',    assigned: 'Priya Raman',  appetite: 'Refer', clearance: 'Dup-check', priority: 'High',   days_in_queue: 3 },
+  { id: 'SUB-2026-1136', received: '2026-04-17 09:22', insured: 'Big Sky Freight',               lob: 'Transportation',      state: 'MT', premium_est: '$334,000', channel: 'MGA · Northstar',           status: 'Quoted',      assigned: 'Alex Chen',    appetite: 'In',    clearance: 'Clear',      priority: 'Normal', days_in_queue: 3 },
+  { id: 'SUB-2026-1135', received: '2026-04-16 13:15', insured: 'Oakwood Builders',              lob: 'Surety',              state: 'TX', premium_est: '$68,000',  channel: 'MGA · Atlas Surety',         status: 'Quoted',      assigned: 'Alex Chen',    appetite: 'In',    clearance: 'Clear',      priority: 'Normal', days_in_queue: 4 },
+  { id: 'SUB-2026-1134', received: '2026-04-16 09:48', insured: 'Cascade Aerials',              lob: 'Aviation',            state: 'WA', premium_est: '$195,000', channel: 'MGA · Skyline Aviation',    status: 'Bound',       assigned: 'Priya Raman',  appetite: 'In',    clearance: 'Clear',      priority: 'Normal', days_in_queue: 4 },
+  { id: 'SUB-2026-1133', received: '2026-04-15 15:37', insured: 'Southside Tech LLC',           lob: 'Cyber',               state: 'NY', premium_est: '$42,000',  channel: 'Broker · Lockton',          status: 'Declined',    assigned: 'Alex Chen',    appetite: 'Out',   clearance: 'Clear',      priority: 'Low',    days_in_queue: 5 },
+  { id: 'SUB-2026-1132', received: '2026-04-15 11:01', insured: 'Evergreen Medical',            lob: 'Cyber',               state: 'OR', premium_est: '$88,000',  channel: 'MGA · Meridian Specialty', status: 'Bound',       assigned: 'Alex Chen',    appetite: 'In',    clearance: 'Clear',      priority: 'Normal', days_in_queue: 5 },
+  { id: 'SUB-2026-1131', received: '2026-04-14 14:29', insured: 'Anchor Renewable Energy',      lob: 'Environmental',       state: 'TX', premium_est: '$156,000', channel: 'MGA · Evergreen Env.',      status: 'Bound',       assigned: 'Priya Raman',  appetite: 'In',    clearance: 'Clear',      priority: 'Normal', days_in_queue: 6 },
+  { id: 'SUB-2026-1130', received: '2026-04-14 09:14', insured: 'Heritage Coastal Homes',       lob: 'CAT Personal Lines',  state: 'NC', premium_est: '$267,000', channel: 'MGA · Heritage Property',   status: 'Bound',       assigned: 'Priya Raman',  appetite: 'In',    clearance: 'Clear',      priority: 'Normal', days_in_queue: 6 },
+  { id: 'SUB-2026-1129', received: '2026-04-13 16:55', insured: 'Vector Tech Services',         lob: 'E&O',                 state: 'CA', premium_est: '$77,000',  channel: 'MGA · Vector Professional', status: 'Bound',       assigned: 'Alex Chen',    appetite: 'In',    clearance: 'Clear',      priority: 'Normal', days_in_queue: 7 },
+  { id: 'SUB-2026-1128', received: '2026-04-13 10:22', insured: 'Pinnacle BioHealth',           lob: 'D&O',                 state: 'MA', premium_est: '$184,000', channel: 'Broker · Willis Towers',    status: 'Quoted',      assigned: 'Priya Raman',  appetite: 'Refer', clearance: 'Clear',      priority: 'High',   days_in_queue: 7 },
+  { id: 'SUB-2026-1127', received: '2026-04-12 15:01', insured: 'Rivera Trucking Fleet',         lob: 'Transportation',      state: 'TX', premium_est: '$312,000', channel: 'MGA · Northstar',           status: 'Quoted',      assigned: 'Alex Chen',    appetite: 'In',    clearance: 'Clear',      priority: 'Normal', days_in_queue: 8 },
+  { id: 'SUB-2026-1126', received: '2026-04-12 11:18', insured: 'Blue Ridge Winery',            lob: 'Commercial Property', state: 'VA', premium_est: '$56,000',  channel: 'Broker · CRC',              status: 'Declined',    assigned: 'Alex Chen',    appetite: 'Out',   clearance: 'Clear',      priority: 'Low',    days_in_queue: 8 },
+  { id: 'SUB-2026-1125', received: '2026-04-11 14:44', insured: 'Global Yacht Services',         lob: 'Marine',              state: 'FL', premium_est: '$118,000', channel: 'Broker · Amwins',           status: 'In UW',       assigned: 'Priya Raman',  appetite: 'In',    clearance: 'Dup-check', priority: 'Normal', days_in_queue: 9 },
+  { id: 'SUB-2026-1124', received: '2026-04-11 09:07', insured: 'Crown Manufacturing',           lob: 'Workers Compensation',state: 'OH', premium_est: '$92,000',  channel: 'MGA · Harbor Program',      status: 'In UW',       assigned: 'Alex Chen',    appetite: 'In',    clearance: 'Clear',      priority: 'Normal', days_in_queue: 9 },
+  { id: 'SUB-2026-1123', received: '2026-04-10 16:31', insured: 'Lone Star Energy LLC',         lob: 'Environmental',       state: 'TX', premium_est: '$203,000', channel: 'MGA · Evergreen Env.',      status: 'Bound',       assigned: 'Priya Raman',  appetite: 'In',    clearance: 'Clear',      priority: 'Normal', days_in_queue: 10 }
+];
+
+export const carrierPolicies = [
+  { id: 'POL-2026-0421', insured: 'Kroger Real Estate',     lob: 'Commercial Property', state: 'OH', effective: '2026-03-01', expiry: '2027-03-01', premium: '$284,000', status: 'Active',       mga: 'Meridian Specialty',  uw: 'Alex Chen',   retention: '$5M',  ceded_pct: '65%',  loss_ratio: '12.4%' },
+  { id: 'POL-2026-0422', insured: 'Prologis Trust',          lob: 'Commercial Property', state: 'CA', effective: '2026-03-04', expiry: '2027-03-04', premium: '$512,000', status: 'Active',       mga: 'Meridian Specialty',  uw: 'Alex Chen',   retention: '$5M',  ceded_pct: '65%',  loss_ratio: '8.1%' },
+  { id: 'POL-2026-0420', insured: 'Magnolia Construction',   lob: 'Casualty / GL',       state: 'GA', effective: '2026-03-08', expiry: '2027-03-08', premium: '$147,000', status: 'Active',       mga: 'Direct Broker',       uw: 'Priya Raman', retention: '$3M',  ceded_pct: '50%',  loss_ratio: '22.5%' },
+  { id: 'POL-2026-0419', insured: 'Westbrook Hospitality',  lob: 'Commercial Property', state: 'CA', effective: '2026-03-11', expiry: '2027-03-11', premium: '$98,000',  status: 'Active',       mga: 'Harbor Program',      uw: 'Alex Chen',   retention: '$5M',  ceded_pct: '65%',  loss_ratio: '35.8%', has_open_claim: true },
+  { id: 'POL-2026-0418', insured: 'Harbor Logistics',        lob: 'Transportation',      state: 'IL', effective: '2026-03-19', expiry: '2027-03-19', premium: '$221,000', status: 'Active',       mga: 'Northstar',           uw: 'Priya Raman', retention: '$2M',  ceded_pct: '70%',  loss_ratio: '18.2%' },
+  { id: 'POL-2026-0417', insured: 'Cascade Aerials',         lob: 'Aviation',            state: 'WA', effective: '2026-03-22', expiry: '2027-03-22', premium: '$195,000', status: 'Active',       mga: 'Skyline Aviation',    uw: 'Priya Raman', retention: '$10M', ceded_pct: '75%',  loss_ratio: '3.2%' },
+  { id: 'POL-2026-0416', insured: 'Evergreen Medical',       lob: 'Cyber',               state: 'OR', effective: '2026-04-01', expiry: '2027-04-01', premium: '$88,000',  status: 'Active',       mga: 'Meridian Specialty',  uw: 'Alex Chen',   retention: '$1M',  ceded_pct: '80%',  loss_ratio: '0.0%' },
+  { id: 'POL-2026-0415', insured: 'Anchor Renewable Energy', lob: 'Environmental',       state: 'TX', effective: '2026-04-01', expiry: '2027-04-01', premium: '$156,000', status: 'Active',       mga: 'Evergreen Env.',      uw: 'Priya Raman', retention: '$5M',  ceded_pct: '60%',  loss_ratio: '4.8%' },
+  { id: 'POL-2026-0414', insured: 'Heritage Coastal Homes',  lob: 'CAT Personal Lines',  state: 'NC', effective: '2026-04-01', expiry: '2027-04-01', premium: '$267,000', status: 'Active',       mga: 'Heritage Property',   uw: 'Priya Raman', retention: '$2M',  ceded_pct: '80%',  loss_ratio: '6.4%' },
+  { id: 'POL-2026-0413', insured: 'Vector Tech Services',    lob: 'E&O',                 state: 'CA', effective: '2026-04-05', expiry: '2027-04-05', premium: '$77,000',  status: 'Active',       mga: 'Vector Professional', uw: 'Alex Chen',   retention: '$1M',  ceded_pct: '75%',  loss_ratio: '0.0%' },
+  { id: 'POL-2026-0412', insured: 'Oakwood Builders',        lob: 'Surety',              state: 'TX', effective: '2026-04-10', expiry: '2027-04-10', premium: '$68,000',  status: 'Active',       mga: 'Atlas Surety',        uw: 'Alex Chen',   retention: '$1M',  ceded_pct: '0%',   loss_ratio: '0.0%' },
+  { id: 'POL-2026-0411', insured: 'Big Sky Freight',          lob: 'Transportation',      state: 'MT', effective: '2026-04-14', expiry: '2027-04-14', premium: '$334,000', status: 'Active',       mga: 'Northstar',           uw: 'Alex Chen',   retention: '$2M',  ceded_pct: '70%',  loss_ratio: '28.4%', has_open_claim: true },
+  { id: 'POL-2025-2284', insured: 'Anchor Renewable (prior)',lob: 'Environmental',       state: 'TX', effective: '2025-04-01', expiry: '2026-03-31', premium: '$148,000', status: 'Expired',      mga: 'Evergreen Env.',      uw: 'Priya Raman', retention: '$5M',  ceded_pct: '60%',  loss_ratio: '42.3%' },
+  { id: 'POL-2025-2185', insured: 'Heritage Coastal (prior)', lob: 'CAT Personal Lines',  state: 'NC', effective: '2025-04-01', expiry: '2026-03-31', premium: '$251,000', status: 'Expired',      mga: 'Heritage Property',   uw: 'Priya Raman', retention: '$2M',  ceded_pct: '80%',  loss_ratio: '58.7%' },
+  { id: 'POL-2025-2089', insured: 'Northstar Fleet #1',       lob: 'Transportation',      state: 'MN', effective: '2025-09-15', expiry: '2026-09-14', premium: '$412,000', status: 'Active',       mga: 'Northstar',           uw: 'Alex Chen',   retention: '$2M',  ceded_pct: '70%',  loss_ratio: '64.5%', has_open_claim: true },
+  { id: 'POL-2025-1832', insured: 'Crown Manufacturing',      lob: 'Workers Compensation',state: 'OH', effective: '2025-07-01', expiry: '2026-06-30', premium: '$172,000', status: 'Renewing',     mga: 'Harbor Program',      uw: 'Alex Chen',   retention: '$3M',  ceded_pct: '70%',  loss_ratio: '71.2%' },
+  { id: 'POL-2025-1711', insured: 'Pinnacle BioHealth',       lob: 'D&O',                 state: 'MA', effective: '2025-06-15', expiry: '2026-06-14', premium: '$178,000', status: 'Renewing',     mga: 'Direct Broker',       uw: 'Priya Raman', retention: '$5M',  ceded_pct: '65%',  loss_ratio: '0.0%' },
+  { id: 'POL-2025-1598', insured: 'Blue Ridge Winery',        lob: 'Commercial Property', state: 'VA', effective: '2025-05-20', expiry: '2026-05-19', premium: '$64,000',  status: 'Non-renewed',  mga: 'Direct Broker',       uw: 'Alex Chen',   retention: '$2M',  ceded_pct: '65%',  loss_ratio: '142.5%' },
+  { id: 'POL-2025-1402', insured: 'Rivera Trucking Fleet',    lob: 'Transportation',      state: 'TX', effective: '2025-04-10', expiry: '2026-04-09', premium: '$297,000', status: 'Renewing',     mga: 'Northstar',           uw: 'Alex Chen',   retention: '$2M',  ceded_pct: '70%',  loss_ratio: '52.8%' },
+  { id: 'POL-2025-0987', insured: 'Gulf Coast Condo Assoc',   lob: 'Commercial Property', state: 'FL', effective: '2025-03-01', expiry: '2026-02-28', premium: '$385,000', status: 'Active',       mga: 'Meridian Specialty',  uw: 'Priya Raman', retention: '$5M',  ceded_pct: '70%',  loss_ratio: '112.4%', has_open_claim: true }
+];
+
+export const carrierEndorsements = [
+  { id: 'END-2026-0081', policy: 'POL-2026-0421', insured: 'Kroger Real Estate',    type: 'Add location',      effective: '2026-04-15', premium_change: '+$12,400', status: 'In UW',     requested_by: 'MGA · Meridian', days: 3 },
+  { id: 'END-2026-0080', policy: 'POL-2026-0422', insured: 'Prologis Trust',         type: 'Increase limit',    effective: '2026-04-12', premium_change: '+$34,800', status: 'Approved',  requested_by: 'Broker · Marsh', days: 5 },
+  { id: 'END-2026-0079', policy: 'POL-2026-0419', insured: 'Westbrook Hospitality', type: 'Add AI',            effective: '2026-04-10', premium_change: '$0',       status: 'Issued',    requested_by: 'Insured',        days: 8 },
+  { id: 'END-2026-0078', policy: 'POL-2026-0418', insured: 'Harbor Logistics',       type: 'Delete vehicle',    effective: '2026-04-08', premium_change: '-$4,200',  status: 'Issued',    requested_by: 'MGA · Northstar',days: 10 },
+  { id: 'END-2026-0077', policy: 'POL-2026-0417', insured: 'Cascade Aerials',        type: 'Add aircraft',      effective: '2026-04-05', premium_change: '+$18,200', status: 'Approved',  requested_by: 'MGA · Skyline', days: 13 },
+  { id: 'END-2026-0076', policy: 'POL-2025-2089', insured: 'Northstar Fleet #1',    type: 'Cov territory ext',  effective: '2026-04-01', premium_change: '+$7,800',  status: 'Issued',    requested_by: 'MGA · Northstar',days: 17 },
+  { id: 'END-2026-0075', policy: 'POL-2026-0415', insured: 'Anchor Renewable',       type: 'Named insured chg',  effective: '2026-04-01', premium_change: '$0',       status: 'Issued',    requested_by: 'Insured',        days: 17 },
+  { id: 'END-2026-0074', policy: 'POL-2025-0987', insured: 'Gulf Coast Condo',       type: 'Deductible change',  effective: '2026-03-28', premium_change: '-$22,400', status: 'Issued',    requested_by: 'Insured',        days: 21 }
+];
+
+export const carrierRenewals = [
+  { id: 'REN-2026-01', policy: 'POL-2025-2284', insured: 'Anchor Renewable Energy', lob: 'Environmental',       expiry: '2026-03-31', days: -20, status: 'Re-bound',        rate_change: '+5.4%', loss_ratio: '42.3%', premium_new: '$156,000' },
+  { id: 'REN-2026-02', policy: 'POL-2025-2185', insured: 'Heritage Coastal Homes',   lob: 'CAT Personal Lines',  expiry: '2026-03-31', days: -20, status: 'Re-bound',        rate_change: '+6.4%', loss_ratio: '58.7%', premium_new: '$267,000' },
+  { id: 'REN-2026-03', policy: 'POL-2025-1832', insured: 'Crown Manufacturing',      lob: 'Workers Compensation',expiry: '2026-06-30', days: 71,  status: 'Re-underwriting', rate_change: '+12.5%',loss_ratio: '71.2%', premium_new: '$193,500' },
+  { id: 'REN-2026-04', policy: 'POL-2025-1711', insured: 'Pinnacle BioHealth',       lob: 'D&O',                 expiry: '2026-06-14', days: 55,  status: 'Quoted',          rate_change: '+3.2%', loss_ratio: '0.0%',  premium_new: '$183,700' },
+  { id: 'REN-2026-05', policy: 'POL-2025-1402', insured: 'Rivera Trucking Fleet',    lob: 'Transportation',      expiry: '2026-04-09', days: -11, status: 'Re-bound',        rate_change: '+8.2%', loss_ratio: '52.8%', premium_new: '$321,500' },
+  { id: 'REN-2026-06', policy: 'POL-2025-0987', insured: 'Gulf Coast Condo Assoc',   lob: 'Commercial Property', expiry: '2026-02-28', days: -52, status: 'Non-renewed',     rate_change: 'n/a',   loss_ratio: '112.4%',premium_new: 'n/a' },
+  { id: 'REN-2026-07', policy: 'POL-2025-1598', insured: 'Blue Ridge Winery',         lob: 'Commercial Property', expiry: '2026-05-19', days: 29,  status: 'Non-renewal notice',rate_change: 'n/a', loss_ratio: '142.5%',premium_new: 'n/a' },
+  { id: 'REN-2026-08', policy: 'POL-2025-2089', insured: 'Northstar Fleet #1',        lob: 'Transportation',      expiry: '2026-09-14', days: 147, status: 'Pre-renewal review',rate_change: '+7.0%', loss_ratio: '64.5%', premium_new: '$440,840' }
+];
+
+export const carrierMGAs = [
+  { id: 'MGA-01', name: 'Meridian Specialty Underwriters', lobs: ['Commercial Property','Cyber','Marine'],         gwp_ytd: '$68M',  policies: 412, treaty: 'TR-2026-001 · QS + XoL', authority: '$50M/risk', loss_ratio: '54.8%', combined_ratio: '91.2%', scorecard: 'A', since: '2024-06-01', audit_due: '2026-06-01', bordereau_cadence: 'Monthly', status: 'Active' },
+  { id: 'MGA-02', name: 'Harbor Program Partners',          lobs: ['Workers Compensation','Casualty / GL'],        gwp_ytd: '$48M',  policies: 286, treaty: 'TR-2026-004 · Full-stack', authority: '$25M/risk', loss_ratio: '62.7%', combined_ratio: '94.4%', scorecard: 'A-',since: '2023-08-15', audit_due: '2026-05-10', bordereau_cadence: 'Monthly', status: 'Active' },
+  { id: 'MGA-03', name: 'Northstar Transportation MGA',     lobs: ['Transportation','Casualty / GL'],              gwp_ytd: '$54M',  policies: 198, treaty: 'TR-2026-005 · QS + XoL', authority: '$10M/unit', loss_ratio: '64.5%', combined_ratio: '96.1%', scorecard: 'B+',since: '2023-11-10', audit_due: '2026-04-30', bordereau_cadence: 'Monthly', status: 'Active' },
+  { id: 'MGA-04', name: 'Skyline Aviation MGA',             lobs: ['Aviation'],                                    gwp_ytd: '$38M',  policies: 94,  treaty: 'TR-2026-003 · Reinsurance only', authority: '$15M/risk', loss_ratio: '51.2%', combined_ratio: '88.9%', scorecard: 'A', since: '2024-03-12', audit_due: '2026-09-01', bordereau_cadence: 'Monthly', status: 'Active' },
+  { id: 'MGA-05', name: 'Atlas Surety Group',               lobs: ['Surety'],                                      gwp_ytd: '$15M',  policies: 174, treaty: 'TR-2026-002 · Full-stack', authority: '$5M/bond',  loss_ratio: '21.3%', combined_ratio: '74.8%', scorecard: 'A+',since: '2024-02-26', audit_due: '2026-08-01', bordereau_cadence: 'Monthly', status: 'Active' },
+  { id: 'MGA-06', name: 'Evergreen Environmental Risk',     lobs: ['Environmental'],                               gwp_ytd: '$22M',  policies: 108, treaty: 'TR-2026-006 · QS',        authority: '$10M/risk', loss_ratio: '53.9%', combined_ratio: '90.6%', scorecard: 'B',  since: '2025-01-27', audit_due: '2026-07-27', bordereau_cadence: 'Monthly', status: 'Paused' },
+  { id: 'MGA-07', name: 'Heritage Property MGA',            lobs: ['CAT Personal Lines','Commercial Property'],    gwp_ytd: '$31M',  policies: 342, treaty: 'TR-2026-007 · QS + CAT', authority: '$5M/risk',  loss_ratio: '57.9%', combined_ratio: '93.2%', scorecard: 'B+',since: '2024-09-15', audit_due: '2026-09-30', bordereau_cadence: 'Monthly', status: 'Active' },
+  { id: 'MGA-08', name: 'Vector Professional',              lobs: ['E&O','D&O'],                                   gwp_ytd: '$12M',  policies: 68,  treaty: 'TR-2026-008 · QS',        authority: '$5M/risk',  loss_ratio: '41.3%', combined_ratio: '86.5%', scorecard: 'A', since: '2024-12-01', audit_due: '2026-12-01', bordereau_cadence: 'Monthly', status: 'Active' }
+];
+
+export const carrierBordereau = [
+  { id: 'BDX-2026-03-01', mga: 'Meridian Specialty Underwriters', period: 'Mar 2026', type: 'Premium', gwp: '$4.8M', net: '$3.1M', commissions: '$1.2M', claims: '$0.4M', status: 'Reconciled',   variance: '0.8%',  received: '2026-04-05', processed: '2026-04-07' },
+  { id: 'BDX-2026-03-02', mga: 'Harbor Program Partners',          period: 'Mar 2026', type: 'Premium', gwp: '$3.9M', net: '$2.8M', commissions: '$0.9M', claims: '$0.3M', status: 'Reconciled',   variance: '1.2%',  received: '2026-04-05', processed: '2026-04-08' },
+  { id: 'BDX-2026-03-03', mga: 'Northstar Transportation MGA',     period: 'Mar 2026', type: 'Premium', gwp: '$4.5M', net: '$3.2M', commissions: '$1.1M', claims: '$0.8M', status: 'Exception',    variance: '4.8%',  received: '2026-04-04', processed: null        },
+  { id: 'BDX-2026-03-04', mga: 'Skyline Aviation MGA',             period: 'Mar 2026', type: 'Premium', gwp: '$3.2M', net: '$2.4M', commissions: '$0.7M', claims: '$0.1M', status: 'Reconciled',   variance: '0.3%',  received: '2026-04-03', processed: '2026-04-06' },
+  { id: 'BDX-2026-03-05', mga: 'Atlas Surety Group',               period: 'Mar 2026', type: 'Premium', gwp: '$1.3M', net: '$1.3M', commissions: '$0.4M', claims: '$0.0M', status: 'Reconciled',   variance: '0.0%',  received: '2026-04-02', processed: '2026-04-04' },
+  { id: 'BDX-2026-03-06', mga: 'Heritage Property MGA',            period: 'Mar 2026', type: 'Premium', gwp: '$2.6M', net: '$2.0M', commissions: '$0.6M', claims: '$0.5M', status: 'Pending',      variance: '—',     received: '2026-04-10', processed: null        },
+  { id: 'BDX-2026-03-07', mga: 'Vector Professional',              period: 'Mar 2026', type: 'Premium', gwp: '$1.0M', net: '$0.8M', commissions: '$0.2M', claims: '$0.0M', status: 'Reconciled',   variance: '0.0%',  received: '2026-04-03', processed: '2026-04-05' },
+  { id: 'BDX-2026-03-08', mga: 'Evergreen Environmental Risk',     period: 'Mar 2026', type: 'Premium', gwp: '$1.8M', net: '$1.4M', commissions: '$0.5M', claims: '$0.2M', status: 'Paused',       variance: '—',     received: null,          processed: null        },
+  { id: 'BDX-2026-03-09', mga: 'Meridian Specialty Underwriters', period: 'Mar 2026', type: 'Claims',  gwp: '—',     net: '—',     commissions: '—',    claims: '$0.4M', status: 'Reconciled',   variance: '0.0%',  received: '2026-04-05', processed: '2026-04-07' },
+  { id: 'BDX-2026-03-10', mga: 'Northstar Transportation MGA',     period: 'Mar 2026', type: 'Claims',  gwp: '—',     net: '—',     commissions: '—',    claims: '$0.8M', status: 'Exception',    variance: '12.4%', received: '2026-04-04', processed: null        }
+];
+
+export const carrierTreaties = [
+  { id: 'TR-2026-001', name: 'Property QS + XoL',         lob: 'Commercial Property', type: 'Quota Share + XoL', share: '65%', layer: '$5M xs $5M',   reinsurer: 'Munich Re America',   inception: '2026-01-01', expiry: '2026-12-31', reinstatements: '2 paid, 1 free', ceded_premium: '$42M',  recoverables: '$3.2M', status: 'Active' },
+  { id: 'TR-2026-002', name: 'Surety Full-Stack',          lob: 'Surety',              type: 'Full-stack',        share: '100%',layer: '$15M aggregate',reinsurer: 'Brookline Full-Stack',inception: '2026-01-01', expiry: '2026-12-31', reinstatements: '1 free',         ceded_premium: '$13M',  recoverables: '$0.0M', status: 'Active' },
+  { id: 'TR-2026-003', name: 'Aviation Reinsurance',       lob: 'Aviation',            type: 'Surplus',          share: '75%', layer: '$10M xs $5M',  reinsurer: 'Nordic Global Re',    inception: '2026-01-01', expiry: '2026-12-31', reinstatements: '2 paid',          ceded_premium: '$28M',  recoverables: '$0.4M', status: 'Active' },
+  { id: 'TR-2026-004', name: 'WC Full-stack',              lob: 'Workers Compensation',type: 'Full-stack',       share: '100%',layer: 'Statutory',    reinsurer: 'Pacific Paper Group', inception: '2026-01-01', expiry: '2026-12-31', reinstatements: 'Unlimited',       ceded_premium: '$36M',  recoverables: '$2.8M', status: 'Active' },
+  { id: 'TR-2026-005', name: 'Transportation QS',          lob: 'Transportation',      type: 'Quota Share',       share: '70%', layer: 'Pro-rata',     reinsurer: 'Summit Retrocession', inception: '2026-01-01', expiry: '2026-12-31', reinstatements: '1 free',          ceded_premium: '$38M',  recoverables: '$3.8M', status: 'Active' },
+  { id: 'TR-2026-006', name: 'Environmental QS',           lob: 'Environmental',       type: 'Quota Share',       share: '60%', layer: 'Pro-rata',     reinsurer: 'Gateway Re (Bermuda)',inception: '2026-01-01', expiry: '2026-12-31', reinstatements: '1 free',          ceded_premium: '$13M',  recoverables: '$0.8M', status: 'Active' },
+  { id: 'TR-2026-007', name: 'Property CAT XoL',            lob: 'CAT Personal Lines',  type: 'XoL (CAT)',         share: '—',   layer: '$50M xs $25M', reinsurer: 'Munich Re America',   inception: '2026-01-01', expiry: '2026-12-31', reinstatements: '1 paid, 1 free', ceded_premium: '$8M',   recoverables: '$0.0M', status: 'Active' },
+  { id: 'TR-2026-008', name: 'Professional QS',             lob: 'E&O',                 type: 'Quota Share',       share: '75%', layer: 'Pro-rata',     reinsurer: "Syndicate 4488 — Lloyd's",inception: '2026-01-01', expiry: '2026-12-31', reinstatements: 'Unlimited',       ceded_premium: '$9M',   recoverables: '$1.4M', status: 'Active' }
+];
+
+export const carrierRecoverables = [
+  { id: 'RCV-2026-01', treaty: 'TR-2026-001', reinsurer: 'Munich Re America',   claim: 'CLM-2026-0128', amount: '$1,200,000', aged_days: 18,  status: 'Billed',   notes: 'Gulf Coast Condo water damage' },
+  { id: 'RCV-2026-02', treaty: 'TR-2026-004', reinsurer: 'Pacific Paper Group', claim: 'CLM-2026-0081', amount: '$22,400',    aged_days: 28,  status: 'Collected',notes: 'Westbrook Hospitality wind' },
+  { id: 'RCV-2026-03', treaty: 'TR-2026-005', reinsurer: 'Summit Retrocession', claim: 'CLM-2026-0078', amount: '$48,500',    aged_days: 36,  status: 'Billed',   notes: 'Big Sky Freight collision' },
+  { id: 'RCV-2026-04', treaty: 'TR-2026-001', reinsurer: 'Munich Re America',   claim: 'CLM-2026-0075', amount: '$35,000',    aged_days: 58,  status: 'Collected',notes: 'Kroger water damage' },
+  { id: 'RCV-2026-05', treaty: 'TR-2026-003', reinsurer: 'Nordic Global Re',    claim: 'CLM-2026-0076', amount: '$4,800',     aged_days: 62,  status: 'Collected',notes: 'Cascade Aerials ground damage' },
+  { id: 'RCV-2026-06', treaty: 'TR-2026-004', reinsurer: 'Pacific Paper Group', claim: 'CLM-2026-0079', amount: '$10,000',    aged_days: 68,  status: 'Collected',notes: 'Harbor Logistics water' },
+  { id: 'RCV-2026-07', treaty: 'TR-2026-005', reinsurer: 'Summit Retrocession', claim: 'CLM-2025-2841', amount: '$320,000',   aged_days: 95,  status: 'Disputed', notes: 'Northstar fleet — coverage dispute' },
+  { id: 'RCV-2026-08', treaty: 'TR-2026-006', reinsurer: 'Gateway Re (Bermuda)',claim: 'CLM-2025-2687', amount: '$180,000',   aged_days: 122, status: 'Aged >90', notes: 'Anchor RE remediation' }
+];
+
+export const carrierClaims = [
+  { id: 'CLM-2026-0128', policy: 'POL-2025-0987', insured: 'Gulf Coast Condo Assoc', lob: 'Commercial Property', state: 'FL', dol: '2026-03-22', cause: 'Water damage',    reserved: '$1,200,000', paid: '$420,000',  status: 'Open',      adjuster: 'Crawford & Co',  severity: 'Large',  litigation: false, subrogation: false, treaty: 'TR-2026-001' },
+  { id: 'CLM-2026-0081', policy: 'POL-2026-0419', insured: 'Westbrook Hospitality',  lob: 'Commercial Property', state: 'CA', dol: '2026-03-14', cause: 'Wind',            reserved: '$10,000',    paid: '$22,400',   status: 'Open',      adjuster: 'Crawford & Co',  severity: 'Normal', litigation: false, subrogation: false, treaty: 'TR-2026-001' },
+  { id: 'CLM-2026-0079', policy: 'POL-2026-0418', insured: 'Harbor Logistics',       lob: 'Transportation',      state: 'IL', dol: '2026-03-02', cause: 'Water damage',    reserved: '$0',         paid: '$10,000',   status: 'Closed',    adjuster: 'In-house',       severity: 'Normal', litigation: false, subrogation: false, treaty: 'TR-2026-005' },
+  { id: 'CLM-2026-0078', policy: 'POL-2025-2089', insured: 'Northstar Fleet #1',     lob: 'Transportation',      state: 'MN', dol: '2026-02-27', cause: 'Collision',       reserved: '$25,000',    paid: '$48,500',   status: 'Open',      adjuster: 'Sedgwick',       severity: 'Normal', litigation: true,  subrogation: true,  treaty: 'TR-2026-005' },
+  { id: 'CLM-2026-0077', policy: 'POL-2026-0412', insured: 'Oakwood Builders',       lob: 'Surety',              state: 'TX', dol: '2026-02-12', cause: 'Default',         reserved: '$0',         paid: '$18,200',   status: 'Closed',    adjuster: 'In-house',       severity: 'Normal', litigation: false, subrogation: true,  treaty: 'TR-2026-002' },
+  { id: 'CLM-2026-0076', policy: 'POL-2026-0417', insured: 'Cascade Aerials',        lob: 'Aviation',            state: 'WA', dol: '2026-01-30', cause: 'Ground damage',   reserved: '$0',         paid: '$4,800',    status: 'Closed',    adjuster: 'In-house',       severity: 'Normal', litigation: false, subrogation: false, treaty: 'TR-2026-003' },
+  { id: 'CLM-2026-0075', policy: 'POL-2026-0421', insured: 'Kroger Real Estate',     lob: 'Commercial Property', state: 'OH', dol: '2026-01-22', cause: 'Water damage',    reserved: '$15,000',    paid: '$35,000',   status: 'Open',      adjuster: 'Crawford & Co',  severity: 'Normal', litigation: false, subrogation: false, treaty: 'TR-2026-001' },
+  { id: 'CLM-2026-0074', policy: 'POL-2026-0411', insured: 'Big Sky Freight',         lob: 'Transportation',      state: 'MT', dol: '2026-01-18', cause: 'Collision',       reserved: '$18,000',    paid: '$42,300',   status: 'Open',      adjuster: 'Sedgwick',       severity: 'Normal', litigation: false, subrogation: true,  treaty: 'TR-2026-005' },
+  { id: 'CLM-2025-2948', policy: 'POL-2025-2089', insured: 'Northstar Fleet #1',     lob: 'Transportation',      state: 'MN', dol: '2025-11-18', cause: 'Fire',            reserved: '$8,000',     paid: '$88,400',   status: 'Open',      adjuster: 'Sedgwick',       severity: 'Large',  litigation: true,  subrogation: false, treaty: 'TR-2026-005' },
+  { id: 'CLM-2025-2841', policy: 'POL-2025-2089', insured: 'Northstar Fleet #1',     lob: 'Transportation',      state: 'ND', dol: '2025-10-29', cause: 'Collision-BI',    reserved: '$180,000',   paid: '$320,000',  status: 'Litigated', adjuster: 'Sedgwick',       severity: 'Large',  litigation: true,  subrogation: false, treaty: 'TR-2026-005' },
+  { id: 'CLM-2025-2687', policy: 'POL-2025-2284', insured: 'Anchor Renewable',       lob: 'Environmental',       state: 'TX', dol: '2025-09-14', cause: 'Pollution',       reserved: '$62,000',    paid: '$180,000',  status: 'Open',      adjuster: 'Crawford & Co',  severity: 'Large',  litigation: false, subrogation: false, treaty: 'TR-2026-006' },
+  { id: 'CLM-2025-2541', policy: 'POL-2025-1598', insured: 'Blue Ridge Winery',      lob: 'Commercial Property', state: 'VA', dol: '2025-08-22', cause: 'Fire',            reserved: '$0',         paid: '$91,200',   status: 'Closed',    adjuster: 'Crawford & Co',  severity: 'Normal', litigation: false, subrogation: false, treaty: 'TR-2026-001' },
+  { id: 'CLM-2025-2488', policy: 'POL-2025-1402', insured: 'Rivera Trucking Fleet',  lob: 'Transportation',      state: 'TX', dol: '2025-08-10', cause: 'Cargo theft',     reserved: '$0',         paid: '$48,000',   status: 'Closed',    adjuster: 'Sedgwick',       severity: 'Normal', litigation: false, subrogation: true,  treaty: 'TR-2026-005' },
+  { id: 'CLM-2025-2312', policy: 'POL-2025-0987', insured: 'Gulf Coast Condo Assoc', lob: 'Commercial Property', state: 'FL', dol: '2025-07-18', cause: 'Wind (Hurricane)',reserved: '$280,000',   paid: '$420,000',  status: 'Open',      adjuster: 'Crawford & Co',  severity: 'CAT',    litigation: false, subrogation: false, treaty: 'TR-2026-007' },
+  { id: 'CLM-2025-2104', policy: 'POL-2025-0987', insured: 'Gulf Coast Condo Assoc', lob: 'Commercial Property', state: 'FL', dol: '2025-07-18', cause: 'Wind (Hurricane)',reserved: '$140,000',   paid: '$225,000',  status: 'Open',      adjuster: 'Crawford & Co',  severity: 'CAT',    litigation: false, subrogation: false, treaty: 'TR-2026-007' }
+];
+
+export const carrierSubrogation = [
+  { id: 'SUBRO-01', claim: 'CLM-2026-0078', insured: 'Northstar Fleet #1',    target: 'Other driver (at fault)',      amount_paid: '$48,500', recovery_sought: '$48,500', status: 'Pursuing',  attorney: 'In-house',     notes: 'Police report confirms third-party fault' },
+  { id: 'SUBRO-02', claim: 'CLM-2026-0077', insured: 'Oakwood Builders',      target: 'Principal (Oakwood)',          amount_paid: '$18,200', recovery_sought: '$18,200', status: 'Recovered', attorney: 'In-house',     notes: 'Indemnity recovery complete' },
+  { id: 'SUBRO-03', claim: 'CLM-2026-0074', insured: 'Big Sky Freight',        target: 'Cargo consignor',              amount_paid: '$42,300', recovery_sought: '$20,000', status: 'Pursuing',  attorney: 'Jones Day',    notes: 'Negligence in cargo securement' },
+  { id: 'SUBRO-04', claim: 'CLM-2025-2488', insured: 'Rivera Trucking',        target: 'Warehouse (cargo theft)',      amount_paid: '$48,000', recovery_sought: '$36,000', status: 'Recovered', attorney: 'Jones Day',    notes: '75% recovered via warehouse insurance' },
+  { id: 'SUBRO-05', claim: 'CLM-2025-2841', insured: 'Northstar Fleet #1',    target: 'Truck manufacturer (recall)',  amount_paid: '$320,000',recovery_sought: '$150,000',status: 'Litigating',attorney: 'Kasowitz',     notes: 'Product liability pursuit' }
+];
+
+export const carrierLitigation = [
+  { id: 'LIT-01', claim: 'CLM-2025-2841', case: 'Northstar v. Estate of Garcia', court: 'ND District, Dakota',    stage: 'Discovery',      filed: '2026-01-22', trial_date: '2026-09-14', defense: 'Kasowitz Benson Torres', reserve: '$500,000', ledes_ytd: '$42,800' },
+  { id: 'LIT-02', claim: 'CLM-2025-2948', case: 'Northstar v. State Trooper',   court: 'MN Hennepin Cty',         stage: 'Mediation',      filed: '2025-12-14', trial_date: '2026-07-01', defense: 'Jones Day',              reserve: '$250,000', ledes_ytd: '$18,200' },
+  { id: 'LIT-03', claim: 'CLM-2026-0078', case: 'Fleet v. At-fault driver',     court: 'MN Hennepin Cty',         stage: 'Pleadings',      filed: '2026-03-28', trial_date: 'TBD',         defense: 'In-house',               reserve: '$50,000',  ledes_ytd: '$4,200' }
+];
+
+export const carrierCATEvents = [
+  { id: 'CAT-2026-001', name: 'Hurricane Delta',  date: '2025-09-14', status: 'Active · reporting', peril: 'Wind/flood',   region: 'SE US (FL/GA/SC)', total_claims: 142, gross_incurred: '$8.2M',  net: '$3.1M', reinsurance: 'TR-2026-007 · $5M xs $25M · $1M burn', reinstatement: '1 paid, 1 free' },
+  { id: 'CAT-2025-008', name: 'Wildfire Complex', date: '2025-08-04', status: 'Closed',             peril: 'Wildfire',     region: 'CA (N)',           total_claims: 38,  gross_incurred: '$14.8M', net: '$4.2M', reinsurance: 'Prior-year treaty',                     reinstatement: 'Exhausted' },
+  { id: 'CAT-2025-003', name: 'Winter Storm Orion',date: '2025-02-14', status: 'Closed',            peril: 'Freeze/ice',   region: 'TX / SE US',       total_claims: 261, gross_incurred: '$19.4M', net: '$7.1M', reinsurance: 'Prior-year treaty',                     reinstatement: 'Exhausted' }
+];
+
+export const carrierReserveTriangles = {
+  lob: 'Commercial Property',
+  years: ['2021','2022','2023','2024','2025'],
+  months: ['12','24','36','48','60'],
+  paid: [
+    [4850, 5920, 6180, 6210, 6215],
+    [5120, 6240, 6520, 6560, null],
+    [5880, 7180, 7410, null, null],
+    [6540, 7920, null, null, null],
+    [7120, null, null, null, null]
+  ],
+  incurred: [
+    [5240, 6120, 6240, 6225, 6220],
+    [5580, 6480, 6610, 6580, null],
+    [6280, 7420, 7540, null, null],
+    [7020, 8200, null, null, null],
+    [7680, null, null, null, null]
+  ],
+  ultimate_lr: ['54.8%','56.1%','58.2%','60.1%','62.8%']
+};
+
+export const carrierFinancials = {
+  ytd: {
+    dwp: 482,
+    nwp: 148,
+    nep: 136,
+    losses_incurred: 77,
+    loss_ratio: 56.6,
+    expense_ratio: 28.4,
+    combined_ratio: 85.0,
+    commissions_payable: 44,
+    claims_paid_ytd: 48.9,
+    case_reserves: 31.2,
+    ibnr: 22.8,
+    ulae: 6.8,
+    cash_surplus: 208
+  },
+  by_lob: [
+    { lob: 'Commercial Property', dwp: 142, nep: 42, lr: 52.1, cr: 86.2 },
+    { lob: 'Workers Compensation',dwp: 84,  nep: 24, lr: 62.7, cr: 94.4 },
+    { lob: 'Transportation',      dwp: 78,  nep: 21, lr: 64.5, cr: 96.1 },
+    { lob: 'Aviation',            dwp: 52,  nep: 12, lr: 51.2, cr: 88.9 },
+    { lob: 'Cyber',               dwp: 34,  nep: 7,  lr: 44.5, cr: 82.1 },
+    { lob: 'Environmental',       dwp: 31,  nep: 11, lr: 53.9, cr: 90.6 },
+    { lob: 'CAT Personal Lines',  dwp: 31,  nep: 10, lr: 57.9, cr: 93.2 },
+    { lob: 'Surety',              dwp: 15,  nep: 5,  lr: 21.3, cr: 74.8 },
+    { lob: 'E&O',                 dwp: 8,   nep: 2,  lr: 41.3, cr: 86.5 },
+    { lob: 'D&O',                 dwp: 7,   nep: 2,  lr: 0.0,  cr: 78.0 }
+  ]
+};
+
+export const carrierSerffFilings = [
+  { id: 'SRF-2026-TX-01', state: 'TX', lob: 'Commercial Property', type: 'Rate',       filing_no: 'SUMM-CP-2026-0042', status: 'Approved',  filed: '2026-02-10', effective: '2026-05-01', rate_change: '+5.2%', form: 'CP 00 10 10 12', doi_contact: 'Texas DOI · K. Pearson' },
+  { id: 'SRF-2026-CA-01', state: 'CA', lob: 'Commercial Property', type: 'Rate',       filing_no: 'SUMM-CP-2026-0043', status: 'Pending',   filed: '2026-03-04', effective: '2026-07-01', rate_change: '+8.4%', form: 'CP 00 10 CA',    doi_contact: 'CDI · M. Li' },
+  { id: 'SRF-2026-FL-01', state: 'FL', lob: 'Commercial Property', type: 'Rate',       filing_no: 'SUMM-CP-2026-0044', status: 'Objection', filed: '2026-02-28', effective: 'TBD',       rate_change: '+14.2%', form: 'CP 00 10 FL',    doi_contact: 'FL OIR · J. Ortega' },
+  { id: 'SRF-2026-NY-01', state: 'NY', lob: 'Workers Compensation',type: 'Form',       filing_no: 'SUMM-WC-2026-0011', status: 'Approved',  filed: '2026-01-22', effective: '2026-04-01', rate_change: 'n/a',   form: 'WC NY endorsement', doi_contact: 'NYS DFS · R. Kim' },
+  { id: 'SRF-2026-OH-01', state: 'OH', lob: 'Workers Compensation',type: 'Rate + Form',filing_no: 'SUMM-WC-2026-0012', status: 'Approved',  filed: '2026-01-15', effective: '2026-04-01', rate_change: '+2.1%', form: 'WC OH rev 3',     doi_contact: 'OH BWC · T. Grant' },
+  { id: 'SRF-2026-CA-02', state: 'CA', lob: 'Cyber',               type: 'Rate + Form',filing_no: 'SUMM-CY-2026-0005', status: 'Withdrawn', filed: '2026-01-08', effective: 'n/a',       rate_change: '+12.0%',form: 'CY CA endorsement', doi_contact: 'CDI · S. Hong' },
+  { id: 'SRF-2026-TX-02', state: 'TX', lob: 'Cyber',               type: 'Rate + Form',filing_no: 'SUMM-CY-2026-0006', status: 'Approved',  filed: '2026-02-04', effective: '2026-05-01', rate_change: '+6.8%', form: 'CY TX rev 2',     doi_contact: 'Texas DOI · A. Reyes' },
+  { id: 'SRF-2026-IL-01', state: 'IL', lob: 'Transportation',      type: 'Rate',       filing_no: 'SUMM-TR-2026-0008', status: 'Pending',   filed: '2026-03-20', effective: '2026-08-01', rate_change: '+7.4%', form: 'TR IL GL',        doi_contact: 'IL DOI · M. Jackson' },
+  { id: 'SRF-2026-MT-01', state: 'MT', lob: 'Transportation',      type: 'Rate',       filing_no: 'SUMM-TR-2026-0009', status: 'Approved',  filed: '2026-02-28', effective: '2026-05-15', rate_change: '+4.1%', form: 'TR MT',           doi_contact: 'MT CSI · D. Boyd' },
+  { id: 'SRF-2026-WA-01', state: 'WA', lob: 'Aviation',            type: 'Form',       filing_no: 'SUMM-AV-2026-0003', status: 'Approved',  filed: '2026-01-30', effective: '2026-04-15', rate_change: 'n/a',   form: 'AV WA endorsement', doi_contact: 'WA OIC · P. Chung' }
+];
+
+export const carrierComplaints = [
+  { id: 'COM-2026-01', state: 'FL', insured: 'Gulf Coast Condo Assoc', subject: 'Claim delay',       filed: '2026-03-20', status: 'Open',       deadline: '2026-04-20', reviewer: 'Helen Becker',   notes: 'DOI requesting claim handling timeline' },
+  { id: 'COM-2026-02', state: 'CA', insured: 'Policy shopper',          subject: 'Non-renewal notice',filed: '2026-03-02', status: 'Responded',  deadline: '2026-04-02', reviewer: 'Helen Becker',   notes: 'Compliance with 75-day notice confirmed' },
+  { id: 'COM-2026-03', state: 'TX', insured: 'Rivera Trucking',          subject: 'Rate increase',     filed: '2026-02-18', status: 'Closed',     deadline: '2026-03-18', reviewer: 'Helen Becker',   notes: 'DOI accepted filing as basis' },
+  { id: 'COM-2026-04', state: 'NY', insured: 'Agency complaint',         subject: 'Producer conduct',  filed: '2026-04-05', status: 'Investigating',deadline: '2026-05-05', reviewer: 'Helen Becker', notes: 'Producer license status confirmed' }
+];
+
+export const carrierAuditLog = [
+  { ts: '2026-04-20 09:14:12', actor: 'Alex Chen',          action: 'Submission received',  target: 'SUB-2026-1142', ip: '10.2.4.12' },
+  { ts: '2026-04-20 08:32:41', actor: 'Priya Raman',        action: 'Endorsement approved', target: 'END-2026-0080', ip: '10.2.4.22' },
+  { ts: '2026-04-19 16:02:18', actor: 'Alex Chen',          action: 'Quote issued',         target: 'SUB-2026-1136', ip: '10.2.4.12' },
+  { ts: '2026-04-19 14:48:01', actor: 'Daniel Ortega',      action: 'Reserve adjusted',     target: 'CLM-2026-0128', ip: '10.2.4.41' },
+  { ts: '2026-04-19 11:22:33', actor: 'Helen Becker',       action: 'DOI filing submitted', target: 'SRF-2026-IL-01', ip: '10.2.4.55' },
+  { ts: '2026-04-19 10:04:02', actor: 'Sanjay Rao',         action: 'Ceded bordereau out',  target: 'BDX-2026-03-03', ip: '10.2.4.31' },
+  { ts: '2026-04-18 17:01:44', actor: 'Ingrid Lindqvist',   action: 'Reserve triangle run', target: 'LOB: CP',        ip: '10.2.4.18' },
+  { ts: '2026-04-18 15:22:18', actor: 'Morgan Whitaker',    action: 'Appetite updated',     target: 'CP · FL · Coastal',ip: '10.2.4.01' },
+  { ts: '2026-04-18 14:04:02', actor: 'Alex Chen',          action: 'Policy bound',         target: 'POL-2026-0421', ip: '10.2.4.12' },
+  { ts: '2026-04-18 11:41:33', actor: 'Priya Raman',        action: 'Referral approved',    target: 'SUB-2026-1128', ip: '10.2.4.22' }
+];
+
+export const carrierProducers = [
+  { id: 'PRD-001', name: 'Marsh & McLennan',        type: 'Broker',  license: 'NIPR-ACTIVE',   commissions_ytd: '$2.8M', appointments: 50, gwp_ytd: '$42M', lr: '52.1%', status: 'Active' },
+  { id: 'PRD-002', name: 'Aon plc',                 type: 'Broker',  license: 'NIPR-ACTIVE',   commissions_ytd: '$2.1M', appointments: 50, gwp_ytd: '$31M', lr: '48.7%', status: 'Active' },
+  { id: 'PRD-003', name: 'Lockton Companies',       type: 'Broker',  license: 'NIPR-ACTIVE',   commissions_ytd: '$1.6M', appointments: 42, gwp_ytd: '$24M', lr: '54.8%', status: 'Active' },
+  { id: 'PRD-004', name: 'Willis Towers Watson',    type: 'Broker',  license: 'NIPR-ACTIVE',   commissions_ytd: '$1.4M', appointments: 48, gwp_ytd: '$21M', lr: '56.2%', status: 'Active' },
+  { id: 'PRD-005', name: 'Amwins',                  type: 'Wholesale',license: 'NIPR-ACTIVE',   commissions_ytd: '$0.9M', appointments: 35, gwp_ytd: '$14M', lr: '61.4%', status: 'Active' },
+  { id: 'PRD-006', name: 'CRC Group',               type: 'Wholesale',license: 'NIPR-ACTIVE',   commissions_ytd: '$0.8M', appointments: 40, gwp_ytd: '$12M', lr: '58.9%', status: 'Active' },
+  { id: 'PRD-007', name: 'Ryan Specialty',          type: 'Wholesale',license: 'NIPR-ACTIVE',   commissions_ytd: '$0.7M', appointments: 38, gwp_ytd: '$10M', lr: '55.1%', status: 'Active' },
+  { id: 'PRD-008', name: 'Brown & Brown',           type: 'Broker',  license: 'NIPR-ACTIVE',   commissions_ytd: '$0.5M', appointments: 28, gwp_ytd: '$8M',  lr: '49.2%', status: 'Active' },
+  { id: 'PRD-009', name: 'Heffernan Insurance',     type: 'Broker',  license: 'NIPR-EXPIRING', commissions_ytd: '$0.3M', appointments: 12, gwp_ytd: '$4M',  lr: '62.1%', status: 'Review' },
+  { id: 'PRD-010', name: 'Sterling Insurance Group',type: 'Wholesale',license: 'NIPR-LAPSED',   commissions_ytd: '$0.1M', appointments: 8,  gwp_ytd: '$1M',  lr: '—',     status: 'Suspended' }
+];
+
+export const carrierRetroPanel = [
+  { reinsurer: 'Munich Re America',   treaty: 'TR-2026-001 · Property QS + XoL', ceded_ytd: '$42M', recoverables: '$3.2M', statements_delivered: '2026-03-31', next_statement: '2026-06-30' },
+  { reinsurer: 'Pacific Paper Group', treaty: 'TR-2026-004 · WC Full-stack',     ceded_ytd: '$36M', recoverables: '$2.8M', statements_delivered: '2026-03-31', next_statement: '2026-06-30' },
+  { reinsurer: 'Summit Retrocession', treaty: 'TR-2026-005 · Transportation QS', ceded_ytd: '$38M', recoverables: '$3.8M', statements_delivered: '2026-03-31', next_statement: '2026-06-30' },
+  { reinsurer: 'Nordic Global Re',    treaty: 'TR-2026-003 · Aviation Surplus',  ceded_ytd: '$28M', recoverables: '$0.4M', statements_delivered: '2026-03-31', next_statement: '2026-06-30' },
+  { reinsurer: 'Gateway Re (Bermuda)',treaty: 'TR-2026-006 · Environmental QS',  ceded_ytd: '$13M', recoverables: '$0.8M', statements_delivered: '2026-03-31', next_statement: '2026-06-30' },
+  { reinsurer: 'Brookline Full-Stack',treaty: 'TR-2026-002 · Surety Full-Stack', ceded_ytd: '$13M', recoverables: '$0.0M', statements_delivered: '2026-03-31', next_statement: '2026-06-30' },
+  { reinsurer: "Syndicate 4488 — Lloyd's",treaty: 'TR-2026-008 · E&O QS',       ceded_ytd: '$9M',  recoverables: '$1.4M', statements_delivered: '2026-03-31', next_statement: '2026-06-30' }
+];
+
+export const carrierIntegrations = [
+  { name: 'SERFF (NAIC)',         purpose: 'Rate & form filings',  status: 'Connected',    since: '2024-11-01' },
+  { name: 'NIPR',                 purpose: 'Producer licensing',   status: 'Connected',    since: '2024-12-15' },
+  { name: 'ISO ERC',              purpose: 'Loss costs · forms',    status: 'Connected',    since: '2024-10-22' },
+  { name: 'RMS (CAT modeling)',   purpose: 'Aggregate / PML',       status: 'Connected',    since: '2025-01-10' },
+  { name: 'AIR Worldwide',        purpose: 'CAT scenarios',          status: 'Pending',      since: null },
+  { name: 'NAIC (Statutory)',     purpose: 'Yellow Book / Schedule P',status: 'Connected',  since: '2024-12-01' },
+  { name: 'DocuSign',             purpose: 'e-signature',           status: 'Connected',    since: '2024-09-30' },
+  { name: 'Stripe / ACH',         purpose: 'Claims payments',       status: 'Connected',    since: '2024-11-15' },
+  { name: 'OFAC / sanctions',     purpose: 'Clearance screening',   status: 'Connected',    since: '2024-10-05' },
+  { name: 'SICS (Swiss Re)',      purpose: 'Reinsurance accounting', status: 'Not connected', since: null }
+];
