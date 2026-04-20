@@ -5861,3 +5861,393 @@ export const mgaDocRetentionRules = [
   { category: 'Audit / DOI Correspondence',retention: 'Permanent',                                  reg: 'Audit readiness · regulatory response',             auto_archive: false, auto_delete: false },
   { category: 'PII / Temporary',            retention: '90 days unless linked',                      reg: 'GDPR-aligned · CCPA',                                auto_archive: false, auto_delete: true  }
 ];
+
+/* ============================================================
+   KONDUIT CAPACITY PORTAL — Data Layer
+   MGA ↔ Capacity Provider marketplace
+   ============================================================ */
+
+export const KONDUIT_USERS = {
+  mga:      { name: 'Evan Harlow',    role: 'MGA Founder',       company: 'Meridian Specialty Underwriters', avatar: 'EH' },
+  capacity: { name: 'Priya Raman',    role: 'Lead Underwriter',  company: 'Summit Fronting Re',             avatar: 'PR' },
+  admin:    { name: 'Konduit Ops',    role: 'Platform Admin',    company: 'Konduit',                        avatar: 'KO' }
+};
+
+export const KONDUIT_LOBS = [
+  'Commercial Property','CAT Personal Lines','CAT Commercial','Cyber','Casualty / GL','E&O','D&O',
+  'Marine','Transportation','Workers Compensation','Aviation','Healthcare','Surety','Construction',
+  'Environmental','Specialty'
+];
+
+export const KONDUIT_STRUCTURES = ['Fronting only','Reinsurance only','Full-stack','Fronting + Reinsurance'];
+export const KONDUIT_GEO = ['US — Nationwide','US — SE','US — NE','US — West','US — Midwest','Lloyd\'s / Global','EU','UK'];
+
+export const konduitDashboardKPIs = {
+  mga: [
+    { label: 'Active Programs',       value: '3' },
+    { label: 'Marketplace Views (30d)', value: '247' },
+    { label: 'NDA Requests',          value: '12', warning: true },
+    { label: 'Signed NDAs',           value: '8' },
+    { label: 'Data Quality Score',    value: '94%' },
+    { label: 'Avg Time to Match',     value: '11 days' }
+  ],
+  capacity: [
+    { label: 'Matched Programs',      value: '18' },
+    { label: 'In Diligence',          value: '5' },
+    { label: 'NDA Signed',            value: '9' },
+    { label: 'Avg Loss Ratio (pool)', value: '58.4%' },
+    { label: 'Pending Decisions',     value: '3', warning: true },
+    { label: 'Bound YTD',             value: '$84M GWP' }
+  ],
+  admin: [
+    { label: 'Programs Awaiting QA',  value: '4', warning: true },
+    { label: 'Published Programs',    value: '62' },
+    { label: 'Active MGAs',           value: '41' },
+    { label: 'Active Capacity Orgs',  value: '27' },
+    { label: 'NDAs This Month',       value: '136' },
+    { label: 'Platform Uptime',       value: '99.98%' }
+  ]
+};
+
+export const konduitPrograms = [
+  {
+    id: 'KDP-0812',
+    name: 'Meridian Coastal Property',
+    mga: 'Meridian Specialty Underwriters',
+    lob: 'Commercial Property',
+    geo: 'US — SE',
+    status: 'Live',
+    statusColor: 'green',
+    structure: 'Fronting + Reinsurance',
+    gwp_target: 42000000,
+    gwp_display: '$42M',
+    loss_ratio_band: '52–58%',
+    loss_ratio: 54.8,
+    combined_ratio: 91.2,
+    retention: '85%',
+    quality_score: 96,
+    views: 84,
+    nda_requests: 6,
+    nda_signed: 4,
+    match_score: 92,
+    submitted: '2026-03-11',
+    published: '2026-03-18',
+    summary: 'Middle-market coastal property program targeting $5M–$50M TIV. 8-year combined track record on similar book at Nephila.',
+    founder_track: 'Ex-Nephila / Markel · 18 yrs',
+    files: 7
+  },
+  {
+    id: 'KDP-0813',
+    name: 'Meridian Cyber SME',
+    mga: 'Meridian Specialty Underwriters',
+    lob: 'Cyber',
+    geo: 'US — Nationwide',
+    status: 'In Review',
+    statusColor: 'amber',
+    structure: 'Fronting only',
+    gwp_target: 18000000,
+    gwp_display: '$18M',
+    loss_ratio_band: '44–50%',
+    loss_ratio: 47.1,
+    combined_ratio: 86.5,
+    retention: '78%',
+    quality_score: 88,
+    views: 12,
+    nda_requests: 0,
+    nda_signed: 0,
+    match_score: 0,
+    submitted: '2026-04-09',
+    published: null,
+    summary: 'SME cyber with $1M/$3M limits, proprietary scoring model, 24-month claims data from sister book.',
+    founder_track: 'Ex-Beazley · 12 yrs',
+    files: 5
+  },
+  {
+    id: 'KDP-0814',
+    name: 'Meridian Marine Cargo',
+    mga: 'Meridian Specialty Underwriters',
+    lob: 'Marine',
+    geo: 'Lloyd\'s / Global',
+    status: 'Draft',
+    statusColor: 'grey',
+    structure: 'Reinsurance only',
+    gwp_target: 27000000,
+    gwp_display: '$27M',
+    loss_ratio_band: '55–62%',
+    loss_ratio: 59.0,
+    combined_ratio: 93.8,
+    retention: '72%',
+    quality_score: 62,
+    views: 0,
+    nda_requests: 0,
+    nda_signed: 0,
+    match_score: 0,
+    submitted: null,
+    published: null,
+    summary: 'Stock throughput and marine cargo for mid-size shippers. Draft — financials pending.',
+    founder_track: 'Ex-Munich Re · 9 yrs',
+    files: 3
+  },
+  {
+    id: 'KDP-0815',
+    name: 'Harbor WC — West',
+    mga: 'Harbor Program Partners',
+    lob: 'Workers Compensation',
+    geo: 'US — West',
+    status: 'Live',
+    statusColor: 'green',
+    structure: 'Full-stack',
+    gwp_target: 65000000,
+    gwp_display: '$65M',
+    loss_ratio_band: '60–66%',
+    loss_ratio: 62.7,
+    combined_ratio: 94.4,
+    retention: '88%',
+    quality_score: 93,
+    views: 141,
+    nda_requests: 11,
+    nda_signed: 7,
+    match_score: 87,
+    submitted: '2026-02-02',
+    published: '2026-02-09',
+    summary: 'Western-states WC on hospitality, light manufacturing, retail. 6-year book with declining loss trend.',
+    founder_track: 'Ex-Zurich / AmTrust · 22 yrs',
+    files: 9
+  },
+  {
+    id: 'KDP-0816',
+    name: 'Skyline Aviation',
+    mga: 'Skyline Aviation MGA',
+    lob: 'Aviation',
+    geo: 'US — Nationwide',
+    status: 'Live',
+    statusColor: 'green',
+    structure: 'Reinsurance only',
+    gwp_target: 38000000,
+    gwp_display: '$38M',
+    loss_ratio_band: '48–54%',
+    loss_ratio: 51.2,
+    combined_ratio: 88.9,
+    retention: '81%',
+    quality_score: 91,
+    views: 73,
+    nda_requests: 5,
+    nda_signed: 3,
+    match_score: 84,
+    submitted: '2026-03-04',
+    published: '2026-03-12',
+    summary: 'Part-91/135 fleet, rotor-wing EMS, and light jets. Avg fleet age 8.2 yrs.',
+    founder_track: 'Ex-Global Aerospace · 14 yrs',
+    files: 8
+  },
+  {
+    id: 'KDP-0817',
+    name: 'Evergreen Environmental',
+    mga: 'Evergreen Environmental Risk',
+    lob: 'Environmental',
+    geo: 'US — Nationwide',
+    status: 'Paused',
+    statusColor: 'amber',
+    structure: 'Fronting + Reinsurance',
+    gwp_target: 22000000,
+    gwp_display: '$22M',
+    loss_ratio_band: '50–58%',
+    loss_ratio: 53.9,
+    combined_ratio: 90.6,
+    retention: '74%',
+    quality_score: 85,
+    views: 38,
+    nda_requests: 2,
+    nda_signed: 1,
+    match_score: 72,
+    submitted: '2026-01-18',
+    published: '2026-01-27',
+    summary: 'Contractors pollution liability and site-specific environmental. Paused pending new financials.',
+    founder_track: 'Ex-Chubb Environmental · 16 yrs',
+    files: 6
+  },
+  {
+    id: 'KDP-0818',
+    name: 'Atlas Surety — Small Contractor',
+    mga: 'Atlas Surety Group',
+    lob: 'Surety',
+    geo: 'US — Nationwide',
+    status: 'Live',
+    statusColor: 'green',
+    structure: 'Full-stack',
+    gwp_target: 15000000,
+    gwp_display: '$15M',
+    loss_ratio_band: '18–24%',
+    loss_ratio: 21.3,
+    combined_ratio: 74.8,
+    retention: '91%',
+    quality_score: 95,
+    views: 58,
+    nda_requests: 4,
+    nda_signed: 3,
+    match_score: 89,
+    submitted: '2026-02-20',
+    published: '2026-02-26',
+    summary: 'Contract and commercial surety for contractors under $5M revenue. Tight underwriting criteria.',
+    founder_track: 'Ex-Liberty Mutual Surety · 20 yrs',
+    files: 7
+  },
+  {
+    id: 'KDP-0819',
+    name: 'Northstar Trucking',
+    mga: 'Northstar Transportation MGA',
+    lob: 'Transportation',
+    geo: 'US — Midwest',
+    status: 'Bound',
+    statusColor: 'blue',
+    structure: 'Fronting + Reinsurance',
+    gwp_target: 54000000,
+    gwp_display: '$54M',
+    loss_ratio_band: '62–68%',
+    loss_ratio: 64.5,
+    combined_ratio: 96.1,
+    retention: '79%',
+    quality_score: 90,
+    views: 202,
+    nda_requests: 14,
+    nda_signed: 10,
+    match_score: 95,
+    submitted: '2025-11-10',
+    published: '2025-11-18',
+    bound: '2026-01-12',
+    summary: 'Long-haul trucking with telematics-driven pricing. Bound with Summit Fronting Re for 2026 treaty.',
+    founder_track: 'Ex-Great West Casualty · 25 yrs',
+    files: 11
+  }
+];
+
+export const konduitCapacityOrgs = [
+  { id: 'CAP-01', name: 'Summit Fronting Re',     type: 'Fronting Carrier',   paper: 'A (AM Best)', gwp_appetite: '$10M–$100M', lobs: ['Commercial Property','Cyber','Marine','Workers Compensation','Transportation'], geo: ['US — Nationwide','Lloyd\'s / Global'], notes: 'Aggressive on property, selective on cyber.' },
+  { id: 'CAP-02', name: 'Nordic Global Re',       type: 'Reinsurer',          paper: 'A+ (S&P)',    gwp_appetite: '$20M–$250M', lobs: ['Commercial Property','CAT Commercial','Aviation','Marine'],               geo: ['US — Nationwide','EU','UK'],          notes: 'CAT-hungry; prefers non-US peril concentration.' },
+  { id: 'CAP-03', name: 'Syndicate 4488 — Lloyd\'s', type: 'Lloyd\'s Syndicate', paper: 'A (AM Best)', gwp_appetite: '$5M–$80M',   lobs: ['Cyber','E&O','D&O','Specialty','Marine'],                                  geo: ['Lloyd\'s / Global','UK','US — Nationwide'], notes: 'Specialty-focused; fast NDA turnaround.' },
+  { id: 'CAP-04', name: 'Pacific Paper Group',    type: 'Fronting Carrier',   paper: 'A- (AM Best)',gwp_appetite: '$5M–$60M',   lobs: ['Workers Compensation','Casualty / GL','Transportation','Construction'],  geo: ['US — West','US — Nationwide'],         notes: 'Strong in WC/GL; skips healthcare.' },
+  { id: 'CAP-05', name: 'Gateway Re (Bermuda)',   type: 'Reinsurer',          paper: 'A (AM Best)', gwp_appetite: '$25M–$200M', lobs: ['Commercial Property','CAT Personal Lines','CAT Commercial','Casualty / GL'], geo: ['US — Nationwide','US — SE'],         notes: 'Programmatic; prefers multi-year deals.' },
+  { id: 'CAP-06', name: 'Brookline Full-Stack',   type: 'Full-stack Capacity',paper: 'A (AM Best)', gwp_appetite: '$15M–$120M', lobs: ['Surety','Environmental','Construction','Casualty / GL'],                   geo: ['US — Nationwide'],                     notes: 'Fronting + treaty retention in one package.' }
+];
+
+export const konduitBenchmarks = [
+  { lob: 'Commercial Property', median_lr: 55.0, p25_lr: 48.0, p75_lr: 62.0, median_cr: 92.0, median_ret: 82 },
+  { lob: 'Cyber',               median_lr: 46.0, p25_lr: 38.0, p75_lr: 55.0, median_cr: 88.0, median_ret: 76 },
+  { lob: 'Workers Compensation',median_lr: 63.0, p25_lr: 56.0, p75_lr: 70.0, median_cr: 95.0, median_ret: 86 },
+  { lob: 'Aviation',            median_lr: 52.0, p25_lr: 44.0, p75_lr: 60.0, median_cr: 89.5, median_ret: 80 },
+  { lob: 'Marine',              median_lr: 58.5, p25_lr: 51.0, p75_lr: 66.0, median_cr: 93.0, median_ret: 75 },
+  { lob: 'Surety',              median_lr: 22.0, p25_lr: 16.0, p75_lr: 30.0, median_cr: 76.0, median_ret: 90 },
+  { lob: 'Environmental',       median_lr: 54.0, p25_lr: 47.0, p75_lr: 62.0, median_cr: 91.0, median_ret: 74 },
+  { lob: 'Transportation',      median_lr: 65.0, p25_lr: 58.0, p75_lr: 72.0, median_cr: 96.5, median_ret: 78 }
+];
+
+export const konduitDealEvents = [
+  { id: 'EV-501', ts: '2026-04-19 14:22', programId: 'KDP-0812', type: 'NDA Signed',    party: 'Summit Fronting Re',       actor: 'Priya Raman',     note: 'Full data room unlocked' },
+  { id: 'EV-502', ts: '2026-04-19 11:08', programId: 'KDP-0812', type: 'View',          party: 'Nordic Global Re',         actor: 'Lars Fjeldstad',  note: 'Opened program summary' },
+  { id: 'EV-503', ts: '2026-04-18 16:47', programId: 'KDP-0815', type: 'NDA Requested', party: 'Gateway Re (Bermuda)',     actor: 'Dana Kinross',    note: 'Requesting underwriting detail' },
+  { id: 'EV-504', ts: '2026-04-18 10:12', programId: 'KDP-0818', type: 'Message',       party: 'Brookline Full-Stack',     actor: 'Omar Farouk',     note: 'Follow-up on loss triangles' },
+  { id: 'EV-505', ts: '2026-04-17 15:33', programId: 'KDP-0816', type: 'Term Sheet',    party: 'Nordic Global Re',         actor: 'Lars Fjeldstad',  note: 'Preliminary term sheet sent' },
+  { id: 'EV-506', ts: '2026-04-17 09:04', programId: 'KDP-0812', type: 'View',          party: 'Syndicate 4488 — Lloyd\'s',actor: 'Harriet Blake',   note: 'Banded-metrics view' },
+  { id: 'EV-507', ts: '2026-04-16 14:55', programId: 'KDP-0819', type: 'Bound',         party: 'Summit Fronting Re',       actor: 'Priya Raman',     note: 'Bound $54M GWP, 1/1 inception' },
+  { id: 'EV-508', ts: '2026-04-16 11:21', programId: 'KDP-0815', type: 'View',          party: 'Pacific Paper Group',      actor: 'Nina Alvarez',    note: 'Filter match: WC / West' }
+];
+
+export const konduitDocuments = [
+  { id: 'DOC-1001', programId: 'KDP-0812', name: 'Meridian_Coastal_Program_Deck.pdf',    type: 'Program Deck',       size: '4.2 MB', uploaded: '2026-03-11', confidence: 0.96, status: 'Extracted' },
+  { id: 'DOC-1002', programId: 'KDP-0812', name: 'Historical_Loss_Triangles.xlsx',       type: 'Actuarial',          size: '1.8 MB', uploaded: '2026-03-11', confidence: 0.92, status: 'Extracted' },
+  { id: 'DOC-1003', programId: 'KDP-0812', name: 'Founder_Bios.pdf',                     type: 'Team',               size: '0.9 MB', uploaded: '2026-03-11', confidence: 0.99, status: 'Extracted' },
+  { id: 'DOC-1004', programId: 'KDP-0812', name: 'Pro_Forma_Financials.xlsx',            type: 'Financials',         size: '2.1 MB', uploaded: '2026-03-12', confidence: 0.88, status: 'Extracted' },
+  { id: 'DOC-1005', programId: 'KDP-0813', name: 'Cyber_SME_Appetite.pdf',               type: 'Appetite',           size: '1.1 MB', uploaded: '2026-04-09', confidence: 0.94, status: 'Extracted' },
+  { id: 'DOC-1006', programId: 'KDP-0813', name: 'Cyber_Claims_24mo.xlsx',               type: 'Claims',             size: '3.3 MB', uploaded: '2026-04-09', confidence: 0.81, status: 'Review Needed' },
+  { id: 'DOC-1007', programId: 'KDP-0814', name: 'Marine_Cargo_Draft.pptx',              type: 'Program Deck',       size: '5.6 MB', uploaded: '2026-04-14', confidence: 0.71, status: 'Review Needed' },
+  { id: 'DOC-1008', programId: 'KDP-0815', name: 'Harbor_WC_West_Program.pdf',           type: 'Program Deck',       size: '6.8 MB', uploaded: '2026-02-02', confidence: 0.97, status: 'Extracted' },
+  { id: 'DOC-1009', programId: 'KDP-0815', name: 'Harbor_WC_Actuarial_Study.pdf',        type: 'Actuarial',          size: '4.1 MB', uploaded: '2026-02-03', confidence: 0.93, status: 'Extracted' }
+];
+
+export const konduitNDAs = [
+  { id: 'NDA-201', programId: 'KDP-0812', counterparty: 'Summit Fronting Re',   requested: '2026-04-14', signed: '2026-04-19', status: 'Signed',    expiry: '2027-04-19' },
+  { id: 'NDA-202', programId: 'KDP-0812', counterparty: 'Nordic Global Re',     requested: '2026-04-17', signed: null,         status: 'Pending',   expiry: null },
+  { id: 'NDA-203', programId: 'KDP-0815', counterparty: 'Gateway Re (Bermuda)', requested: '2026-04-18', signed: null,         status: 'Pending',   expiry: null },
+  { id: 'NDA-204', programId: 'KDP-0815', counterparty: 'Pacific Paper Group',  requested: '2026-03-01', signed: '2026-03-04', status: 'Signed',    expiry: '2027-03-04' },
+  { id: 'NDA-205', programId: 'KDP-0816', counterparty: 'Nordic Global Re',     requested: '2026-03-20', signed: '2026-03-22', status: 'Signed',    expiry: '2027-03-22' },
+  { id: 'NDA-206', programId: 'KDP-0818', counterparty: 'Brookline Full-Stack', requested: '2026-03-05', signed: '2026-03-08', status: 'Signed',    expiry: '2027-03-08' },
+  { id: 'NDA-207', programId: 'KDP-0819', counterparty: 'Summit Fronting Re',   requested: '2025-12-02', signed: '2025-12-05', status: 'Signed',    expiry: '2026-12-05' }
+];
+
+export const konduitMessages = [
+  { id: 'MSG-301', programId: 'KDP-0812', thread: 'Summit Fronting Re',   last: '2026-04-19 14:28', preview: 'Received the data room. Starting actuarial review — will revert by Monday.', unread: 1 },
+  { id: 'MSG-302', programId: 'KDP-0818', thread: 'Brookline Full-Stack', last: '2026-04-18 10:12', preview: 'Could you share the 5-year loss triangle for the contractor segment?',        unread: 2 },
+  { id: 'MSG-303', programId: 'KDP-0816', thread: 'Nordic Global Re',     last: '2026-04-17 15:38', preview: 'Term sheet attached for preliminary discussion.',                              unread: 0 },
+  { id: 'MSG-304', programId: 'KDP-0815', thread: 'Pacific Paper Group',  last: '2026-04-16 11:25', preview: 'Appetite fit confirmed. Let\'s schedule a call next week.',                   unread: 0 }
+];
+
+export const konduitSavedSearches = [
+  { id: 'SRCH-01', name: 'Cyber SME · US · $10–30M',    lob: ['Cyber'],                      geo: ['US — Nationwide'], gwp_min: 10000000, gwp_max: 30000000, lr_max: 55, alerts: true,  matches: 4 },
+  { id: 'SRCH-02', name: 'Property CAT SE · $25M+',     lob: ['Commercial Property','CAT Commercial'], geo: ['US — SE'], gwp_min: 25000000, gwp_max: 150000000, lr_max: 60, alerts: true, matches: 2 },
+  { id: 'SRCH-03', name: 'Specialty Lloyd\'s',          lob: ['Marine','E&O','D&O','Specialty'], geo: ['Lloyd\'s / Global','UK'], gwp_min: 5000000, gwp_max: 80000000, lr_max: 58, alerts: false, matches: 7 },
+  { id: 'SRCH-04', name: 'WC West · $30M+',             lob: ['Workers Compensation'],       geo: ['US — West'],       gwp_min: 30000000, gwp_max: 100000000, lr_max: 66, alerts: true,  matches: 1 }
+];
+
+export const konduitAppetiteProfile = {
+  org: 'Summit Fronting Re',
+  lobs: ['Commercial Property','Cyber','Marine','Workers Compensation','Transportation'],
+  geo: ['US — Nationwide','Lloyd\'s / Global'],
+  gwp_min: 10000000,
+  gwp_max: 100000000,
+  loss_ratio_max: 65,
+  combined_ratio_max: 95,
+  min_founder_years: 8,
+  excluded_classes: ['Hazardous waste','Nuclear','War risk'],
+  require_actuarial: true,
+  preferred_structures: ['Fronting only','Fronting + Reinsurance']
+};
+
+export const konduitPortfolio = [
+  { id: 'PORT-01', program: 'Northstar Trucking',       mga: 'Northstar Transportation MGA', lob: 'Transportation', gwp: '$54M',  loss_ratio: 64.5, status: 'In-force',  inception: '2026-01-12', renewal: '2027-01-12' },
+  { id: 'PORT-02', program: 'Anchor Renewable Energy',  mga: 'Anchor Specialty',              lob: 'Environmental',  gwp: '$18M',  loss_ratio: 48.2, status: 'In-force',  inception: '2025-11-01', renewal: '2026-11-01' },
+  { id: 'PORT-03', program: 'Heritage Coastal Homes',   mga: 'Heritage Property MGA',         lob: 'CAT Personal Lines', gwp: '$31M', loss_ratio: 57.9, status: 'In-force',  inception: '2025-09-15', renewal: '2026-09-15' },
+  { id: 'PORT-04', program: 'Vector E&O (Tech)',        mga: 'Vector Professional',           lob: 'E&O',            gwp: '$12M',  loss_ratio: 41.3, status: 'In-force',  inception: '2025-12-01', renewal: '2026-12-01' }
+];
+
+export const konduitQualityReviewQueue = [
+  { id: 'QR-901', program: 'Meridian Cyber SME',        mga: 'Meridian Specialty Underwriters', submitted: '2026-04-09', items: 3, reviewer: 'Konduit Ops', status: 'Open',    priority: 'Normal' },
+  { id: 'QR-902', program: 'Cascade Healthcare Liability', mga: 'Cascade Medical Program',      submitted: '2026-04-12', items: 5, reviewer: 'Unassigned',  status: 'Open',    priority: 'High'   },
+  { id: 'QR-903', program: 'Anchor Renewable Extension', mga: 'Anchor Specialty',               submitted: '2026-04-14', items: 1, reviewer: 'Konduit Ops', status: 'Awaiting MGA', priority: 'Normal' },
+  { id: 'QR-904', program: 'Pinnacle D&O Tech',         mga: 'Pinnacle Professional Risk',     submitted: '2026-04-15', items: 2, reviewer: 'Konduit Ops', status: 'Open',    priority: 'Normal' }
+];
+
+export const konduitNdaTemplates = [
+  { id: 'TMPL-01', name: 'Mutual NDA — Standard',         version: 'v3.2', updated: '2026-02-10', uses: 412, jurisdiction: 'Delaware, USA' },
+  { id: 'TMPL-02', name: 'Mutual NDA — UK / Lloyd\'s',    version: 'v2.8', updated: '2026-01-22', uses: 188, jurisdiction: 'England & Wales' },
+  { id: 'TMPL-03', name: 'One-way NDA — Capacity Rec.',    version: 'v1.4', updated: '2025-11-30', uses: 67,  jurisdiction: 'Delaware, USA' },
+  { id: 'TMPL-04', name: 'Program-specific NDA (custom)', version: 'v1.0', updated: '2026-03-05', uses: 23,  jurisdiction: 'Varies' }
+];
+
+export const konduitAuditLog = [
+  { ts: '2026-04-19 14:22:11', actor: 'Priya Raman (Summit)',    action: 'NDA Signed',         target: 'KDP-0812',      ip: '74.12.88.41' },
+  { ts: '2026-04-19 11:08:02', actor: 'Lars Fjeldstad (Nordic)', action: 'Program Viewed',     target: 'KDP-0812',      ip: '195.64.12.7' },
+  { ts: '2026-04-18 16:47:33', actor: 'Dana Kinross (Gateway)',  action: 'NDA Requested',      target: 'KDP-0815',      ip: '92.118.4.201'},
+  { ts: '2026-04-18 10:12:56', actor: 'Omar Farouk (Brookline)', action: 'Message Sent',       target: 'KDP-0818',      ip: '65.201.3.14' },
+  { ts: '2026-04-17 15:33:19', actor: 'Lars Fjeldstad (Nordic)', action: 'Term Sheet Uploaded',target: 'KDP-0816',      ip: '195.64.12.7' },
+  { ts: '2026-04-17 09:04:40', actor: 'Harriet Blake (Lloyd\'s)',action: 'Program Viewed',     target: 'KDP-0812',      ip: '81.144.22.5' },
+  { ts: '2026-04-16 14:55:02', actor: 'Konduit Ops',             action: 'Program Approved',   target: 'KDP-0819',      ip: '10.0.0.12'   },
+  { ts: '2026-04-16 11:21:27', actor: 'Nina Alvarez (Pacific)',  action: 'Program Viewed',     target: 'KDP-0815',      ip: '68.44.128.91'},
+  { ts: '2026-04-15 17:02:13', actor: 'Evan Harlow (Meridian)',  action: 'Program Published',  target: 'KDP-0812',      ip: '24.118.77.23'},
+  { ts: '2026-04-14 12:09:44', actor: 'Konduit Ops',             action: 'QR Review Started',  target: 'KDP-0813',      ip: '10.0.0.12'   }
+];
+
+export const konduitTeam = [
+  { name: 'Evan Harlow',   role: 'Founder & CUO',      email: 'evan@meridianspec.com', avatar: 'EH', authority: 'Full' },
+  { name: 'Sofia Ramirez', role: 'Deputy CUO',         email: 'sofia@meridianspec.com', avatar: 'SR', authority: 'Sign NDAs · Publish' },
+  { name: 'Jordan Okafor', role: 'Analyst',            email: 'jordan@meridianspec.com', avatar: 'JO', authority: 'Build / Upload' },
+  { name: 'Priya Shah',    role: 'CFO',                email: 'priya@meridianspec.com', avatar: 'PS', authority: 'Financials only' }
+];
+
+export const konduitOnboardingSteps = [
+  { step: 1, label: 'Upload program docs',     description: 'Deck, actuarial, financials, appetite', status: 'done' },
+  { step: 2, label: 'AI data extraction',       description: 'Review + accept extracted fields',      status: 'done' },
+  { step: 3, label: 'Complete 5-section wizard', description: 'Company · Program · Team · Financials · Appetite', status: 'active' },
+  { step: 4, label: 'Benchmark against market',  description: 'Compare to peer programs',              status: 'pending' },
+  { step: 5, label: 'Quality review',            description: 'Konduit pre-publication QA',           status: 'pending' },
+  { step: 6, label: 'Publish to marketplace',    description: 'Go live to matched capacity',          status: 'pending' }
+];

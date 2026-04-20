@@ -73,6 +73,10 @@ function render() {
     app.innerHTML = renderMGAPortal() + (state.modal ? renderModal() : '');
     bindMGA();
     if (state.modal) bindModal();
+  } else if (state.portal === 'konduit') {
+    app.innerHTML = renderKonduitPortal() + (state.modal ? renderModal() : '');
+    bindKonduit();
+    if (state.modal) bindModal();
   }
 }
 
@@ -154,6 +158,14 @@ function renderLogin() {
           <div class="portal-card-info">
             <h3>MGA Portal — Agency Management</h3>
             <p>Carriers, brokers, policies, compliance & commissions</p>
+          </div>
+          <span class="portal-card-arrow">→</span>
+        </div>
+        <div class="portal-card konduit-card" data-portal="konduit" id="portal-konduit">
+          <span class="portal-card-icon">🜨</span>
+          <div class="portal-card-info">
+            <h3>Konduit Capacity — MGA ↔ Capacity Marketplace</h3>
+            <p>AI submissions · benchmarks · NDA-gated deal flow</p>
           </div>
           <span class="portal-card-arrow">→</span>
         </div>
@@ -27522,5 +27534,4281 @@ function bindMGA() {
   });
 }
 
+// ════════════════════════════════════════════════════════════════
+// KONDUIT CAPACITY PORTAL
+// MGA ↔ Capacity Provider marketplace — isolated theme via .konduit-theme
+// ════════════════════════════════════════════════════════════════
+
+function konduitRole() { return state.konduitRole || 'mga'; }
+
+// ─── Runtime mutable state (messages, NDAs progress, term sheets) ───
+function konduitRuntime() {
+  if (!window.__konduit) {
+    window.__konduit = {
+      messages: {
+        'MSG-301': [
+          { from: 'Priya Raman (Summit)', ts: '2026-04-19 14:28', body: 'Received the data room. Starting actuarial review — will revert by Monday.' },
+          { from: 'Evan Harlow (Meridian)', ts: '2026-04-19 15:02', body: 'Perfect. Let me know if you need the 2023 bordereau — I can upload it tomorrow.' },
+          { from: 'Priya Raman (Summit)', ts: '2026-04-19 15:15', body: 'Yes, please. Also interested in your concentration maps by ZIP.' }
+        ],
+        'MSG-302': [
+          { from: 'Omar Farouk (Brookline)', ts: '2026-04-18 10:12', body: 'Could you share the 5-year loss triangle for the contractor segment?' },
+          { from: 'Evan Harlow (Meridian)', ts: '2026-04-18 11:00', body: 'Uploading now — it\'s segmented by bond size.' }
+        ],
+        'MSG-303': [
+          { from: 'Lars Fjeldstad (Nordic)', ts: '2026-04-17 15:38', body: 'Term sheet attached for preliminary discussion.' }
+        ],
+        'MSG-304': [
+          { from: 'Nina Alvarez (Pacific)', ts: '2026-04-16 11:25', body: 'Appetite fit confirmed. Let\'s schedule a call next week.' }
+        ]
+      },
+      termSheets: [
+        { id: 'TS-101', programId: 'KDP-0812', counterparty: 'Summit Fronting Re', status: 'Sent',      sent: '2026-04-18', premiumShare: '75%', cedingComm: '32%', profitComm: '15% above 60% LR', treatyTerm: '12 months', limit: '$50M per risk', retention: '$5M', notes: 'Primary fronting layer.', version: 1 },
+        { id: 'TS-102', programId: 'KDP-0816', counterparty: 'Nordic Global Re',  status: 'Countered', sent: '2026-04-17', premiumShare: '50%', cedingComm: '28%', profitComm: '10% above 55% LR', treatyTerm: '12 months', limit: '$25M per risk', retention: '$3M', notes: 'Quota-share on aviation book.', version: 2 },
+        { id: 'TS-103', programId: 'KDP-0818', counterparty: 'Brookline Full-Stack', status: 'Draft',   sent: null,         premiumShare: '100%',cedingComm: '30%', profitComm: '12% above 25% LR', treatyTerm: '12 months', limit: '$15M bond',   retention: '$1M', notes: 'Surety full-stack proposal.', version: 1 },
+        { id: 'TS-104', programId: 'KDP-0819', counterparty: 'Summit Fronting Re', status: 'Accepted', sent: '2025-12-02', premiumShare: '80%', cedingComm: '33%', profitComm: '18% above 65% LR', treatyTerm: '12 months', limit: '$5M per unit',retention: '$1M', notes: 'Bound 1/1/2026.', version: 3 }
+      ],
+      qaThreads: {
+        'KDP-0812:Summit Fronting Re': [
+          { ts: '2026-04-19 09:12', from: 'Priya Raman (Summit)',    type: 'question', body: 'What is your average concentration per ZIP3 in windstorm-exposed counties?' },
+          { ts: '2026-04-19 14:02', from: 'Evan Harlow (Meridian)',  type: 'answer',   body: 'Max 4.2% of TIV per ZIP3, with hard cap at 6%. Documented in exposure-control memo in data room.' },
+          { ts: '2026-04-19 16:20', from: 'Priya Raman (Summit)',    type: 'question', body: 'Are wind-mitigation discounts modeled in pricing? If yes, what\'s the average credit?' }
+        ],
+        'KDP-0815:Pacific Paper Group': [
+          { ts: '2026-04-16 10:12', from: 'Nina Alvarez (Pacific)', type: 'question', body: 'How many of the class-8 hospitality risks are in earthquake zones?' },
+          { ts: '2026-04-16 15:41', from: 'Jordan Okafor (Harbor)', type: 'answer',   body: '11% of policy count. EQ sub-limit is $250k; policies subject to seismic retrofit requirement.' }
+        ]
+      },
+      ndaFlowStep: 1,
+      // mutable mini-stores replacing toasts with real state changes
+      pendingInvites: [],
+      introsLog: [],
+      runtimeSavedSearches: [],
+      removedTeamAvatars: [],
+      revokedSessionIds: [],
+      publishedPrograms: {},
+      bordereauSubmitted: {},
+      termSheetStatus: {},
+      renewalStatus: {},
+      approvedQrIds: {},
+      onboardedOrgs: [],
+      extractionRunning: false,
+      sessions: [
+        { id: 'SESS-1', device: 'Chrome · macOS',   location: 'San Francisco, CA', last: 'Just now',       current: true },
+        { id: 'SESS-2', device: 'Safari · iPhone 15',location: 'San Francisco, CA', last: '2026-04-19 18:22', current: false },
+        { id: 'SESS-3', device: 'Chrome · Windows', location: 'Austin, TX',        last: '2026-04-17 09:14', current: false }
+      ]
+    };
+  }
+  return window.__konduit;
+}
+
+// ─── Flash banner (replaces toasts with inline contextual confirmation) ───
+function konduitFlashBanner() {
+  const f = state.konduitFlash;
+  if (!f) return '';
+  return `
+  <div class="konduit-flash konduit-flash-${f.kind || 'success'}">
+    <span class="konduit-flash-icon">${f.kind === 'warn' ? '⚠️' : f.kind === 'info' ? 'ℹ️' : '✅'}</span>
+    <div class="konduit-flash-body">
+      <strong>${f.title || 'Done'}</strong>
+      ${f.body ? `<span class="konduit-flash-sub">· ${f.body}</span>` : ''}
+    </div>
+    ${f.actionLabel ? `<button class="btn btn-ghost btn-sm" onclick="${f.actionJs || ''}">${f.actionLabel}</button>` : ''}
+    <button class="btn btn-ghost btn-sm" onclick="window.setState({konduitFlash:null})">✕</button>
+  </div>`;
+}
+window.konduitFlash = function(obj) {
+  window.setState({ konduitFlash: obj });
+};
+
+// ─── Real file view + download helpers (work in the browser) ───
+window.konduitDownloadFile = function(filename, content, mime) {
+  try {
+    const blob = new Blob([content], { type: mime || 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 300);
+  } catch (e) {
+    window.konduitFlash({ kind:'warn', title:'Download failed', body:e.message });
+  }
+};
+
+function konduitGenerateDocContent(name, type) {
+  const banner = '══════════════════════════════════════════════════════\n';
+  const head = `${banner}KONDUIT CAPACITY — ${type.toUpperCase()}\nFile: ${name}\nGenerated: ${new Date().toISOString()}\n${banner}\n`;
+  const body = {
+    'Program Deck': `EXECUTIVE SUMMARY\n\nThis program targets middle-market coastal property, commercial lines, $5M–$50M TIV range. Underwriting is delegated to the MGA subject to treaty covenants.\n\nKEY METRICS\n- Target GWP Year 1: $42,000,000\n- Policy Count: ~2,280\n- Average Premium: $18,400\n- Target Loss Ratio: 52–58%\n- Combined Ratio: 88–93%\n\nFOUNDER TRACK RECORD\nEx-Nephila / Markel · 18 years specialty property experience · Bermuda and London markets.\n\nSTRUCTURE\n- Fronting + 65% quota-share reinsurance\n- Per-risk retention $5M, aggregate $250M\n- CAT cover layered $15M xs $5M\n`,
+    'Actuarial': `ACTUARIAL STUDY SUMMARY\nProvider: Milliman\nStudy Date: 2026-02-18\n\nLOSS TRIANGLE (5 YR INCURRED, $000)\nAccident Year  12mo   24mo   36mo   48mo   60mo\n2021           4,850  5,920  6,180  6,210  6,215\n2022           5,120  6,240  6,520  6,560    —\n2023           5,880  7,180  7,410    —      —\n2024           6,540  7,920    —      —      —\n2025           7,120    —      —      —      —\n\nULTIMATE LOSS RATIO: 54.8%\nLOSS DEVELOPMENT FACTOR (tail): 1.001\nRESERVE ADEQUACY: +2.3% (modest redundancy)\n\nRATE ADEQUACY WALK\n  Current rate: baseline\n  Trend: +4.2% (pure premium)\n  Exposure mix: +1.1%\n  Net indicated rate change: +3.3%\n`,
+    'Financials': `FINANCIAL PRO-FORMA (3-YEAR)\n\n                        Year 1      Year 2      Year 3\nGross Written Premium   $42.0M      $64.0M      $85.0M\nNet Earned Premium      $38.2M      $58.1M      $77.2M\nLosses                  $20.9M      $31.9M      $42.5M\nA&O Expense             $9.2M       $12.8M      $15.4M\nCommissions             $6.3M       $9.6M       $12.8M\n──────────────────────  ─────────   ─────────   ─────────\nUnderwriting Result     $1.8M       $3.8M       $6.5M\nCombined Ratio          92.3%       91.2%       90.5%\n\nCAPITAL COMMITMENT\n  Founder equity:  $8,000,000\n  Treaty LOI:      $25,000,000 (Summit Fronting Re)\n`,
+    'Appetite': `UNDERWRITING APPETITE\n\nTARGET CLASSES\n  ✓ Hotels (Class A wind-resistive)\n  ✓ Apartments (garden + mid-rise)\n  ✓ Mixed-use retail\n  ✓ Class A warehouse\n\nEXCLUDED CLASSES\n  ✗ Coastal residential within 1 mile\n  ✗ Mobile homes\n  ✗ Frame construction > $2M TIV\n  ✗ Properties < 500m from coast without wind mitigation\n\nPER-RISK LIMITS\n  Maximum:      $50,000,000\n  Retention:    $5,000,000\n  Deductible:   $10,000 – $250,000\n\nGEO CONCENTRATION CAPS\n  Per ZIP3:     4.2% of TIV (hard cap 6%)\n  Per county:   12% of TIV\n`,
+    'Claims': `CLAIMS BORDEREAU (TRAILING 12 MONTHS)\n\nPolicies in force: 2,180\nOpen claims:       14\nClosed claims:     47\nPaid LTD:          $3,240,000\nReserves:          $820,000\nLoss Ratio:        54.8%\n\nLARGEST 5 CLAIMS\n  CLM-2025-0412  $480,000  Wind (Hurricane Ida aftermath)\n  CLM-2025-0398  $310,000  Water damage (pipe burst)\n  CLM-2025-0367  $225,000  Fire (electrical)\n  CLM-2025-0344  $185,000  Theft\n  CLM-2025-0321  $160,000  Wind\n`,
+    'Team':     `FOUNDING TEAM\n\nEvan Harlow — Founder & CUO\n  18 years property underwriting\n  Previously: Markel Global Re (Head of US Property)\n  Before that: Nephila Capital (Senior Underwriter)\n\nSofia Ramirez — Deputy CUO\n  14 years underwriting\n  Previously: Zurich (Property Practice Leader)\n\nPriya Shah — CFO\n  12 years insurance finance\n  Previously: Arch Capital (Director, FP&A)\n\nJordan Okafor — Analyst\n  5 years underwriting support\n  Previously: Beazley (Property Analyst)\n`
+  }[type] || `Document contents are available in the full file. This preview is a summary extract.\n`;
+  return head + body + `\n${banner}End of preview · Konduit Capacity Platform\n${banner}`;
+}
+
+window.konduitGenerateForDownload = konduitGenerateDocContent;
+
+function konduitStatementBody(id, period, gross, net, comm, claims, profit) {
+  const banner = '══════════════════════════════════════════════════════\n';
+  return `${banner}KONDUIT CAPACITY — MONTHLY STATEMENT\n${banner}\nStatement ID: ${id}\nPeriod:       ${period}\nIssued to:    Summit Fronting Re\nIssued on:    ${new Date().toISOString().slice(0,10)}\n${banner}\nPREMIUM ACTIVITY\n  Gross Written (MTD):      ${gross}\n  Net to Capacity (MTD):    ${net}\n  Ceding Commissions (MTD): ${comm}\n\nCLAIMS ACTIVITY\n  Paid (MTD):               ${claims}\n  Outstanding Reserves:     $820,000\n\nPORTFOLIO SUMMARY\n  Programs in force:        4\n  Policies bound (MTD):     47\n  Weighted Loss Ratio:      55.8%\n  Combined Ratio:           87.4%\n\nPROFIT-TO-DATE\n  Current period:           ${profit}\n  YTD cumulative:           $23.4M\n${banner}This is an auto-generated statement from the Konduit platform.\nFor questions: statements@konduitcapacity.com\n${banner}`;
+}
+
+window.konduitViewStatement = function(id, period, gross, net, comm, claims, profit) {
+  const content = konduitStatementBody(id, period, gross, net, comm, claims, profit);
+  const escaped = content.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  window.showModal(`${id} · ${period}`, `<div class="k-modal-body">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+      <div><strong>Monthly Statement</strong><div style="font-size:0.78rem; color:var(--text-muted)">${period} · Summit Fronting Re</div></div>
+      <span class="badge badge-green">Posted</span>
+    </div>
+    <pre style="background:#0a0a14; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:14px; font-family:'Courier New', monospace; font-size:0.76rem; color:#cfd0dc; white-space:pre-wrap; max-height:420px; overflow-y:auto; line-height:1.5">${escaped}</pre>
+  </div>`, '⬇ Download', () => window.konduitDownloadFile(`${id}.txt`, content, 'text/plain'));
+};
+
+window.konduitDownloadStatement = function(id, period, gross, net, comm, claims, profit) {
+  const content = konduitStatementBody(id, period, gross, net, comm, claims, profit);
+  window.konduitDownloadFile(`${id}.txt`, content, 'text/plain');
+};
+
+function konduitInvoiceBody(id, date, period, amount) {
+  const banner = '══════════════════════════════════════════════════════\n';
+  return `${banner}KONDUIT CAPACITY — INVOICE\n${banner}\nInvoice:      ${id}\nDate:         ${date}\nPeriod:       ${period}\n\nBill To:\n  Meridian Specialty Underwriters LLC\n  340 Market St, San Francisco CA 94105\n  priya@meridianspec.com\n\n${banner}LINE ITEMS\n${banner}\n  MGA Professional — ${period}            ${amount}\n  Program quota (3 / 10 used)                $0.00\n  Seats (4 / 8 used)                         $0.00\n  Data room overage (0 GB)                   $0.00\n\n${banner}Subtotal:                                  ${amount}\nTax:                                       $0.00\nTotal:                                     ${amount}\n${banner}\nPayment: Visa ending 4242 · Auto-charged on 1st of month\nStatus:  PAID\n\n${banner}Konduit Capacity, Inc. · 1 Market St, SF · EIN 88-0000000\n${banner}`;
+}
+
+window.konduitViewInvoice = function(id, date, period, amount) {
+  const content = konduitInvoiceBody(id, date, period, amount);
+  const escaped = content.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  window.showModal(`${id}`, `<div class="k-modal-body">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+      <div><strong>Invoice ${id}</strong><div style="font-size:0.78rem; color:var(--text-muted)">${date} · ${period}</div></div>
+      <span class="badge badge-green">Paid</span>
+    </div>
+    <pre style="background:#0a0a14; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:14px; font-family:'Courier New', monospace; font-size:0.76rem; color:#cfd0dc; white-space:pre-wrap; max-height:420px; overflow-y:auto; line-height:1.5">${escaped}</pre>
+  </div>`, '⬇ Download', () => window.konduitDownloadFile(`${id}.txt`, content, 'text/plain'));
+};
+
+window.konduitDownloadInvoice = function(id, date, period, amount) {
+  const content = konduitInvoiceBody(id, date, period, amount);
+  window.konduitDownloadFile(`${id}.txt`, content, 'text/plain');
+};
+
+window.konduitExportBordereau = function(period) {
+  const rows = [
+    ['Policy','Insured','LOB','Effective','Expiry','GWP','Net','Commission'],
+    ['P-2026-0421','Kroger Real Estate','Commercial Property','2026-03-01','2027-03-01','284000','213000','71000'],
+    ['P-2026-0422','Prologis Trust','Commercial Property','2026-03-04','2027-03-04','512000','384000','128000'],
+    ['P-2026-0423','Magnolia Construction','Commercial Property','2026-03-08','2027-03-08','147000','110250','36750'],
+    ['P-2026-0424','Westbrook Hospitality','Commercial Property','2026-03-11','2027-03-11','98000','73500','24500'],
+    ['P-2026-0425','Harbor Logistics','Commercial Property','2026-03-19','2027-03-19','221000','165750','55250']
+  ];
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+  window.konduitDownloadFile(`bordereau-${period}.csv`, csv, 'text/csv');
+};
+
+window.konduitExportLossRun = function() {
+  const rows = [
+    ['Claim','Program','Insured','DateOfLoss','Cause','Paid','Reserve','Status'],
+    ['CLM-2026-0081','Harbor WC — West','Westbrook Hospitality','2026-03-14','Wind','22400','10000','Open'],
+    ['CLM-2026-0079','Harbor WC — West','Harbor Logistics','2026-03-02','Water damage','10000','0','Closed'],
+    ['CLM-2026-0078','Northstar Trucking','Big Sky Freight','2026-02-27','Collision','48500','25000','Open'],
+    ['CLM-2026-0077','Atlas Surety','Oakwood Builders','2026-02-12','Default','18200','0','Closed'],
+    ['CLM-2026-0076','Skyline Aviation','Cascade Aerials','2026-01-30','Ground damage','4800','0','Closed'],
+    ['CLM-2026-0075','Meridian Coastal Property','Kroger Real Estate','2026-01-22','Water damage','35000','15000','Open']
+  ];
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+  window.konduitDownloadFile(`loss-run-${new Date().toISOString().slice(0,10)}.csv`, csv, 'text/csv');
+};
+
+window.konduitExportAuditCsv = function() {
+  const header = ['Timestamp','Actor','Action','Target','IP'];
+  const rows = [header, ...D.konduitAuditLog.map(a => [a.ts, a.actor, a.action, a.target, a.ip])];
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+  window.konduitDownloadFile(`konduit-audit-${new Date().toISOString().slice(0,10)}.csv`, csv, 'text/csv');
+};
+
+window.konduitExportRenewalsIcs = function() {
+  const events = [
+    { uid: 'REN-01', title: 'Renewal · Meridian Coastal Property',   date: '20270430' },
+    { uid: 'REN-02', title: 'Renewal · Harbor WC — West',              date: '20260815' },
+    { uid: 'REN-03', title: 'Renewal · Atlas Surety',                  date: '20260901' },
+    { uid: 'REN-04', title: 'Renewal · Northstar Trucking',            date: '20270112' }
+  ];
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Konduit Capacity//Renewals//EN',
+    ...events.flatMap(e => [
+      'BEGIN:VEVENT',
+      `UID:${e.uid}@konduitcapacity.com`,
+      `DTSTAMP:${new Date().toISOString().replace(/[-:]/g,'').slice(0,15)}Z`,
+      `DTSTART;VALUE=DATE:${e.date}`,
+      `SUMMARY:${e.title}`,
+      'END:VEVENT'
+    ]),
+    'END:VCALENDAR'
+  ].join('\n');
+  window.konduitDownloadFile('konduit-renewals.ics', ics, 'text/calendar');
+};
+
+window.konduitViewDoc = function(name, type, size, extra) {
+  const content = konduitGenerateDocContent(name, type);
+  const previewBody = content.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const bodyHtml = `<div class="k-modal-body">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+      <div><strong>${name}</strong><div style="font-size:0.78rem; color:var(--text-muted)">${type} · ${size || ''} ${extra ? '· ' + extra : ''}</div></div>
+      <span class="badge badge-green">Preview · NDA unlocked</span>
+    </div>
+    <pre style="background:#0a0a14; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:14px; font-family:'Courier New', monospace; font-size:0.76rem; color:#cfd0dc; white-space:pre-wrap; max-height:360px; overflow-y:auto; line-height:1.5">${previewBody}</pre>
+    <div style="font-size:0.72rem; color:var(--text-muted); margin-top:8px">All views are logged to the audit trail and attributable to your account.</div>
+  </div>`;
+  window.showModal(name, bodyHtml, '⬇ Download', () => window.konduitDownloadFile(name.replace(/\.(pdf|pptx|xlsx|docx)$/i, '') + '.txt', content, 'text/plain'));
+};
+
+function konduitAppendMessage(threadId, body) {
+  const rt = konduitRuntime();
+  if (!rt.messages[threadId]) rt.messages[threadId] = [];
+  rt.messages[threadId].push({
+    from: 'Evan Harlow (Meridian)',
+    ts: new Date().toISOString().slice(0,16).replace('T',' '),
+    body
+  });
+}
+
+function konduitAppendQA(threadKey, type, body, from = 'Evan Harlow (Meridian)') {
+  const rt = konduitRuntime();
+  if (!rt.qaThreads[threadKey]) rt.qaThreads[threadKey] = [];
+  rt.qaThreads[threadKey].push({
+    ts: new Date().toISOString().slice(0,16).replace('T',' '),
+    from, type, body
+  });
+}
+
+function konduitNav() {
+  const role = konduitRole();
+  const mgaItems = [
+    { icon: '📊', label: 'Dashboard',          screen: 'k-dashboard' },
+    { icon: '📚', label: 'My Programs',        screen: 'k-programs' },
+    { icon: '🪄', label: 'Submission Builder', screen: 'k-wizard' },
+    { icon: '📥', label: 'Document Intake',    screen: 'k-docs' },
+    { icon: '📈', label: 'Benchmarks',         screen: 'k-benchmarks' },
+    { icon: '👁', label: 'Marketplace Preview',screen: 'k-preview' },
+    { icon: '✅', label: 'Quality Review',     screen: 'k-qreview' },
+    { icon: '🔗', label: 'Deal Tracker',       screen: 'k-deals' },
+    { icon: '🔐', label: 'NDA & Data Room',    screen: 'k-nda' },
+    { icon: '📜', label: 'Term Sheets',        screen: 'k-term-sheets' },
+    { icon: '❓', label: 'Q&A Room',           screen: 'k-qa' },
+    { icon: '💬', label: 'Messages',           screen: 'k-messages' },
+    { icon: '📊', label: 'Bordereau',          screen: 'k-bordereau' },
+    { icon: '🔄', label: 'Renewals',           screen: 'k-renewals' },
+    { icon: '🛡', label: 'Claims',             screen: 'k-claims' },
+    { icon: '👥', label: 'Team',               screen: 'k-team' },
+    { icon: '👤', label: 'Profile & Security', screen: 'k-profile' },
+    { icon: '⚙️', label: 'Settings',           screen: 'k-settings' }
+  ];
+  const capItems = [
+    { icon: '📊', label: 'Dashboard',          screen: 'k-cap-dashboard' },
+    { icon: '🛰', label: 'Marketplace',        screen: 'k-marketplace' },
+    { icon: '⭐', label: 'Watchlist',          screen: 'k-watchlist' },
+    { icon: '🧭', label: 'Saved Searches',     screen: 'k-saved' },
+    { icon: '🎯', label: 'Appetite Profile',   screen: 'k-appetite' },
+    { icon: '📋', label: 'Team Queue',         screen: 'k-queue' },
+    { icon: '📜', label: 'Term Sheets',        screen: 'k-cap-term-sheets' },
+    { icon: '❓', label: 'Q&A Room',           screen: 'k-cap-qa' },
+    { icon: '📦', label: 'Portfolio',          screen: 'k-portfolio' },
+    { icon: '🛡', label: 'Claims',             screen: 'k-cap-claims' },
+    { icon: '📈', label: 'Statements',         screen: 'k-cap-statements' },
+    { icon: '💬', label: 'Messages',           screen: 'k-cap-messages' },
+    { icon: '👤', label: 'Profile & Security', screen: 'k-profile' },
+    { icon: '⚙️', label: 'Settings',           screen: 'k-cap-settings' }
+  ];
+  const adminItems = [
+    { icon: '📊', label: 'Dashboard',          screen: 'k-admin-dashboard' },
+    { icon: '✅', label: 'QR Queue',           screen: 'k-admin-qr' },
+    { icon: '👥', label: 'Users & Orgs',       screen: 'k-admin-users' },
+    { icon: '📄', label: 'NDA Templates',      screen: 'k-admin-ndas' },
+    { icon: '📜', label: 'Audit Log',          screen: 'k-admin-audit' }
+  ];
+  const items = role === 'capacity' ? capItems : role === 'admin' ? adminItems : mgaItems;
+  const ctaLabel = role === 'capacity' ? '+ New Saved Search' : role === 'admin' ? '+ Pick QR Item' : '+ New Program';
+  return `
+  <nav class="side-nav konduit-side-nav">
+    <div class="konduit-role-toggle">
+      <button class="kr-btn${role==='mga'?' active':''}" data-role="mga">MGA</button>
+      <button class="kr-btn${role==='capacity'?' active':''}" data-role="capacity">Capacity</button>
+      <button class="kr-btn${role==='admin'?' active':''}" data-role="admin">Admin</button>
+    </div>
+    ${items.map(i => `
+      <div class="side-nav-item${state.screen === i.screen ? ' active' : ''}" data-screen="${i.screen}">
+        <span class="side-nav-item-icon">${i.icon}</span>
+        <span>${i.label}</span>
+      </div>
+    `).join('')}
+    <div class="side-nav-cta">
+      <button class="btn btn-primary konduit-cta" style="width:100%" id="btn-konduit-cta">${ctaLabel}</button>
+    </div>
+  </nav>`;
+}
+
+function renderKonduitPortal() {
+  const role = konduitRole();
+  const u = role === 'capacity' ? D.KONDUIT_USERS.capacity : role === 'admin' ? D.KONDUIT_USERS.admin : D.KONDUIT_USERS.mga;
+
+  const screens = {
+    // MGA side
+    'dashboard':        renderKonduitDashboard,
+    'k-dashboard':      renderKonduitDashboard,
+    'k-programs':       renderKonduitPrograms,
+    'k-program':        renderKonduitProgramDetail,
+    'k-wizard':         renderKonduitWizard,
+    'k-docs':           renderKonduitDocs,
+    'k-upload':         renderKonduitUpload,
+    'k-publish':        renderKonduitPublish,
+    'k-benchmarks':     renderKonduitBenchmarks,
+    'k-preview':        renderKonduitMarketPreview,
+    'k-qreview':        renderKonduitQualityReview,
+    'k-qreview-submit': renderKonduitQReviewSubmitted,
+    'k-deals':          renderKonduitDeals,
+    'k-nda':            renderKonduitNDA,
+    'k-nda-flow':       renderKonduitNdaFlow,
+    'k-data-room':      renderKonduitDataRoom,
+    'k-term-sheets':    renderKonduitTermSheets,
+    'k-term-sheet':     renderKonduitTermSheetDetail,
+    'k-term-sheet-new': renderKonduitTermSheetNew,
+    'k-qa':             renderKonduitQA,
+    'k-qa-thread':      renderKonduitQAThread,
+    'k-messages':       renderKonduitMessages,
+    'k-bordereau':      renderKonduitBordereau,
+    'k-renewals':       renderKonduitRenewals,
+    'k-renewal':        renderKonduitRenewalDetail,
+    'k-claims':         renderKonduitClaims,
+    'k-claim':          renderKonduitClaimDetail,
+    'k-team':           renderKonduitTeam,
+    'k-invite':         renderKonduitInvite,
+    'k-profile':        renderKonduitProfile,
+    'k-billing':        renderKonduitBilling,
+    'k-saved-edit':     renderKonduitSavedSearchEdit,
+    'k-settings':       renderKonduitSettings,
+
+    // Capacity side
+    'k-cap-dashboard':   renderKonduitCapDashboard,
+    'k-marketplace':     renderKonduitMarketplace,
+    'k-cap-program':     renderKonduitCapProgram,
+    'k-cap-nda-sign':    renderKonduitCapNdaSign,
+    'k-cap-term-sheets': renderKonduitCapTermSheets,
+    'k-cap-qa':          renderKonduitQA,
+    'k-cap-claims':      renderKonduitClaims,
+    'k-cap-statements':  renderKonduitCapStatements,
+    'k-watchlist':       renderKonduitWatchlist,
+    'k-saved':           renderKonduitSavedSearches,
+    'k-appetite':        renderKonduitAppetite,
+    'k-queue':           renderKonduitQueue,
+    'k-queue-detail':    renderKonduitQueueDetail,
+    'k-portfolio':       renderKonduitPortfolio,
+    'k-cap-messages':    renderKonduitMessages,
+    'k-cap-settings':    renderKonduitSettings,
+
+    // Admin side
+    'k-admin-dashboard':     renderKonduitAdminDashboard,
+    'k-admin-qr':            renderKonduitAdminQR,
+    'k-admin-qr-detail':     renderKonduitAdminQRDetail,
+    'k-admin-users':         renderKonduitAdminUsers,
+    'k-admin-org':           renderKonduitAdminOrgDetail,
+    'k-admin-onboard':       renderKonduitAdminOnboard,
+    'k-admin-ndas':          renderKonduitAdminNDAs,
+    'k-admin-template':      renderKonduitAdminTemplateDetail,
+    'k-admin-audit':         renderKonduitAdminAudit,
+
+    // Action flows that replaced toasts
+    'k-fnol':           renderKonduitFnol,
+    'k-reserve-adjust': renderKonduitReserveAdjust,
+    'k-payment-issue':  renderKonduitPaymentIssue,
+    'k-upgrade':        renderKonduitUpgrade,
+    'k-payment-method': renderKonduitPaymentMethod,
+    'k-2fa-setup':      renderKonduit2FA,
+    'k-webauthn':       renderKonduitWebauthn,
+    'k-search-results': renderKonduitSearchResults,
+    'k-intros':         renderKonduitIntros,
+    'k-term-counter':   renderKonduitTermCounter,
+    'k-renewal-counter':renderKonduitRenewalCounter,
+    'k-reassign':       renderKonduitReassign,
+    'k-plan-change':    renderKonduitPlanChange,
+    'k-credit-issue':   renderKonduitCreditIssue,
+    'k-seats':          renderKonduitSeats
+  };
+  const roleDefault = role === 'capacity' ? 'k-cap-dashboard' : role === 'admin' ? 'k-admin-dashboard' : 'k-dashboard';
+  const renderFn = screens[state.screen] || screens[roleDefault];
+  const content = renderFn();
+
+  return `
+  <div class="konduit-theme portal-shell">
+    <header class="top-bar konduit-top-bar">
+      <div class="top-bar-brand">
+        <span class="brand-icon">🜨</span>
+        <span>KONDUIT CAPACITY</span>
+        <span class="brand-sub">· ${role === 'mga' ? 'MGA Portal' : role === 'capacity' ? 'Capacity Provider' : 'Platform Admin'}</span>
+      </div>
+      <div class="top-bar-right">
+        <button class="btn btn-ghost btn-sm" id="btn-konduit-search">🔎 Search</button>
+        <button class="btn btn-ghost btn-sm" id="btn-konduit-help">Help</button>
+        <div class="user-chip">
+          <span class="avatar avatar-sm">${u.avatar}</span>
+          <div class="user-chip-info">
+            <div class="user-chip-name">${u.name}</div>
+            <div class="user-chip-role">${u.role} · ${u.company}</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-konduit-logout">Logout</button>
+      </div>
+    </header>
+    ${konduitNav()}
+    <main class="portal-main konduit-main">
+      ${konduitFlashBanner()}
+      ${content}
+    </main>
+  </div>`;
+}
+
+// ─── Konduit helpers ───
+function konduitKPIs(items, cols = 6) {
+  return `<div class="kpi-grid kpi-grid-${cols}">${items.map(k =>
+    `<div class="kpi-card konduit-kpi">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value${k.warning ? ' warning' : ''}">${k.value}</div>
+    </div>`
+  ).join('')}</div>`;
+}
+
+function konduitStatusBadge(status, color) {
+  return `<span class="badge badge-${color}"><span class="badge-dot badge-dot-${color}"></span>${status}</span>`;
+}
+
+function konduitPageHeader(title, subtitle, actions = '') {
+  return `
+  <div class="page-header konduit-page-header">
+    <div>
+      <h1 class="page-title">${title}</h1>
+      ${subtitle ? `<p class="page-subtitle">${subtitle}</p>` : ''}
+    </div>
+    <div class="page-actions">${actions}</div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — MGA SIDE
+// ════════════════════════════════════════════════════════════════
+function renderKonduitDashboard() {
+  const kpis = D.konduitDashboardKPIs.mga;
+  const myPrograms = D.konduitPrograms.filter(p => p.mga === 'Meridian Specialty Underwriters');
+  const events = D.konduitDealEvents.slice(0, 6);
+  const onboarding = D.konduitOnboardingSteps;
+
+  return `
+  ${konduitPageHeader('Capacity Dashboard', 'Track program performance, matches, and capacity activity in real time.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-benchmarks'})">📈 Benchmarks</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'k-bordereau'})">📊 Bordereau</button>
+     <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-wizard'})">+ Start New Program</button>`)}
+
+  ${konduitKPIs(kpis, 6)}
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>My Programs</h3>
+        <a href="#" onclick="window.setState({screen:'k-programs'});return false;" class="link-subtle">View all →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Program</th><th>LOB</th><th>GWP</th><th>Status</th><th>Views</th><th>NDAs</th><th>Quality</th></tr></thead>
+          <tbody>
+            ${myPrograms.map(p => `
+              <tr class="row-clickable" onclick="window.setState({screen:'k-program', konduitProgramId:'${p.id}'})">
+                <td><strong>${p.name}</strong><div class="row-sub">${p.id}</div></td>
+                <td>${p.lob}</td>
+                <td>${p.gwp_display}</td>
+                <td>${konduitStatusBadge(p.status, p.statusColor)}</td>
+                <td>${p.views}</td>
+                <td>${p.nda_signed} / ${p.nda_requests}</td>
+                <td><span class="quality-pill">${p.quality_score}%</span></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Onboarding Progress</h3></div>
+      <ol class="konduit-onboarding">
+        ${onboarding.map(s => `
+          <li class="konduit-onb-step ${s.status}">
+            <span class="konduit-onb-num">${s.step}</span>
+            <div>
+              <div class="konduit-onb-label">${s.label}</div>
+              <div class="konduit-onb-desc">${s.description}</div>
+            </div>
+            <span class="konduit-onb-status ${s.status}">${s.status}</span>
+          </li>`).join('')}
+      </ol>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Recent Capacity Activity</h3>
+      <a href="#" onclick="window.setState({screen:'k-deals'});return false;" class="link-subtle">View full tracker →</a>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Event</th><th>Program</th><th>Counterparty</th><th>Actor</th><th>Note</th></tr></thead>
+        <tbody>
+          ${events.map(e => {
+            const prog = D.konduitPrograms.find(p => p.id === e.programId);
+            return `<tr>
+              <td>${e.ts}</td>
+              <td><strong>${e.type}</strong></td>
+              <td>${prog ? prog.name : e.programId}</td>
+              <td>${e.party}</td>
+              <td>${e.actor}</td>
+              <td class="row-sub">${e.note}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitPrograms() {
+  const programs = D.konduitPrograms;
+  return `
+  ${konduitPageHeader('My Programs', 'All submissions across Draft, Review, Live, Paused, and Bound states.',
+    `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-wizard'})">+ New Program</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>LOB</th><th>Structure</th><th>Geo</th><th>GWP</th><th>Loss Ratio</th><th>Quality</th><th>Status</th><th>Published</th><th></th></tr></thead>
+        <tbody>
+          ${programs.map(p => `
+            <tr>
+              <td><strong>${p.name}</strong><div class="row-sub">${p.id} · ${p.mga}</div></td>
+              <td>${p.lob}</td>
+              <td>${p.structure}</td>
+              <td>${p.geo}</td>
+              <td>${p.gwp_display}</td>
+              <td>${p.loss_ratio}%</td>
+              <td><span class="quality-pill">${p.quality_score}%</span></td>
+              <td>${konduitStatusBadge(p.status, p.statusColor)}</td>
+              <td class="row-sub">${p.published || '—'}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-program', konduitProgramId:'${p.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitProgramDetail() {
+  const id = state.konduitProgramId || 'KDP-0812';
+  const p = D.konduitPrograms.find(x => x.id === id) || D.konduitPrograms[0];
+  const docs = D.konduitDocuments.filter(d => d.programId === p.id);
+  const ndas = D.konduitNDAs.filter(n => n.programId === p.id);
+  const events = D.konduitDealEvents.filter(e => e.programId === p.id);
+
+  return `
+  ${konduitPageHeader(p.name, `${p.id} · ${p.mga} · ${p.lob} · ${p.geo}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-programs'})">← All Programs</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'k-preview', konduitProgramId:'${p.id}'})">👁 Preview as Capacity</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'k-benchmarks'})">📈 Benchmarks</button>
+     <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-publish', konduitProgramId:'${p.id}'})">Publish / Republish</button>`)}
+
+  <div class="konduit-split-3">
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">Status</div><div class="kpi-value">${konduitStatusBadge(p.status, p.statusColor)}</div></div>
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">Structure</div><div class="kpi-value" style="font-size:1.05rem">${p.structure}</div></div>
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">GWP Target</div><div class="kpi-value">${p.gwp_display}</div></div>
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">Loss Ratio</div><div class="kpi-value">${p.loss_ratio}%</div></div>
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">Combined Ratio</div><div class="kpi-value">${p.combined_ratio}%</div></div>
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">Quality Score</div><div class="kpi-value">${p.quality_score}%</div></div>
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">Views (30d)</div><div class="kpi-value">${p.views}</div></div>
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">NDAs Signed</div><div class="kpi-value">${p.nda_signed} / ${p.nda_requests}</div></div>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Summary</h3></div>
+    <p style="padding:0 var(--space-md) var(--space-md); color:var(--text-secondary); line-height:1.6">${p.summary}</p>
+    <div class="konduit-detail-row">
+      <div><strong>Founder / Track record:</strong> ${p.founder_track}</div>
+      <div><strong>Retention:</strong> ${p.retention}</div>
+      <div><strong>Submitted:</strong> ${p.submitted || '—'}</div>
+      <div><strong>Published:</strong> ${p.published || '—'}</div>
+    </div>
+  </section>
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Data Room (${docs.length})</h3>
+        <a href="#" onclick="window.setState({screen:'k-docs'});return false;" class="link-subtle">Manage →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>File</th><th>Type</th><th>Size</th><th>Confidence</th><th>Status</th></tr></thead>
+          <tbody>
+            ${docs.map(d => `
+              <tr>
+                <td><strong>${d.name}</strong></td>
+                <td>${d.type}</td>
+                <td>${d.size}</td>
+                <td>${Math.round(d.confidence*100)}%</td>
+                <td>${konduitStatusBadge(d.status, d.status==='Extracted'?'green':'amber')}</td>
+              </tr>`).join('') || `<tr><td colspan="5" class="row-sub">Upload via Document Intake to start extraction.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>NDAs (${ndas.length})</h3>
+        <a href="#" onclick="window.setState({screen:'k-nda'});return false;" class="link-subtle">View all →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Counterparty</th><th>Requested</th><th>Signed</th><th>Status</th></tr></thead>
+          <tbody>
+            ${ndas.map(n => `
+              <tr>
+                <td>${n.counterparty}</td>
+                <td>${n.requested}</td>
+                <td>${n.signed || '—'}</td>
+                <td>${konduitStatusBadge(n.status, n.status==='Signed'?'green':'amber')}</td>
+              </tr>`).join('') || `<tr><td colspan="4" class="row-sub">No NDAs yet. Publish to attract capacity providers.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Activity Timeline</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Event</th><th>Party</th><th>Actor</th><th>Note</th></tr></thead>
+        <tbody>
+          ${events.map(e => `
+            <tr>
+              <td>${e.ts}</td>
+              <td><strong>${e.type}</strong></td>
+              <td>${e.party}</td>
+              <td>${e.actor}</td>
+              <td class="row-sub">${e.note}</td>
+            </tr>`).join('') || `<tr><td colspan="5" class="row-sub">No activity yet on this program.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+// ─── Wizard / Docs / Benchmarks / Preview / Quality Review ───
+function renderKonduitWizard() {
+  const step = state.konduitWizStep || 1;
+  const stepLabels = ['Company Profile','Program Details','Founding Team','Financials','Underwriting Appetite'];
+  const lobs = D.KONDUIT_LOBS;
+  const geos = D.KONDUIT_GEO;
+  const structures = D.KONDUIT_STRUCTURES;
+
+  const content = step === 1 ? `
+    <div class="form-grid">
+      <label>Legal Entity Name<input type="text" value="Meridian Specialty Underwriters LLC"></label>
+      <label>Trading Name<input type="text" value="Meridian Specialty"></label>
+      <label>HQ Jurisdiction<input type="text" value="Delaware, USA"></label>
+      <label>Year Founded<input type="text" value="2021"></label>
+      <label>Website<input type="text" value="https://meridianspec.com"></label>
+      <label>Employees<input type="text" value="24"></label>
+      <label class="form-wide">Elevator Pitch<textarea rows="3">Coastal property MGA specializing in middle-market habitational and commercial TIV, with tight geographic concentration controls.</textarea></label>
+    </div>`
+  : step === 2 ? `
+    <div class="form-grid">
+      <label>Program Name<input type="text" value="Meridian Coastal Property"></label>
+      <label>Line of Business
+        <select>${lobs.map(l => `<option ${l==='Commercial Property'?'selected':''}>${l}</option>`).join('')}</select>
+      </label>
+      <label>Geography
+        <select>${geos.map(g => `<option ${g==='US — SE'?'selected':''}>${g}</option>`).join('')}</select>
+      </label>
+      <label>Structure Sought
+        <select>${structures.map(s => `<option ${s==='Fronting + Reinsurance'?'selected':''}>${s}</option>`).join('')}</select>
+      </label>
+      <label>Target GWP (Year 1)<input type="text" value="$42,000,000"></label>
+      <label>Target GWP (Year 3)<input type="text" value="$85,000,000"></label>
+      <label>Average Premium Size<input type="text" value="$18,400"></label>
+      <label>Policy Count Target (Yr 1)<input type="text" value="~2,280"></label>
+      <label class="form-wide">Program Narrative<textarea rows="4">Middle-market coastal property targeting $5M–$50M TIV. Proprietary windstorm modeling with three-tier concentration cap by county. Reinsurance coverage sought for CAT layer above $5M per risk.</textarea></label>
+    </div>`
+  : step === 3 ? `
+    ${D.konduitTeam.map(t => `
+      <div class="konduit-team-row">
+        <span class="avatar">${t.avatar}</span>
+        <div class="konduit-team-body">
+          <div><strong>${t.name}</strong> · ${t.role}</div>
+          <div class="row-sub">${t.email} · Authority: ${t.authority}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-team'})">Edit</button>
+      </div>`).join('')}
+    <button class="btn btn-secondary konduit-cta-outline" style="margin-top:var(--space-md)" onclick="window.setState({screen:'k-invite'})">+ Add Founding Member</button>`
+  : step === 4 ? `
+    <div class="form-grid">
+      <label>Historical Loss Ratio (3yr)<input type="text" value="54.8%"></label>
+      <label>Historical Combined Ratio (3yr)<input type="text" value="91.2%"></label>
+      <label>Retention Rate<input type="text" value="85%"></label>
+      <label>A&O Expense Ratio<input type="text" value="22%"></label>
+      <label>Commission Expense<input type="text" value="14%"></label>
+      <label>Reinsurance Ceded<input type="text" value="35%"></label>
+      <label>Actuarial Study Provider<input type="text" value="Milliman"></label>
+      <label>Latest Study Date<input type="text" value="2026-02-18"></label>
+      <label class="form-wide">Capital Backstop<textarea rows="3">$8M capital commitment from founders + $25M treaty capacity LOI from Summit Fronting Re.</textarea></label>
+    </div>`
+  : `
+    <div class="form-grid">
+      <label>Target Classes<input type="text" value="Hotels, apartments, mixed-use retail, warehouse"></label>
+      <label>Excluded Classes<input type="text" value="Coastal residential < 1mi, mobile homes, frame construction > $2M TIV"></label>
+      <label>Per-Risk Limit (Max)<input type="text" value="$50,000,000"></label>
+      <label>Per-Risk Retention<input type="text" value="$5,000,000"></label>
+      <label>Aggregate Limit<input type="text" value="$250,000,000"></label>
+      <label>Deductible Range<input type="text" value="$10,000 – $250,000"></label>
+      <label>Rate Basis<input type="text" value="Per $100 TIV · modeled"></label>
+      <label>Binding Authority<input type="text" value="Delegated · $10M per risk"></label>
+      <label class="form-wide">Appetite Notes<textarea rows="3">Prefer Class A wind-resistive construction, roof-age &lt; 15 yrs, impact-rated glazing. Avoid properties within 500m of coast without wind mitigation.</textarea></label>
+    </div>`;
+
+  return `
+  ${konduitPageHeader('Submission Builder', `Step ${step} of 5 — ${stepLabels[step-1]}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-programs'})">Save & Exit</button>`)}
+
+  <section class="card">
+    <div class="konduit-stepper">
+      ${stepLabels.map((l,i) => {
+        const n = i+1;
+        const cls = n < step ? 'done' : n === step ? 'active' : 'pending';
+        return `<div class="konduit-step ${cls}" onclick="window.setState({konduitWizStep:${n}})"><span class="konduit-step-num">${n}</span><span class="konduit-step-label">${l}</span></div>`;
+      }).join('')}
+    </div>
+    <div class="konduit-wizard-body">${content}</div>
+    <div class="konduit-wizard-actions">
+      <button class="btn btn-secondary" ${step===1?'disabled':''} onclick="window.setState({konduitWizStep:${Math.max(1, step-1)}})">← Back</button>
+      <div style="flex:1"></div>
+      ${step < 5
+        ? `<button class="btn btn-primary konduit-cta" onclick="window.setState({konduitWizStep:${step+1}})">Save & Continue →</button>`
+        : `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-qreview', konduitFlash:{title:'Submitted for Quality Review', body:'Konduit QA will respond within 2 business days'}})">Submit for Quality Review</button>`
+      }
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitDocs() {
+  const pid = state.konduitProgramId || 'KDP-0812';
+  const docs = D.konduitDocuments.filter(d => d.programId === pid);
+  const program = D.konduitPrograms.find(p => p.id === pid);
+  const allProgs = D.konduitPrograms.filter(p => p.mga === 'Meridian Specialty Underwriters');
+
+  return `
+  ${konduitPageHeader('Document Intake & AI Extraction', 'Drop program decks, actuarial studies, financials, and appetite docs. AI maps fields into your submission.',
+    `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-upload'})">📤 Upload Files</button>`)}
+
+  <section class="card konduit-upload-zone" onclick="window.setState({screen:'k-upload'})" style="cursor:pointer">
+    <div class="konduit-upload-inner">
+      <div class="konduit-upload-icon">📥</div>
+      <h3>Drop files to extract</h3>
+      <p class="row-sub">PDF · Word · Excel · PowerPoint — up to 50 MB each</p>
+      <button class="btn btn-primary konduit-cta" onclick="event.stopPropagation();window.setState({screen:'k-upload'})">Browse Files</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Extraction Queue</h3>
+      <label class="konduit-inline-select">Program:
+        <select onchange="window.setState({konduitProgramId:this.value})">
+          ${allProgs.map(p => `<option value="${p.id}" ${p.id===pid?'selected':''}>${p.name}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>File</th><th>Type</th><th>Size</th><th>Uploaded</th><th>AI Confidence</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${docs.map(d => `
+            <tr>
+              <td><strong>${d.name}</strong><div class="row-sub">${d.id}</div></td>
+              <td>${d.type}</td>
+              <td>${d.size}</td>
+              <td>${d.uploaded}</td>
+              <td>
+                <div class="confidence-bar"><div class="confidence-fill" style="width:${Math.round(d.confidence*100)}%"></div></div>
+                <div class="row-sub">${Math.round(d.confidence*100)}%</div>
+              </td>
+              <td>${konduitStatusBadge(d.status, d.status==='Extracted'?'green':'amber')}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-upload', konduitDocId:'${d.id}'})">Review →</button>
+              </td>
+            </tr>`).join('') || `<tr><td colspan="7" class="row-sub">No documents yet for ${program ? program.name : 'this program'}.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Extraction Preview · ${docs[0] ? docs[0].name : '—'}</h3></div>
+    <div class="konduit-extraction-preview">
+      <div class="konduit-ext-col">
+        <h4>Detected Fields</h4>
+        <table class="data-table">
+          <tbody>
+            <tr><td>Program Name</td><td><strong>Meridian Coastal Property</strong></td><td class="conf-high">96%</td></tr>
+            <tr><td>Line of Business</td><td>Commercial Property</td><td class="conf-high">98%</td></tr>
+            <tr><td>Target GWP</td><td>$42,000,000</td><td class="conf-high">94%</td></tr>
+            <tr><td>Structure Sought</td><td>Fronting + Reinsurance</td><td class="conf-med">89%</td></tr>
+            <tr><td>Historical Loss Ratio</td><td>54.8%</td><td class="conf-high">92%</td></tr>
+            <tr><td>Founder Experience</td><td>Ex-Nephila / Markel · 18 yrs</td><td class="conf-med">87%</td></tr>
+            <tr><td>Per-Risk Limit</td><td>$50M</td><td class="conf-med">81%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="konduit-ext-col">
+        <h4>Actions</h4>
+        <button class="btn btn-primary konduit-cta" style="width:100%;margin-bottom:8px" onclick="window.setState({screen:'k-wizard',konduitWizStep:1,konduitFlash:{title:'Fields pushed to Submission Builder',body:'Review & refine each section before submitting for QA'}})">Accept All → Wizard</button>
+        <button class="btn btn-secondary" style="width:100%;margin-bottom:8px" onclick="window.setState({screen:'k-wizard'})">Open Wizard to Review</button>
+        <button class="btn btn-ghost btn-sm" style="width:100%" onclick="(function(){var rt=konduitRuntime();rt.extractionRunning=true;window.setState({konduitFlash:{kind:'info',title:'Extraction re-started',body:'New results in ~20 seconds — stay on this page'}});})()">↻ Re-run Extraction</button>
+      </div>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitBenchmarks() {
+  const benchmarks = D.konduitBenchmarks;
+  const myPrograms = D.konduitPrograms.filter(p => p.mga === 'Meridian Specialty Underwriters' && p.status === 'Live');
+
+  return `
+  ${konduitPageHeader('Live Market Benchmarks', 'Anonymized peer comparables by LOB · updated weekly from platform-wide submissions.')}
+
+  <section class="card">
+    <div class="card-header"><h3>Your Programs vs. Market</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Your Program</th><th>LOB</th><th>Your LR</th><th>Peer p25</th><th>Peer Median</th><th>Peer p75</th><th>Your CR</th><th>Peer Median CR</th><th>Delta</th></tr></thead>
+        <tbody>
+          ${myPrograms.map(p => {
+            const b = benchmarks.find(x => x.lob === p.lob);
+            const delta = b ? (p.loss_ratio - b.median_lr).toFixed(1) : 'n/a';
+            const cls = b && p.loss_ratio < b.median_lr ? 'delta-good' : 'delta-warn';
+            return `<tr>
+              <td><strong>${p.name}</strong></td>
+              <td>${p.lob}</td>
+              <td>${p.loss_ratio}%</td>
+              <td>${b?b.p25_lr:'—'}%</td>
+              <td>${b?b.median_lr:'—'}%</td>
+              <td>${b?b.p75_lr:'—'}%</td>
+              <td>${p.combined_ratio}%</td>
+              <td>${b?b.median_cr:'—'}%</td>
+              <td class="${cls}">${b ? (delta>0?'+':'')+delta+' pp' : '—'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Market Benchmarks — All LOBs</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>LOB</th><th>Loss Ratio — p25</th><th>Median</th><th>p75</th><th>Combined Ratio (Median)</th><th>Retention (Median)</th></tr></thead>
+        <tbody>
+          ${benchmarks.map(b => `
+            <tr>
+              <td><strong>${b.lob}</strong></td>
+              <td>${b.p25_lr}%</td>
+              <td>${b.median_lr}%</td>
+              <td>${b.p75_lr}%</td>
+              <td>${b.median_cr}%</td>
+              <td>${b.median_ret}%</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <p class="konduit-footnote">Benchmarks reflect anonymized platform data from 62+ programs. Data refreshes weekly.</p>
+  </section>
+  `;
+}
+
+function konduitPersonaView(viewAs, p) {
+  // Each persona cares about different signals. Return a tailored config.
+  const common = {
+    tagline: '',
+    kpis: [],
+    unlockLabel: '🔐 NDA-Gated Detail',
+    unlockBody: '',
+    unlockList: [],
+    ctaLabel: `Request NDA (as ${viewAs})`,
+    ctaAction: `window.setState({screen:'k-nda-flow', konduitNdaCounterparty:'${viewAs}', konduitProgramId:'${p.id}', konduitNdaStep:1})`,
+    highlights: [],
+    concerns: [],
+    bandedFields: []
+  };
+
+  if (viewAs === 'Fronting Carrier') {
+    return {
+      ...common,
+      tagline: 'As a Fronting Carrier — focus on admitted status, reinsurance panel, and bordereau delivery.',
+      kpis: [
+        { label: 'Target GWP',         value: p.gwp_display },
+        { label: 'Admitted / E&S',     value: p.lob === 'Workers Compensation' ? 'Admitted' : 'E&S' },
+        { label: 'Reinsurance Ceded',  value: '🔐 NDA gated' },
+        { label: 'Rating Required',    value: 'A- or better' },
+        { label: 'Bordereau Cadence',  value: 'Monthly · auto' },
+        { label: 'Data Quality',       value: p.quality_score + '%' }
+      ],
+      unlockBody: 'Fronting-carrier diligence unlocks:',
+      unlockList: [
+        'Full reinsurance panel (names, shares, ratings)',
+        'Segregated trust / collateral structure',
+        'Treaty wording and cut-through clauses',
+        'Regulatory filings and state admissions map',
+        'Bordereau format samples and reconciliation'
+      ],
+      highlights: [
+        { label: 'Bordereau-ready', tone: 'good' },
+        { label: 'Standard treaty structure', tone: 'good' }
+      ],
+      concerns: [
+        { label: p.lob === 'CAT Commercial' || p.lob === 'Commercial Property' ? 'Coastal exposure concentration' : 'Geographic concentration review', tone: 'warn' }
+      ]
+    };
+  }
+
+  if (viewAs === 'Reinsurer') {
+    return {
+      ...common,
+      tagline: 'As a Reinsurer — focus on loss ratios, actuarial depth, CAT modeling, and treaty economics.',
+      kpis: [
+        { label: 'Target GWP',           value: p.gwp_display },
+        { label: 'Loss Ratio (banded)',  value: p.loss_ratio_band },
+        { label: 'Combined (banded)',    value: '🔐 NDA gated' },
+        { label: 'CAT PML 1-in-250',     value: '🔐 NDA gated' },
+        { label: 'Actuarial Provider',   value: 'Milliman' },
+        { label: 'Data Quality',         value: p.quality_score + '%' }
+      ],
+      unlockBody: 'Reinsurer diligence unlocks:',
+      unlockList: [
+        'Full 5-year loss triangles (paid, incurred, reported)',
+        'CAT exposure by peril, return period, and geography',
+        'Rate level history and rate-adequacy walk',
+        'Pricing methodology and case-by-case detail',
+        'Profit-commission waterfall and sliding-scale terms'
+      ],
+      highlights: [
+        { label: `LR band ${p.loss_ratio_band} inside peer median`, tone: 'good' },
+        { label: `Founder experience ${p.founder_track.split('·').pop().trim()}`, tone: 'good' }
+      ],
+      concerns: [
+        { label: 'CAT aggregate exposure requires modeling review', tone: 'warn' }
+      ]
+    };
+  }
+
+  if (viewAs === "Lloyd's Syndicate") {
+    return {
+      ...common,
+      tagline: "As a Lloyd's Syndicate — focus on specialty classes, broker channel, and syndicate-compatible paper.",
+      kpis: [
+        { label: 'Target GWP',          value: p.gwp_display },
+        { label: 'Specialty Fit',       value: ['Cyber','Marine','E&O','D&O','Specialty','Aviation'].includes(p.lob) ? 'Strong' : 'Moderate' },
+        { label: 'Broker Channel',      value: 'Wholesale + Direct' },
+        { label: 'Lineslip Friendly',   value: 'Yes' },
+        { label: 'Avg Premium Size',    value: '🔐 NDA gated' },
+        { label: 'FCA / PRA Ready',     value: 'Planned' }
+      ],
+      unlockBody: "Lloyd's-friendly diligence unlocks:",
+      unlockList: [
+        'Binder authority matrix and sub-delegation structure',
+        'Wholesale broker list and production concentration',
+        'Coverholder audit history and compliance attestations',
+        'Claims TPA arrangement and service standards',
+        'Premium trust account and funds-withheld mechanics'
+      ],
+      highlights: [
+        { label: `${p.geo} — Lloyd's market-compatible`, tone: 'good' },
+        { label: 'Suitable for lineslip / consortium', tone: 'good' }
+      ],
+      concerns: [
+        { label: 'Small-line preference — confirm min GWP fit', tone: 'warn' }
+      ]
+    };
+  }
+
+  if (viewAs === 'Full-stack') {
+    return {
+      ...common,
+      tagline: 'As Full-stack Capacity — focus on end-to-end ownership: underwriting, fronting, and capital.',
+      kpis: [
+        { label: 'Target GWP',           value: p.gwp_display },
+        { label: 'Retention Sought',     value: p.retention },
+        { label: 'Structure',            value: p.structure },
+        { label: 'Capital Requirement',  value: '🔐 NDA gated' },
+        { label: 'Loss Ratio (banded)',  value: p.loss_ratio_band },
+        { label: 'Combined (banded)',    value: '🔐 NDA gated' }
+      ],
+      unlockBody: 'Full-stack diligence unlocks:',
+      unlockList: [
+        'Complete capital commitment and reserve analysis',
+        'Retention scenarios and ceded treaty options',
+        'End-to-end P&L modeling (A&O, acquisition, losses)',
+        'Multi-year treaty term flexibility',
+        'Exit clauses and termination economics'
+      ],
+      highlights: [
+        { label: 'Retention profile fits full-stack appetite', tone: 'good' },
+        { label: 'Multi-year treaty possible', tone: 'good' }
+      ],
+      concerns: [
+        { label: 'Founder capital commitment pending confirmation', tone: 'warn' }
+      ]
+    };
+  }
+
+  // Wholesale Broker — no NDA; evaluates market-fit for clients
+  return {
+    ...common,
+    tagline: 'As a Wholesale Broker — evaluate market fit for your clients. Detail remains banded; share with capacity to progress.',
+    kpis: [
+      { label: 'Target GWP',         value: p.gwp_display },
+      { label: 'LOB',                value: p.lob },
+      { label: 'Geography',          value: p.geo },
+      { label: 'Loss Ratio (banded)',value: p.loss_ratio_band },
+      { label: 'Structure Sought',   value: p.structure },
+      { label: 'Data Quality',       value: p.quality_score + '%' }
+    ],
+    unlockLabel: '📤 Share With Capacity',
+    unlockBody: 'Brokers see banded public view only. Introduce this program to capacity you represent:',
+    unlockList: [
+      'Share a one-pager summary with your carrier panel',
+      'Attach your own submission notes',
+      'MGA is notified when capacity views via your intro',
+      'Track intro performance in your Broker dashboard'
+    ],
+    ctaLabel: 'Share With Capacity',
+    ctaAction: `window.setState({screen:'k-intros', konduitProgramId:'${p.id}', konduitIntroMode:'new'})`,
+    highlights: [
+      { label: `${p.lob} · ${p.geo} — market in demand`, tone: 'good' },
+      { label: `GWP ${p.gwp_display} — sizeable book`, tone: 'good' }
+    ],
+    concerns: [
+      { label: 'Full detail not available to brokers — capacity must NDA directly', tone: 'warn' }
+    ]
+  };
+}
+
+function renderKonduitMarketPreview() {
+  const id = state.konduitProgramId || 'KDP-0812';
+  const p = D.konduitPrograms.find(x => x.id === id) || D.konduitPrograms[0];
+  const viewAs = state.konduitPreviewAs || 'Fronting Carrier';
+  const view = konduitPersonaView(viewAs, p);
+
+  return `
+  ${konduitPageHeader('Marketplace Preview', `See ${p.name} as a capacity provider would. NDA-gated fields appear banded; full detail unlocks after NDA.`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-program', konduitProgramId:'${p.id}'})">← Back to Program</button>`)}
+
+  <section class="card">
+    <div class="card-header"><h3>Preview As</h3></div>
+    <div class="konduit-persona-toggle">
+      ${['Fronting Carrier','Reinsurer',"Lloyd's Syndicate",'Full-stack','Wholesale Broker'].map(v =>
+        `<button class="kp-btn${v===viewAs?' active':''}" onclick="window.setState({konduitPreviewAs:'${v.replace(/'/g, "\\'")}'})">${v}</button>`).join('')}
+    </div>
+    <p class="row-sub" style="padding:0 var(--space-md) var(--space-md)">${view.tagline}</p>
+  </section>
+
+  <section class="card konduit-preview-card">
+    <div class="konduit-preview-header">
+      <div>
+        <h2 style="margin:0">${p.name}</h2>
+        <div class="row-sub">${p.id} · ${p.lob} · ${p.geo}</div>
+      </div>
+      ${konduitStatusBadge(p.status, p.statusColor)}
+    </div>
+
+    <div class="konduit-split-3" style="margin-top:var(--space-md)">
+      ${view.kpis.map(k => `
+        <div class="kpi-card konduit-kpi">
+          <div class="kpi-label">${k.label}</div>
+          <div class="kpi-value" style="font-size:${(k.value||'').length > 14 ? '0.95rem' : '1.4rem'}">${k.value}</div>
+        </div>`).join('')}
+    </div>
+
+    <div class="konduit-split-2" style="margin:var(--space-md)">
+      <div class="konduit-qa-bubble answer" style="padding:12px 14px">
+        <div class="konduit-msg-from"><strong>✅ Signals for ${viewAs}</strong></div>
+        <ul style="padding-left:20px; margin-top:6px; line-height:1.8">
+          ${view.highlights.map(h => `<li>${h.label}</li>`).join('')}
+        </ul>
+      </div>
+      <div class="konduit-qa-bubble question" style="padding:12px 14px">
+        <div class="konduit-msg-from"><strong>⚠️ Diligence focus for ${viewAs}</strong></div>
+        <ul style="padding-left:20px; margin-top:6px; line-height:1.8">
+          ${view.concerns.map(c => `<li>${c.label}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+
+    <div class="konduit-nda-gate">
+      <div>
+        <h4>${view.unlockLabel}</h4>
+        <p class="row-sub" style="margin-bottom:6px">${view.unlockBody}</p>
+        <ul style="padding-left:20px; color:var(--text-secondary); line-height:1.7; font-size:0.85rem">
+          ${view.unlockList.map(u => `<li>${u}</li>`).join('')}
+        </ul>
+      </div>
+      <button class="btn btn-primary konduit-cta" onclick="${view.ctaAction}">${view.ctaLabel}</button>
+    </div>
+
+    <div class="konduit-summary-block">
+      <h4>Program Summary</h4>
+      <p>${p.summary}</p>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitQualityReview() {
+  const myPrograms = D.konduitPrograms.filter(p => p.mga === 'Meridian Specialty Underwriters');
+  const checks = [
+    { section: 'Company Profile',     complete: 100, issues: 0 },
+    { section: 'Program Details',     complete: 100, issues: 0 },
+    { section: 'Founding Team',       complete: 100, issues: 0 },
+    { section: 'Financials',          complete: 92,  issues: 1, detail: 'Pro-forma year-3 assumptions missing sensitivity analysis' },
+    { section: 'Underwriting Appetite',complete: 100, issues: 0 },
+    { section: 'Data Room Completeness',complete: 95, issues: 1, detail: 'Actuarial study older than 12 months — please refresh' },
+    { section: 'Benchmark Outliers',   complete: 100, issues: 0 }
+  ];
+
+  return `
+  ${konduitPageHeader('Quality Review', 'Konduit runs a pre-publication check on every program. Fix any flagged items, then publish to capacity.')}
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Pre-Publication Checks</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Section</th><th>Completeness</th><th>Issues</th><th>Detail</th></tr></thead>
+          <tbody>
+            ${checks.map(c => `
+              <tr>
+                <td><strong>${c.section}</strong></td>
+                <td>
+                  <div class="confidence-bar"><div class="confidence-fill" style="width:${c.complete}%"></div></div>
+                  <div class="row-sub">${c.complete}%</div>
+                </td>
+                <td>${c.issues === 0
+                  ? konduitStatusBadge('Clear','green')
+                  : konduitStatusBadge(c.issues+' issue','amber')}</td>
+                <td class="row-sub">${c.detail || '—'}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Programs Awaiting Review</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Program</th><th>Submitted</th><th>Status</th><th>Quality</th></tr></thead>
+          <tbody>
+            ${myPrograms.map(p => `
+              <tr>
+                <td><strong>${p.name}</strong></td>
+                <td>${p.submitted || '—'}</td>
+                <td>${konduitStatusBadge(p.status, p.statusColor)}</td>
+                <td><span class="quality-pill">${p.quality_score}%</span></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:var(--space-md); text-align:right">
+        <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-qreview-submit'})">Submit for Konduit QA</button>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+// ─── Deal Tracker / NDA / Messages / Team / Settings (MGA side) ───
+function renderKonduitDeals() {
+  const events = D.konduitDealEvents;
+  const myPrograms = D.konduitPrograms.filter(p => p.mga === 'Meridian Specialty Underwriters');
+
+  const funnel = [
+    { stage: 'Marketplace Views',  count: 247, pct: 100 },
+    { stage: 'Deep Reads',         count: 89,  pct: 36 },
+    { stage: 'NDA Requests',       count: 12,  pct: 5 },
+    { stage: 'NDA Signed',         count: 8,   pct: 3 },
+    { stage: 'Term Sheet',         count: 3,   pct: 1 },
+    { stage: 'Bound',              count: 1,   pct: 0.4 }
+  ];
+
+  return `
+  ${konduitPageHeader('Deal Tracker', 'Every view, NDA, message, and term sheet across your programs.')}
+
+  <section class="card">
+    <div class="card-header"><h3>Capacity Funnel (30d)</h3></div>
+    <div class="konduit-funnel">
+      ${funnel.map(f => `
+        <div class="konduit-funnel-row">
+          <div class="konduit-funnel-label">${f.stage}</div>
+          <div class="konduit-funnel-bar-wrap">
+            <div class="konduit-funnel-bar" style="width:${f.pct}%">${f.count}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </section>
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Engagement by Program</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Program</th><th>Views</th><th>NDA Requests</th><th>NDA Signed</th><th>Match Score</th></tr></thead>
+          <tbody>
+            ${myPrograms.map(p => `
+              <tr class="row-clickable" onclick="window.setState({screen:'k-program', konduitProgramId:'${p.id}'})">
+                <td><strong>${p.name}</strong></td>
+                <td>${p.views}</td>
+                <td>${p.nda_requests}</td>
+                <td>${p.nda_signed}</td>
+                <td>${p.match_score > 0 ? p.match_score+'%' : '—'}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Counterparty Activity</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Counterparty</th><th>Events</th><th>Last Action</th></tr></thead>
+          <tbody>
+            ${[...new Set(events.map(e => e.party))].map(party => {
+              const rows = events.filter(e => e.party === party);
+              return `<tr>
+                <td><strong>${party}</strong></td>
+                <td>${rows.length}</td>
+                <td class="row-sub">${rows[0].type} · ${rows[0].ts}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Activity Feed</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Event</th><th>Program</th><th>Counterparty</th><th>Actor</th><th>Note</th></tr></thead>
+        <tbody>
+          ${events.map(e => {
+            const prog = D.konduitPrograms.find(p => p.id === e.programId);
+            return `<tr>
+              <td>${e.ts}</td>
+              <td><strong>${e.type}</strong></td>
+              <td>${prog ? prog.name : e.programId}</td>
+              <td>${e.party}</td>
+              <td>${e.actor}</td>
+              <td class="row-sub">${e.note}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitNDA() {
+  const ndas = D.konduitNDAs;
+  return `
+  ${konduitPageHeader('NDA & Data Room', 'All NDAs across programs. Full data rooms unlock per counterparty upon signing.',
+    `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-nda-flow',konduitNdaStep:1})">+ New NDA Request</button>`)}
+
+  <section class="card">
+    <div class="card-header"><h3>NDAs</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>NDA ID</th><th>Program</th><th>Counterparty</th><th>Requested</th><th>Signed</th><th>Expiry</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${ndas.map(n => {
+            const prog = D.konduitPrograms.find(p => p.id === n.programId);
+            return `<tr>
+              <td><strong>${n.id}</strong></td>
+              <td>${prog ? prog.name : n.programId}</td>
+              <td>${n.counterparty}</td>
+              <td>${n.requested}</td>
+              <td>${n.signed || '—'}</td>
+              <td>${n.expiry || '—'}</td>
+              <td>${konduitStatusBadge(n.status, n.status==='Signed'?'green':'amber')}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-data-room', konduitProgramId:'${n.programId}', konduitNdaCounterparty:'${n.counterparty.replace(/'/g, "\\'")}'})">Data Room →</button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Data Room — Meridian Coastal Property · Summit Fronting Re</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Document</th><th>Type</th><th>Size</th><th>Access</th><th>Shared</th></tr></thead>
+        <tbody>
+          ${D.konduitDocuments.filter(d => d.programId === 'KDP-0812').map(d => `
+            <tr>
+              <td><strong>${d.name}</strong></td>
+              <td>${d.type}</td>
+              <td>${d.size}</td>
+              <td>${konduitStatusBadge('Unlocked','green')}</td>
+              <td class="row-sub">${d.uploaded}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <p class="konduit-footnote" style="padding:0 var(--space-md) var(--space-md)">Post-NDA documents include loss triangles, per-risk detail, and full financials. All access is logged.</p>
+  </section>
+  `;
+}
+
+function renderKonduitMessages() {
+  const msgs = D.konduitMessages;
+  const rt = konduitRuntime();
+  const active = state.konduitMsgThread || msgs[0].id;
+  const thread = msgs.find(m => m.id === active) || msgs[0];
+  const program = D.konduitPrograms.find(p => p.id === thread.programId);
+  const messages = rt.messages[active] || [];
+
+  return `
+  ${konduitPageHeader('Messages', 'Per-deal threads with capacity providers and brokers.')}
+
+  <div class="konduit-msg-split">
+    <aside class="konduit-msg-list">
+      ${msgs.map(m => {
+        const p = D.konduitPrograms.find(x => x.id === m.programId);
+        return `
+          <div class="konduit-msg-item${m.id===active?' active':''}" onclick="window.setState({konduitMsgThread:'${m.id}'})">
+            <div class="konduit-msg-title">
+              <strong>${m.thread}</strong>
+              ${m.unread > 0 ? `<span class="konduit-unread">${m.unread}</span>` : ''}
+            </div>
+            <div class="row-sub">${p ? p.name : m.programId}</div>
+            <div class="konduit-msg-preview">${m.preview}</div>
+            <div class="konduit-msg-ts">${m.last}</div>
+          </div>`;
+      }).join('')}
+    </aside>
+
+    <section class="konduit-msg-panel">
+      <div class="konduit-msg-panel-head">
+        <div>
+          <h3 style="margin:0">${thread.thread}</h3>
+          <div class="row-sub">${program ? program.name : thread.programId}</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-qa', konduitQAKey:'${thread.programId}:${thread.thread.replace(/'/g, "\\'")}'})">Q&A Thread</button>
+          <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-data-room', konduitProgramId:'${thread.programId}', konduitNdaCounterparty:'${thread.thread.replace(/'/g, "\\'")}'})">Data Room</button>
+        </div>
+      </div>
+      <div class="konduit-msg-body" id="k-msg-body">
+        ${messages.map(m => `
+          <div class="konduit-msg-bubble${m.from.startsWith('Evan')?' me':''}">
+            <div class="konduit-msg-from">${m.from} · <span class="row-sub">${m.ts}</span></div>
+            <div>${m.body}</div>
+          </div>`).join('') || `<div class="row-sub" style="padding:var(--space-lg);text-align:center">No messages yet in this thread.</div>`}
+      </div>
+      <form class="konduit-msg-compose" onsubmit="event.preventDefault();const v=this.elements.msg.value.trim();if(v){window.konduitAppendMessageAndRender('${active}', v);this.reset();}">
+        <input type="text" name="msg" placeholder="Type a message…" autocomplete="off">
+        <button type="submit" class="btn btn-primary konduit-cta">Send</button>
+      </form>
+    </section>
+  </div>
+  `;
+}
+
+window.konduitAppendMessageAndRender = function(threadId, body) {
+  konduitAppendMessage(threadId, body);
+  window.setState({ konduitMsgThread: threadId });
+};
+
+function renderKonduitTeam() {
+  const rt = konduitRuntime();
+  const team = D.konduitTeam.filter(t => !rt.removedTeamAvatars.includes(t.avatar));
+  const pending = rt.pendingInvites || [];
+  return `
+  ${konduitPageHeader('Team & Authority', 'Roles, authority, and contact for every user on your MGA.',
+    `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-invite'})">+ Invite Member</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Member</th><th>Role</th><th>Email</th><th>Authority</th><th></th></tr></thead>
+        <tbody>
+          ${team.map(t => `
+            <tr>
+              <td>
+                <div class="konduit-member">
+                  <span class="avatar">${t.avatar}</span>
+                  <strong>${t.name}</strong>
+                </div>
+              </td>
+              <td>${t.role}</td>
+              <td>${t.email}</td>
+              <td>${t.authority}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.showModal('Edit ${t.name}', window.konduitTeamEditForm('${t.avatar}'), 'Save', () => window.konduitFlash({title:'${t.name} updated',body:'Role and authority saved'}))">Edit</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.showModal('Remove ${t.name}?', '<div class=k-modal-body>This user will lose all platform access. Active authority assignments will revert to the founder.</div>', 'Remove', () => { var rt=konduitRuntime(); rt.removedTeamAvatars.push('${t.avatar}'); window.konduitFlash({kind:'warn', title:'${t.name} removed', body:'Access revoked immediately'}); })">Remove</button>
+              </td>
+            </tr>`).join('')}
+          ${pending.map(i => `
+            <tr>
+              <td><div class="konduit-member"><span class="avatar" style="background:rgba(255,255,255,0.08);color:var(--text-secondary)">?</span><strong>${i.name}</strong></div></td>
+              <td>${i.role}</td>
+              <td>${i.email}</td>
+              <td>${i.authority}</td>
+              <td><span class="badge badge-amber">Pending invite</span></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+window.konduitTeamEditForm = function(avatar) {
+  const t = D.konduitTeam.find(x => x.avatar === avatar);
+  if (!t) return '';
+  return `<div class="k-modal-body">
+    <div class="form-grid">
+      <label>Name<input type="text" value="${t.name}"></label>
+      <label>Role<input type="text" value="${t.role}"></label>
+      <label>Email<input type="text" value="${t.email}"></label>
+      <label>Authority<select>
+        <option ${t.authority==='Full'?'selected':''}>Full</option>
+        <option ${t.authority==='Sign NDAs · Publish'?'selected':''}>Sign NDAs · Publish</option>
+        <option ${t.authority==='Build / Upload'?'selected':''}>Build / Upload</option>
+        <option ${t.authority==='Financials only'?'selected':''}>Financials only</option>
+        <option ${t.authority==='Read-only'?'selected':''}>Read-only</option>
+      </select></label>
+    </div>
+  </div>`;
+};
+
+function renderKonduitSettings() {
+  return `
+  ${konduitPageHeader('Settings', 'Notifications, integrations, billing, and API keys.')}
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Notifications</h3></div>
+      <div class="konduit-settings-list">
+        <label class="konduit-toggle-row"><span>Email me when a new NDA is requested</span><input type="checkbox" checked></label>
+        <label class="konduit-toggle-row"><span>Email me on new marketplace views</span><input type="checkbox"></label>
+        <label class="konduit-toggle-row"><span>Weekly benchmark digest</span><input type="checkbox" checked></label>
+        <label class="konduit-toggle-row"><span>SMS for term sheet events</span><input type="checkbox"></label>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Integrations</h3></div>
+      <div class="konduit-settings-list">
+        <div class="konduit-integration-row"><span>DocuSign NDA</span><span class="badge badge-green">Connected</span></div>
+        <div class="konduit-integration-row"><span>Milliman Actuarial Feed</span><span class="badge badge-amber">Pending</span></div>
+        <div class="konduit-integration-row"><span>QuickBooks Financials</span><span class="badge badge-grey">Not connected</span></div>
+        <div class="konduit-integration-row"><span>AWS S3 — Data Room storage</span><span class="badge badge-green">Connected</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Billing</h3></div>
+      <div class="konduit-settings-list">
+        <div><strong>Plan:</strong> MGA Professional · $2,400 / mo</div>
+        <div><strong>Programs:</strong> 3 of 10 included</div>
+        <div><strong>Next Invoice:</strong> 2026-05-01 · $2,400.00</div>
+        <button class="btn btn-secondary konduit-cta-outline" style="margin-top:var(--space-sm)" onclick="window.setState({screen:'k-billing'})">Manage Billing</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>API Keys</h3></div>
+      <div class="konduit-settings-list">
+        <div class="konduit-api-row"><code>kdp_live_6••••••••••••••9a2c</code><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard&&navigator.clipboard.writeText('kdp_live_full_key_copied');window.konduitFlash({kind:'info',title:'Live key copied to clipboard'})">Copy</button></div>
+        <div class="konduit-api-row"><code>kdp_test_9••••••••••••••4b7e</code><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard&&navigator.clipboard.writeText('kdp_test_full_key_copied');window.konduitFlash({kind:'info',title:'Test key copied to clipboard'})">Copy</button></div>
+        <button class="btn btn-secondary konduit-cta-outline" onclick="window.showModal('Generate New API Key','<div class=k-modal-body><label style=\\'font-size:0.78rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em\\'>Key name<input type=text placeholder=e.g. Production Integration style=\\'width:100%;margin-top:6px;padding:8px;background:var(--bg-input);border:1px solid var(--border-subtle);border-radius:8px;color:var(--text-primary)\\'></label><div style=\\'margin-top:12px;font-size:0.82rem;color:var(--text-muted)\\'>Key is shown once — store it securely.</div></div>','Generate',()=>window.showModal('Your New API Key','<div class=k-modal-body><div style=\\'font-size:0.78rem;color:var(--text-muted);margin-bottom:6px\\'>This is your only opportunity to copy this key.</div><div style=\\'background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:8px;padding:10px;font-family:monospace;font-size:0.85rem;color:var(--k-accent);word-break:break-all\\'>kdp_live_ab3f9c71d845e2b6a18092f7c0e5e7f2c</div><button class=\\'btn btn-secondary konduit-cta-outline\\' style=\\'margin-top:10px\\' onclick=\\'navigator.clipboard&&navigator.clipboard.writeText(\"kdp_live_ab3f9c71d845e2b6a18092f7c0e5e7f2c\");window.konduitFlash({kind:\"info\",title:\"Key copied\"})\\'>📋 Copy to clipboard</button></div>','Done',null))">+ Generate New Key</button>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — CAPACITY PROVIDER SIDE
+// ════════════════════════════════════════════════════════════════
+function renderKonduitCapDashboard() {
+  const kpis = D.konduitDashboardKPIs.capacity;
+  const searches = D.konduitSavedSearches;
+  const matches = D.konduitPrograms.filter(p => p.status === 'Live').slice(0, 5);
+  const events = D.konduitDealEvents.slice(0, 6);
+
+  return `
+  ${konduitPageHeader('Capacity Provider Dashboard', 'New matches, in-diligence deals, and pipeline overview.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-watchlist'})">⭐ Watchlist</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'k-portfolio'})">📦 Portfolio</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'k-appetite'})">🎯 Appetite</button>
+     <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-marketplace'})">Browse Marketplace →</button>`)}
+
+  ${konduitKPIs(kpis, 6)}
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>New Matches (Appetite-driven)</h3>
+        <a href="#" onclick="window.setState({screen:'k-marketplace'});return false;" class="link-subtle">Browse all →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Program</th><th>LOB</th><th>GWP</th><th>LR (banded)</th><th>Quality</th><th>Match</th></tr></thead>
+          <tbody>
+            ${matches.map(p => `
+              <tr class="row-clickable" onclick="window.setState({screen:'k-cap-program', konduitProgramId:'${p.id}'})">
+                <td><strong>${p.name}</strong><div class="row-sub">${p.mga}</div></td>
+                <td>${p.lob}</td>
+                <td>${p.gwp_display}</td>
+                <td>${p.loss_ratio_band}</td>
+                <td><span class="quality-pill">${p.quality_score}%</span></td>
+                <td><span class="match-pill">${p.match_score}%</span></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>My Saved Searches</h3>
+        <a href="#" onclick="window.setState({screen:'k-saved'});return false;" class="link-subtle">Manage →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Search</th><th>LOB</th><th>Matches</th><th>Alerts</th></tr></thead>
+          <tbody>
+            ${searches.map(s => `
+              <tr>
+                <td><strong>${s.name}</strong></td>
+                <td>${s.lob.join(', ')}</td>
+                <td>${s.matches}</td>
+                <td>${s.alerts ? konduitStatusBadge('On','green') : konduitStatusBadge('Off','grey')}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Recent Platform Activity</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Event</th><th>Program</th><th>Counterparty</th><th>Note</th></tr></thead>
+        <tbody>
+          ${events.map(e => {
+            const p = D.konduitPrograms.find(x => x.id === e.programId);
+            return `<tr>
+              <td>${e.ts}</td>
+              <td><strong>${e.type}</strong></td>
+              <td>${p ? p.name : e.programId}</td>
+              <td>${e.party}</td>
+              <td class="row-sub">${e.note}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitMarketplace() {
+  const filterLob = state.konduitFilterLob || 'All';
+  const filterGeo = state.konduitFilterGeo || 'All';
+  let programs = D.konduitPrograms.filter(p => p.status === 'Live' || p.status === 'Bound');
+  if (filterLob !== 'All') programs = programs.filter(p => p.lob === filterLob);
+  if (filterGeo !== 'All') programs = programs.filter(p => p.geo === filterGeo);
+
+  return `
+  ${konduitPageHeader('Marketplace', `${programs.length} programs available · filter by LOB, geography, GWP, and loss ratio band.`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-appetite'})">🎯 Edit Appetite</button>
+     <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-saved-edit', konduitSavedSeed:{lob:'${filterLob}',geo:'${filterGeo}'}})">⭐ Save This View</button>`)}
+
+  <section class="card konduit-filter-bar">
+    <label>LOB
+      <select onchange="window.setState({konduitFilterLob:this.value})">
+        <option>All</option>
+        ${[...new Set(D.konduitPrograms.map(p => p.lob))].map(l => `<option ${l===filterLob?'selected':''}>${l}</option>`).join('')}
+      </select>
+    </label>
+    <label>Geography
+      <select onchange="window.setState({konduitFilterGeo:this.value})">
+        <option>All</option>
+        ${[...new Set(D.konduitPrograms.map(p => p.geo))].map(g => `<option ${g===filterGeo?'selected':''}>${g}</option>`).join('')}
+      </select>
+    </label>
+    <label>Structure<select><option>All</option>${D.KONDUIT_STRUCTURES.map(s => `<option>${s}</option>`).join('')}</select></label>
+    <label>GWP Band<select><option>All</option><option>$5M–$25M</option><option>$25M–$50M</option><option>$50M–$100M</option><option>$100M+</option></select></label>
+    <label>Min Quality<select><option>80%+</option><option>85%+</option><option selected>90%+</option><option>95%+</option></select></label>
+  </section>
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>MGA</th><th>LOB</th><th>Geo</th><th>Structure</th><th>GWP</th><th>LR (banded)</th><th>Quality</th><th>Match</th><th></th></tr></thead>
+        <tbody>
+          ${programs.map(p => `
+            <tr>
+              <td><strong>${p.name}</strong><div class="row-sub">${p.id}</div></td>
+              <td>${p.mga}</td>
+              <td>${p.lob}</td>
+              <td>${p.geo}</td>
+              <td>${p.structure}</td>
+              <td>${p.gwp_display}</td>
+              <td>${p.loss_ratio_band}</td>
+              <td><span class="quality-pill">${p.quality_score}%</span></td>
+              <td><span class="match-pill">${p.match_score||'—'}${p.match_score?'%':''}</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-cap-program', konduitProgramId:'${p.id}'})">Open →</button></td>
+            </tr>`).join('') || `<tr><td colspan="10" class="row-sub">No programs match current filters. Adjust filters or save this search for alerts on new matches.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitCapProgram() {
+  const id = state.konduitProgramId || 'KDP-0812';
+  const p = D.konduitPrograms.find(x => x.id === id) || D.konduitPrograms[0];
+  const ndaStatus = D.konduitNDAs.find(n => n.programId === p.id && n.counterparty === 'Summit Fronting Re');
+  const isSigned = ndaStatus && ndaStatus.status === 'Signed';
+
+  return `
+  ${konduitPageHeader(p.name, `${p.mga} · ${p.lob} · ${p.geo}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-marketplace'})">← Marketplace</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'k-cap-qa', konduitQAKey:'${p.id}:Summit Fronting Re'})">Q&A</button>
+     ${isSigned
+       ? `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-term-sheet-new', konduitProgramId:'${p.id}'})">Send Term Sheet →</button>`
+       : `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-cap-nda-sign', konduitProgramId:'${p.id}', konduitNdaStep:1})">🔐 Request NDA</button>`}`)}
+
+  <div class="konduit-split-3">
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">Status</div><div class="kpi-value">${konduitStatusBadge(p.status, p.statusColor)}</div></div>
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">GWP Target</div><div class="kpi-value">${p.gwp_display}</div></div>
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">Structure</div><div class="kpi-value" style="font-size:1rem">${p.structure}</div></div>
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">Loss Ratio</div><div class="kpi-value">${isSigned ? p.loss_ratio+'%' : p.loss_ratio_band}</div></div>
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">Combined Ratio</div><div class="kpi-value">${isSigned ? p.combined_ratio+'%' : '🔐 NDA gated'}</div></div>
+    <div class="kpi-card konduit-kpi"><div class="kpi-label">Retention</div><div class="kpi-value">${isSigned ? p.retention : '🔐 NDA gated'}</div></div>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Summary</h3></div>
+    <p style="padding:0 var(--space-md) var(--space-md); color:var(--text-secondary); line-height:1.6">${p.summary}</p>
+    <div class="konduit-detail-row">
+      <div><strong>Founder / Track record:</strong> ${p.founder_track}</div>
+      <div><strong>Published:</strong> ${p.published || '—'}</div>
+      <div><strong>Quality Score:</strong> ${p.quality_score}%</div>
+    </div>
+  </section>
+
+  ${isSigned ? `
+    <section class="card">
+      <div class="card-header"><h3>Data Room (NDA Unlocked)</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Document</th><th>Type</th><th>Size</th><th>Uploaded</th></tr></thead>
+          <tbody>
+            ${D.konduitDocuments.filter(d => d.programId === p.id).map(d => `
+              <tr>
+                <td><strong>${d.name}</strong></td>
+                <td>${d.type}</td>
+                <td>${d.size}</td>
+                <td>${d.uploaded}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>` : `
+    <section class="card konduit-nda-card">
+      <h3>🔐 NDA Required to Access Detail</h3>
+      <p class="row-sub">Per-risk limits, loss triangles, founder financials, and full financial model unlock after mutual NDA is executed.</p>
+      <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-cap-nda-sign', konduitProgramId:'${p.id}', konduitNdaStep:1})">Request NDA Now</button>
+    </section>`}
+  `;
+}
+
+function renderKonduitWatchlist() {
+  const programs = D.konduitPrograms.slice(0, 5);
+  return `
+  ${konduitPageHeader('Watchlist', 'Programs you\'ve starred for follow-up.',
+    `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-marketplace'})">+ Add from Marketplace</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>MGA</th><th>LOB</th><th>Added</th><th>Status</th><th>Note</th><th></th></tr></thead>
+        <tbody>
+          ${programs.map(p => `
+            <tr>
+              <td><strong>${p.name}</strong></td>
+              <td>${p.mga}</td>
+              <td>${p.lob}</td>
+              <td class="row-sub">2026-04-${10 + Math.floor(Math.random()*9)}</td>
+              <td>${konduitStatusBadge(p.status, p.statusColor)}</td>
+              <td class="row-sub">Revisit after Q2 actuarial refresh</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-cap-program', konduitProgramId:'${p.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitSavedSearches() {
+  const searches = D.konduitSavedSearches.concat(konduitRuntime().runtimeSavedSearches);
+  return `
+  ${konduitPageHeader('Saved Searches', 'Alert rules fire when new or updated programs match your appetite.',
+    `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-saved-edit'})">+ New Saved Search</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Search</th><th>LOB</th><th>Geo</th><th>GWP Range</th><th>LR Max</th><th>Alerts</th><th>Matches</th><th></th></tr></thead>
+        <tbody>
+          ${searches.map(s => `
+            <tr>
+              <td><strong>${s.name}</strong></td>
+              <td>${s.lob.join(', ')}</td>
+              <td>${s.geo.join(', ')}</td>
+              <td>$${(s.gwp_min/1e6).toFixed(0)}M – $${(s.gwp_max/1e6).toFixed(0)}M</td>
+              <td>${s.lr_max}%</td>
+              <td>${s.alerts ? konduitStatusBadge('On','green') : konduitStatusBadge('Off','grey')}</td>
+              <td>${s.matches}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-marketplace'})">Run →</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitAppetite() {
+  const a = D.konduitAppetiteProfile;
+  const lobs = D.KONDUIT_LOBS;
+
+  return `
+  ${konduitPageHeader('Appetite Profile', `${a.org} · drives filters, alerts, and platform-wide matching.`)}
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Lines of Business</h3></div>
+      <div class="konduit-chip-grid">
+        ${lobs.map(l => `<span class="konduit-chip${a.lobs.includes(l)?' active':''}">${l}</span>`).join('')}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Geography</h3></div>
+      <div class="konduit-chip-grid">
+        ${D.KONDUIT_GEO.map(g => `<span class="konduit-chip${a.geo.includes(g)?' active':''}">${g}</span>`).join('')}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Size & Ratios</h3></div>
+      <div class="konduit-settings-list">
+        <div><strong>GWP Range:</strong> $${(a.gwp_min/1e6).toFixed(0)}M – $${(a.gwp_max/1e6).toFixed(0)}M</div>
+        <div><strong>Max Loss Ratio:</strong> ${a.loss_ratio_max}%</div>
+        <div><strong>Max Combined Ratio:</strong> ${a.combined_ratio_max}%</div>
+        <div><strong>Min Founder Experience:</strong> ${a.min_founder_years} years</div>
+        <div><strong>Actuarial Required:</strong> ${a.require_actuarial ? 'Yes' : 'No'}</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Preferences & Exclusions</h3></div>
+      <div class="konduit-settings-list">
+        <div><strong>Preferred Structures:</strong></div>
+        <div class="konduit-chip-grid">${a.preferred_structures.map(s => `<span class="konduit-chip active">${s}</span>`).join('')}</div>
+        <div style="margin-top:var(--space-sm)"><strong>Excluded Classes:</strong></div>
+        <div class="konduit-chip-grid">${a.excluded_classes.map(c => `<span class="konduit-chip warn">${c}</span>`).join('')}</div>
+      </div>
+    </section>
+  </div>
+
+  <div style="text-align:right; margin-top:var(--space-md); display:flex; gap:var(--space-sm); justify-content:flex-end">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'k-saved'})">Manage Saved Searches</button>
+    <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-cap-dashboard', konduitFlash:{title:'Appetite profile saved', body:'18 programs now match your criteria'}})">Save Profile</button>
+  </div>
+  `;
+}
+
+function renderKonduitQueue() {
+  const queue = [
+    { id: 'Q-1', program: 'Meridian Coastal Property', mga: 'Meridian Specialty Underwriters', assigned: 'Priya Raman', stage: 'Actuarial Review', due: '2026-04-22', priority: 'High' },
+    { id: 'Q-2', program: 'Harbor WC — West',          mga: 'Harbor Program Partners',          assigned: 'Nina Alvarez', stage: 'Initial Read',     due: '2026-04-23', priority: 'Normal' },
+    { id: 'Q-3', program: 'Atlas Surety — Small Contractor', mga: 'Atlas Surety Group',         assigned: 'Priya Raman',  stage: 'Term Sheet',        due: '2026-04-25', priority: 'High' },
+    { id: 'Q-4', program: 'Skyline Aviation',          mga: 'Skyline Aviation MGA',              assigned: 'Unassigned',   stage: 'Triage',            due: '2026-04-26', priority: 'Low' },
+    { id: 'Q-5', program: 'Meridian Cyber SME',        mga: 'Meridian Specialty Underwriters',   assigned: 'Unassigned',   stage: 'Triage',            due: '2026-04-27', priority: 'Normal' }
+  ];
+
+  return `
+  ${konduitPageHeader('Team Queue', 'Assign, triage, and progress deals across the underwriting team.',
+    `<button class="btn btn-primary konduit-cta" onclick="window.konduitFlash({title:'3 unassigned items distributed',body:'Assigned by LOB expertise — Priya: 2 · Nina: 1'})">Auto-Assign Unassigned</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Queue ID</th><th>Program</th><th>MGA</th><th>Stage</th><th>Assigned</th><th>Due</th><th>Priority</th><th></th></tr></thead>
+        <tbody>
+          ${queue.map(q => `
+            <tr>
+              <td><strong>${q.id}</strong></td>
+              <td>${q.program}</td>
+              <td>${q.mga}</td>
+              <td>${konduitStatusBadge(q.stage, q.stage==='Term Sheet'?'blue':q.stage==='Actuarial Review'?'amber':'grey')}</td>
+              <td>${q.assigned}</td>
+              <td>${q.due}</td>
+              <td>${konduitStatusBadge(q.priority, q.priority==='High'?'red':q.priority==='Normal'?'amber':'grey')}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-queue-detail', konduitQueueId:'${q.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitPortfolio() {
+  const port = D.konduitPortfolio;
+  const total = port.reduce((s,p)=>s+parseFloat(p.gwp.replace(/[$M]/g,'')),0);
+  const weightedLR = (port.reduce((s,p)=>s+(p.loss_ratio*parseFloat(p.gwp.replace(/[$M]/g,''))),0) / total).toFixed(1);
+
+  return `
+  ${konduitPageHeader('Portfolio', 'Bound programs · aggregate exposure · loss ratio tracking.')}
+
+  ${konduitKPIs([
+    { label: 'Bound Programs', value: port.length.toString() },
+    { label: 'Total GWP (Bound)', value: `$${total}M` },
+    { label: 'Weighted Loss Ratio', value: weightedLR+'%' },
+    { label: 'Upcoming Renewals (90d)', value: '1', warning: true }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Bound Programs</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>MGA</th><th>LOB</th><th>GWP</th><th>Loss Ratio</th><th>Status</th><th>Inception</th><th>Renewal</th></tr></thead>
+        <tbody>
+          ${port.map(p => `
+            <tr>
+              <td><strong>${p.program}</strong></td>
+              <td>${p.mga}</td>
+              <td>${p.lob}</td>
+              <td>${p.gwp}</td>
+              <td>${p.loss_ratio}%</td>
+              <td>${konduitStatusBadge(p.status,'green')}</td>
+              <td>${p.inception}</td>
+              <td>${p.renewal}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Exposure by LOB</h3></div>
+    <div class="konduit-exposure">
+      ${Object.entries(port.reduce((m,p)=>{m[p.lob]=(m[p.lob]||0)+parseFloat(p.gwp.replace(/[$M]/g,''));return m;},{})).map(([lob,v]) => {
+        const pct = ((v/total)*100).toFixed(1);
+        return `
+          <div class="konduit-expo-row">
+            <div class="konduit-expo-label">${lob}</div>
+            <div class="konduit-expo-bar-wrap"><div class="konduit-expo-bar" style="width:${pct}%"></div></div>
+            <div class="konduit-expo-val">$${v}M · ${pct}%</div>
+          </div>`;
+      }).join('')}
+    </div>
+  </section>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — ADMIN SIDE
+// ════════════════════════════════════════════════════════════════
+function renderKonduitAdminDashboard() {
+  const kpis = D.konduitDashboardKPIs.admin;
+  const queue = D.konduitQualityReviewQueue;
+  const audit = D.konduitAuditLog.slice(0, 6);
+
+  return `
+  ${konduitPageHeader('Platform Admin', 'Quality review, user management, templates, and audit.')}
+
+  ${konduitKPIs(kpis, 6)}
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Quality Review Queue</h3>
+        <a href="#" onclick="window.setState({screen:'k-admin-qr'});return false;" class="link-subtle">Manage →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Program</th><th>MGA</th><th>Submitted</th><th>Priority</th><th>Status</th></tr></thead>
+          <tbody>
+            ${queue.map(q => `
+              <tr>
+                <td><strong>${q.program}</strong></td>
+                <td>${q.mga}</td>
+                <td>${q.submitted}</td>
+                <td>${konduitStatusBadge(q.priority, q.priority==='High'?'red':'amber')}</td>
+                <td>${konduitStatusBadge(q.status, q.status==='Open'?'amber':'grey')}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Recent Audit Events</h3>
+        <a href="#" onclick="window.setState({screen:'k-admin-audit'});return false;" class="link-subtle">Full log →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th></tr></thead>
+          <tbody>
+            ${audit.map(a => `
+              <tr>
+                <td class="row-sub">${a.ts}</td>
+                <td>${a.actor}</td>
+                <td><strong>${a.action}</strong></td>
+                <td>${a.target}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+function renderKonduitAdminQR() {
+  const rt = konduitRuntime();
+  const queue = D.konduitQualityReviewQueue.filter(q => !rt.approvedQrIds[q.id]);
+  return `
+  ${konduitPageHeader('Quality Review Queue', 'Programs awaiting Konduit pre-publication approval.',
+    `<button class="btn btn-primary konduit-cta" ${queue.length === 0 ? 'disabled' : `onclick="window.setState({screen:'k-admin-qr-detail', konduitQrId:'${queue[0].id}'})"`}>Claim Next</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>QR ID</th><th>Program</th><th>MGA</th><th>Submitted</th><th>Items</th><th>Reviewer</th><th>Priority</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${queue.map(q => `
+            <tr>
+              <td><strong>${q.id}</strong></td>
+              <td>${q.program}</td>
+              <td>${q.mga}</td>
+              <td>${q.submitted}</td>
+              <td>${q.items}</td>
+              <td>${q.reviewer}</td>
+              <td>${konduitStatusBadge(q.priority, q.priority==='High'?'red':'amber')}</td>
+              <td>${konduitStatusBadge(q.status, q.status==='Open'?'amber':'grey')}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-admin-qr-detail', konduitQrId:'${q.id}'})">Review →</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitAdminUsers() {
+  const users = [
+    { org: 'Meridian Specialty Underwriters', type: 'MGA', seats: 4, status: 'Active',  since: '2025-11-02' },
+    { org: 'Harbor Program Partners',          type: 'MGA', seats: 6, status: 'Active',  since: '2025-08-15' },
+    { org: 'Summit Fronting Re',               type: 'Capacity', seats: 12, status: 'Active',  since: '2025-06-01' },
+    { org: 'Nordic Global Re',                 type: 'Capacity', seats: 8, status: 'Active',  since: '2025-09-12' },
+    { org: 'Syndicate 4488 — Lloyd\'s',        type: 'Capacity', seats: 5, status: 'Active',  since: '2025-12-18' },
+    { org: 'Evergreen Environmental Risk',     type: 'MGA', seats: 3, status: 'Paused',  since: '2026-01-10' },
+    { org: 'Pacific Paper Group',              type: 'Capacity', seats: 7, status: 'Active',  since: '2025-07-22' },
+    { org: 'Brookline Full-Stack',             type: 'Capacity', seats: 9, status: 'Active',  since: '2025-05-05' }
+  ];
+
+  return `
+  ${konduitPageHeader('Users & Orgs', 'All MGAs, capacity providers, and their seat allocations.',
+    `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-admin-onboard'})">+ Onboard Org</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Organization</th><th>Type</th><th>Seats</th><th>Status</th><th>Since</th><th></th></tr></thead>
+        <tbody>
+          ${users.map(u => `
+            <tr>
+              <td><strong>${u.org}</strong></td>
+              <td>${u.type}</td>
+              <td>${u.seats}</td>
+              <td>${konduitStatusBadge(u.status, u.status==='Active'?'green':'amber')}</td>
+              <td>${u.since}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-admin-org', konduitOrgName:'${u.org.replace(/'/g, "\\'")}'})">Manage →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitAdminNDAs() {
+  const tmpls = D.konduitNdaTemplates;
+  return `
+  ${konduitPageHeader('NDA Templates', 'Managed templates used platform-wide for NDA execution.',
+    `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-admin-template', konduitTemplateId:'new'})">+ New Template</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Template</th><th>Version</th><th>Jurisdiction</th><th>Updated</th><th>Uses</th><th></th></tr></thead>
+        <tbody>
+          ${tmpls.map(t => `
+            <tr>
+              <td><strong>${t.name}</strong></td>
+              <td>${t.version}</td>
+              <td>${t.jurisdiction}</td>
+              <td>${t.updated}</td>
+              <td>${t.uses}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-admin-template', konduitTemplateId:'${t.id}', konduitTemplateMode:'preview'})">Preview</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-admin-template', konduitTemplateId:'${t.id}', konduitTemplateMode:'edit'})">Edit</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitAdminAudit() {
+  const log = D.konduitAuditLog;
+  return `
+  ${konduitPageHeader('Audit Log', 'Immutable record of every action taken on the platform.',
+    `<button class="btn btn-ghost" onclick="window.konduitExportAuditCsv()">⬇ Export CSV</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th><th>IP</th></tr></thead>
+        <tbody>
+          ${log.map(a => `
+            <tr>
+              <td class="row-sub">${a.ts}</td>
+              <td>${a.actor}</td>
+              <td><strong>${a.action}</strong></td>
+              <td>${a.target}</td>
+              <td class="row-sub">${a.ip}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — BINDINGS
+// ════════════════════════════════════════════════════════════════
+function bindKonduit() {
+  // Role toggle
+  $$('.kr-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const role = btn.dataset.role;
+      const defaultScreen = role === 'capacity' ? 'k-cap-dashboard' : role === 'admin' ? 'k-admin-dashboard' : 'k-dashboard';
+      setState({ konduitRole: role, screen: defaultScreen });
+    });
+  });
+
+  // Side-nav item clicks
+  $$('.konduit-side-nav .side-nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      setState({ screen: item.dataset.screen });
+    });
+  });
+
+  // CTA button
+  const cta = $('#btn-konduit-cta');
+  if (cta) cta.addEventListener('click', () => {
+    const role = konduitRole();
+    if (role === 'capacity') setState({ screen: 'k-saved' });
+    else if (role === 'admin') setState({ screen: 'k-admin-qr' });
+    else setState({ screen: 'k-wizard', konduitWizStep: 1 });
+  });
+
+  // Top-bar
+  const logout = $('#btn-konduit-logout');
+  if (logout) logout.addEventListener('click', () => setState({ portal: null, screen: 'dashboard', konduitRole: null }));
+
+  const search = $('#btn-konduit-search');
+  if (search) search.addEventListener('click', () => {
+    window.showModal('Search Konduit',
+      `<div class="k-modal-body">
+        <input type="text" placeholder="Search programs, MGAs, capacity providers, NDAs, deals..." style="width:100%; padding:10px; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:8px; color:var(--text-primary);" autofocus>
+        <div style="margin-top:12px">
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.06em">Quick links</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px">
+            <span class="konduit-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'k-programs'})">My Programs</span>
+            <span class="konduit-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'k-marketplace',konduitRole:'capacity'})">Marketplace</span>
+            <span class="konduit-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'k-deals'})">Deal Tracker</span>
+            <span class="konduit-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'k-nda'})">NDAs</span>
+          </div>
+        </div>
+      </div>`, 'Search', () => window.setState({ screen: 'k-search-results', konduitSearchQuery: 'Meridian' }));
+  });
+
+  const help = $('#btn-konduit-help');
+  if (help) help.addEventListener('click', () => {
+    window.showModal('Konduit Help Center',
+      `<div class="k-modal-body">
+        <h4 style="margin-bottom:8px">Getting started</h4>
+        <ul style="padding-left:20px; color:var(--text-secondary); line-height:1.8">
+          <li><strong>MGAs:</strong> Upload your program docs, complete the 5-section wizard, submit for quality review.</li>
+          <li><strong>Capacity:</strong> Set your appetite, save searches, request NDAs on matching programs.</li>
+          <li><strong>Admin:</strong> Review programs, manage NDA templates, monitor audit log.</li>
+        </ul>
+        <h4 style="margin:16px 0 8px">Support</h4>
+        <div style="color:var(--text-secondary)">📧 support@konduitcapacity.com · 📞 +1 (332) 555-KDP4</div>
+      </div>`, 'Close', null);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — NEW FLOW SCREENS (Publish, Upload, Invite, SaveSearch, Billing, etc.)
+// ════════════════════════════════════════════════════════════════
+
+function renderKonduitPublish() {
+  const id = state.konduitProgramId || 'KDP-0812';
+  const p = D.konduitPrograms.find(x => x.id === id) || D.konduitPrograms[0];
+  const matchOrgs = D.konduitCapacityOrgs.filter(o => o.lobs.includes(p.lob));
+
+  return `
+  ${konduitPageHeader('Publish Program', `Send ${p.name} to the marketplace and notify matching capacity providers.`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-program', konduitProgramId:'${p.id}'})">← Back</button>`)}
+
+  <section class="card">
+    <div class="card-header"><h3>Program Snapshot</h3></div>
+    <div class="konduit-split-3" style="padding:var(--space-md)">
+      <div class="kpi-card konduit-kpi"><div class="kpi-label">Program</div><div class="kpi-value" style="font-size:1rem">${p.name}</div></div>
+      <div class="kpi-card konduit-kpi"><div class="kpi-label">LOB</div><div class="kpi-value" style="font-size:1rem">${p.lob}</div></div>
+      <div class="kpi-card konduit-kpi"><div class="kpi-label">GWP Target</div><div class="kpi-value">${p.gwp_display}</div></div>
+      <div class="kpi-card konduit-kpi"><div class="kpi-label">Quality Score</div><div class="kpi-value">${p.quality_score}%</div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Matched Capacity Providers (${matchOrgs.length})</h3></div>
+    <p class="row-sub" style="padding:0 var(--space-md) var(--space-md)">These organizations have declared appetite overlapping your program. They will be notified on publish.</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th></th><th>Org</th><th>Type</th><th>Paper</th><th>GWP Appetite</th><th>LOB Match</th></tr></thead>
+        <tbody>
+          ${matchOrgs.map(o => `
+            <tr>
+              <td><input type="checkbox" checked></td>
+              <td><strong>${o.name}</strong><div class="row-sub">${o.notes}</div></td>
+              <td>${o.type}</td>
+              <td>${o.paper}</td>
+              <td>${o.gwp_appetite}</td>
+              <td>${konduitStatusBadge('Appetite match','green')}</td>
+            </tr>`).join('') || `<tr><td colspan="6" class="row-sub">No capacity providers currently match this LOB. Program will be visible to all on publish.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Publication Options</h3></div>
+    <div class="konduit-settings-list">
+      <label class="konduit-toggle-row"><span>Hide financial detail until NDA (recommended)</span><input type="checkbox" checked></label>
+      <label class="konduit-toggle-row"><span>Allow wholesale brokers to view banded metrics</span><input type="checkbox" checked></label>
+      <label class="konduit-toggle-row"><span>Send email alerts to matched capacity providers</span><input type="checkbox" checked></label>
+      <label class="konduit-toggle-row"><span>Freeze data room edits during active diligence</span><input type="checkbox"></label>
+    </div>
+  </section>
+
+  <div style="text-align:right; margin-top:var(--space-md); display:flex; gap:var(--space-sm); justify-content:flex-end">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'k-program', konduitProgramId:'${p.id}'})">Cancel</button>
+    <button class="btn btn-primary konduit-cta" onclick="(function(){var rt=konduitRuntime();rt.publishedPrograms['${p.id}']=Date.now();window.setState({screen:'k-program', konduitProgramId:'${p.id}', konduitFlash:{title:'Published to marketplace', body:'${matchOrgs.length} matched capacity providers notified'}});})()">🚀 Publish Now</button>
+  </div>
+  `;
+}
+
+function renderKonduitUpload() {
+  const fileTypes = [
+    { type: 'Program Deck',   desc: 'Executive overview · LOB · founders · financials at a glance', req: true },
+    { type: 'Actuarial Study',desc: 'Loss triangles · pricing methodology · reserve adequacy',      req: true },
+    { type: 'Financials',     desc: 'Pro-forma 3-year · historical P&L · capital commitment',        req: true },
+    { type: 'Appetite',       desc: 'Target classes · exclusions · per-risk limits',                 req: true },
+    { type: 'Claims Detail',  desc: 'Bordereau · large-loss detail · reserves',                      req: false },
+    { type: 'Team Bios',      desc: 'Founder CVs and underwriting track record',                     req: false }
+  ];
+
+  return `
+  ${konduitPageHeader('Upload Documents', 'AI extracts program data from your uploads and maps to the submission wizard.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-docs'})">← Back to Document Intake</button>`)}
+
+  <section class="card konduit-upload-zone" style="cursor:default">
+    <div class="konduit-upload-inner">
+      <div class="konduit-upload-icon">📥</div>
+      <h3>Drop files here or click to browse</h3>
+      <p class="row-sub">PDF · Word · Excel · PowerPoint — up to 50 MB each · batch uploads supported</p>
+      <input type="file" id="k-file" multiple style="display:none">
+      <button class="btn btn-primary konduit-cta" onclick="document.getElementById('k-file').click()">Browse Files</button>
+      <div style="margin-top:12px; font-size:0.78rem; color:var(--text-muted)">Secure S3 storage · end-to-end encryption · SOC2 compliant</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Required Document Types</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Type</th><th>Description</th><th>Status</th></tr></thead>
+        <tbody>
+          ${fileTypes.map(f => `
+            <tr>
+              <td><strong>${f.type}</strong> ${f.req?'<span class="badge badge-red" style="margin-left:6px">Required</span>':'<span class="badge badge-grey" style="margin-left:6px">Optional</span>'}</td>
+              <td class="row-sub">${f.desc}</td>
+              <td>${konduitStatusBadge(f.req?'Missing':'Not uploaded', f.req?'amber':'grey')}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div style="text-align:right; margin-top:var(--space-md); display:flex; gap:var(--space-sm); justify-content:flex-end">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'k-docs'})">Cancel</button>
+    <button class="btn btn-primary konduit-cta" onclick="(function(){var rt=konduitRuntime();rt.extractionRunning=true;window.setState({screen:'k-docs', konduitFlash:{kind:'info',title:'Extraction started', body:'Results will appear in the queue in ~45 seconds'}});})()">Upload & Extract</button>
+  </div>
+  `;
+}
+
+function renderKonduitInvite() {
+  return `
+  ${konduitPageHeader('Invite Team Member', 'Invites expire in 7 days. Members can be re-invited at any time.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-team'})">← Back to Team</button>`)}
+
+  <section class="card" style="padding:var(--space-lg); max-width:640px">
+    <div class="form-grid">
+      <label>Full Name<input type="text" placeholder="e.g. Morgan Reeves"></label>
+      <label>Email<input type="text" placeholder="morgan@meridianspec.com"></label>
+      <label>Role<input type="text" placeholder="Analyst"></label>
+      <label>Authority Level<select>
+        <option>Full</option>
+        <option>Sign NDAs · Publish</option>
+        <option selected>Build / Upload</option>
+        <option>Financials only</option>
+        <option>Read-only</option>
+      </select></label>
+      <label class="form-wide">Personal note (optional)<textarea rows="3" placeholder="Welcome to the team — looking forward to collaborating."></textarea></label>
+    </div>
+
+    <div class="konduit-settings-list" style="margin-top:var(--space-md); padding:0">
+      <label class="konduit-toggle-row"><span>Require 2FA on first sign-in</span><input type="checkbox" checked></label>
+      <label class="konduit-toggle-row"><span>Grant access to all active programs</span><input type="checkbox" checked></label>
+      <label class="konduit-toggle-row"><span>Include in weekly activity digest</span><input type="checkbox" checked></label>
+    </div>
+
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-team'})">Cancel</button>
+      <button class="btn btn-primary konduit-cta" onclick="(function(){var f=document.querySelector('.konduit-main'); var name=(f&&f.querySelectorAll('input')[0]&&f.querySelectorAll('input')[0].value)||'New Member'; var email=(f&&f.querySelectorAll('input')[1]&&f.querySelectorAll('input')[1].value)||'invitee@example.com'; var role=(f&&f.querySelectorAll('input')[2]&&f.querySelectorAll('input')[2].value)||'Analyst'; var auth=(f&&f.querySelectorAll('select')[0]&&f.querySelectorAll('select')[0].value)||'Build / Upload'; var rt=konduitRuntime(); rt.pendingInvites.push({name:name,email:email,role:role,authority:auth, sent:new Date().toISOString().slice(0,10)}); window.setState({screen:'k-team', konduitFlash:{title:'Invitation sent', body:name+' · '+email}}); })()">Send Invite</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitSavedSearchEdit() {
+  const seed = state.konduitSavedSeed || {};
+  return `
+  ${konduitPageHeader('Saved Search', 'Name the search, set criteria, and optionally enable alerts for new matches.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-saved'})">← Back</button>`)}
+
+  <section class="card" style="padding:var(--space-lg); max-width:760px">
+    <div class="form-grid">
+      <label class="form-wide">Name<input type="text" placeholder="e.g. Property CAT SE · $25M+" value="${seed.lob && seed.lob!=='All' ? seed.lob + ' · ' + (seed.geo||'') : ''}"></label>
+      <label>Line of Business<select>
+        <option>All</option>
+        ${D.KONDUIT_LOBS.map(l => `<option ${l===seed.lob?'selected':''}>${l}</option>`).join('')}
+      </select></label>
+      <label>Geography<select>
+        <option>All</option>
+        ${D.KONDUIT_GEO.map(g => `<option ${g===seed.geo?'selected':''}>${g}</option>`).join('')}
+      </select></label>
+      <label>Min GWP<input type="text" placeholder="$10,000,000" value="$10,000,000"></label>
+      <label>Max GWP<input type="text" placeholder="$100,000,000" value="$100,000,000"></label>
+      <label>Max Loss Ratio<input type="text" placeholder="65%" value="65%"></label>
+      <label>Min Data Quality<select>
+        <option>80%+</option>
+        <option selected>85%+</option>
+        <option>90%+</option>
+        <option>95%+</option>
+      </select></label>
+      <label>Structure<select>
+        <option>Any</option>
+        ${D.KONDUIT_STRUCTURES.map(s => `<option>${s}</option>`).join('')}
+      </select></label>
+    </div>
+    <div class="konduit-settings-list" style="margin-top:var(--space-md); padding:0">
+      <label class="konduit-toggle-row"><span>Email me when new programs match</span><input type="checkbox" checked></label>
+      <label class="konduit-toggle-row"><span>Notify when an existing program updates data room</span><input type="checkbox"></label>
+      <label class="konduit-toggle-row"><span>Alert on MGA responding to prior Q&A</span><input type="checkbox" checked></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-saved'})">Cancel</button>
+      <button class="btn btn-primary konduit-cta" onclick="(function(){var inputs=document.querySelectorAll('.konduit-main input, .konduit-main select'); var name=(inputs[0]&&inputs[0].value)||'Untitled Search'; var rt=konduitRuntime(); rt.runtimeSavedSearches.push({id:'SRCH-'+(100+rt.runtimeSavedSearches.length), name:name, lob:['All'], geo:['All'], gwp_min:10000000, gwp_max:100000000, lr_max:65, alerts:true, matches:0}); window.setState({screen:'k-saved', konduitFlash:{title:'Saved search created', body:'Alerts enabled · you\\'ll be notified on new matches'}}); })()">Save Search</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitBilling() {
+  const invoices = [
+    { id: 'INV-2026-04', date: '2026-04-01', amount: '$2,400.00', period: 'Apr 2026', status: 'Paid' },
+    { id: 'INV-2026-03', date: '2026-03-01', amount: '$2,400.00', period: 'Mar 2026', status: 'Paid' },
+    { id: 'INV-2026-02', date: '2026-02-01', amount: '$2,400.00', period: 'Feb 2026', status: 'Paid' },
+    { id: 'INV-2026-01', date: '2026-01-01', amount: '$2,400.00', period: 'Jan 2026', status: 'Paid' },
+    { id: 'INV-2025-12', date: '2025-12-01', amount: '$1,200.00', period: 'Dec 2025', status: 'Paid' }
+  ];
+  return `
+  ${konduitPageHeader('Billing', 'Plan, invoices, payment method, and seat allocation.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-settings'})">← Settings</button>`)}
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Current Plan</h3></div>
+      <div class="konduit-settings-list">
+        <div style="font-size:1.4rem; font-weight:700; color:var(--k-accent)">MGA Professional</div>
+        <div><strong>Price:</strong> $2,400 / month</div>
+        <div><strong>Programs:</strong> 3 of 10 used</div>
+        <div><strong>Seats:</strong> 4 of 8 used</div>
+        <div><strong>Data room storage:</strong> 47 GB of 500 GB</div>
+        <div><strong>Next renewal:</strong> 2026-05-01</div>
+        <div style="margin-top:var(--space-sm); display:flex; gap:8px">
+          <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-upgrade'})">Upgrade Plan</button>
+          <button class="btn btn-secondary" onclick="window.showModal('Cancel Plan','<div class=k-modal-body>Your subscription will remain active until 2026-05-01. Data rooms become read-only after cancellation.</div>','Confirm Cancel',()=>window.konduitFlash({kind:'warn',title:'Subscription scheduled to cancel',body:'Access until 2026-05-01 — you can re-activate anytime'}))">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Payment Method</h3></div>
+      <div class="konduit-settings-list">
+        <div><strong>Card:</strong> Visa ending 4242</div>
+        <div><strong>Billing contact:</strong> priya@meridianspec.com</div>
+        <div><strong>Billing address:</strong> 340 Market St, San Francisco CA 94105</div>
+        <button class="btn btn-secondary konduit-cta-outline" style="margin-top:var(--space-sm)" onclick="window.setState({screen:'k-payment-method'})">Update Payment Method</button>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Invoice History</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Invoice</th><th>Date</th><th>Period</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${invoices.map(i => `
+            <tr>
+              <td><strong>${i.id}</strong></td>
+              <td>${i.date}</td>
+              <td>${i.period}</td>
+              <td>${i.amount}</td>
+              <td>${konduitStatusBadge(i.status,'green')}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.konduitViewInvoice('${i.id}','${i.date}','${i.period}','${i.amount}')">View</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.konduitDownloadInvoice('${i.id}','${i.date}','${i.period}','${i.amount}')">⬇ PDF</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitQReviewSubmitted() {
+  return `
+  ${konduitPageHeader('Quality Review — Submitted', 'Your program is with the Konduit QA team. Typical review completes in 2 business days.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-qreview'})">← Back</button>`)}
+
+  <section class="card" style="padding:var(--space-xl); text-align:center">
+    <div style="font-size:3rem; margin-bottom:var(--space-md)">✅</div>
+    <h2 style="margin-bottom:var(--space-sm)">Submitted to Konduit QA</h2>
+    <p class="row-sub" style="max-width:560px; margin:0 auto var(--space-lg)">The review team will validate data completeness, flag benchmark outliers, confirm actuarial sufficiency, and either approve for publication or return with specific revisions.</p>
+    <div class="konduit-stepper" style="max-width:640px; margin:0 auto">
+      <div class="konduit-step done"><span class="konduit-step-num">1</span><span class="konduit-step-label">Submitted</span></div>
+      <div class="konduit-step active"><span class="konduit-step-num">2</span><span class="konduit-step-label">In Review</span></div>
+      <div class="konduit-step pending"><span class="konduit-step-num">3</span><span class="konduit-step-label">Approved / Revisions</span></div>
+    </div>
+    <div style="margin-top:var(--space-lg)">
+      <div class="row-sub">Expected response: 2026-04-22</div>
+      <div class="row-sub">Reviewer: Konduit Ops (auto-assigned)</div>
+    </div>
+    <div style="margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:center">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-programs'})">← Back to Programs</button>
+      <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-dashboard'})">Dashboard</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitDataRoom() {
+  const pid = state.konduitProgramId || 'KDP-0812';
+  const cp = state.konduitNdaCounterparty || 'Summit Fronting Re';
+  const p = D.konduitPrograms.find(x => x.id === pid) || D.konduitPrograms[0];
+  const docs = D.konduitDocuments.filter(d => d.programId === pid);
+  const accessLog = D.konduitAuditLog.filter(a => a.target === pid).slice(0, 6);
+
+  return `
+  ${konduitPageHeader(`Data Room · ${cp}`, `${p.name} · all document access is logged and attributable`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-nda'})">← NDAs</button>
+     <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-qa', konduitQAKey:'${pid}:${cp.replace(/'/g, "\\'")}'})">Open Q&A Thread</button>`)}
+
+  ${konduitKPIs([
+    { label: 'Access Level', value: 'Full · NDA Signed' },
+    { label: 'Documents',    value: docs.length.toString() },
+    { label: 'Counterparty', value: cp },
+    { label: 'NDA Expiry',   value: '2027-04-19' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Document Index</h3>
+      <label class="konduit-inline-select">View:
+        <select><option>All</option><option>Financials</option><option>Actuarial</option><option>Team</option><option>Claims</option></select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>File</th><th>Type</th><th>Size</th><th>Uploaded</th><th>Access</th><th></th></tr></thead>
+        <tbody>
+          ${docs.map(d => `
+            <tr>
+              <td><strong>${d.name}</strong></td>
+              <td>${d.type}</td>
+              <td>${d.size}</td>
+              <td>${d.uploaded}</td>
+              <td>${konduitStatusBadge('Unlocked','green')}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.konduitViewDoc('${d.name}', '${d.type}', '${d.size}', 'Uploaded ${d.uploaded}')">👁 View</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.konduitDownloadFile('${d.name.replace(/\.(pdf|pptx|xlsx|docx)$/i, '')}.txt', window.konduitGenerateForDownload('${d.name}','${d.type}'), 'text/plain')">⬇ Download</button>
+              </td>
+            </tr>`).join('') || `<tr><td colspan="6" class="row-sub">Data room is empty — MGA has not uploaded documents for this program yet.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Access Log (Last 6 Events)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>IP</th></tr></thead>
+        <tbody>
+          ${accessLog.map(a => `
+            <tr>
+              <td class="row-sub">${a.ts}</td>
+              <td>${a.actor}</td>
+              <td><strong>${a.action}</strong></td>
+              <td class="row-sub">${a.ip}</td>
+            </tr>`).join('') || `<tr><td colspan="4" class="row-sub">No access events yet.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — NDA SIGNING FLOW (both sides)
+// ════════════════════════════════════════════════════════════════
+function renderKonduitNdaFlow() {
+  const step = state.konduitNdaStep || 1;
+  const counterparty = state.konduitNdaCounterparty || 'Summit Fronting Re';
+  const pid = state.konduitProgramId || 'KDP-0812';
+  const p = D.konduitPrograms.find(x => x.id === pid) || D.konduitPrograms[0];
+
+  const stepLabels = ['Select Counterparty','Template & Terms','Sign & Send','Awaiting Countersign','Fully Executed'];
+
+  const body = step === 1 ? `
+    <div class="form-grid">
+      <label class="form-wide">Program<select><option>${p.name} (${p.id})</option></select></label>
+      <label>Counterparty<input type="text" value="${counterparty}"></label>
+      <label>Counterparty Type<select>
+        <option>Fronting Carrier</option>
+        <option>Reinsurer</option>
+        <option>Lloyd's Syndicate</option>
+        <option>Full-stack Capacity</option>
+        <option>Wholesale Broker</option>
+      </select></label>
+      <label class="form-wide">Scope of disclosure<textarea rows="3">Full program data including actuarial detail, loss triangles, per-risk limits, founder financials, and capital commitments.</textarea></label>
+    </div>`
+  : step === 2 ? `
+    <div class="form-grid">
+      <label>Template<select>
+        <option selected>Mutual NDA — Standard (v3.2)</option>
+        <option>Mutual NDA — UK / Lloyd's (v2.8)</option>
+        <option>One-way NDA — Capacity Receives (v1.4)</option>
+        <option>Program-specific NDA (custom)</option>
+      </select></label>
+      <label>Governing Law<select><option>Delaware, USA</option><option>England & Wales</option><option>New York, USA</option></select></label>
+      <label>NDA Term<select><option>12 months</option><option selected>24 months</option><option>36 months</option></select></label>
+      <label>Non-solicitation<select><option>None</option><option selected>12 months</option><option>24 months</option></select></label>
+      <label class="form-wide">Additional clauses<textarea rows="3">No derivative use · return or destruction upon termination · injunctive relief.</textarea></label>
+    </div>`
+  : step === 3 ? `
+    <div style="padding:var(--space-md); background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); margin-bottom:var(--space-md)">
+      <h4 style="margin-bottom:var(--space-sm)">Mutual NDA — Preview</h4>
+      <div class="row-sub" style="line-height:1.7; max-height:260px; overflow-y:auto; padding-right:8px">
+        This Mutual Nondisclosure Agreement is entered into as of today between ${p.mga} (the "Disclosing Party") and ${counterparty} (the "Receiving Party") for the purpose of evaluating a potential insurance capacity relationship regarding the ${p.name} program.
+        <br><br>Both parties agree to keep confidential all non-public information disclosed in connection with such evaluation for a period of 24 months, including but not limited to: actuarial data, loss detail, financial projections, underwriting appetite, and proprietary methodology.
+        <br><br>Governing law: Delaware, USA. Remedies include injunctive relief.
+        <br><br><em>[Preview truncated — full document will be sent for signature.]</em>
+      </div>
+    </div>
+    <div style="padding:var(--space-md); background:var(--k-accent-soft); border:1px solid var(--k-border-accent); border-radius:var(--radius-md)">
+      <h4 style="margin-bottom:var(--space-sm); color:var(--k-accent)">Your e-signature</h4>
+      <div class="form-grid">
+        <label>Signer Name<input type="text" value="Evan Harlow"></label>
+        <label>Title<input type="text" value="Founder & CUO"></label>
+        <label class="form-wide"><span style="display:flex; align-items:center; gap:8px"><input type="checkbox" checked> I authorize DocuSign to apply my e-signature on behalf of ${p.mga}</span></label>
+      </div>
+    </div>`
+  : step === 4 ? `
+    <div style="text-align:center; padding:var(--space-xl)">
+      <div style="font-size:2.6rem">📤</div>
+      <h3 style="margin-top:var(--space-sm)">Sent to ${counterparty}</h3>
+      <p class="row-sub" style="max-width:480px; margin:var(--space-sm) auto">Counterparty will be notified via email + in-app. Expected countersign: within 2 business days.</p>
+      <div class="konduit-detail-row" style="display:grid; grid-template-columns:repeat(2,1fr); gap:var(--space-sm); max-width:560px; margin:var(--space-lg) auto; text-align:left">
+        <div><strong>NDA ID:</strong> NDA-${Math.floor(Math.random()*900)+100}</div>
+        <div><strong>Template:</strong> Mutual NDA v3.2</div>
+        <div><strong>Program:</strong> ${p.name}</div>
+        <div><strong>Counterparty:</strong> ${counterparty}</div>
+        <div><strong>Sent:</strong> ${new Date().toISOString().slice(0,10)}</div>
+        <div><strong>Expected:</strong> Within 2 business days</div>
+      </div>
+    </div>`
+  : `
+    <div style="text-align:center; padding:var(--space-xl)">
+      <div style="font-size:2.6rem">✅</div>
+      <h3 style="margin-top:var(--space-sm)">NDA Fully Executed</h3>
+      <p class="row-sub" style="max-width:480px; margin:var(--space-sm) auto">Data room is now unlocked for ${counterparty}. All access will be logged for audit.</p>
+      <div style="margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:center">
+        <button class="btn btn-secondary" onclick="window.setState({screen:'k-nda'})">Back to NDAs</button>
+        <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-data-room', konduitProgramId:'${pid}', konduitNdaCounterparty:'${counterparty.replace(/'/g, "\\'")}'})">Open Data Room →</button>
+      </div>
+    </div>`;
+
+  const nextAction = step < 5 ? `window.setState({konduitNdaStep:${step+1}})` : '';
+  const nextLabel  = step === 1 ? 'Choose Template →' : step === 2 ? 'Preview Agreement →' : step === 3 ? 'Sign & Send →' : step === 4 ? 'Simulate Countersign →' : '';
+
+  return `
+  ${konduitPageHeader('NDA Signing Flow', `Step ${step} of 5 — ${stepLabels[step-1]}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-nda', konduitNdaStep:1})">Cancel</button>`)}
+
+  <section class="card">
+    <div class="konduit-stepper">
+      ${stepLabels.map((l,i) => {
+        const n = i+1;
+        const cls = n < step ? 'done' : n === step ? 'active' : 'pending';
+        return `<div class="konduit-step ${cls}"><span class="konduit-step-num">${n}</span><span class="konduit-step-label">${l}</span></div>`;
+      }).join('')}
+    </div>
+    <div class="konduit-wizard-body">${body}</div>
+    ${step < 5 ? `
+    <div class="konduit-wizard-actions">
+      <button class="btn btn-secondary" ${step===1?'disabled':''} onclick="window.setState({konduitNdaStep:${Math.max(1, step-1)}})">← Back</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-primary konduit-cta" onclick="${nextAction}">${nextLabel}</button>
+    </div>` : ''}
+  </section>
+  `;
+}
+
+function renderKonduitCapNdaSign() {
+  // Capacity-side version of same flow (requesting NDA from MGA)
+  const step = state.konduitNdaStep || 1;
+  const pid = state.konduitProgramId || 'KDP-0812';
+  const p = D.konduitPrograms.find(x => x.id === pid) || D.konduitPrograms[0];
+  const stepLabels = ['Review Program','Accept Template','Sign Request','Await MGA Countersign','NDA Executed'];
+
+  const body = step === 1 ? `
+    <div style="padding:var(--space-md); background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md)">
+      <h4 style="margin-bottom:8px">${p.name}</h4>
+      <div class="row-sub">${p.mga} · ${p.lob} · ${p.geo}</div>
+      <div class="konduit-detail-row" style="margin-top:var(--space-sm)">
+        <div><strong>Target GWP:</strong> ${p.gwp_display}</div>
+        <div><strong>Loss Ratio (banded):</strong> ${p.loss_ratio_band}</div>
+        <div><strong>Structure sought:</strong> ${p.structure}</div>
+        <div><strong>Founder track:</strong> ${p.founder_track}</div>
+      </div>
+    </div>
+    <div style="margin-top:var(--space-md); padding:var(--space-md); background:var(--k-accent-soft); border:1px solid var(--k-border-accent); border-radius:var(--radius-md)">
+      <h4 style="margin-bottom:6px; color:var(--k-accent)">What unlocks after NDA</h4>
+      <ul class="row-sub" style="padding-left:20px; line-height:1.7">
+        <li>Per-risk limits and retention detail</li>
+        <li>Actuarial study and loss triangles</li>
+        <li>Founder financial disclosures</li>
+        <li>Full data room with all uploaded documents</li>
+      </ul>
+    </div>`
+  : step === 2 ? `
+    <div class="form-grid">
+      <label>Template<select><option selected>Mutual NDA — Standard (v3.2)</option><option>Mutual NDA — UK / Lloyd's (v2.8)</option></select></label>
+      <label>Governing Law<select><option>Delaware, USA</option><option>England & Wales</option></select></label>
+      <label>NDA Term<select><option>12 months</option><option selected>24 months</option></select></label>
+      <label>Non-solicitation<select><option>None</option><option selected>12 months</option></select></label>
+    </div>
+    <p class="row-sub" style="margin-top:var(--space-md)">These terms are proposed by Konduit's standard template. The MGA can counter-propose alternate terms during countersign.</p>`
+  : step === 3 ? `
+    <div style="padding:var(--space-md); background:var(--k-accent-soft); border:1px solid var(--k-border-accent); border-radius:var(--radius-md)">
+      <h4 style="margin-bottom:var(--space-sm); color:var(--k-accent)">Your e-signature</h4>
+      <div class="form-grid">
+        <label>Signer Name<input type="text" value="Priya Raman"></label>
+        <label>Title<input type="text" value="Lead Underwriter"></label>
+        <label class="form-wide"><span style="display:flex; align-items:center; gap:8px"><input type="checkbox" checked> I authorize DocuSign to apply my e-signature on behalf of Summit Fronting Re</span></label>
+      </div>
+    </div>`
+  : step === 4 ? `
+    <div style="text-align:center; padding:var(--space-xl)">
+      <div style="font-size:2.6rem">📤</div>
+      <h3 style="margin-top:var(--space-sm)">Sent to ${p.mga}</h3>
+      <p class="row-sub">MGA will review and countersign. Expected within 1–2 business days.</p>
+    </div>`
+  : `
+    <div style="text-align:center; padding:var(--space-xl)">
+      <div style="font-size:2.6rem">✅</div>
+      <h3 style="margin-top:var(--space-sm)">NDA Executed</h3>
+      <p class="row-sub">Full program detail unlocked.</p>
+      <div style="margin-top:var(--space-lg)">
+        <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-cap-program', konduitProgramId:'${pid}'})">Open Full Program Detail →</button>
+      </div>
+    </div>`;
+
+  return `
+  ${konduitPageHeader('Request NDA', `Step ${step} of 5 — ${stepLabels[step-1]}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-cap-program', konduitProgramId:'${pid}'})">Cancel</button>`)}
+
+  <section class="card">
+    <div class="konduit-stepper">
+      ${stepLabels.map((l,i) => {
+        const n = i+1;
+        const cls = n < step ? 'done' : n === step ? 'active' : 'pending';
+        return `<div class="konduit-step ${cls}"><span class="konduit-step-num">${n}</span><span class="konduit-step-label">${l}</span></div>`;
+      }).join('')}
+    </div>
+    <div class="konduit-wizard-body">${body}</div>
+    ${step < 5 ? `
+    <div class="konduit-wizard-actions">
+      <button class="btn btn-secondary" ${step===1?'disabled':''} onclick="window.setState({konduitNdaStep:${Math.max(1, step-1)}})">← Back</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-primary konduit-cta" onclick="window.setState({konduitNdaStep:${step+1}})">${step === 3 ? 'Sign & Send →' : step === 4 ? 'Simulate MGA Countersign →' : 'Continue →'}</button>
+    </div>` : ''}
+  </section>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — TERM SHEET FLOW (list / new / detail / counter)
+// ════════════════════════════════════════════════════════════════
+function konduitTsStatusColor(s) {
+  return s==='Accepted'?'green':s==='Countered'?'amber':s==='Declined'?'red':s==='Sent'?'blue':'grey';
+}
+
+function renderKonduitTermSheets() {
+  const ts = konduitRuntime().termSheets;
+  return `
+  ${konduitPageHeader('Term Sheets', 'Treaty / quota-share / facultative proposals exchanged with capacity providers.',
+    `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-term-sheet-new'})">+ New Term Sheet</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>TS ID</th><th>Program</th><th>Counterparty</th><th>Premium Share</th><th>Ceding Comm</th><th>Status</th><th>Version</th><th>Sent</th><th></th></tr></thead>
+        <tbody>
+          ${ts.map(t => {
+            const p = D.konduitPrograms.find(x => x.id === t.programId);
+            return `<tr>
+              <td><strong>${t.id}</strong></td>
+              <td>${p ? p.name : t.programId}</td>
+              <td>${t.counterparty}</td>
+              <td>${t.premiumShare}</td>
+              <td>${t.cedingComm}</td>
+              <td>${konduitStatusBadge(t.status, konduitTsStatusColor(t.status))}</td>
+              <td>v${t.version}</td>
+              <td>${t.sent || '—'}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-term-sheet', konduitTsId:'${t.id}'})">Open →</button></td>
+            </tr>`;
+          }).join('') || `<tr><td colspan="9" class="row-sub">No term sheets yet. Capacity providers will propose terms after NDA.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitCapTermSheets() {
+  // Capacity-side view of term sheets (authored by this capacity)
+  const ts = konduitRuntime().termSheets.filter(t => t.counterparty === 'Summit Fronting Re');
+  return `
+  ${konduitPageHeader('Your Term Sheets', 'Proposals sent to MGAs · status updates in real time.',
+    `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-marketplace'})">Browse Marketplace →</button>`)}
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>TS ID</th><th>Program</th><th>MGA</th><th>Premium Share</th><th>Status</th><th>Sent</th><th></th></tr></thead>
+        <tbody>
+          ${ts.map(t => {
+            const p = D.konduitPrograms.find(x => x.id === t.programId);
+            return `<tr>
+              <td><strong>${t.id}</strong></td>
+              <td>${p ? p.name : t.programId}</td>
+              <td>${p ? p.mga : '—'}</td>
+              <td>${t.premiumShare}</td>
+              <td>${konduitStatusBadge(t.status, konduitTsStatusColor(t.status))}</td>
+              <td>${t.sent || '—'}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-term-sheet', konduitTsId:'${t.id}'})">Open →</button></td>
+            </tr>`;
+          }).join('') || `<tr><td colspan="7" class="row-sub">You haven't sent any term sheets yet. Open a program and send terms after NDA.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitTermSheetNew() {
+  const pid = state.konduitProgramId || 'KDP-0812';
+  const p = D.konduitPrograms.find(x => x.id === pid) || D.konduitPrograms[0];
+  return `
+  ${konduitPageHeader('New Term Sheet', `Proposal for ${p.name}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-term-sheets'})">Cancel</button>`)}
+
+  <section class="card" style="padding:var(--space-lg)">
+    <div class="form-grid">
+      <label>Program<input type="text" value="${p.name}" disabled></label>
+      <label>Counterparty (MGA)<input type="text" value="${p.mga}" disabled></label>
+      <label>Structure<select>
+        ${D.KONDUIT_STRUCTURES.map(s => `<option ${s===p.structure?'selected':''}>${s}</option>`).join('')}
+      </select></label>
+      <label>Treaty Term<select><option>6 months</option><option selected>12 months</option><option>24 months</option></select></label>
+      <label>Premium Share (Quota)<input type="text" value="75%"></label>
+      <label>Ceding Commission<input type="text" value="32%"></label>
+      <label>Profit Commission<input type="text" value="15% above 60% LR"></label>
+      <label>Brokerage<input type="text" value="2.5%"></label>
+      <label>Per-risk Limit<input type="text" value="$50M"></label>
+      <label>Per-risk Retention<input type="text" value="$5M"></label>
+      <label>Aggregate Limit<input type="text" value="$250M"></label>
+      <label>CAT Cover Layer<input type="text" value="$15M xs $5M"></label>
+      <label class="form-wide">Conditions Precedent<textarea rows="3">Actuarial sign-off on latest study · capital certification · approved rating plan · quarterly bordereau</textarea></label>
+      <label class="form-wide">Notes / Additional Terms<textarea rows="3">Proposal subject to final treaty wording. Inception 1/1/2027 assumed.</textarea></label>
+    </div>
+
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-term-sheets'})">Save Draft</button>
+      <button class="btn btn-primary konduit-cta" onclick="(function(){var rt=konduitRuntime();var newId='TS-'+(200+rt.termSheets.length);rt.termSheets.push({id:newId,programId:'${p.id}',counterparty:'Summit Fronting Re',status:'Sent',sent:new Date().toISOString().slice(0,10),premiumShare:'75%',cedingComm:'32%',profitComm:'15% above 60% LR',treatyTerm:'12 months',limit:'$50M per risk',retention:'$5M',notes:'New proposal',version:1});window.setState({screen:'k-term-sheets', konduitFlash:{title:'Term sheet sent',body:'${p.mga} will review and countersign or counter'}});})()">Send Term Sheet →</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitTermSheetDetail() {
+  const id = state.konduitTsId || 'TS-101';
+  const t = konduitRuntime().termSheets.find(x => x.id === id) || konduitRuntime().termSheets[0];
+  const p = D.konduitPrograms.find(x => x.id === t.programId);
+  return `
+  ${konduitPageHeader(`${t.id} · ${t.counterparty}`, `${p ? p.name : t.programId} · v${t.version} · ${t.status}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-term-sheets'})">← Term Sheets</button>
+     ${t.status === 'Sent' || t.status === 'Countered'
+       ? `<button class="btn btn-secondary" onclick="window.setState({screen:'k-term-counter', konduitTsId:'${t.id}'})">↩ Counter-offer</button>
+          <button class="btn btn-primary konduit-cta" onclick="(function(){var rt=konduitRuntime();var x=rt.termSheets.find(function(y){return y.id==='${t.id}'});if(x)x.status='Accepted';window.setState({screen:'k-term-sheets', konduitFlash:{title:'${t.id} accepted',body:'Program moves to Pending Bind'}});})()">Accept Terms →</button>`
+       : ''}`)}
+
+  ${konduitKPIs([
+    { label: 'Status',         value: t.status },
+    { label: 'Premium Share',  value: t.premiumShare },
+    { label: 'Ceding Comm',    value: t.cedingComm },
+    { label: 'Limit',          value: t.limit },
+    { label: 'Retention',      value: t.retention },
+    { label: 'Version',        value: `v${t.version}` }
+  ], 6)}
+
+  <section class="card">
+    <div class="card-header"><h3>Key Terms</h3></div>
+    <div class="konduit-detail-row">
+      <div><strong>Treaty Term:</strong> ${t.treatyTerm}</div>
+      <div><strong>Profit Commission:</strong> ${t.profitComm}</div>
+      <div><strong>Counterparty:</strong> ${t.counterparty}</div>
+      <div><strong>Sent:</strong> ${t.sent || '—'}</div>
+    </div>
+    <p style="padding:0 var(--space-md) var(--space-md); color:var(--text-secondary); line-height:1.6"><strong>Notes:</strong> ${t.notes}</p>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Version History</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Version</th><th>Author</th><th>Date</th><th>Change</th></tr></thead>
+        <tbody>
+          <tr><td>v${t.version}</td><td>${t.counterparty}</td><td>${t.sent || 'Draft'}</td><td class="row-sub">Current version</td></tr>
+          ${t.version > 1 ? `<tr><td>v1</td><td>${t.counterparty}</td><td>2026-04-10</td><td class="row-sub">Original proposal — premium share 60%, ceding 30%</td></tr>` : ''}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Activity</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Actor</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>${t.sent || '—'}</td><td>${t.counterparty}</td><td>Term sheet sent · v${t.version}</td></tr>
+          ${t.status === 'Countered' ? `<tr><td>2026-04-18</td><td>${p ? p.mga : 'MGA'}</td><td>Counter-offer — premium share requested at 55%</td></tr>` : ''}
+          ${t.status === 'Accepted' ? `<tr><td>2026-01-05</td><td>${p ? p.mga : 'MGA'}</td><td>Terms accepted · progressed to Pending Bind</td></tr>` : ''}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — Q&A ROOM
+// ════════════════════════════════════════════════════════════════
+function renderKonduitQA() {
+  const rt = konduitRuntime();
+  const keys = Object.keys(rt.qaThreads);
+  const active = state.konduitQAKey || keys[0];
+
+  return `
+  ${konduitPageHeader('Q&A Room', 'Structured questions and answers per counterparty. All history preserved, attachments allowed.')}
+
+  <div class="konduit-msg-split">
+    <aside class="konduit-msg-list">
+      ${keys.map(k => {
+        const [pid, cp] = k.split(':');
+        const p = D.konduitPrograms.find(x => x.id === pid);
+        const messages = rt.qaThreads[k];
+        const last = messages[messages.length - 1];
+        return `
+          <div class="konduit-msg-item${k===active?' active':''}" onclick="window.setState({konduitQAKey:'${k.replace(/'/g, "\\'")}'})">
+            <div class="konduit-msg-title"><strong>${cp}</strong><span class="konduit-unread">${messages.filter(m=>m.type==='question').length} Q</span></div>
+            <div class="row-sub">${p ? p.name : pid}</div>
+            <div class="konduit-msg-preview">${last.body}</div>
+            <div class="konduit-msg-ts">${last.ts}</div>
+          </div>`;
+      }).join('') || `<div style="padding:var(--space-md)" class="row-sub">No Q&A threads yet.</div>`}
+    </aside>
+    <section class="konduit-msg-panel">
+      ${renderKonduitQAThread()}
+    </section>
+  </div>
+  `;
+}
+
+function renderKonduitQAThread() {
+  const rt = konduitRuntime();
+  const key = state.konduitQAKey || Object.keys(rt.qaThreads)[0];
+  const messages = rt.qaThreads[key] || [];
+  const [pid, cp] = (key || '').split(':');
+  const p = D.konduitPrograms.find(x => x.id === pid);
+
+  return `
+  <div class="konduit-msg-panel-head">
+    <div>
+      <h3 style="margin:0">${cp || 'Select a thread'}</h3>
+      <div class="row-sub">${p ? p.name : ''}</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-data-room', konduitProgramId:'${pid}', konduitNdaCounterparty:'${(cp||'').replace(/'/g, "\\'")}'})">Data Room</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-messages', konduitMsgThread:'MSG-301'})">Chat</button>
+    </div>
+  </div>
+  <div class="konduit-msg-body">
+    ${messages.map(m => `
+      <div class="konduit-qa-bubble ${m.type}">
+        <div class="konduit-msg-from">
+          <strong>${m.type === 'question' ? '❓ Question' : '✓ Answer'}</strong> · ${m.from} · <span class="row-sub">${m.ts}</span>
+        </div>
+        <div style="margin-top:4px">${m.body}</div>
+      </div>`).join('') || `<div class="row-sub" style="padding:var(--space-lg);text-align:center">No Q&A yet for this thread.</div>`}
+  </div>
+  <form class="konduit-msg-compose" onsubmit="event.preventDefault();const v=this.elements.q.value.trim();const type=this.elements.t.value;if(v&&'${key}'){window.konduitAppendQAAndRender('${key.replace(/'/g, "\\'")}',type,v);this.reset();}">
+    <select name="t" style="padding:8px 10px; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:8px; color:var(--text-primary); font-family:inherit">
+      <option value="question">Question</option>
+      <option value="answer">Answer</option>
+    </select>
+    <input type="text" name="q" placeholder="Ask a question or post an answer…" autocomplete="off">
+    <button type="submit" class="btn btn-primary konduit-cta">Post</button>
+  </form>
+  `;
+}
+
+window.konduitAppendQAAndRender = function(key, type, body) {
+  konduitAppendQA(key, type, body);
+  window.setState({ konduitQAKey: key });
+};
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — BORDEREAU REPORTING
+// ════════════════════════════════════════════════════════════════
+function renderKonduitBordereau() {
+  const period = state.konduitBordPeriod || '2026-03';
+  const premiumRows = [
+    { policy: 'P-2026-0421', insured: 'Kroger Real Estate', lob: 'Commercial Property', effective: '2026-03-01', expiry: '2027-03-01', gwp: '$284,000', net: '$213,000', comm: '$71,000' },
+    { policy: 'P-2026-0422', insured: 'Prologis Trust',      lob: 'Commercial Property', effective: '2026-03-04', expiry: '2027-03-04', gwp: '$512,000', net: '$384,000', comm: '$128,000' },
+    { policy: 'P-2026-0423', insured: 'Magnolia Construction', lob: 'Commercial Property', effective: '2026-03-08', expiry: '2027-03-08', gwp: '$147,000', net: '$110,250', comm: '$36,750' },
+    { policy: 'P-2026-0424', insured: 'Westbrook Hospitality', lob: 'Commercial Property', effective: '2026-03-11', expiry: '2027-03-11', gwp: '$98,000',  net: '$73,500',  comm: '$24,500' },
+    { policy: 'P-2026-0425', insured: 'Harbor Logistics',    lob: 'Commercial Property', effective: '2026-03-19', expiry: '2027-03-19', gwp: '$221,000', net: '$165,750', comm: '$55,250' }
+  ];
+  const totalG = '$1,262,000';
+  const totalN = '$946,500';
+  const totalC = '$315,500';
+
+  return `
+  ${konduitPageHeader('Bordereau Reporting', 'Monthly premium & claims ceded to capacity · auto-reconciled against carrier records.',
+    `<button class="btn btn-ghost" onclick="window.konduitExportBordereau('${period}')">⬇ Export XLSX</button>
+     <button class="btn btn-primary konduit-cta" onclick="(function(){var rt=konduitRuntime();rt.bordereauSubmitted['${period}']=new Date().toISOString();window.konduitFlash({title:'Bordereau submitted',body:'Summit Fronting Re will reconcile within 3 days'});})()">📤 Submit to Capacity</button>`)}
+
+  <section class="card">
+    <div class="card-header"><h3>Reporting Period</h3>
+      <label class="konduit-inline-select">Month:
+        <select onchange="window.setState({konduitBordPeriod:this.value})">
+          <option value="2026-03" ${period==='2026-03'?'selected':''}>Mar 2026</option>
+          <option value="2026-02" ${period==='2026-02'?'selected':''}>Feb 2026</option>
+          <option value="2026-01" ${period==='2026-01'?'selected':''}>Jan 2026</option>
+          <option value="2025-12" ${period==='2025-12'?'selected':''}>Dec 2025</option>
+        </select>
+      </label>
+    </div>
+    ${konduitKPIs([
+      { label: 'Policies Bound',   value: '47' },
+      { label: 'Gross Written',    value: totalG },
+      { label: 'Net to Capacity',  value: totalN },
+      { label: 'Commissions',      value: totalC },
+      { label: 'Claims Paid',      value: '$32,400' },
+      { label: 'Recon Status',     value: 'Matched' }
+    ], 6)}
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Premium Bordereau (${period})</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Policy</th><th>Insured</th><th>LOB</th><th>Effective</th><th>Expiry</th><th>GWP</th><th>Net to Cap</th><th>Commission</th></tr></thead>
+        <tbody>
+          ${premiumRows.map(r => `
+            <tr>
+              <td><strong>${r.policy}</strong></td>
+              <td>${r.insured}</td>
+              <td>${r.lob}</td>
+              <td>${r.effective}</td>
+              <td>${r.expiry}</td>
+              <td>${r.gwp}</td>
+              <td>${r.net}</td>
+              <td>${r.comm}</td>
+            </tr>`).join('')}
+          <tr style="background:rgba(0,217,163,0.04); font-weight:700">
+            <td colspan="5" style="text-align:right">Totals</td>
+            <td>${totalG}</td>
+            <td>${totalN}</td>
+            <td>${totalC}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Claims Bordereau (${period})</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Claim</th><th>Insured</th><th>Date of Loss</th><th>Cause</th><th>Paid</th><th>Reserve</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>CLM-2026-0081</strong></td>
+            <td>Westbrook Hospitality</td>
+            <td>2026-03-14</td>
+            <td>Wind</td>
+            <td>$22,400</td>
+            <td>$10,000</td>
+            <td>${konduitStatusBadge('Open','amber')}</td>
+          </tr>
+          <tr>
+            <td><strong>CLM-2026-0079</strong></td>
+            <td>Harbor Logistics</td>
+            <td>2026-03-02</td>
+            <td>Water damage</td>
+            <td>$10,000</td>
+            <td>$0</td>
+            <td>${konduitStatusBadge('Closed','green')}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — RENEWALS
+// ════════════════════════════════════════════════════════════════
+function renderKonduitRenewals() {
+  const renewals = [
+    { id: 'REN-01', program: 'Meridian Coastal Property', capacity: 'Summit Fronting Re', expiry: '2027-04-30', days: 375, rateChange: '+3.5%', loss_ratio: '54.8%', status: 'On Track' },
+    { id: 'REN-02', program: 'Harbor WC — West',          capacity: 'Pacific Paper Group', expiry: '2026-08-15', days: 117, rateChange: '+8.2%', loss_ratio: '62.7%', status: 'Under Review' },
+    { id: 'REN-03', program: 'Atlas Surety',              capacity: 'Brookline Full-Stack',expiry: '2026-09-01', days: 134, rateChange: '0%',    loss_ratio: '21.3%', status: 'On Track' },
+    { id: 'REN-04', program: 'Northstar Trucking',        capacity: 'Summit Fronting Re', expiry: '2027-01-12', days: 267, rateChange: '+5.1%', loss_ratio: '64.5%', status: 'Re-quote Requested' }
+  ];
+
+  return `
+  ${konduitPageHeader('Renewals', 'Bound programs approaching renewal · re-underwriting and rate change tracking.',
+    `<button class="btn btn-ghost" onclick="window.konduitExportRenewalsIcs()">📅 Calendar Export</button>`)}
+
+  ${konduitKPIs([
+    { label: 'Due in 90d',   value: '0' },
+    { label: 'Due in 120d',  value: '1', warning: true },
+    { label: 'Due in 180d',  value: '2' },
+    { label: 'Due in 365d',  value: '4' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Upcoming Renewals</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Ren ID</th><th>Program</th><th>Capacity</th><th>Expiry</th><th>Days to Expiry</th><th>LR</th><th>Rate Change</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${renewals.map(r => `
+            <tr>
+              <td><strong>${r.id}</strong></td>
+              <td>${r.program}</td>
+              <td>${r.capacity}</td>
+              <td>${r.expiry}</td>
+              <td>${r.days} days</td>
+              <td>${r.loss_ratio}</td>
+              <td>${r.rateChange}</td>
+              <td>${konduitStatusBadge(r.status, r.status==='On Track'?'green':r.status==='Under Review'?'amber':'blue')}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-renewal', konduitRenewalId:'${r.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitRenewalDetail() {
+  const rid = state.konduitRenewalId || 'REN-01';
+  const renewals = {
+    'REN-01': { program: 'Meridian Coastal Property', capacity: 'Summit Fronting Re', expiry: '2027-04-30', days: 375, rateChange: '+3.5%' },
+    'REN-02': { program: 'Harbor WC — West',          capacity: 'Pacific Paper Group', expiry: '2026-08-15', days: 117, rateChange: '+8.2%' },
+    'REN-03': { program: 'Atlas Surety',              capacity: 'Brookline Full-Stack',expiry: '2026-09-01', days: 134, rateChange: '0%' },
+    'REN-04': { program: 'Northstar Trucking',        capacity: 'Summit Fronting Re', expiry: '2027-01-12', days: 267, rateChange: '+5.1%' }
+  };
+  const r = renewals[rid] || renewals['REN-01'];
+  const stepLabels = ['Loss Experience','Re-underwrite','Proposed Terms','Negotiation','Bound'];
+  const step = 2;
+
+  return `
+  ${konduitPageHeader(`Renewal · ${r.program}`, `${r.capacity} · ${r.expiry} · ${r.days} days`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-renewals'})">← Renewals</button>`)}
+
+  ${konduitKPIs([
+    { label: 'Expiry',       value: r.expiry },
+    { label: 'Rate Change',  value: r.rateChange },
+    { label: 'Loss Ratio',   value: '62.7%' },
+    { label: 'Retention',    value: '88%' }
+  ], 4)}
+
+  <section class="card">
+    <div class="konduit-stepper">
+      ${stepLabels.map((l,i) => {
+        const n = i+1;
+        const cls = n < step ? 'done' : n === step ? 'active' : 'pending';
+        return `<div class="konduit-step ${cls}"><span class="konduit-step-num">${n}</span><span class="konduit-step-label">${l}</span></div>`;
+      }).join('')}
+    </div>
+    <div class="konduit-wizard-body">
+      <h3 style="margin-bottom:var(--space-sm)">Re-underwriting Summary</h3>
+      <p class="row-sub" style="line-height:1.7">Program loss ratio trended from 58% (2024) → 62.7% (2025). Driven primarily by two large claims in Q3 — Carrier requesting 8.2% rate uplift and tightening of concentration caps on West Coast hospitality.</p>
+      <div class="konduit-detail-row" style="margin-top:var(--space-md)">
+        <div><strong>Current Premium:</strong> $65M</div>
+        <div><strong>Proposed Premium:</strong> $70.3M</div>
+        <div><strong>Ceding Commission:</strong> 33% (unchanged)</div>
+        <div><strong>Aggregate Limit:</strong> $150M (unchanged)</div>
+      </div>
+    </div>
+    <div class="konduit-wizard-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-renewal-counter', konduitRenewalId:'${rid}'})">↩ Counter Terms</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-primary konduit-cta" onclick="(function(){var rt=konduitRuntime();rt.renewalStatus['${rid}']='Accepted';window.setState({screen:'k-renewals', konduitFlash:{title:'Renewal accepted',body:'Bind pending · carrier papering treaty'}});})()">Accept Renewal →</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Loss Experience (3-Year)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Year</th><th>GWP</th><th>Claims Paid</th><th>Reserves</th><th>Loss Ratio</th><th>Combined</th></tr></thead>
+        <tbody>
+          <tr><td>2023</td><td>$58M</td><td>$29.5M</td><td>$4.2M</td><td>58.1%</td><td>89.4%</td></tr>
+          <tr><td>2024</td><td>$62M</td><td>$34.1M</td><td>$4.8M</td><td>62.7%</td><td>94.4%</td></tr>
+          <tr><td>2025</td><td>$65M</td><td>$36.9M</td><td>$4.9M</td><td>64.3%</td><td>96.1%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — CLAIMS
+// ════════════════════════════════════════════════════════════════
+function renderKonduitClaims() {
+  const claims = [
+    { id: 'CLM-2026-0081', program: 'Harbor WC — West',          insured: 'Westbrook Hospitality', dol: '2026-03-14', cause: 'Wind',         paid: '$22,400', reserve: '$10,000', status: 'Open' },
+    { id: 'CLM-2026-0079', program: 'Harbor WC — West',          insured: 'Harbor Logistics',      dol: '2026-03-02', cause: 'Water damage', paid: '$10,000', reserve: '$0',      status: 'Closed' },
+    { id: 'CLM-2026-0078', program: 'Northstar Trucking',        insured: 'Big Sky Freight',       dol: '2026-02-27', cause: 'Collision',    paid: '$48,500', reserve: '$25,000', status: 'Open' },
+    { id: 'CLM-2026-0077', program: 'Atlas Surety',              insured: 'Oakwood Builders',      dol: '2026-02-12', cause: 'Default',      paid: '$18,200', reserve: '$0',      status: 'Closed' },
+    { id: 'CLM-2026-0076', program: 'Skyline Aviation',          insured: 'Cascade Aerials',       dol: '2026-01-30', cause: 'Ground damage',paid: '$4,800',  reserve: '$0',      status: 'Closed' },
+    { id: 'CLM-2026-0075', program: 'Meridian Coastal Property', insured: 'Kroger Real Estate',    dol: '2026-01-22', cause: 'Water damage', paid: '$35,000', reserve: '$15,000', status: 'Open' }
+  ];
+
+  return `
+  ${konduitPageHeader('Claims', 'Claims on bound programs · shared with capacity for loss-ratio tracking.',
+    `<button class="btn btn-ghost" onclick="window.konduitExportLossRun()">⬇ Loss Run PDF</button>
+     <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-fnol', konduitFnolStep:1})">+ Report Claim</button>`)}
+
+  ${konduitKPIs([
+    { label: 'Open Claims',     value: claims.filter(c=>c.status==='Open').length.toString(), warning: true },
+    { label: 'Closed YTD',      value: claims.filter(c=>c.status==='Closed').length.toString() },
+    { label: 'Paid YTD',        value: '$138,900' },
+    { label: 'Outstanding Res.',value: '$50,000' }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Claims Register</h3>
+      <label class="konduit-inline-select">Status:
+        <select><option>All</option><option>Open</option><option>Closed</option></select>
+      </label>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Claim ID</th><th>Program</th><th>Insured</th><th>Date of Loss</th><th>Cause</th><th>Paid</th><th>Reserve</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${claims.map(c => `
+            <tr>
+              <td><strong>${c.id}</strong></td>
+              <td>${c.program}</td>
+              <td>${c.insured}</td>
+              <td>${c.dol}</td>
+              <td>${c.cause}</td>
+              <td>${c.paid}</td>
+              <td>${c.reserve}</td>
+              <td>${konduitStatusBadge(c.status, c.status==='Open'?'amber':'green')}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-claim', konduitClaimId:'${c.id}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitClaimDetail() {
+  const cid = state.konduitClaimId || 'CLM-2026-0081';
+  return `
+  ${konduitPageHeader(cid, 'Claim detail · parties · payments · timeline',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-claims'})">← Claims</button>
+     <button class="btn btn-secondary" onclick="window.setState({screen:'k-reserve-adjust', konduitClaimId:'${cid}'})">Adjust Reserve</button>
+     <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-payment-issue', konduitClaimId:'${cid}'})">+ Issue Payment</button>`)}
+
+  ${konduitKPIs([
+    { label: 'Status',    value: 'Open' },
+    { label: 'Date of Loss',value: '2026-03-14' },
+    { label: 'Paid',      value: '$22,400' },
+    { label: 'Reserve',   value: '$10,000', warning: true },
+    { label: 'Adjuster',  value: 'Crawford & Co' },
+    { label: 'Incurred',  value: '$32,400' }
+  ], 6)}
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Parties</h3></div>
+      <div class="konduit-settings-list">
+        <div><strong>Insured:</strong> Westbrook Hospitality</div>
+        <div><strong>Program:</strong> Harbor WC — West</div>
+        <div><strong>Capacity:</strong> Pacific Paper Group</div>
+        <div><strong>MGA:</strong> Harbor Program Partners</div>
+        <div><strong>Adjuster:</strong> Crawford & Co · Nathan Brooks</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Payments</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Payee</th></tr></thead>
+          <tbody>
+            <tr><td>2026-03-20</td><td>Initial</td><td>$5,000</td><td>Westbrook Hospitality</td></tr>
+            <tr><td>2026-03-28</td><td>Interim</td><td>$12,400</td><td>Westbrook Hospitality</td></tr>
+            <tr><td>2026-04-10</td><td>Expense</td><td>$5,000</td><td>Crawford & Co</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Claim Timeline</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Actor</th><th>Event</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>2026-03-14</td><td>Westbrook Hospitality</td><td>FNOL</td><td class="row-sub">Wind damage to hotel roof during storm</td></tr>
+          <tr><td>2026-03-15</td><td>Harbor MGA</td><td>Assigned Adjuster</td><td class="row-sub">Crawford & Co · Nathan Brooks</td></tr>
+          <tr><td>2026-03-18</td><td>Adjuster</td><td>Site Inspection</td><td class="row-sub">Estimate: $32,400 · covered under wind peril</td></tr>
+          <tr><td>2026-03-20</td><td>MGA</td><td>Initial Payment</td><td class="row-sub">$5,000 emergency repair</td></tr>
+          <tr><td>2026-03-28</td><td>MGA</td><td>Interim Payment</td><td class="row-sub">$12,400 roof restoration</td></tr>
+          <tr><td>2026-04-10</td><td>MGA</td><td>Expense Payment</td><td class="row-sub">$5,000 adjuster fees</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — PROFILE, SECURITY, STATEMENTS, QUEUE DETAIL
+// ════════════════════════════════════════════════════════════════
+function renderKonduitProfile() {
+  const u = konduitRole() === 'capacity' ? D.KONDUIT_USERS.capacity : konduitRole() === 'admin' ? D.KONDUIT_USERS.admin : D.KONDUIT_USERS.mga;
+
+  return `
+  ${konduitPageHeader('Profile & Security', 'Your account, authentication, and connected sessions.')}
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Profile</h3></div>
+      <div style="padding:var(--space-md); display:flex; align-items:center; gap:var(--space-md); border-bottom:1px solid var(--border-subtle)">
+        <span class="avatar" style="width:56px; height:56px; font-size:1.4rem">${u.avatar}</span>
+        <div>
+          <div style="font-weight:700; font-size:1.1rem">${u.name}</div>
+          <div class="row-sub">${u.role} · ${u.company}</div>
+        </div>
+      </div>
+      <div class="form-grid" style="padding:var(--space-md)">
+        <label>Full Name<input type="text" value="${u.name}"></label>
+        <label>Title<input type="text" value="${u.role}"></label>
+        <label>Email<input type="text" value="${u.name.toLowerCase().replace(' ', '.')}@${u.company.toLowerCase().replace(/[^a-z]/g,'').slice(0,10)}.com"></label>
+        <label>Phone<input type="text" value="+1 (415) 555-0172"></label>
+        <label>Timezone<select><option>America/Los_Angeles</option><option selected>America/New_York</option><option>Europe/London</option></select></label>
+        <label>Language<select><option selected>English (US)</option><option>English (UK)</option></select></label>
+      </div>
+      <div style="padding:var(--space-md); text-align:right">
+        <button class="btn btn-primary konduit-cta" onclick="window.konduitFlash({title:'Profile updated'})">Save Profile</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Security</h3></div>
+      <div class="konduit-settings-list">
+        <div class="konduit-integration-row"><span>Two-factor authentication</span><span class="badge badge-green">Enabled · Authenticator</span></div>
+        <div class="konduit-integration-row"><span>Hardware key (WebAuthn)</span><span class="badge badge-grey">Not registered</span></div>
+        <div class="konduit-integration-row"><span>Single sign-on (SSO)</span><span class="badge badge-grey">Not configured</span></div>
+        <div class="konduit-integration-row"><span>Password last changed</span><span class="row-sub">82 days ago</span></div>
+        <div style="display:flex; gap:8px; margin-top:var(--space-sm)">
+          <button class="btn btn-secondary konduit-cta-outline" onclick="window.showModal('Change Password','<div class=k-modal-body><div class=form-grid><label>Current password<input type=password></label><label>New password<input type=password></label><label class=form-wide>Confirm new password<input type=password></label></div></div>','Update Password',()=>window.konduitFlash({title:'Password updated',body:'All other sessions will require re-auth'}))">Change Password</button>
+          <button class="btn btn-secondary konduit-cta-outline" onclick="window.setState({screen:'k-2fa-setup'})">Re-setup 2FA</button>
+          <button class="btn btn-secondary konduit-cta-outline" onclick="window.setState({screen:'k-webauthn'})">+ Add Hardware Key</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Active Sessions</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Device</th><th>Location</th><th>Last Active</th><th></th></tr></thead>
+          <tbody>
+            ${konduitRuntime().sessions.filter(s => !konduitRuntime().revokedSessionIds.includes(s.id)).map(s => `
+              <tr>
+                <td><strong>${s.device}</strong>${s.current?' <span class="badge badge-green" style="margin-left:6px">This device</span>':''}</td>
+                <td>${s.location}</td>
+                <td>${s.last}</td>
+                <td>${s.current ? '—' : `<button class="btn btn-ghost btn-sm" onclick="(function(){var rt=konduitRuntime();rt.revokedSessionIds.push('${s.id}');window.konduitFlash({kind:'warn',title:'Session revoked',body:'${s.device} signed out immediately'});})()">Revoke</button>`}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:var(--space-md); text-align:right">
+        <button class="btn btn-ghost" onclick="(function(){var rt=konduitRuntime();rt.sessions.forEach(function(s){if(!s.current)rt.revokedSessionIds.push(s.id);});window.konduitFlash({kind:'warn',title:'All other sessions signed out'});})()">Sign out all other sessions</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Notifications</h3></div>
+      <div class="konduit-settings-list">
+        <label class="konduit-toggle-row"><span>Email — deal events</span><input type="checkbox" checked></label>
+        <label class="konduit-toggle-row"><span>Email — weekly digest</span><input type="checkbox" checked></label>
+        <label class="konduit-toggle-row"><span>SMS — NDA signatures</span><input type="checkbox"></label>
+        <label class="konduit-toggle-row"><span>SMS — term sheet accepted</span><input type="checkbox" checked></label>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+function renderKonduitCapStatements() {
+  const statements = [
+    { id: 'STM-2026-03', period: 'Mar 2026', gross: '$47.2M', net: '$35.4M', commissions: '$11.8M', claims: '$3.1M', profit_to_date: '$8.9M', status: 'Posted' },
+    { id: 'STM-2026-02', period: 'Feb 2026', gross: '$41.8M', net: '$31.4M', commissions: '$10.4M', claims: '$2.8M', profit_to_date: '$7.2M', status: 'Posted' },
+    { id: 'STM-2026-01', period: 'Jan 2026', gross: '$44.1M', net: '$33.1M', commissions: '$11.0M', claims: '$2.4M', profit_to_date: '$6.1M', status: 'Posted' },
+    { id: 'STM-2025-12', period: 'Dec 2025', gross: '$39.7M', net: '$29.8M', commissions: '$9.9M',  claims: '$2.2M', profit_to_date: '$5.3M', status: 'Posted' }
+  ];
+
+  return `
+  ${konduitPageHeader('Statements', 'Monthly performance across bound programs · auto-generated from bordereau.',
+    `<button class="btn btn-ghost" onclick="window.konduitViewStatement('STM-2026-03','Mar 2026','$47.2M','$35.4M','$11.8M','$3.1M','$8.9M')">View Latest</button>
+     <button class="btn btn-ghost" onclick="window.konduitDownloadStatement('STM-2026-03','Mar 2026','$47.2M','$35.4M','$11.8M','$3.1M','$8.9M')">⬇ Download Latest</button>`)}
+
+  ${konduitKPIs([
+    { label: 'MTD Gross',        value: '$47.2M' },
+    { label: 'YTD Gross',        value: '$172.8M' },
+    { label: 'YTD Ceding Comm.', value: '$45.6M' },
+    { label: 'YTD Claims Paid',  value: '$10.5M' },
+    { label: 'YTD Combined',     value: '87.4%' },
+    { label: 'Open Programs',    value: '4' }
+  ], 6)}
+
+  <section class="card">
+    <div class="card-header"><h3>Monthly Statements</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Statement</th><th>Period</th><th>Gross</th><th>Net to Cap</th><th>Commissions</th><th>Claims</th><th>Profit-to-date</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${statements.map(s => `
+            <tr>
+              <td><strong>${s.id}</strong></td>
+              <td>${s.period}</td>
+              <td>${s.gross}</td>
+              <td>${s.net}</td>
+              <td>${s.commissions}</td>
+              <td>${s.claims}</td>
+              <td>${s.profit_to_date}</td>
+              <td>${konduitStatusBadge(s.status,'green')}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.konduitViewStatement('${s.id}','${s.period}','${s.gross}','${s.net}','${s.commissions}','${s.claims}','${s.profit_to_date}')">View</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.konduitDownloadStatement('${s.id}','${s.period}','${s.gross}','${s.net}','${s.commissions}','${s.claims}','${s.profit_to_date}')">⬇ PDF</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Program Performance</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>MGA</th><th>GWP (MTD)</th><th>LR (MTD)</th><th>Combined (MTD)</th><th>Profit</th></tr></thead>
+        <tbody>
+          ${D.konduitPortfolio.map(p => `
+            <tr>
+              <td><strong>${p.program}</strong></td>
+              <td>${p.mga}</td>
+              <td>${p.gwp}</td>
+              <td>${p.loss_ratio}%</td>
+              <td>${(p.loss_ratio + 33).toFixed(1)}%</td>
+              <td>${konduitStatusBadge(p.loss_ratio < 60 ? 'Profitable' : 'Break-even', p.loss_ratio < 60 ? 'green' : 'amber')}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitQueueDetail() {
+  const qid = state.konduitQueueId || 'Q-1';
+  const q = { id: qid, program: 'Meridian Coastal Property', mga: 'Meridian Specialty Underwriters', stage: 'Actuarial Review', assigned: 'Priya Raman', due: '2026-04-22', priority: 'High' };
+
+  return `
+  ${konduitPageHeader(`${q.id} · ${q.program}`, `${q.mga} · ${q.stage} · Assigned to ${q.assigned}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-queue'})">← Queue</button>
+     <button class="btn btn-secondary" onclick="window.setState({screen:'k-reassign', konduitQueueId:'${qid}'})">Reassign</button>
+     <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-queue', konduitFlash:{title:'Progressed to Term Sheet stage',body:'Queue item ${qid} advanced — ready to draft terms'}})">Progress → Term Sheet</button>`)}
+
+  ${konduitKPIs([
+    { label: 'Priority',  value: q.priority },
+    { label: 'Due',       value: q.due },
+    { label: 'Stage',     value: q.stage },
+    { label: 'Assigned',  value: q.assigned }
+  ], 4)}
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Review Checklist</h3></div>
+      <div class="konduit-settings-list">
+        <label class="konduit-toggle-row"><span>Initial read complete</span><input type="checkbox" checked></label>
+        <label class="konduit-toggle-row"><span>Appetite fit confirmed</span><input type="checkbox" checked></label>
+        <label class="konduit-toggle-row"><span>Actuarial review in progress</span><input type="checkbox" checked></label>
+        <label class="konduit-toggle-row"><span>Concentration analysis</span><input type="checkbox"></label>
+        <label class="konduit-toggle-row"><span>Founder reference calls</span><input type="checkbox"></label>
+        <label class="konduit-toggle-row"><span>Term sheet drafted</span><input type="checkbox"></label>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Notes & Questions</h3></div>
+      <div class="konduit-settings-list">
+        <div class="konduit-qa-bubble question" style="padding:10px; margin-bottom:8px">
+          <div class="konduit-msg-from"><strong>❓ Open Question</strong> · Priya Raman · 2026-04-19</div>
+          <div>Need wind-mitigation discount methodology from MGA.</div>
+        </div>
+        <div class="konduit-qa-bubble answer" style="padding:10px">
+          <div class="konduit-msg-from"><strong>✓ Answered</strong> · MGA · 2026-04-19</div>
+          <div>Sent via Q&A thread. Average credit 12.4% applied on impact-rated glazing.</div>
+        </div>
+        <button class="btn btn-secondary konduit-cta-outline" style="margin-top:8px" onclick="window.setState({screen:'k-cap-qa', konduitQAKey:'KDP-0812:Summit Fronting Re'})">Open Full Q&A Thread →</button>
+      </div>
+    </section>
+  </div>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — ADMIN DETAIL SCREENS
+// ════════════════════════════════════════════════════════════════
+function renderKonduitAdminQRDetail() {
+  const qid = state.konduitQrId || 'QR-901';
+  const q = D.konduitQualityReviewQueue.find(x => x.id === qid) || D.konduitQualityReviewQueue[0];
+
+  return `
+  ${konduitPageHeader(`${q.id} · ${q.program}`, `${q.mga} · submitted ${q.submitted}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-admin-qr'})">← QR Queue</button>
+     <button class="btn btn-secondary" onclick="window.showModal('Return to MGA for Revisions', '<div class=k-modal-body><textarea rows=6 placeholder=Describe required revisions... style=\\'width:100%;padding:10px;background:var(--bg-input);border:1px solid var(--border-subtle);border-radius:8px;color:var(--text-primary)\\'>1. Refresh actuarial study (current is 14 months old)&#10;2. Provide sensitivity analysis on year-3 pro-forma</textarea></div>', 'Return', () => window.setState({screen:'k-admin-qr', konduitFlash:{kind:'warn',title:'Returned to MGA',body:'Revisions requested · MGA notified via email'}}))">↩ Return for Revisions</button>
+     <button class="btn btn-primary konduit-cta" onclick="(function(){var rt=konduitRuntime();rt.approvedQrIds['${q.id}']=Date.now();window.setState({screen:'k-admin-qr', konduitFlash:{title:'${q.program} approved',body:'Published to marketplace · matched capacity notified'}});})()">✅ Approve & Publish</button>`)}
+
+  ${konduitKPIs([
+    { label: 'Priority', value: q.priority },
+    { label: 'Items Flagged',  value: q.items.toString(), warning: q.items > 0 },
+    { label: 'Submitted', value: q.submitted },
+    { label: 'Status',    value: q.status }
+  ], 4)}
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Completeness Check</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Section</th><th>Complete</th><th>Flags</th></tr></thead>
+          <tbody>
+            <tr><td>Company Profile</td><td>100%</td><td>${konduitStatusBadge('Clear','green')}</td></tr>
+            <tr><td>Program Details</td><td>100%</td><td>${konduitStatusBadge('Clear','green')}</td></tr>
+            <tr><td>Founding Team</td><td>100%</td><td>${konduitStatusBadge('Clear','green')}</td></tr>
+            <tr><td>Financials</td><td>92%</td><td>${konduitStatusBadge('1 issue','amber')}</td></tr>
+            <tr><td>Underwriting Appetite</td><td>100%</td><td>${konduitStatusBadge('Clear','green')}</td></tr>
+            <tr><td>Data Room</td><td>95%</td><td>${konduitStatusBadge('1 issue','amber')}</td></tr>
+            <tr><td>Benchmark Outliers</td><td>100%</td><td>${konduitStatusBadge('Clear','green')}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Flagged Items</h3></div>
+      <div class="konduit-settings-list">
+        <div class="konduit-qa-bubble question" style="padding:10px">
+          <div class="konduit-msg-from"><strong>⚠️ Financials</strong></div>
+          <div>Pro-forma year-3 assumptions missing sensitivity analysis. Request: provide ±15% revenue and loss scenarios.</div>
+        </div>
+        <div class="konduit-qa-bubble question" style="padding:10px">
+          <div class="konduit-msg-from"><strong>⚠️ Data Room</strong></div>
+          <div>Actuarial study dated 2024-12 (&gt; 12 months). Request: refreshed study or narrative update.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Reviewer Notes</h3></div>
+    <div style="padding:var(--space-md)">
+      <textarea rows="4" placeholder="Internal notes (not shared with MGA)..." style="width:100%; padding:10px; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:8px; color:var(--text-primary); font-family:inherit">Founder track record checks out (Nephila + Markel). Loss triangles reconcile to within 1.4% of claimed figures. Primary concerns are actuarial staleness and pro-forma sensitivity.</textarea>
+      <div style="text-align:right; margin-top:8px">
+        <button class="btn btn-ghost btn-sm" onclick="window.konduitFlash({title:'Notes saved'})">Save Notes</button>
+      </div>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitAdminOrgDetail() {
+  const org = state.konduitOrgName || 'Meridian Specialty Underwriters';
+  const isMga = ['Meridian Specialty Underwriters','Harbor Program Partners','Evergreen Environmental Risk'].includes(org);
+  const type = isMga ? 'MGA' : 'Capacity Provider';
+
+  return `
+  ${konduitPageHeader(org, `${type} · 4 programs · 4 seats in use`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-admin-users'})">← Users & Orgs</button>
+     <button class="btn btn-secondary" onclick="window.showModal('Pause Organization', '<div class=k-modal-body>Users will lose access. Active deals remain visible but read-only.</div>', 'Pause', () => window.konduitFlash({kind:'warn',title:'Organization paused',body:'All users locked out · active deals are read-only'}))">⏸ Pause</button>
+     <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-seats', konduitOrgName:'${org.replace(/'/g, "\\'")}'})">+ Add Seats</button>`)}
+
+  ${konduitKPIs([
+    { label: 'Type',      value: type },
+    { label: 'Since',     value: '2025-11-02' },
+    { label: 'Plan',      value: 'Professional' },
+    { label: 'Seats',     value: '4 of 8' },
+    { label: 'Programs',  value: isMga ? '3' : '—' },
+    { label: 'Status',    value: 'Active' }
+  ], 6)}
+
+  <div class="konduit-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Seat Holders</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Member</th><th>Role</th><th>Authority</th><th>Last Active</th></tr></thead>
+          <tbody>
+            ${D.konduitTeam.map(t => `
+              <tr>
+                <td>
+                  <div class="konduit-member">
+                    <span class="avatar">${t.avatar}</span>
+                    <div><strong>${t.name}</strong><div class="row-sub">${t.email}</div></div>
+                  </div>
+                </td>
+                <td>${t.role}</td>
+                <td>${t.authority}</td>
+                <td class="row-sub">Just now</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Activity Summary</h3></div>
+      <div class="konduit-settings-list">
+        <div><strong>Last login:</strong> 2026-04-19 · Evan Harlow</div>
+        <div><strong>Programs published (30d):</strong> 1</div>
+        <div><strong>NDAs signed (30d):</strong> 4</div>
+        <div><strong>Term sheets (30d):</strong> 2</div>
+        <div><strong>Messages (30d):</strong> 38</div>
+        <div><strong>Audit events (30d):</strong> 112</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Billing & Plan</h3></div>
+    <div class="konduit-settings-list">
+      <div><strong>Plan:</strong> ${type} Professional · $2,400 / mo</div>
+      <div><strong>Seats included:</strong> 8 (4 used)</div>
+      <div><strong>Program quota:</strong> 10 (3 used)</div>
+      <div><strong>Next invoice:</strong> 2026-05-01</div>
+      <div style="display:flex; gap:8px; margin-top:var(--space-sm)">
+        <button class="btn btn-secondary konduit-cta-outline" onclick="window.setState({screen:'k-plan-change', konduitOrgName:'${org.replace(/'/g, "\\'")}'})">Change Plan</button>
+        <button class="btn btn-secondary konduit-cta-outline" onclick="window.setState({screen:'k-credit-issue', konduitOrgName:'${org.replace(/'/g, "\\'")}'})">Issue Credit</button>
+      </div>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitAdminOnboard() {
+  const step = state.konduitOnbStep || 1;
+  const stepLabels = ['Org Details','Plan & Seats','Admin User','Confirm & Send Invite'];
+  const body = step === 1 ? `
+    <div class="form-grid">
+      <label>Legal Entity Name<input type="text" placeholder="e.g. Cascade Medical Program LLC"></label>
+      <label>Trading Name<input type="text" placeholder="Cascade Medical"></label>
+      <label>Org Type<select><option>MGA</option><option>Capacity — Fronting Carrier</option><option>Capacity — Reinsurer</option><option>Capacity — Lloyd's Syndicate</option><option>Capacity — Full-stack</option><option>Wholesale Broker</option></select></label>
+      <label>Jurisdiction<input type="text" placeholder="Delaware, USA"></label>
+      <label>Website<input type="text" placeholder="https://..."></label>
+      <label>Referred By<input type="text" placeholder="(optional)"></label>
+    </div>`
+  : step === 2 ? `
+    <div class="form-grid">
+      <label>Plan<select><option>Starter — $600/mo · 3 programs · 3 seats</option><option selected>Professional — $2,400/mo · 10 programs · 8 seats</option><option>Enterprise — Custom · unlimited · custom seats</option></select></label>
+      <label>Seat Count<input type="text" value="8"></label>
+      <label>Data Room Storage<select><option>100 GB</option><option selected>500 GB</option><option>2 TB</option></select></label>
+      <label>Trial Period<select><option>None</option><option selected>30 days</option><option>60 days</option></select></label>
+    </div>`
+  : step === 3 ? `
+    <div class="form-grid">
+      <label>Admin Name<input type="text" placeholder="e.g. Morgan Reeves"></label>
+      <label>Admin Email<input type="text" placeholder="morgan@cascademedical.com"></label>
+      <label>Admin Title<input type="text" placeholder="Founder & CUO"></label>
+      <label>Phone<input type="text" placeholder="+1 ..."></label>
+      <label class="form-wide"><span style="display:flex; align-items:center; gap:8px"><input type="checkbox" checked> Require 2FA on first sign-in</span></label>
+    </div>`
+  : `
+    <div style="padding:var(--space-md); background:var(--k-accent-soft); border:1px solid var(--k-border-accent); border-radius:var(--radius-md)">
+      <h4 style="color:var(--k-accent); margin-bottom:var(--space-sm)">Ready to onboard</h4>
+      <ul style="padding-left:20px; color:var(--text-secondary); line-height:1.8">
+        <li>Org provisioned with Professional plan + 30-day trial</li>
+        <li>Admin invite emailed with 2FA required</li>
+        <li>Welcome checklist auto-added</li>
+        <li>Billing starts after trial ends</li>
+      </ul>
+    </div>`;
+
+  return `
+  ${konduitPageHeader('Onboard Organization', `Step ${step} of 4 — ${stepLabels[step-1]}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-admin-users'})">Cancel</button>`)}
+
+  <section class="card">
+    <div class="konduit-stepper">
+      ${stepLabels.map((l,i) => {
+        const n = i+1;
+        const cls = n < step ? 'done' : n === step ? 'active' : 'pending';
+        return `<div class="konduit-step ${cls}"><span class="konduit-step-num">${n}</span><span class="konduit-step-label">${l}</span></div>`;
+      }).join('')}
+    </div>
+    <div class="konduit-wizard-body">${body}</div>
+    <div class="konduit-wizard-actions">
+      <button class="btn btn-secondary" ${step===1?'disabled':''} onclick="window.setState({konduitOnbStep:${Math.max(1, step-1)}})">← Back</button>
+      <div style="flex:1"></div>
+      ${step < 4
+        ? `<button class="btn btn-primary konduit-cta" onclick="window.setState({konduitOnbStep:${step+1}})">Continue →</button>`
+        : `<button class="btn btn-primary konduit-cta" onclick="(function(){var rt=konduitRuntime();rt.onboardedOrgs.push({name:'New Organization', type:'MGA', seats:8, status:'Active', since:new Date().toISOString().slice(0,10)});window.setState({screen:'k-admin-users', konduitOnbStep:1, konduitFlash:{title:'Organization onboarded',body:'Admin invite sent · 30-day trial started'}});})()">Onboard & Send Invite</button>`
+      }
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitAdminTemplateDetail() {
+  const tid = state.konduitTemplateId || 'TMPL-01';
+  const mode = state.konduitTemplateMode || 'preview';
+  const t = tid === 'new'
+    ? { id: 'TMPL-NEW', name: 'New Template', version: 'v0.1', updated: new Date().toISOString().slice(0,10), uses: 0, jurisdiction: 'Delaware, USA' }
+    : (D.konduitNdaTemplates.find(x => x.id === tid) || D.konduitNdaTemplates[0]);
+
+  const isEdit = mode === 'edit' || tid === 'new';
+
+  return `
+  ${konduitPageHeader(`${t.name} · ${t.version}`, `${t.jurisdiction} · used ${t.uses} times · updated ${t.updated}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-admin-ndas'})">← Templates</button>
+     ${isEdit
+       ? `<button class="btn btn-secondary" onclick="window.setState({konduitTemplateMode:'preview'})">Preview</button>
+          <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-admin-ndas', konduitFlash:{title:'Template saved',body:'Version v${(parseFloat(t.version.replace('v','')) + 0.1).toFixed(1)} · available for new NDAs'}})">Save Template</button>`
+       : `<button class="btn btn-primary konduit-cta" onclick="window.setState({konduitTemplateMode:'edit'})">✎ Edit</button>`}`)}
+
+  <section class="card" style="padding:var(--space-lg)">
+    ${isEdit ? `
+      <div class="form-grid">
+        <label>Template Name<input type="text" value="${t.name}"></label>
+        <label>Version<input type="text" value="${t.version}"></label>
+        <label>Jurisdiction<select><option ${t.jurisdiction.includes('Delaware')?'selected':''}>Delaware, USA</option><option ${t.jurisdiction.includes('England')?'selected':''}>England & Wales</option><option>New York, USA</option></select></label>
+        <label>Type<select><option selected>Mutual NDA</option><option>One-way NDA</option><option>Program-specific NDA</option></select></label>
+      </div>
+      <div style="margin-top:var(--space-md)">
+        <label style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-secondary); font-weight:600">Template Body</label>
+        <textarea rows="14" style="width:100%; margin-top:6px; padding:12px; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:8px; color:var(--text-primary); font-family:'Courier New', monospace; font-size:0.82rem">MUTUAL NONDISCLOSURE AGREEMENT
+
+This Agreement is entered into between {DisclosingParty} and {ReceivingParty} for the purpose of evaluating a potential insurance capacity relationship regarding the {ProgramName} program.
+
+1. Confidential Information
+2. Permitted Use
+3. Obligations of Receiving Party
+4. Term — {NdaTerm} months
+5. Governing Law — {Jurisdiction}
+6. Remedies — injunctive relief
+7. Non-solicitation — {NonSolicitPeriod} months
+
+Signed:
+{DisclosingPartySignature}       {ReceivingPartySignature}</textarea>
+      </div>
+    ` : `
+      <h3 style="margin-bottom:var(--space-md)">${t.name}</h3>
+      <div style="font-family:'Courier New', monospace; font-size:0.85rem; line-height:1.8; color:var(--text-secondary); padding:var(--space-md); background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); white-space:pre-line">
+MUTUAL NONDISCLOSURE AGREEMENT
+
+This Agreement is entered into between {DisclosingParty} and {ReceivingParty} for the purpose of evaluating a potential insurance capacity relationship regarding the {ProgramName} program.
+
+1. Confidential Information
+2. Permitted Use
+3. Obligations of Receiving Party
+4. Term — {NdaTerm} months
+5. Governing Law — {Jurisdiction}
+6. Remedies — injunctive relief
+7. Non-solicitation — {NonSolicitPeriod} months
+
+Signed:
+{DisclosingPartySignature}       {ReceivingPartySignature}
+      </div>
+    `}
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Template Variables</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Variable</th><th>Description</th><th>Filled From</th></tr></thead>
+        <tbody>
+          <tr><td><code>{DisclosingParty}</code></td><td>MGA legal entity name</td><td>Program.mga</td></tr>
+          <tr><td><code>{ReceivingParty}</code></td><td>Capacity provider name</td><td>NDA.counterparty</td></tr>
+          <tr><td><code>{ProgramName}</code></td><td>Program display name</td><td>Program.name</td></tr>
+          <tr><td><code>{NdaTerm}</code></td><td>Months of confidentiality obligation</td><td>User input</td></tr>
+          <tr><td><code>{Jurisdiction}</code></td><td>Governing law</td><td>Template default</td></tr>
+          <tr><td><code>{NonSolicitPeriod}</code></td><td>Non-solicitation duration</td><td>User input</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════════
+// KONDUIT — ACTION FLOW SCREENS (replaces toasts with real flows)
+// ════════════════════════════════════════════════════════════════
+
+function renderKonduitFnol() {
+  const step = state.konduitFnolStep || 1;
+  const stepLabels = ['Policy & Insured','Loss Details','Damage & Injury','Documents','Review & Submit'];
+  const body = step === 1 ? `
+    <div class="form-grid">
+      <label>Program<select>
+        ${D.konduitPortfolio.map(p => `<option>${p.program}</option>`).join('')}
+      </select></label>
+      <label>Policy Number<input type="text" placeholder="P-2026-0421"></label>
+      <label>Insured Name<input type="text" placeholder="Westbrook Hospitality"></label>
+      <label>Insured Contact<input type="text" placeholder="ops@westbrookhosp.com"></label>
+      <label>Reporter Name<input type="text" value="Evan Harlow"></label>
+      <label>Reporter Role<select><option selected>MGA Staff</option><option>Insured</option><option>Broker</option><option>Adjuster</option></select></label>
+    </div>`
+  : step === 2 ? `
+    <div class="form-grid">
+      <label>Date of Loss<input type="text" placeholder="2026-04-18"></label>
+      <label>Time of Loss<input type="text" placeholder="14:30"></label>
+      <label>Location<input type="text" placeholder="Hotel, 1201 Ocean Dr, Miami Beach"></label>
+      <label>Cause of Loss<select><option>Wind</option><option>Water damage</option><option>Fire</option><option>Theft</option><option>Liability</option><option>Collision</option><option>Other</option></select></label>
+      <label class="form-wide">Description<textarea rows="4" placeholder="Hurricane-force wind damaged roofing and flooded basement. Estimated $48k damage."></textarea></label>
+    </div>`
+  : step === 3 ? `
+    <div class="form-grid">
+      <label>Property Damage Estimate<input type="text" placeholder="$48,000"></label>
+      <label>Bodily Injury?<select><option>No</option><option>Yes · reported</option><option>Yes · hospitalized</option></select></label>
+      <label>Business Interruption Days<input type="text" placeholder="5 days closure"></label>
+      <label>Police Report<input type="text" placeholder="Filed · report #24-8821"></label>
+      <label>Witnesses<input type="text" placeholder="Hotel manager + 2 guests"></label>
+      <label class="form-wide">Mitigation steps taken<textarea rows="3" placeholder="Emergency tarp installed. Water extraction company on site."></textarea></label>
+    </div>`
+  : step === 4 ? `
+    <section class="card konduit-upload-zone" style="cursor:default; margin:0">
+      <div class="konduit-upload-inner">
+        <div class="konduit-upload-icon">📎</div>
+        <h3>Attach photos, reports, or receipts</h3>
+        <p class="row-sub">JPG · PDF · MP4 — up to 25 MB each</p>
+        <button class="btn btn-primary konduit-cta">Browse Files</button>
+      </div>
+    </section>
+    <p class="row-sub" style="margin-top:var(--space-md)">Recommended: damage photos (min 6), police/fire report, mitigation invoices, any witness statements.</p>`
+  : `
+    <div style="padding:var(--space-md); background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md)">
+      <h4 style="margin-bottom:var(--space-sm)">FNOL Summary</h4>
+      <div class="konduit-detail-row">
+        <div><strong>Program:</strong> Harbor WC — West</div>
+        <div><strong>Policy:</strong> P-2026-0421</div>
+        <div><strong>Insured:</strong> Westbrook Hospitality</div>
+        <div><strong>Date of Loss:</strong> 2026-04-18 · 14:30</div>
+        <div><strong>Cause:</strong> Wind</div>
+        <div><strong>Est Damage:</strong> $48,000</div>
+        <div><strong>Bodily Injury:</strong> No</div>
+        <div><strong>Attachments:</strong> 7 files</div>
+      </div>
+    </div>
+    <div style="margin-top:var(--space-md); padding:var(--space-md); background:var(--k-accent-soft); border:1px solid var(--k-border-accent); border-radius:var(--radius-md)">
+      <h4 style="color:var(--k-accent); margin-bottom:6px">Next steps on submit</h4>
+      <ul style="padding-left:20px; color:var(--text-secondary); line-height:1.7">
+        <li>New claim ID issued (CLM-2026-XXXX)</li>
+        <li>Adjuster auto-assigned based on cause + geography</li>
+        <li>Capacity provider notified via bordereau feed</li>
+        <li>Insured receives status update email</li>
+      </ul>
+    </div>`;
+
+  return `
+  ${konduitPageHeader('Report New Claim (FNOL)', `Step ${step} of 5 — ${stepLabels[step-1]}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-claims'})">Cancel</button>`)}
+  <section class="card">
+    <div class="konduit-stepper">
+      ${stepLabels.map((l,i) => {
+        const n = i+1;
+        const cls = n < step ? 'done' : n === step ? 'active' : 'pending';
+        return `<div class="konduit-step ${cls}"><span class="konduit-step-num">${n}</span><span class="konduit-step-label">${l}</span></div>`;
+      }).join('')}
+    </div>
+    <div class="konduit-wizard-body">${body}</div>
+    <div class="konduit-wizard-actions">
+      <button class="btn btn-secondary" ${step===1?'disabled':''} onclick="window.setState({konduitFnolStep:${Math.max(1, step-1)}})">← Back</button>
+      <div style="flex:1"></div>
+      ${step < 5
+        ? `<button class="btn btn-primary konduit-cta" onclick="window.setState({konduitFnolStep:${step+1}})">Continue →</button>`
+        : `<button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-claims', konduitFnolStep:1, konduitFlash:{title:'Claim reported · CLM-2026-0082 issued',body:'Adjuster auto-assigned · capacity notified'}})">Submit FNOL</button>`
+      }
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitReserveAdjust() {
+  const cid = state.konduitClaimId || 'CLM-2026-0081';
+  return `
+  ${konduitPageHeader(`Adjust Reserve · ${cid}`, 'Update reserve estimate with justification · capacity is notified',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-claim', konduitClaimId:'${cid}'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:720px">
+    <div class="form-grid">
+      <label>Current Reserve<input type="text" value="$10,000" disabled></label>
+      <label>New Reserve<input type="text" placeholder="$15,000"></label>
+      <label>Change Reason<select>
+        <option>New information from adjuster</option>
+        <option>Additional damage discovered</option>
+        <option>Expected litigation</option>
+        <option>Actuarial re-estimate</option>
+      </select></label>
+      <label>Effective Date<input type="text" value="${new Date().toISOString().slice(0,10)}"></label>
+      <label class="form-wide">Justification / Notes<textarea rows="4" placeholder="Adjuster report received — roof replacement required rather than repair. Additional $5k reserve for structural reinforcement."></textarea></label>
+    </div>
+    <div class="konduit-settings-list" style="margin-top:var(--space-md); padding:0">
+      <label class="konduit-toggle-row"><span>Notify capacity provider (required for > $5k change)</span><input type="checkbox" checked></label>
+      <label class="konduit-toggle-row"><span>Update bordereau for current period</span><input type="checkbox" checked></label>
+      <label class="konduit-toggle-row"><span>Attach to claim file</span><input type="checkbox" checked></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-claim', konduitClaimId:'${cid}'})">Cancel</button>
+      <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-claim', konduitClaimId:'${cid}', konduitFlash:{title:'Reserve adjusted',body:'Capacity notified · bordereau will reflect change'}})">Save Adjustment</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitPaymentIssue() {
+  const cid = state.konduitClaimId || 'CLM-2026-0081';
+  return `
+  ${konduitPageHeader(`Issue Payment · ${cid}`, 'Create a claim payment · auto-logged to bordereau',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-claim', konduitClaimId:'${cid}'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:720px">
+    <div class="form-grid">
+      <label>Payment Type<select>
+        <option>Initial</option>
+        <option selected>Interim</option>
+        <option>Final</option>
+        <option>Expense</option>
+        <option>Supplemental</option>
+      </select></label>
+      <label>Amount<input type="text" placeholder="$5,000"></label>
+      <label>Payee<input type="text" placeholder="Westbrook Hospitality"></label>
+      <label>Payee Type<select><option>Insured</option><option>Adjuster</option><option>Vendor</option><option>Medical Provider</option><option>Attorney</option></select></label>
+      <label>Payment Method<select><option>ACH</option><option>Check</option><option>Wire</option></select></label>
+      <label>Payment Date<input type="text" value="${new Date().toISOString().slice(0,10)}"></label>
+      <label class="form-wide">Notes / Reference<textarea rows="3" placeholder="Emergency roof repair per invoice #MR-2024-118"></textarea></label>
+    </div>
+    <div class="konduit-settings-list" style="margin-top:var(--space-md); padding:0">
+      <label class="konduit-toggle-row"><span>Auto-deduct from reserve</span><input type="checkbox" checked></label>
+      <label class="konduit-toggle-row"><span>Include in next bordereau</span><input type="checkbox" checked></label>
+      <label class="konduit-toggle-row"><span>Email receipt to payee</span><input type="checkbox" checked></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-claim', konduitClaimId:'${cid}'})">Cancel</button>
+      <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-claim', konduitClaimId:'${cid}', konduitFlash:{title:'Payment issued',body:'Logged to bordereau · receipt sent to payee'}})">Issue Payment</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitUpgrade() {
+  const plans = [
+    { name: 'Starter',      price: '$600/mo',  programs: '3',   seats: '3',  storage: '100 GB',  support: 'Email',     fit: 'Solo MGA' },
+    { name: 'Professional', price: '$2,400/mo',programs: '10',  seats: '8',  storage: '500 GB',  support: 'Priority',  fit: 'Current plan', current: true },
+    { name: 'Scale',        price: '$6,500/mo',programs: '30',  seats: '25', storage: '2 TB',    support: 'Dedicated CSM', fit: 'Multi-program' },
+    { name: 'Enterprise',   price: 'Custom',   programs: 'Unlimited', seats: 'Custom', storage: 'Custom', support: '24/7 · SLA',    fit: 'Lloyd\'s / Large MGA' }
+  ];
+  return `
+  ${konduitPageHeader('Upgrade Plan', 'Choose the plan that matches your MGA\'s stage.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-billing'})">← Billing</button>`)}
+  <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:var(--space-md)">
+    ${plans.map(pl => `
+      <section class="card" style="padding:var(--space-lg); ${pl.current?'border:1px solid var(--k-accent); box-shadow:var(--k-glow)':''}">
+        <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted)">${pl.fit}</div>
+        <h3 style="margin:6px 0">${pl.name}</h3>
+        <div style="font-size:1.4rem; font-weight:700; color:var(--k-accent)">${pl.price}</div>
+        <ul style="padding-left:18px; color:var(--text-secondary); line-height:1.8; font-size:0.85rem; margin-top:var(--space-md)">
+          <li>${pl.programs} programs</li>
+          <li>${pl.seats} seats</li>
+          <li>${pl.storage} data room</li>
+          <li>${pl.support}</li>
+        </ul>
+        ${pl.current
+          ? `<button class="btn btn-ghost" style="width:100%; margin-top:var(--space-md)" disabled>Current Plan</button>`
+          : `<button class="btn btn-primary konduit-cta" style="width:100%; margin-top:var(--space-md)" onclick="window.setState({screen:'k-billing', konduitFlash:{title:'Upgrade scheduled to ${pl.name}',body:'Effective next billing cycle · prorated charge applied'}})">Switch to ${pl.name}</button>`}
+      </section>`).join('')}
+  </div>
+  `;
+}
+
+function renderKonduitPaymentMethod() {
+  return `
+  ${konduitPageHeader('Payment Method', 'Update card on file · securely stored by Stripe',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-billing'})">← Billing</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:560px">
+    <div style="padding:var(--space-md); background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); margin-bottom:var(--space-md)">
+      <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em">Current card</div>
+      <div style="font-family:'Courier New', monospace; font-size:1rem; margin-top:6px">VISA **** 4242 · exp 08/27</div>
+    </div>
+    <div class="form-grid">
+      <label class="form-wide">Card Number<input type="text" placeholder="•••• •••• •••• ••••"></label>
+      <label>Expiry<input type="text" placeholder="MM/YY"></label>
+      <label>CVC<input type="text" placeholder="•••"></label>
+      <label class="form-wide">Name on card<input type="text" placeholder="Meridian Specialty Underwriters"></label>
+      <label class="form-wide">Billing address<input type="text" placeholder="340 Market St, San Francisco CA 94105"></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-billing'})">Cancel</button>
+      <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-billing', konduitFlash:{title:'Payment method updated',body:'Next invoice will charge the new card'}})">Save Card</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduit2FA() {
+  return `
+  ${konduitPageHeader('Re-setup 2FA', 'Scan the QR code with your authenticator app, then verify the generated code.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-profile'})">← Profile</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:560px">
+    <div style="display:flex; gap:var(--space-lg); align-items:center">
+      <div style="width:160px; height:160px; background:#fff; display:flex; align-items:center; justify-content:center; border-radius:8px; flex-shrink:0">
+        <div style="font-family:monospace; color:#000; text-align:center; font-size:0.65rem; line-height:1.2">
+          ▓▓▓▓▓▓▓▓▓▓▓▓<br>▓░▓░░▓░▓▓░▓<br>▓░░▓▓░▓░▓░▓<br>▓▓▓░░▓▓▓▓░▓<br>░░▓▓░░░░▓▓░<br>▓▓░▓░▓▓░░▓▓<br>▓░░░▓░▓▓░▓░<br>▓▓▓▓▓▓▓▓▓▓▓
+          <div style="margin-top:6px; font-size:0.7rem">QR · mock</div>
+        </div>
+      </div>
+      <div style="flex:1">
+        <h4 style="margin-bottom:var(--space-sm)">Steps</h4>
+        <ol style="padding-left:20px; color:var(--text-secondary); line-height:1.8">
+          <li>Open your authenticator (Google Authenticator, 1Password, Authy)</li>
+          <li>Scan the QR or paste the key below</li>
+          <li>Enter the 6-digit code to confirm</li>
+        </ol>
+        <div style="margin-top:var(--space-md); padding:10px; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:8px; font-family:monospace; font-size:0.85rem">JBSWY3DPEHPK3PXP · konduit:evan@meridianspec.com</div>
+      </div>
+    </div>
+    <div style="margin-top:var(--space-lg)">
+      <label style="font-size:0.75rem; text-transform:uppercase; color:var(--text-secondary); font-weight:600">6-digit code from authenticator</label>
+      <input type="text" placeholder="123 456" style="width:200px; margin-top:6px; font-family:monospace; font-size:1.1rem; letter-spacing:0.2em">
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg)">
+      <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-profile', konduitFlash:{title:'2FA reconfigured',body:'New authenticator is now the primary factor'}})">Verify & Enable</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitWebauthn() {
+  return `
+  ${konduitPageHeader('Add Hardware Key', 'Register a YubiKey, Touch ID, or platform authenticator for phishing-resistant login.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-profile'})">← Profile</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:560px; text-align:center">
+    <div style="font-size:3rem; margin-bottom:var(--space-md)">🔑</div>
+    <h3>Insert or tap your hardware key</h3>
+    <p class="row-sub" style="margin-top:var(--space-sm); max-width:420px; margin-left:auto; margin-right:auto">Your browser will prompt you. For USB keys, insert and tap the button; for Touch ID, approve on your device.</p>
+    <div class="form-grid" style="margin-top:var(--space-lg); text-align:left; max-width:420px; margin-left:auto; margin-right:auto">
+      <label class="form-wide">Friendly name<input type="text" placeholder="YubiKey 5 NFC (work)"></label>
+    </div>
+    <div style="margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:center">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-profile'})">Cancel</button>
+      <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-profile', konduitFlash:{title:'Hardware key registered',body:'You can now use it for sign-in on any supported device'}})">Register Key</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitSearchResults() {
+  const q = state.konduitSearchQuery || 'Meridian';
+  const programs = D.konduitPrograms.filter(p =>
+    p.name.toLowerCase().includes(q.toLowerCase()) || p.mga.toLowerCase().includes(q.toLowerCase()) || p.lob.toLowerCase().includes(q.toLowerCase())
+  );
+  const events = D.konduitDealEvents.filter(e =>
+    (e.party && e.party.toLowerCase().includes(q.toLowerCase())) || (e.note && e.note.toLowerCase().includes(q.toLowerCase()))
+  );
+
+  return `
+  ${konduitPageHeader(`Search · "${q}"`, `${programs.length} programs · ${events.length} events · matches across the platform`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-dashboard'})">← Home</button>`)}
+
+  <section class="card">
+    <div class="card-header"><h3>Programs (${programs.length})</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>MGA</th><th>LOB</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${programs.map(p => `
+            <tr>
+              <td><strong>${p.name}</strong></td>
+              <td>${p.mga}</td>
+              <td>${p.lob}</td>
+              <td>${konduitStatusBadge(p.status, p.statusColor)}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'k-program', konduitProgramId:'${p.id}'})">Open →</button></td>
+            </tr>`).join('') || `<tr><td colspan="5" class="row-sub">No programs match "${q}"</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Events (${events.length})</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>When</th><th>Event</th><th>Party</th><th>Actor</th><th>Note</th></tr></thead>
+        <tbody>
+          ${events.map(e => `
+            <tr>
+              <td>${e.ts}</td>
+              <td><strong>${e.type}</strong></td>
+              <td>${e.party}</td>
+              <td>${e.actor}</td>
+              <td class="row-sub">${e.note}</td>
+            </tr>`).join('') || `<tr><td colspan="5" class="row-sub">No events match "${q}"</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitIntros() {
+  const rt = konduitRuntime();
+  const mode = state.konduitIntroMode;
+  const pid = state.konduitProgramId;
+  const p = pid ? D.konduitPrograms.find(x => x.id === pid) : null;
+
+  if (mode === 'new' && p) {
+    return `
+    ${konduitPageHeader('Introduce to Capacity', `Share ${p.name} with a carrier panel.`,
+      `<button class="btn btn-ghost" onclick="window.setState({screen:'k-preview', konduitIntroMode:null, konduitProgramId:'${p.id}'})">← Back</button>`)}
+    <section class="card" style="padding:var(--space-lg); max-width:720px">
+      <div class="form-grid">
+        <label class="form-wide">Recipient email(s)<input type="text" placeholder="name@capacity.com, another@insurer.com"></label>
+        <label>Relationship<select><option>Carrier partner</option><option>Reinsurer</option><option>Fronting carrier</option><option>Lloyd's syndicate</option></select></label>
+        <label>Priority<select><option>Standard</option><option>High — active placement</option></select></label>
+        <label class="form-wide">Your note<textarea rows="4" placeholder="Think this is a fit for your coastal property appetite — happy to set up a call."></textarea></label>
+      </div>
+      <div class="konduit-settings-list" style="margin-top:var(--space-md); padding:0">
+        <label class="konduit-toggle-row"><span>Share banded view only (recommended)</span><input type="checkbox" checked></label>
+        <label class="konduit-toggle-row"><span>Notify MGA of this introduction</span><input type="checkbox" checked></label>
+        <label class="konduit-toggle-row"><span>Track opens and views in my dashboard</span><input type="checkbox" checked></label>
+      </div>
+      <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+        <button class="btn btn-secondary" onclick="window.setState({screen:'k-preview', konduitIntroMode:null, konduitProgramId:'${p.id}'})">Cancel</button>
+        <button class="btn btn-primary konduit-cta" onclick="(function(){var rt=konduitRuntime();rt.introsLog.push({id:'INT-'+(100+rt.introsLog.length), programId:'${p.id}', program:'${p.name}', recipient:'carrier@partner.com', sent:new Date().toISOString().slice(0,10), status:'Sent'});window.setState({screen:'k-intros', konduitIntroMode:null, konduitFlash:{title:'Introduction sent',body:'Recipient received the banded program view · MGA notified'}});})()">Send Introduction</button>
+      </div>
+    </section>`;
+  }
+
+  return `
+  ${konduitPageHeader('Introductions Log', 'Programs you have introduced to capacity · track opens, views, and responses.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-dashboard'})">← Home</button>`)}
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Intro ID</th><th>Program</th><th>Recipient</th><th>Sent</th><th>Status</th></tr></thead>
+        <tbody>
+          ${rt.introsLog.map(i => `
+            <tr>
+              <td><strong>${i.id}</strong></td>
+              <td>${i.program}</td>
+              <td>${i.recipient}</td>
+              <td>${i.sent}</td>
+              <td>${konduitStatusBadge(i.status, 'blue')}</td>
+            </tr>`).join('') || `<tr><td colspan="5" class="row-sub">No introductions sent yet. Preview a program as Wholesale Broker to send one.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitTermCounter() {
+  const id = state.konduitTsId || 'TS-101';
+  const t = konduitRuntime().termSheets.find(x => x.id === id) || konduitRuntime().termSheets[0];
+  const p = D.konduitPrograms.find(x => x.id === t.programId);
+  return `
+  ${konduitPageHeader(`Counter-offer · ${t.id}`, `${p ? p.name : t.programId} · v${t.version + 1} (counter)`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-term-sheet', konduitTsId:'${t.id}'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg)">
+    <div class="form-grid">
+      <label>Original Premium Share<input type="text" value="${t.premiumShare}" disabled></label>
+      <label>Counter Premium Share<input type="text" value="55%"></label>
+      <label>Original Ceding Comm<input type="text" value="${t.cedingComm}" disabled></label>
+      <label>Counter Ceding Comm<input type="text" value="30%"></label>
+      <label>Original Limit<input type="text" value="${t.limit}" disabled></label>
+      <label>Counter Limit<input type="text" value="$35M per risk"></label>
+      <label>Original Retention<input type="text" value="${t.retention}" disabled></label>
+      <label>Counter Retention<input type="text" value="$3M"></label>
+      <label class="form-wide">Rationale for counter<textarea rows="4" placeholder="Market dynamics have tightened · prior-year loss development supports tighter terms"></textarea></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-term-sheet', konduitTsId:'${t.id}'})">Cancel</button>
+      <button class="btn btn-primary konduit-cta" onclick="(function(){var rt=konduitRuntime();var x=rt.termSheets.find(function(y){return y.id==='${t.id}'});if(x){x.status='Countered';x.version=x.version+1;x.premiumShare='55%';x.cedingComm='30%';}window.setState({screen:'k-term-sheet', konduitTsId:'${t.id}', konduitFlash:{title:'Counter-offer sent', body:'${t.counterparty} will review and respond'}});})()">Send Counter-offer</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitRenewalCounter() {
+  const rid = state.konduitRenewalId || 'REN-01';
+  return `
+  ${konduitPageHeader(`Counter Renewal Terms · ${rid}`, 'Propose alternative renewal terms',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-renewal', konduitRenewalId:'${rid}'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg)">
+    <div class="form-grid">
+      <label>Current Rate Change<input type="text" value="+8.2%" disabled></label>
+      <label>Counter Rate Change<input type="text" value="+4.0%"></label>
+      <label>Current Premium Share<input type="text" value="75%" disabled></label>
+      <label>Counter Premium Share<input type="text" value="70%"></label>
+      <label>Current Ceding Commission<input type="text" value="33%" disabled></label>
+      <label>Counter Ceding Commission<input type="text" value="35%"></label>
+      <label class="form-wide">Counter rationale<textarea rows="4" placeholder="Loss trend stabilizing · two large Q3 losses are outliers · propose modest uplift"></textarea></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-renewal', konduitRenewalId:'${rid}'})">Cancel</button>
+      <button class="btn btn-primary konduit-cta" onclick="(function(){var rt=konduitRuntime();rt.renewalStatus['${rid}']='Countered';window.setState({screen:'k-renewals', konduitFlash:{title:'Counter-proposal sent', body:'Capacity will respond within 48 hours'}});})()">Send Counter</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitReassign() {
+  const qid = state.konduitQueueId || 'Q-1';
+  const team = ['Priya Raman','Nina Alvarez','Lars Fjeldstad','Dana Kinross','Omar Farouk','Harriet Blake'];
+  return `
+  ${konduitPageHeader(`Reassign · ${qid}`, 'Change owner of this queue item',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-queue-detail', konduitQueueId:'${qid}'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:560px">
+    <div class="form-grid">
+      <label>Current Owner<input type="text" value="Priya Raman" disabled></label>
+      <label>New Owner<select>${team.map(n => `<option>${n}</option>`).join('')}</select></label>
+      <label>Reason<select><option>Workload rebalance</option><option>LOB expertise</option><option>Out of office</option><option>Client relationship</option></select></label>
+      <label>Due date unchanged?<select><option selected>Yes · keep 2026-04-22</option><option>No · extend by 3 business days</option></select></label>
+      <label class="form-wide">Handover note<textarea rows="3" placeholder="Already completed actuarial review · next step is concentration analysis"></textarea></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-queue-detail', konduitQueueId:'${qid}'})">Cancel</button>
+      <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-queue-detail', konduitQueueId:'${qid}', konduitFlash:{title:'${qid} reassigned',body:'New owner notified · handover note attached'}})">Reassign</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitPlanChange() {
+  const org = state.konduitOrgName || 'Meridian Specialty Underwriters';
+  return `
+  ${konduitPageHeader(`Change Plan · ${org}`, 'Switch the organization to a different Konduit plan.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-admin-org', konduitOrgName:'${org.replace(/'/g, "\\'")}'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:640px">
+    <div class="form-grid">
+      <label>Current Plan<input type="text" value="Professional · $2,400/mo" disabled></label>
+      <label>New Plan<select><option>Starter · $600/mo</option><option>Professional · $2,400/mo</option><option selected>Scale · $6,500/mo</option><option>Enterprise · Custom</option></select></label>
+      <label>Effective Date<select><option>Next billing cycle (2026-05-01)</option><option selected>Immediately (prorated)</option></select></label>
+      <label>Billing Treatment<select><option>Charge prorated difference</option><option selected>Credit & rebill</option></select></label>
+      <label class="form-wide">Note (internal)<textarea rows="3" placeholder="Customer requested plan change after onboarding additional programs."></textarea></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-admin-org', konduitOrgName:'${org.replace(/'/g, "\\'")}'})">Cancel</button>
+      <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-admin-org', konduitOrgName:'${org.replace(/'/g, "\\'")}', konduitFlash:{title:'Plan changed',body:'${org} now on Scale · prorated charge applied'}})">Apply Change</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitCreditIssue() {
+  const org = state.konduitOrgName || 'Meridian Specialty Underwriters';
+  return `
+  ${konduitPageHeader(`Issue Credit · ${org}`, 'Apply a comp or goodwill credit to this account.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-admin-org', konduitOrgName:'${org.replace(/'/g, "\\'")}'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:560px">
+    <div class="form-grid">
+      <label>Credit Type<select><option>Goodwill</option><option>SLA breach</option><option>Onboarding incentive</option><option>Migration credit</option></select></label>
+      <label>Amount<input type="text" placeholder="$2,400"></label>
+      <label>Applied To<select><option>Next invoice</option><option>Account balance</option></select></label>
+      <label>Approved By<input type="text" value="Konduit Ops" disabled></label>
+      <label class="form-wide">Internal justification<textarea rows="3" placeholder="Billing error in March · compensated one month of Professional fees"></textarea></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-admin-org', konduitOrgName:'${org.replace(/'/g, "\\'")}'})">Cancel</button>
+      <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-admin-org', konduitOrgName:'${org.replace(/'/g, "\\'")}', konduitFlash:{title:'Credit issued',body:'Applied to next invoice · audit logged'}})">Issue Credit</button>
+    </div>
+  </section>
+  `;
+}
+
+function renderKonduitSeats() {
+  const org = state.konduitOrgName || 'Meridian Specialty Underwriters';
+  return `
+  ${konduitPageHeader(`Add Seats · ${org}`, 'Increase seat allocation for this organization',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'k-admin-org', konduitOrgName:'${org.replace(/'/g, "\\'")}'})">Cancel</button>`)}
+  <section class="card" style="padding:var(--space-lg); max-width:520px">
+    <div class="form-grid">
+      <label>Current Seats<input type="text" value="8" disabled></label>
+      <label>Additional Seats<input type="text" placeholder="4"></label>
+      <label>Price per Seat<input type="text" value="$250/mo" disabled></label>
+      <label>Effective<select><option>Immediately (prorated)</option><option>Next billing cycle</option></select></label>
+    </div>
+    <div style="text-align:right; margin-top:var(--space-lg); display:flex; gap:var(--space-sm); justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'k-admin-org', konduitOrgName:'${org.replace(/'/g, "\\'")}'})">Cancel</button>
+      <button class="btn btn-primary konduit-cta" onclick="window.setState({screen:'k-admin-org', konduitOrgName:'${org.replace(/'/g, "\\'")}', konduitFlash:{title:'Seats added',body:'+4 seats · $1,000/mo added to next invoice'}})">Add Seats</button>
+    </div>
+  </section>
+  `;
+}
+
 // ─── Boot ───
 render();
+
+
+
+

@@ -3026,3 +3026,570 @@ select.form-input optgroup {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
+
+/* ============================================================
+   KONDUIT CAPACITY PORTAL — Scoped Theme (emerald / mint accent)
+   All rules under .konduit-theme so other portals are untouched
+   ============================================================ */
+
+/* Login-screen accent for 4th card (safe: scoped via attribute) */
+.portal-card[data-portal="konduit"]::before { background: #00d9a3 !important; }
+.portal-card.konduit-card:hover {
+  box-shadow: 0 0 0 1px rgba(0, 217, 163, 0.4), 0 8px 24px rgba(0, 217, 163, 0.15);
+}
+
+.konduit-theme {
+  --k-accent:       #00d9a3;
+  --k-accent-hover: #00c090;
+  --k-accent-soft:  rgba(0, 217, 163, 0.12);
+  --k-accent-soft-2:rgba(0, 217, 163, 0.20);
+  --k-border-accent:rgba(0, 217, 163, 0.35);
+  --k-glow:         0 0 20px rgba(0, 217, 163, 0.18);
+  --k-deep:         #071f1a;
+  --k-gradient:     linear-gradient(135deg, #071f1a 0%, #0b2f28 50%, #0f4a3e 100%);
+
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: 60px 1fr;
+  grid-template-areas:
+    "topbar topbar"
+    "sidenav main";
+  background: var(--bg-primary);
+}
+
+.konduit-top-bar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-lg);
+  background: var(--k-deep);
+  border-bottom: 1px solid var(--k-border-accent);
+  box-shadow: 0 1px 0 rgba(0, 217, 163, 0.10);
+}
+.konduit-top-bar .top-bar-brand {
+  display: flex; align-items: center; gap: var(--space-sm);
+  font-weight: 800; letter-spacing: 0.03em; color: var(--text-primary);
+}
+.konduit-top-bar .brand-icon {
+  font-size: 1.15rem;
+  color: var(--k-accent);
+}
+.konduit-top-bar .brand-sub {
+  color: var(--text-secondary); font-weight: 500; margin-left: 4px;
+}
+.konduit-top-bar .top-bar-right {
+  display: flex; align-items: center; gap: var(--space-md);
+}
+.konduit-top-bar .user-chip {
+  display: flex; align-items: center; gap: var(--space-sm);
+  padding: 6px 10px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+}
+.konduit-top-bar .user-chip-name { font-size: 0.82rem; font-weight: 600; }
+.konduit-top-bar .user-chip-role { font-size: 0.7rem; color: var(--text-secondary); }
+.konduit-theme .avatar {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, #00d9a3, #00815f);
+  color: #071f1a; font-weight: 700; font-size: 0.8rem;
+}
+.konduit-theme .avatar-sm { width: 26px; height: 26px; font-size: 0.72rem; }
+
+.konduit-side-nav {
+  grid-area: sidenav;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-subtle);
+  padding: var(--space-md) var(--space-sm);
+  overflow-y: auto;
+}
+.konduit-role-toggle {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  padding: 3px; gap: 2px; margin-bottom: var(--space-md);
+}
+.konduit-role-toggle .kr-btn {
+  background: transparent; border: none; color: var(--text-secondary);
+  padding: 6px 0; font-weight: 600; font-size: 0.78rem; border-radius: 7px;
+  cursor: pointer; transition: var(--transition-fast);
+}
+.konduit-role-toggle .kr-btn:hover { color: var(--text-primary); }
+.konduit-role-toggle .kr-btn.active {
+  background: var(--k-accent); color: #071f1a; box-shadow: var(--k-glow);
+}
+
+.konduit-side-nav .side-nav-item {
+  display: flex; align-items: center; gap: var(--space-sm);
+  padding: 9px 12px; border-radius: var(--radius-md);
+  color: var(--text-secondary); cursor: pointer; font-size: 0.86rem;
+  transition: var(--transition-fast);
+}
+.konduit-side-nav .side-nav-item:hover {
+  background: var(--bg-card-hover); color: var(--text-primary);
+}
+.konduit-side-nav .side-nav-item.active {
+  background: var(--k-accent-soft); color: var(--k-accent);
+  border-left: 3px solid var(--k-accent); padding-left: 9px;
+}
+.konduit-side-nav .side-nav-item-icon { font-size: 1rem; width: 20px; text-align: center; }
+.konduit-side-nav .side-nav-cta { margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle); }
+
+.konduit-main {
+  grid-area: main;
+  padding: var(--space-lg);
+  overflow-y: auto;
+  max-width: 100%;
+}
+
+/* ── Page-level primitives ── */
+.konduit-theme .konduit-page-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: var(--space-lg); gap: var(--space-md);
+}
+.konduit-theme .page-title { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em; color: var(--text-primary); }
+.konduit-theme .page-subtitle { color: var(--text-secondary); margin-top: 4px; font-size: 0.88rem; }
+.konduit-theme .page-actions { display: flex; gap: var(--space-sm); }
+
+.konduit-theme .card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-lg);
+  overflow: hidden;
+}
+.konduit-theme .card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-md); border-bottom: 1px solid var(--border-subtle);
+}
+.konduit-theme .card-header h3 { font-size: 0.98rem; }
+.konduit-theme .link-subtle { color: var(--text-secondary); font-size: 0.82rem; text-decoration: none; }
+.konduit-theme .link-subtle:hover { color: var(--k-accent); }
+
+/* ── KPIs ── */
+.konduit-theme .kpi-grid {
+  display: grid; gap: var(--space-md); margin-bottom: var(--space-lg);
+}
+.konduit-theme .kpi-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.konduit-theme .kpi-grid-6 { grid-template-columns: repeat(6, 1fr); }
+.konduit-theme .konduit-kpi {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
+.konduit-theme .konduit-kpi .kpi-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px; }
+.konduit-theme .konduit-kpi .kpi-value { font-size: 1.4rem; font-weight: 700; color: var(--k-accent); }
+.konduit-theme .konduit-kpi .kpi-value.warning { color: var(--status-amber); }
+
+/* ── Tables ── */
+.konduit-theme .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.konduit-theme .data-table th {
+  text-align: left; padding: 10px 14px;
+  color: var(--text-muted); font-weight: 600; font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  background: rgba(0, 217, 163, 0.04);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.konduit-theme .data-table td {
+  padding: 10px 14px; border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary); vertical-align: middle;
+}
+.konduit-theme .data-table tbody tr:hover { background: rgba(0, 217, 163, 0.04); }
+.konduit-theme .row-clickable { cursor: pointer; }
+.konduit-theme .row-sub { color: var(--text-muted); font-size: 0.75rem; }
+
+/* ── Badges / pills ── */
+.konduit-theme .badge-grey { background: rgba(255, 255, 255, 0.08); color: var(--text-secondary); }
+.konduit-theme .badge-dot-grey { background: rgba(255, 255, 255, 0.5); }
+.konduit-theme .quality-pill {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  background: var(--k-accent-soft); color: var(--k-accent);
+  font-weight: 700; font-size: 0.78rem;
+}
+.konduit-theme .match-pill {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  background: var(--status-blue-bg); color: var(--status-blue);
+  font-weight: 700; font-size: 0.78rem;
+}
+
+/* ── CTA buttons ── */
+.konduit-theme .konduit-cta {
+  background: var(--k-accent) !important;
+  color: #071f1a !important;
+  border: none;
+  font-weight: 700;
+  box-shadow: var(--k-glow);
+}
+.konduit-theme .konduit-cta:hover { background: var(--k-accent-hover) !important; }
+.konduit-theme .konduit-cta-outline {
+  background: transparent !important;
+  border: 1px solid var(--k-border-accent) !important;
+  color: var(--k-accent) !important;
+}
+.konduit-theme .konduit-cta-outline:hover { background: var(--k-accent-soft) !important; }
+.konduit-theme .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: 0.83rem; cursor: pointer; transition: var(--transition-fast); font-family: inherit; }
+.konduit-theme .btn-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-medium); }
+.konduit-theme .btn-secondary:hover { background: var(--bg-card-hover); border-color: var(--k-border-accent); }
+.konduit-theme .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid transparent; }
+.konduit-theme .btn-ghost:hover { color: var(--k-accent); background: var(--k-accent-soft); }
+.konduit-theme .btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+.konduit-theme .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Splits & layout ── */
+.konduit-theme .konduit-split-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg); }
+.konduit-theme .konduit-split-3 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
+@media (max-width: 1200px) {
+  .konduit-theme .konduit-split-2 { grid-template-columns: 1fr; }
+  .konduit-theme .konduit-split-3 { grid-template-columns: repeat(2, 1fr); }
+  .konduit-theme .kpi-grid-6 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── Onboarding ── */
+.konduit-onboarding { list-style: none; padding: var(--space-md); margin: 0; }
+.konduit-onb-step {
+  display: grid; grid-template-columns: 28px 1fr auto;
+  gap: var(--space-sm); align-items: center;
+  padding: 10px; border-radius: var(--radius-md); margin-bottom: 6px;
+}
+.konduit-onb-step.active { background: var(--k-accent-soft); }
+.konduit-onb-step.done { opacity: 0.75; }
+.konduit-onb-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--bg-card); border: 1px solid var(--border-subtle);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.78rem; font-weight: 700; color: var(--text-secondary);
+}
+.konduit-onb-step.done .konduit-onb-num { background: var(--k-accent); color: #071f1a; border-color: var(--k-accent); }
+.konduit-onb-step.active .konduit-onb-num { background: var(--k-accent); color: #071f1a; border-color: var(--k-accent); box-shadow: var(--k-glow); }
+.konduit-onb-label { font-weight: 600; font-size: 0.9rem; }
+.konduit-onb-desc { font-size: 0.76rem; color: var(--text-muted); }
+.konduit-onb-status {
+  padding: 3px 8px; border-radius: 999px; font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; background: rgba(255,255,255,0.06); color: var(--text-secondary);
+}
+.konduit-onb-status.done   { background: var(--status-green-bg); color: var(--status-green); }
+.konduit-onb-status.active { background: var(--k-accent-soft); color: var(--k-accent); }
+
+/* ── Detail rows ── */
+.konduit-theme .konduit-detail-row {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-sm) var(--space-lg);
+  padding: 0 var(--space-md) var(--space-md); color: var(--text-secondary); font-size: 0.85rem;
+}
+
+/* ── Wizard ── */
+.konduit-stepper {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-sm);
+  padding: var(--space-md); border-bottom: 1px solid var(--border-subtle);
+}
+.konduit-step {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  padding: 8px 10px; border-radius: var(--radius-md);
+  background: var(--bg-card); border: 1px solid var(--border-subtle);
+  font-size: 0.82rem; color: var(--text-secondary);
+}
+.konduit-step:hover { border-color: var(--k-border-accent); color: var(--text-primary); }
+.konduit-step.active { background: var(--k-accent-soft); border-color: var(--k-accent); color: var(--k-accent); }
+.konduit-step.done { border-color: var(--k-border-accent); color: var(--text-primary); }
+.konduit-step-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--border-medium); color: var(--text-primary);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 700;
+}
+.konduit-step.done .konduit-step-num, .konduit-step.active .konduit-step-num { background: var(--k-accent); color: #071f1a; }
+.konduit-wizard-body { padding: var(--space-lg); }
+.konduit-wizard-actions { padding: var(--space-md); border-top: 1px solid var(--border-subtle); display: flex; }
+
+/* ── Forms ── */
+.konduit-theme .form-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-md);
+}
+.konduit-theme .form-grid label {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.konduit-theme .form-grid label.form-wide { grid-column: 1 / -1; }
+.konduit-theme input[type="text"], .konduit-theme input[type="password"], .konduit-theme select, .konduit-theme textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 8px 12px; border-radius: var(--radius-md);
+  font-family: inherit; font-size: 0.88rem; text-transform: none; letter-spacing: 0;
+}
+.konduit-theme input[type="text"]:focus, .konduit-theme input[type="password"]:focus, .konduit-theme select:focus, .konduit-theme textarea:focus {
+  outline: none; border-color: var(--k-accent); box-shadow: 0 0 0 3px var(--k-accent-soft);
+}
+/* Force <option> readability — native popup can't be fully themed, so use a solid dark bg + light text */
+.konduit-theme select option,
+.modal .k-modal-body select option {
+  background: #1a1a28;
+  color: #f0f0f5;
+}
+.konduit-theme select option:checked,
+.modal .k-modal-body select option:checked {
+  background: #00d9a3;
+  color: #071f1a;
+  font-weight: 600;
+}
+
+/* ── Team rows ── */
+.konduit-team-row {
+  display: flex; align-items: center; gap: var(--space-md);
+  padding: 10px 12px; background: var(--bg-card); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); margin-bottom: 8px;
+}
+.konduit-team-body { flex: 1; }
+
+/* ── Upload / docs ── */
+.konduit-upload-zone {
+  background: var(--k-accent-soft) !important;
+  border: 2px dashed var(--k-border-accent) !important;
+  padding: var(--space-xl) !important;
+  text-align: center;
+}
+.konduit-upload-inner h3 { margin-top: var(--space-sm); }
+.konduit-upload-icon { font-size: 2.5rem; opacity: 0.85; }
+.konduit-inline-select { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-secondary); }
+.konduit-inline-select select { padding: 4px 8px; }
+
+/* ── Confidence bar ── */
+.konduit-theme .confidence-bar {
+  width: 100%; height: 6px; background: var(--border-subtle); border-radius: 999px; overflow: hidden; margin-bottom: 2px;
+}
+.konduit-theme .confidence-fill {
+  height: 100%; background: linear-gradient(90deg, var(--k-accent), #66ffd3);
+}
+.konduit-theme .conf-high { color: var(--status-green); font-weight: 700; }
+.konduit-theme .conf-med  { color: var(--status-amber); font-weight: 700; }
+
+.konduit-extraction-preview {
+  display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); padding: var(--space-md);
+}
+.konduit-ext-col h4 { margin-bottom: var(--space-sm); }
+
+/* ── Benchmarks ── */
+.konduit-footnote {
+  color: var(--text-muted); font-size: 0.78rem; padding: var(--space-md); border-top: 1px solid var(--border-subtle);
+}
+.konduit-theme .delta-good { color: var(--status-green); font-weight: 700; }
+.konduit-theme .delta-warn { color: var(--status-amber); font-weight: 700; }
+
+/* ── Marketplace Preview ── */
+.konduit-persona-toggle {
+  display: flex; flex-wrap: wrap; gap: var(--space-sm); padding: var(--space-md);
+}
+.kp-btn {
+  background: var(--bg-card); border: 1px solid var(--border-subtle);
+  color: var(--text-secondary); padding: 7px 14px; border-radius: 999px;
+  cursor: pointer; font-size: 0.82rem; transition: var(--transition-fast); font-family: inherit;
+}
+.kp-btn:hover { color: var(--text-primary); border-color: var(--k-border-accent); }
+.kp-btn.active { background: var(--k-accent); color: #071f1a; border-color: var(--k-accent); }
+
+.konduit-preview-card .konduit-preview-header {
+  display: flex; justify-content: space-between; align-items: center; padding: var(--space-md);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.konduit-nda-gate {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-md);
+  padding: var(--space-md); margin: var(--space-md); background: var(--k-accent-soft);
+  border: 1px solid var(--k-border-accent); border-radius: var(--radius-md);
+}
+.konduit-nda-gate h4 { margin-bottom: 4px; color: var(--k-accent); }
+.konduit-summary-block { padding: var(--space-md); }
+.konduit-summary-block h4 { margin-bottom: 8px; }
+.konduit-summary-block p { color: var(--text-secondary); line-height: 1.6; }
+
+.konduit-nda-card {
+  text-align: center; padding: var(--space-xl) !important;
+  background: var(--k-accent-soft) !important; border-color: var(--k-border-accent) !important;
+}
+.konduit-nda-card h3 { margin-bottom: var(--space-sm); color: var(--k-accent); }
+.konduit-nda-card p { margin-bottom: var(--space-md); }
+
+/* ── Funnel ── */
+.konduit-funnel { padding: var(--space-md); }
+.konduit-funnel-row { display: grid; grid-template-columns: 180px 1fr; gap: var(--space-md); align-items: center; margin-bottom: 10px; }
+.konduit-funnel-label { font-size: 0.85rem; color: var(--text-secondary); }
+.konduit-funnel-bar-wrap { height: 26px; background: var(--bg-card); border-radius: var(--radius-sm); overflow: hidden; }
+.konduit-funnel-bar {
+  height: 100%; background: linear-gradient(90deg, var(--k-accent), #66ffd3);
+  display: flex; align-items: center; justify-content: flex-end; padding: 0 10px;
+  color: #071f1a; font-weight: 700; font-size: 0.8rem; min-width: 40px;
+}
+
+/* ── Messages ── */
+.konduit-msg-split {
+  display: grid; grid-template-columns: 320px 1fr; gap: var(--space-md);
+  background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
+  overflow: hidden; min-height: 540px;
+}
+.konduit-msg-list { border-right: 1px solid var(--border-subtle); overflow-y: auto; }
+.konduit-msg-item {
+  padding: var(--space-md); cursor: pointer; border-bottom: 1px solid var(--border-subtle);
+  transition: var(--transition-fast);
+}
+.konduit-msg-item:hover { background: var(--bg-card-hover); }
+.konduit-msg-item.active { background: var(--k-accent-soft); border-left: 3px solid var(--k-accent); padding-left: calc(var(--space-md) - 3px); }
+.konduit-msg-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+.konduit-msg-preview { color: var(--text-secondary); font-size: 0.82rem; margin-top: 6px; line-clamp: 2; }
+.konduit-msg-ts { font-size: 0.72rem; color: var(--text-muted); margin-top: 6px; }
+.konduit-unread {
+  background: var(--k-accent); color: #071f1a; font-size: 0.7rem; font-weight: 700;
+  padding: 1px 7px; border-radius: 999px;
+}
+.konduit-msg-panel { display: flex; flex-direction: column; }
+.konduit-msg-panel-head {
+  padding: var(--space-md); border-bottom: 1px solid var(--border-subtle);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.konduit-msg-body { flex: 1; padding: var(--space-md); overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-sm); }
+.konduit-msg-bubble {
+  background: var(--bg-card); border: 1px solid var(--border-subtle);
+  padding: 10px 14px; border-radius: var(--radius-md); max-width: 80%;
+}
+.konduit-msg-bubble.me { align-self: flex-end; background: var(--k-accent-soft); border-color: var(--k-border-accent); }
+.konduit-msg-from { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px; }
+.konduit-msg-compose {
+  display: flex; gap: var(--space-sm); padding: var(--space-md);
+  border-top: 1px solid var(--border-subtle); background: var(--bg-card);
+}
+.konduit-msg-compose input { flex: 1; }
+
+/* ── Settings ── */
+.konduit-settings-list {
+  padding: var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm);
+  color: var(--text-secondary); font-size: 0.88rem;
+}
+.konduit-toggle-row { display: flex; justify-content: space-between; align-items: center; }
+.konduit-integration-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle); }
+.konduit-api-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.konduit-api-row code { background: var(--bg-input); padding: 4px 8px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 0.78rem; color: var(--k-accent); }
+
+/* ── Filter bar ── */
+.konduit-filter-bar {
+  display: flex; gap: var(--space-md); padding: var(--space-md) !important;
+  flex-wrap: wrap; margin-bottom: var(--space-lg);
+}
+.konduit-filter-bar label {
+  display: flex; flex-direction: column; gap: 4px; font-size: 0.72rem;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+/* ── Chips ── */
+.konduit-chip-grid { display: flex; flex-wrap: wrap; gap: 6px; padding: var(--space-md); }
+.konduit-chip {
+  display: inline-block; padding: 5px 12px; border-radius: 999px;
+  background: var(--bg-card); border: 1px solid var(--border-subtle);
+  font-size: 0.78rem; color: var(--text-secondary);
+}
+.konduit-chip.active { background: var(--k-accent-soft); border-color: var(--k-accent); color: var(--k-accent); font-weight: 600; }
+.konduit-chip.warn { background: var(--status-red-bg); border-color: rgba(255, 82, 82, 0.35); color: var(--status-red); }
+
+/* ── Member row ── */
+.konduit-member { display: flex; align-items: center; gap: var(--space-sm); }
+
+/* ── Exposure bars ── */
+.konduit-exposure { padding: var(--space-md); }
+.konduit-expo-row {
+  display: grid; grid-template-columns: 180px 1fr 150px; gap: var(--space-md);
+  align-items: center; margin-bottom: 8px;
+}
+.konduit-expo-label { color: var(--text-secondary); font-size: 0.85rem; }
+.konduit-expo-bar-wrap { height: 20px; background: var(--bg-card); border-radius: var(--radius-sm); overflow: hidden; }
+.konduit-expo-bar { height: 100%; background: linear-gradient(90deg, var(--k-accent), #66ffd3); }
+.konduit-expo-val { text-align: right; font-size: 0.82rem; color: var(--text-primary); font-weight: 600; }
+
+/* ── Primary button in Konduit context (safety re-anchor) ── */
+.konduit-theme .btn-primary {
+  background: var(--k-accent); color: #071f1a; border: none; font-weight: 700;
+}
+.konduit-theme .btn-primary:hover { background: var(--k-accent-hover); }
+
+/* ── Q&A bubbles (reused in QR detail + Q&A room) ── */
+.konduit-theme .konduit-qa-bubble {
+  padding: 12px 14px; border-radius: var(--radius-md);
+  background: var(--bg-card); border: 1px solid var(--border-subtle);
+  color: var(--text-primary); font-size: 0.88rem; line-height: 1.5;
+}
+.konduit-theme .konduit-qa-bubble.question {
+  border-left: 3px solid var(--status-amber); background: var(--status-amber-bg);
+}
+.konduit-theme .konduit-qa-bubble.answer {
+  border-left: 3px solid var(--k-accent); background: var(--k-accent-soft);
+}
+
+/* ── Modal content scoping (also applied when modal opens from Konduit) ── */
+.modal .k-modal-body { color: var(--text-primary); line-height: 1.55; }
+.modal .k-modal-body input[type="text"],
+.modal .k-modal-body input[type="password"],
+.modal .k-modal-body select,
+.modal .k-modal-body textarea {
+  background: var(--bg-input); border: 1px solid var(--border-subtle);
+  color: var(--text-primary); padding: 8px 12px; border-radius: var(--radius-md);
+  font-family: inherit; font-size: 0.88rem; width: 100%;
+}
+.modal .k-modal-body .form-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-md);
+}
+.modal .k-modal-body .form-grid label {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.modal .k-modal-body .form-grid label.form-wide { grid-column: 1 / -1; }
+.modal .k-modal-body .konduit-chip {
+  display: inline-block; padding: 5px 12px; border-radius: 999px;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  font-size: 0.78rem; color: var(--text-secondary);
+}
+.modal .k-modal-body .konduit-chip.active {
+  background: rgba(0, 217, 163, 0.12); border-color: rgba(0, 217, 163, 0.35);
+  color: #00d9a3; font-weight: 600;
+}
+
+/* ── Form input styles for the Konduit wizard in k-modal-body ── */
+.modal .k-modal-body .konduit-settings-list {
+  display: flex; flex-direction: column; gap: var(--space-sm); color: var(--text-secondary);
+}
+
+/* ── Konduit file input hidden look ── */
+.konduit-theme input[type="file"] { display: none; }
+
+/* ── Extra margin for top-bar buttons so they don't crash into user chip ── */
+.konduit-top-bar .btn-ghost { color: var(--text-secondary); }
+.konduit-top-bar .btn-ghost:hover { color: var(--k-accent); background: var(--k-accent-soft); }
+
+/* ── Disabled input safe visual ── */
+.konduit-theme input:disabled,
+.konduit-theme select:disabled,
+.konduit-theme textarea:disabled {
+  opacity: 0.7; cursor: not-allowed;
+}
+
+/* ── Narrow screens safety ── */
+@media (max-width: 960px) {
+  .konduit-msg-split { grid-template-columns: 1fr; min-height: unset; }
+  .konduit-msg-list { max-height: 300px; }
+}
+
+/* ── Flash banner (replaces toasts) ── */
+.konduit-flash {
+  display: flex; align-items: center; gap: var(--space-sm);
+  padding: 10px 14px; margin-bottom: var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--k-accent-soft);
+  border: 1px solid var(--k-border-accent);
+  color: var(--text-primary); font-size: 0.88rem;
+  animation: kFlashIn 0.25s ease-out;
+}
+.konduit-flash-warn { background: var(--status-amber-bg); border-color: rgba(255, 171, 0, 0.35); }
+.konduit-flash-info { background: var(--status-blue-bg);  border-color: rgba(68, 138, 255, 0.35); }
+.konduit-flash-icon { font-size: 1.1rem; }
+.konduit-flash-body { flex: 1; }
+.konduit-flash-sub { color: var(--text-secondary); margin-left: 6px; }
+@keyframes kFlashIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
