@@ -85,6 +85,10 @@ function render() {
     app.innerHTML = renderSynapiPortal() + (state.modal ? renderModal() : '');
     bindSynapi();
     if (state.modal) bindModal();
+  } else if (state.portal === 'cede') {
+    app.innerHTML = renderCedePortal() + (state.modal ? renderModal() : '');
+    bindCede();
+    if (state.modal) bindModal();
   }
 }
 
@@ -190,6 +194,14 @@ function renderLogin() {
           <div class="portal-card-info">
             <h3>Synapi — Insurance API Platform</h3>
             <p>ACORD-compliant · unified quoting · webhooks · developer portal · audit</p>
+          </div>
+          <span class="portal-card-arrow">→</span>
+        </div>
+        <div class="portal-card cede-card" data-portal="cede" id="portal-cede">
+          <span class="portal-card-icon">🝆</span>
+          <div class="portal-card-info">
+            <h3>Cede — Carrier ↔ MGA Capacity Bridge</h3>
+            <p>Program origination · DUA builder · bordereau · UW compliance · post-Vesttoo collateral</p>
           </div>
           <span class="portal-card-arrow">→</span>
         </div>
@@ -37641,8 +37653,4052 @@ function renderSynapiReports() {
   `;
 }
 
+// ════════════════════════════════════════════════════════════════
+// CEDE — Carrier ↔ MGA Capacity Bridge (7th portal)
+// Amber accent · 4 role toggles · scoped .cede-theme · no toasts
+// ════════════════════════════════════════════════════════════════
+function cedeRole() { return state.cedeRole || 'carrier'; }
+
+function cedeKPIs(items, cols = 6) {
+  return `<div class="kpi-grid kpi-grid-${cols}">${items.map(k =>
+    `<div class="kpi-card cede-kpi">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value${k.warning ? ' warning' : ''}">${k.value}</div>
+    </div>`).join('')}</div>`;
+}
+function cedeBadge(status, color) {
+  return `<span class="badge badge-${color}"><span class="badge-dot badge-dot-${color}"></span>${status}</span>`;
+}
+function cedeStatusColor(s) {
+  const map = {
+    'Active':'green','In-force':'green','Done':'green','Approved':'green','Verified':'green','Paid':'green','Closed':'green','Resolved':'green','Compliant':'green','Current':'green','Delivered':'green','Completed':'green','Reconciled':'green','Pass':'green','Received':'green','Strong positive':'green','Green':'green','Positive':'green',
+    'Pending':'amber','In review':'amber','Watch':'amber','Under review':'amber','In progress':'amber','Counter-offer pending':'amber','Collecting':'amber','Renewal-due':'amber','Exceptions':'amber','Accruing':'amber','Amber':'amber','Planning':'amber','Plan drafted':'amber','Waitlisted':'amber','Mediation':'amber','Carrier review':'amber','Non-renewal (Run-off)':'amber','Renewal proposal':'amber',
+    'Open':'red','Failed':'red','Fail':'red','Deficit':'red','Deficit flagged':'red','Red':'red','Critical':'red','High':'red',
+    'Superseded':'grey','N/A':'grey','—':'grey','Not started':'grey','Active (run-off)':'amber','In negotiation':'amber','MGA review':'amber'
+  };
+  return map[s] || 'grey';
+}
+function cedePageHeader(title, subtitle, actions = '') {
+  return `
+  <div class="page-header cede-page-header">
+    <div>
+      <h1 class="page-title">${title}</h1>
+      ${subtitle ? `<p class="page-subtitle">${subtitle}</p>` : ''}
+    </div>
+    <div class="page-actions">${actions}</div>
+  </div>`;
+}
+function cedeStageTracker(current) {
+  const stages = D.cedeStages;
+  const idx = stages.indexOf(current);
+  return `
+  <div class="cede-stage-tracker">
+    ${stages.map((s, i) => `
+      <span class="cede-stage${i < idx ? ' done' : i === idx ? ' active' : ''}">${i < idx ? '✓' : i+1}. ${s}</span>
+      ${i < stages.length - 1 ? '<span class="cede-stage-sep">›</span>' : ''}
+    `).join('')}
+  </div>`;
+}
+function cedeConfidencePill(label) {
+  const c = (label || '').toLowerCase();
+  const cls = c === 'green' ? 'cede-confidence-green' : c === 'amber' ? 'cede-confidence-amber' : c === 'red' ? 'cede-confidence-red' : '';
+  return `<span class="${cls}">● ${label || '—'}</span>`;
+}
+
+function cedeNav() {
+  const role = cedeRole();
+  const carrierItems = [
+    { icon: '📊', label: 'Dashboard',                screen: 'cd-c-dashboard' },
+    { icon: '🔎', label: 'Marketplace',              screen: 'cd-marketplace' },
+    { icon: '🎯', label: 'My Appetite',              screen: 'cd-carrier-appetite' },
+    { icon: '🧭', label: 'Smart Matches',            screen: 'cd-matches' },
+    { icon: '📁', label: 'Mandates',                 screen: 'cd-mandates' },
+    { icon: '🗂', label: 'Due Diligence',            screen: 'cd-dd' },
+    { icon: '📜', label: 'DUA Builder',              screen: 'cd-dua' },
+    { icon: '🤝', label: 'Term Negotiation',         screen: 'cd-term-sheets' },
+    { icon: '🚀', label: 'Activation',               screen: 'cd-activation' },
+    { icon: '📈', label: 'Monitoring & Compliance',  screen: 'cd-monitoring' },
+    { icon: '📬', label: 'Bordereau',                screen: 'cd-bordereau' },
+    { icon: '🏦', label: 'Collateral',               screen: 'cd-collateral' },
+    { icon: '✏️', label: 'Amendments',               screen: 'cd-amendments' },
+    { icon: '🔁', label: 'Renewals',                 screen: 'cd-renewals' },
+    { icon: '⛔', label: 'Terminations',             screen: 'cd-terminations' },
+    { icon: '🔐', label: 'Audit & Compliance',       screen: 'cd-audit' },
+    { icon: '💰', label: 'Commissions',              screen: 'cd-commissions' },
+    { icon: '📊', label: 'Benchmarks',               screen: 'cd-benchmarks' }
+  ];
+  const mgaItems = [
+    { icon: '📊', label: 'Dashboard',                screen: 'cd-m-dashboard' },
+    { icon: '🔎', label: 'Marketplace',              screen: 'cd-marketplace' },
+    { icon: '📋', label: 'My Seeking Profile',        screen: 'cd-mga-profile' },
+    { icon: '🧭', label: 'Smart Matches',            screen: 'cd-matches' },
+    { icon: '📁', label: 'My Mandates',              screen: 'cd-mandates' },
+    { icon: '🗂', label: 'Due Diligence',            screen: 'cd-dd' },
+    { icon: '📜', label: 'My DUAs',                  screen: 'cd-dua' },
+    { icon: '🤝', label: 'Term Sheets',              screen: 'cd-term-sheets' },
+    { icon: '🚀', label: 'Activation',               screen: 'cd-activation' },
+    { icon: '📈', label: 'My Performance',           screen: 'cd-monitoring' },
+    { icon: '📬', label: 'Bordereau Upload',         screen: 'cd-bordereau' },
+    { icon: '🏦', label: 'Collateral',               screen: 'cd-collateral' },
+    { icon: '✏️', label: 'Amendments',               screen: 'cd-amendments' },
+    { icon: '🔁', label: 'Renewals',                 screen: 'cd-renewals' },
+    { icon: '⛔', label: 'Terminations',             screen: 'cd-terminations' },
+    { icon: '💰', label: 'My Commissions',           screen: 'cd-commissions' },
+    { icon: '📊', label: 'Benchmarks (vs peers)',    screen: 'cd-benchmarks' }
+  ];
+  const brokerItems = [
+    { icon: '📊', label: 'Dashboard',                screen: 'cd-b-dashboard' },
+    { icon: '📁', label: 'Tagged Mandates',          screen: 'cd-mandates' },
+    { icon: '🤝', label: 'Term Sheets',              screen: 'cd-term-sheets' },
+    { icon: '💵', label: 'BoR Fees',                 screen: 'cd-bor-fees' },
+    { icon: '📊', label: 'Market Analytics',         screen: 'cd-market-analytics' }
+  ];
+  const adminItems = [
+    { icon: '📊', label: 'Dashboard',                screen: 'cd-a-dashboard' },
+    { icon: '📨', label: 'Applications',             screen: 'cd-applications' },
+    { icon: '🧾', label: 'BoR Registry',             screen: 'cd-bor-registry' },
+    { icon: '⚖️', label: 'Disputes',                 screen: 'cd-disputes' },
+    { icon: '🔐', label: 'Platform Audit Log',       screen: 'cd-platform-audit' },
+    { icon: '🌐', label: 'Data Residency',           screen: 'cd-data-residency' },
+    { icon: '📊', label: 'Market Analytics',         screen: 'cd-market-analytics' }
+  ];
+  const items = role === 'mga' ? mgaItems : role === 'broker' ? brokerItems : role === 'admin' ? adminItems : carrierItems;
+  const cta = role === 'mga' ? '+ New Seeking' : role === 'broker' ? '+ Nominate BoR' : role === 'admin' ? '+ Onboard Partner' : '+ Publish Appetite';
+  const ctaScreen = role === 'mga' ? 'cd-mga-profile' : role === 'broker' ? 'cd-mandates' : role === 'admin' ? 'cd-applications' : 'cd-carrier-appetite';
+  return `
+  <nav class="side-nav cede-side-nav">
+    <div class="cede-role-toggle">
+      <button class="sr-btn${role==='carrier'?' active':''}" data-role="carrier">Carrier</button>
+      <button class="sr-btn${role==='mga'?' active':''}"     data-role="mga">MGA</button>
+      <button class="sr-btn${role==='broker'?' active':''}"  data-role="broker">Broker</button>
+      <button class="sr-btn${role==='admin'?' active':''}"   data-role="admin">Admin</button>
+    </div>
+    ${items.map(i => `
+      <div class="side-nav-item${state.screen === i.screen ? ' active' : ''}" data-screen="${i.screen}">
+        <span class="side-nav-item-icon">${i.icon}</span>
+        <span>${i.label}</span>
+      </div>`).join('')}
+    <div class="side-nav-cta">
+      <button class="btn btn-primary cede-cta" style="width:100%" onclick="window.setState({screen:'${ctaScreen}'})">${cta}</button>
+    </div>
+  </nav>`;
+}
+
+function renderCedePortal() {
+  const role = cedeRole();
+  const u = role === 'mga' ? D.CEDE_USERS.mga
+         : role === 'broker' ? D.CEDE_USERS.broker
+         : role === 'admin' ? D.CEDE_USERS.admin
+         : D.CEDE_USERS.carrier;
+  const screens = {
+    'dashboard':              renderCedeCarrierDashboard,
+    // Dashboards per role
+    'cd-c-dashboard':         renderCedeCarrierDashboard,
+    'cd-m-dashboard':         renderCedeMgaDashboard,
+    'cd-b-dashboard':         renderCedeBrokerDashboard,
+    'cd-a-dashboard':         renderCedeAdminDashboard,
+    // Module 1 — Marketplace & Origination
+    'cd-marketplace':         renderCedeMarketplace,
+    'cd-carrier-appetite':    renderCedeCarrierAppetite,
+    'cd-appetite-edit':       renderCedeAppetiteEdit,
+    'cd-mga-profile':         renderCedeMgaProfile,
+    'cd-profile-edit':        renderCedeProfileEdit,
+    'cd-matches':             renderCedeMatches,
+    'cd-match-detail':        renderCedeMatchDetail,
+    'cd-opt-in':              renderCedeOptIn,
+    'cd-bor-nomination':      renderCedeBorNomination,
+    'cd-mandates':            renderCedeMandatePipeline,
+    'cd-mandate':             renderCedeMandateDetail,
+    'cd-market-analytics':    renderCedeMarketAnalytics,
+    // Module 2 — Due Diligence
+    'cd-dd':                  renderCedeDDList,
+    'cd-dd-detail':           renderCedeDDDetail,
+    'cd-dd-vault':            renderCedeDDVault,
+    'cd-dd-viewer':           renderCedeDDViewer,
+    'cd-dd-extraction':       renderCedeDDExtraction,
+    'cd-dd-qa':               renderCedeDDQA,
+    'cd-dd-reviewers':        renderCedeDDReviewers,
+    'cd-dd-scoring':          renderCedeDDScoring,
+    'cd-dd-references':       renderCedeDDReferences,
+    'cd-dd-redflags':         renderCedeDDRedFlags,
+    'cd-dd-export':           renderCedeDDExport,
+    // Module 3 — DUA Builder
+    'cd-dua':                 renderCedeDUAList,
+    'cd-dua-detail':          renderCedeDUADetail,
+    'cd-dua-templates':       renderCedeDUATemplates,
+    'cd-dua-clauses':         renderCedeDUAClauses,
+    'cd-dua-parties':         renderCedeDUAParties,
+    'cd-dua-grant':           renderCedeDUAGrant,
+    'cd-dua-matrix':          renderCedeDUAMatrix,
+    'cd-dua-commission':      renderCedeDUACommission,
+    'cd-dua-claims-authority':renderCedeDUAClaimsAuthority,
+    'cd-dua-bordereau-spec':  renderCedeDUABordereauSpec,
+    'cd-dua-audit-rights':    renderCedeDUAAuditRights,
+    'cd-dua-termination':     renderCedeDUATerminationClauses,
+    'cd-dua-diff':            renderCedeDUADiff,
+    'cd-dua-redline':         renderCedeDUARedline,
+    // Module 4 — Term Negotiation
+    'cd-term-sheets':         renderCedeTermSheetList,
+    'cd-term-sheet':          renderCedeTermSheetDetail,
+    'cd-counteroffer':        renderCedeCounterOffer,
+    'cd-simulator':           renderCedeEconomicSimulator,
+    'cd-esign':               renderCedeEsignCeremony,
+    'cd-closing':             renderCedeClosingBundle,
+    // Module 5 — Activation
+    'cd-activation':          renderCedeActivationList,
+    'cd-activation-detail':   renderCedeActivationDetail,
+    'cd-activation-collateral':renderCedeActivationCollateral,
+    'cd-activation-integration':renderCedeActivationIntegration,
+    'cd-activation-producers':renderCedeActivationProducers,
+    'cd-activation-reins':    renderCedeActivationReins,
+    'cd-activation-signoff':  renderCedeActivationSignoff,
+    // Module 6 — Monitoring & UW Compliance
+    'cd-monitoring':          renderCedeMonitoringList,
+    'cd-program-perf':        renderCedeProgramPerformance,
+    'cd-uw-score':            renderCedeUWScorecard,
+    'cd-breach-resolve':      renderCedeBreachResolution,
+    'cd-rate-adequacy':       renderCedeRateAdequacy,
+    'cd-hit-ratio':           renderCedeHitRatio,
+    'cd-velocity':            renderCedeBindingVelocity,
+    'cd-claim-authority-mon': renderCedeClaimAuthorityMonitor,
+    'cd-claim-audit-sample':  renderCedeClaimAuditSampling,
+    'cd-program-bench':       renderCedeProgramBenchmarking,
+    'cd-alerts':              renderCedeAlerts,
+    // Module 7 — Bordereau
+    'cd-bordereau':           renderCedeBordereauInbox,
+    'cd-bord-transformer':    renderCedeBordereauTransformer,
+    'cd-bord-validation':     renderCedeBordereauValidation,
+    'cd-bord-recon':          renderCedeBordereauReconciliation,
+    'cd-bord-exceptions':     renderCedeBordereauExceptions,
+    'cd-lr-feed':             renderCedeLRFeed,
+    'cd-bord-archive':        renderCedeBordereauArchive,
+    'cd-ddm-sync':            renderCedeDDMSync,
+    // Module 8 — Collateral
+    'cd-collateral':          renderCedeCollateralDashboard,
+    'cd-coll-verification':   renderCedeCollateralVerification,
+    'cd-coll-exposure':       renderCedeCollateralVsExposure,
+    'cd-loc-maturity':        renderCedeLocMaturity,
+    'cd-trust-ledger':        renderCedeTrustLedger,
+    'cd-vesttoo-flags':       renderCedeVesttooRedFlags,
+    // Module 9 — Amendments & Renewal
+    'cd-amendments':          renderCedeAmendmentList,
+    'cd-amendment-detail':    renderCedeAmendmentDetail,
+    'cd-amend-diff':          renderCedeAmendmentDiff,
+    'cd-amend-effective':     renderCedeAmendmentEffective,
+    'cd-renewals':            renderCedeRenewalPipeline,
+    'cd-renewal-nego':        renderCedeRenewalNegotiation,
+    'cd-annual-review':       renderCedeAnnualReview,
+    // Module 10 — Termination
+    'cd-terminations':        renderCedeTerminationList,
+    'cd-termination-init':    renderCedeTerminationInitiator,
+    'cd-notice-tracker':      renderCedeNoticeTracker,
+    'cd-runoff':              renderCedeRunoffDashboard,
+    'cd-data-export':         renderCedeDataExport,
+    'cd-authority-winddown':  renderCedeAuthorityWinddown,
+    'cd-novation':            renderCedeNovation,
+    // Module 11 — Audit & Compliance
+    'cd-audit':               renderCedeAuditCalendar,
+    'cd-uw-file-audit':       renderCedeUWFileAudit,
+    'cd-claim-file-audit':    renderCedeClaimFileAudit,
+    'cd-trust-audit':         renderCedePremiumTrustAudit,
+    'cd-soc-registry':        renderCedeSocRegistry,
+    'cd-naic-225':            renderCedeNaicChecklist,
+    'cd-state-variations':    renderCedeStateVarsScreen,
+    'cd-audit-findings':      renderCedeAuditFindings,
+    'cd-orsa-export':         renderCedeOrsaExport,
+    'cd-exam-pack':           renderCedeExamPack,
+    // Module 12 — Commissions
+    'cd-commissions':         renderCedeCommissionLedger,
+    'cd-sliding-scale':       renderCedeSlidingScale,
+    'cd-profit-accrual':      renderCedeProfitAccrual,
+    'cd-settlement':          renderCedeSettlementDashboard,
+    'cd-bor-fees':            renderCedeBorFees,
+    'cd-profit-trueup':       renderCedeProfitTrueUp,
+    // Module 13 — Benchmarks
+    'cd-benchmarks':          renderCedeBenchmarkHome,
+    'cd-bench-commission':    renderCedeBenchmarkCommission,
+    'cd-carrier-scorecard':   renderCedeCarrierScorecard,
+    'cd-mga-scorecard':       renderCedeMgaScorecard,
+    'cd-market-trends':       renderCedeMarketTrends,
+    'cd-privacy-controls':    renderCedePrivacyControls,
+    // Module 14 — Governance (admin)
+    'cd-applications':        renderCedeApplications,
+    'cd-app-detail':          renderCedeApplicationDetail,
+    'cd-bor-registry':        renderCedeBorRegistry,
+    'cd-disputes':            renderCedeDisputes,
+    'cd-dispute-detail':      renderCedeDisputeDetail,
+    'cd-data-residency':      renderCedeDataResidency,
+    'cd-platform-audit':      renderCedePlatformAudit
+  };
+  const roleDefault = role === 'mga' ? 'cd-m-dashboard' : role === 'broker' ? 'cd-b-dashboard' : role === 'admin' ? 'cd-a-dashboard' : 'cd-c-dashboard';
+  const fn = screens[state.screen] || screens[roleDefault];
+  const content = fn();
+  return `
+  <div class="cede-theme portal-shell">
+    <header class="top-bar cede-top-bar">
+      <div class="top-bar-brand">
+        <span class="brand-icon">🝆</span>
+        <span>CEDE</span>
+        <span class="brand-sub">· ${role==='carrier'?'Carrier Program Manager':role==='mga'?'MGA':'Carrier '+role==='broker'?'Broker / BoR':role==='admin'?'Platform Admin':'MGA'}</span>
+      </div>
+      <div class="top-bar-right">
+        <button class="btn btn-ghost btn-sm" id="btn-cede-search">🔎 Search</button>
+        <button class="btn btn-ghost btn-sm" id="btn-cede-help">Help</button>
+        <div class="user-chip">
+          <span class="avatar avatar-sm">${u.avatar}</span>
+          <div class="user-chip-info">
+            <div class="user-chip-name">${u.name}</div>
+            <div class="user-chip-role">${u.role} · ${u.company}</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-cede-logout">Logout</button>
+      </div>
+    </header>
+    ${cedeNav()}
+    <main class="portal-main cede-main">
+      ${content}
+    </main>
+  </div>`;
+}
+
+function bindCede() {
+  document.querySelectorAll('.cede-side-nav .sr-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const role = btn.dataset.role;
+      const def = role === 'mga' ? 'cd-m-dashboard' : role === 'broker' ? 'cd-b-dashboard' : role === 'admin' ? 'cd-a-dashboard' : 'cd-c-dashboard';
+      setState({ cedeRole: role, screen: def });
+    });
+  });
+  document.querySelectorAll('.cede-side-nav .side-nav-item').forEach(item => {
+    item.addEventListener('click', () => setState({ screen: item.dataset.screen }));
+  });
+  const lo = document.getElementById('btn-cede-logout');
+  if (lo) lo.addEventListener('click', () => setState({ portal: null, screen: 'dashboard', cedeRole: null }));
+  const sr = document.getElementById('btn-cede-search');
+  if (sr) sr.addEventListener('click', () => window.showModal('Search Cede',
+    `<div class="k-modal-body">
+       <input type="text" placeholder="Search mandates, programs, carriers, MGAs, clauses, bordereaux..." style="width:100%; padding:10px; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:8px; color:var(--text-primary);" autofocus>
+       <div style="margin-top:12px">
+         <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px">Quick links</div>
+         <div style="display:flex; flex-wrap:wrap; gap:6px">
+           <span class="cede-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'cd-marketplace'})">Marketplace</span>
+           <span class="cede-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'cd-mandates'})">Mandates</span>
+           <span class="cede-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'cd-dua'})">DUA Builder</span>
+           <span class="cede-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'cd-monitoring'})">Monitoring</span>
+           <span class="cede-chip active" style="cursor:pointer" onclick="window.hideModal();window.setState({screen:'cd-collateral'})">Collateral</span>
+         </div>
+       </div>
+     </div>`, 'Close', null));
+  const hp = document.getElementById('btn-cede-help');
+  if (hp) hp.addEventListener('click', () => window.showModal('Cede — Carrier ↔ MGA Bridge',
+    `<div class="k-modal-body">
+       <h4 style="margin-bottom:8px">Roles</h4>
+       <ul style="padding-left:20px; color:var(--text-secondary); line-height:1.7">
+         <li><strong>Carrier:</strong> publish appetite, run DD on MGAs, draft DUAs, monitor program performance, reconcile bordereaux, manage collateral.</li>
+         <li><strong>MGA:</strong> find capacity, submit DD, negotiate terms, upload bordereaux, track commissions, stay compliant with binding matrix.</li>
+         <li><strong>Broker / BoR:</strong> facilitate mandates, participate in term sheets, earn BoR fees through the platform.</li>
+         <li><strong>Admin:</strong> onboarding, disputes, data residency, platform audit log.</li>
+       </ul>
+       <div style="margin-top:12px; color:var(--text-secondary)">📧 ops@cede.platform · Working name — pair for <strong>Konduit</strong> (reinsurance layer)</div>
+     </div>`, 'Close', null));
+}
+
+// ─── Cede Dashboards (per-role) ───
+function renderCedeCarrierDashboard() {
+  const k = D.cedeDashboardKPIs.carrier;
+  const mandates = D.cedeMandates.slice(0, 6);
+  const alerts = D.cedeCompliance.filter(c => c.status === 'Open').slice(0, 4);
+  const bx = D.cedeBordereaux.slice(0, 5);
+  return `
+  ${cedePageHeader('Carrier Dashboard', 'Summit Fronting Re · active program portfolio · bordereau flow · compliance alerts',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-carrier-appetite'})">🎯 My Appetite</button>
+     <button class="btn btn-primary cede-cta" onclick="window.setState({screen:'cd-marketplace'})">🔎 Open Marketplace</button>`)}
+  ${cedeKPIs(k)}
+  <div class="cede-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Active Mandates</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'cd-mandates'});return false;">View all →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Mandate</th><th>MGA</th><th>Stage</th><th>Sub-stage</th><th>SLA</th><th>Premium</th></tr></thead>
+          <tbody>
+            ${mandates.map(m => `
+              <tr class="row-clickable" onclick="window.setState({screen:'cd-mandate', cedeMandateId:'${m.id}'})">
+                <td><strong>${m.id}</strong></td>
+                <td>${m.mga}</td>
+                <td>${m.stage}</td>
+                <td class="row-sub">${m.sub_stage}</td>
+                <td>${cedeBadge(m.sla_health, cedeStatusColor(m.sla_health))}</td>
+                <td><strong>${m.est_premium}</strong></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>Compliance Alerts</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'cd-monitoring'});return false;">Resolve →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Program</th><th>Breach</th><th>Severity</th><th>Status</th></tr></thead>
+          <tbody>
+            ${alerts.map(a => `
+              <tr class="row-clickable" onclick="window.setState({screen:'cd-breach-resolve', cedeBreachId:'${a.id}'})">
+                <td>${a.program}</td>
+                <td class="row-sub">${a.breach_type}</td>
+                <td>${cedeBadge(a.severity, cedeStatusColor(a.severity))}</td>
+                <td>${cedeBadge(a.status, cedeStatusColor(a.status))}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  <section class="card">
+    <div class="card-header"><h3>Recent Bordereau</h3>
+      <a href="#" class="link-subtle" onclick="window.setState({screen:'cd-bordereau'});return false;">Bordereau inbox →</a>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Type</th><th>Period</th><th>GWP / Paid</th><th>Variance</th><th>Status</th></tr></thead>
+        <tbody>
+          ${bx.map(b => `
+            <tr>
+              <td>${b.program}</td>
+              <td>${b.type}</td>
+              <td class="row-sub">${b.period}</td>
+              <td>${b.gwp_usd ? '$'+(b.gwp_usd/1e6).toFixed(1)+'M' : '$'+(b.paid_usd/1e6).toFixed(1)+'M'}</td>
+              <td>${b.variance_pct}%</td>
+              <td>${cedeBadge(b.status, cedeStatusColor(b.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeMgaDashboard() {
+  const k = D.cedeDashboardKPIs.mga;
+  const carriers = D.cedeAgreements.slice(0, 4);
+  const bor = D.cedeBorFees.filter(f => f.status !== 'Paid').slice(0, 5);
+  return `
+  ${cedePageHeader('MGA Dashboard', 'Meridian Specialty MGA · carrier book · profit commission · renewal radar',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-mga-profile'})">📋 Edit Profile</button>
+     <button class="btn btn-primary cede-cta" onclick="window.setState({screen:'cd-marketplace'})">🔎 Find Capacity</button>`)}
+  ${cedeKPIs(k)}
+  <div class="cede-split-2">
+    <section class="card">
+      <div class="card-header"><h3>My Carrier Programs</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Agreement</th><th>Carrier</th><th>Executed</th><th>Expiry</th><th>Amendments</th></tr></thead>
+          <tbody>
+            ${carriers.map(a => `
+              <tr class="row-clickable" onclick="window.setState({screen:'cd-dua-detail', cedeAgreementId:'${a.id}'})">
+                <td><strong>${a.id}</strong></td>
+                <td>${a.parties.split('&')[0]}</td>
+                <td class="row-sub">${a.executed_date}</td>
+                <td>${a.expiry}</td>
+                <td>${a.amendments}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>Pending Commission &amp; BoR Fees</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Program / Broker</th><th>GWP</th><th>Fee</th><th>Status</th></tr></thead>
+          <tbody>
+            ${bor.map(f => `
+              <tr>
+                <td>${f.program}<div class="row-sub">${f.broker}</div></td>
+                <td>$${(f.gwp_usd/1e6).toFixed(1)}M</td>
+                <td><strong>$${(f.fee_usd/1000).toFixed(0)}k</strong></td>
+                <td>${cedeBadge(f.status, cedeStatusColor(f.status))}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  <section class="card">
+    <div class="card-header"><h3>Benchmarks (your peer cohort)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Metric</th><th>P25</th><th>P50</th><th>P75</th><th>You</th></tr></thead>
+        <tbody>
+          ${D.cedeBenchmarks.slice(0, 4).map(b => `
+            <tr>
+              <td>${b.lob} · ${b.metric}</td>
+              <td>${b.peer_p25}</td>
+              <td>${b.peer_p50}</td>
+              <td>${b.peer_p75}</td>
+              <td><strong>${b.you}</strong></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeBrokerDashboard() {
+  const k = D.cedeDashboardKPIs.broker;
+  const mandates = D.cedeMandates.filter(m => m.bor_broker !== 'Direct').slice(0, 6);
+  const fees = D.cedeBorFees.slice(0, 6);
+  return `
+  ${cedePageHeader('Broker / BoR Dashboard', 'Gallagher Re · Program Solutions · mandates where you are Broker-of-Record',
+    `<button class="btn btn-primary cede-cta" onclick="window.setState({screen:'cd-mandates'})">📁 All Mandates</button>`)}
+  ${cedeKPIs(k)}
+  <div class="cede-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Active Mandates (BoR)</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Mandate</th><th>Carrier ↔ MGA</th><th>Stage</th><th>Est. Premium</th></tr></thead>
+          <tbody>
+            ${mandates.map(m => `
+              <tr class="row-clickable" onclick="window.setState({screen:'cd-mandate', cedeMandateId:'${m.id}'})">
+                <td><strong>${m.id}</strong></td>
+                <td>${m.carrier} ↔ ${m.mga}<div class="row-sub">BoR: ${m.bor_broker}</div></td>
+                <td>${cedeBadge(m.stage, cedeStatusColor(m.stage))}</td>
+                <td><strong>${m.est_premium}</strong></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>BoR Fees</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'cd-bor-fees'});return false;">Ledger →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Program</th><th>GWP</th><th>Fee</th><th>Paid</th></tr></thead>
+          <tbody>
+            ${fees.map(f => `
+              <tr>
+                <td>${f.program}</td>
+                <td>$${(f.gwp_usd/1e6).toFixed(1)}M</td>
+                <td><strong>$${(f.fee_usd/1000).toFixed(0)}k</strong></td>
+                <td>${cedeBadge(f.status, cedeStatusColor(f.status))}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>`;
+}
+
+function renderCedeAdminDashboard() {
+  const k = D.cedeDashboardKPIs.admin;
+  const apps = D.cedeMemberApplications.slice(0, 5);
+  const log = D.cedeAuditLog.slice(0, 6);
+  return `
+  ${cedePageHeader('Platform Admin', 'Cede governance · applications · disputes · audit log',
+    `<button class="btn btn-primary cede-cta" onclick="window.setState({screen:'cd-applications'})">📨 Applications</button>`)}
+  ${cedeKPIs(k)}
+  <div class="cede-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Applications Queue</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'cd-applications'});return false;">Review →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Applicant</th><th>Type</th><th>Submitted</th><th>Rubric</th><th>Status</th></tr></thead>
+          <tbody>
+            ${apps.map(a => `
+              <tr class="row-clickable" onclick="window.setState({screen:'cd-app-detail', cedeAppId:'${a.id}'})">
+                <td><strong>${a.applicant}</strong></td>
+                <td>${a.type}</td>
+                <td class="row-sub">${a.submitted}</td>
+                <td>${a.rubric_score}</td>
+                <td>${cedeBadge(a.status, cedeStatusColor(a.status))}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>Platform Activity</h3>
+        <a href="#" class="link-subtle" onclick="window.setState({screen:'cd-platform-audit'});return false;">Full log →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th></tr></thead>
+          <tbody>
+            ${log.map(l => `
+              <tr>
+                <td class="row-sub">${l.ts}</td>
+                <td>${l.actor}<div class="row-sub">${l.role}</div></td>
+                <td>${l.action}</td>
+                <td><code>${l.target}</code></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>`;
+}
+
+// ─── Module 1: Marketplace & Origination ───
+function renderCedeMarketplace() {
+  const mode = state.cedeMarketView || (cedeRole() === 'mga' ? 'carriers' : 'mgas');
+  return `
+  ${cedePageHeader('Marketplace', 'Neutral, multi-carrier directory. NDA-gated reveals. No equity in listed parties.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-market-analytics'})">📊 Market Analytics</button>
+     <button class="btn btn-primary cede-cta" onclick="window.setState({screen: '${cedeRole() === 'mga' ? 'cd-mga-profile' : 'cd-carrier-appetite'}'})">+ Publish</button>`)}
+  <section class="card">
+    <div class="card-header">
+      <h3>Browse</h3>
+      <div style="display:flex; gap:6px">
+        <span class="cede-chip${mode==='carriers'?' active':''}" onclick="window.setState({cedeMarketView:'carriers'})">Carriers (${D.cedeCarriers.length})</span>
+        <span class="cede-chip${mode==='mgas'?' active':''}" onclick="window.setState({cedeMarketView:'mgas'})">MGAs (${D.cedeMGAs.length})</span>
+      </div>
+    </div>
+    <div class="table-scroll">
+      ${mode==='carriers' ? `
+      <table class="data-table">
+        <thead><tr><th>Carrier</th><th>Model</th><th>AM Best</th><th>Fronting Fee</th><th>Admitted</th><th>Partners</th><th>2024 GWP</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.cedeCarriers.map(c => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-match-detail', cedeCarrierId:'${c.id}'})">
+              <td><strong>${c.name}</strong><div class="row-sub">Domicile ${c.domicile}</div></td>
+              <td>${c.model}</td>
+              <td>${c.ambest}</td>
+              <td>${c.fronting_fee_pct}%</td>
+              <td>${c.admitted_states}</td>
+              <td>${c.partners}</td>
+              <td>$${c.gwp_2024_usd}</td>
+              <td>${cedeBadge(c.status, cedeStatusColor(c.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>` : `
+      <table class="data-table">
+        <thead><tr><th>MGA</th><th>LOBs</th><th>Founded</th><th>2024 GWP</th><th>5yr LR</th><th>Employees</th><th>E&amp;O</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.cedeMGAs.map(m => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-match-detail', cedeMgaId:'${m.id}'})">
+              <td><strong>${m.name}</strong><div class="row-sub">Domicile ${m.domicile}</div></td>
+              <td class="row-sub">${m.lobs.join(' · ')}</td>
+              <td>${m.founded}</td>
+              <td>$${m.gwp_2024_usd}</td>
+              <td>${(m.lr_5yr*100).toFixed(1)}%</td>
+              <td>${m.employees}</td>
+              <td class="row-sub">${m.e_o_limit}</td>
+              <td>${cedeBadge(m.status, cedeStatusColor(m.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`}
+    </div>
+  </section>`;
+}
+
+function renderCedeCarrierAppetite() {
+  return `
+  ${cedePageHeader('Carrier Appetite Registry', 'Your machine-readable capacity publishings. Versioned. Effective-dated.',
+    `<button class="btn btn-primary cede-cta" onclick="window.setState({screen:'cd-appetite-edit'})">+ New Entry</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Current Appetite · ${D.cedeAppetites.length} entries</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Carrier</th><th>LOB</th><th>Territory</th><th>Class focus</th><th>Per-risk</th><th>Aggregate</th><th>Target LR</th><th>Commission</th><th>Effective</th><th>Ver</th></tr></thead>
+        <tbody>
+          ${D.cedeAppetites.map(a => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-appetite-edit', cedeAppetiteId:'${a.id}'})">
+              <td><strong>${a.carrier}</strong></td>
+              <td>${a.lob}</td>
+              <td>${a.territory}</td>
+              <td class="row-sub">${a.class_focus}</td>
+              <td>${a.per_risk_limit}</td>
+              <td>${a.aggregate_limit}</td>
+              <td>${(a.target_lr*100).toFixed(0)}%</td>
+              <td>${a.commission_range}</td>
+              <td class="row-sub">${a.effective}</td>
+              <td><span class="cede-quality-pill">${a.version}</span></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeAppetiteEdit() {
+  const id = state.cedeAppetiteId || 'AP-01';
+  const a = D.cedeAppetites.find(x => x.id === id) || D.cedeAppetites[0];
+  return `
+  ${cedePageHeader('Appetite Entry · ' + a.id, `${a.carrier} · ${a.lob} · ${a.territory}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-carrier-appetite'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Machine-readable Appetite Rules</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md)">
+      <div><div class="row-sub">Line of Business</div><div><strong>${a.lob}</strong></div></div>
+      <div><div class="row-sub">Territory</div><div><strong>${a.territory}</strong></div></div>
+      <div><div class="row-sub">Class focus</div><div>${a.class_focus}</div></div>
+      <div><div class="row-sub">Per-risk limit</div><div><strong>${a.per_risk_limit}</strong></div></div>
+      <div><div class="row-sub">Aggregate limit</div><div><strong>${a.aggregate_limit}</strong></div></div>
+      <div><div class="row-sub">Target loss ratio</div><div><strong>${(a.target_lr*100).toFixed(0)}%</strong></div></div>
+      <div><div class="row-sub">Commission range</div><div>${a.commission_range}</div></div>
+      <div><div class="row-sub">Effective</div><div>${a.effective}</div></div>
+      <div><div class="row-sub">Version</div><div><span class="cede-quality-pill">${a.version}</span></div></div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>JSON Preview (machine-readable)</h3></div>
+    <pre style="padding:var(--space-md); font-size:0.78rem; overflow-x:auto; background:var(--bg-secondary); border-radius:var(--radius-md); margin:var(--space-md)">${JSON.stringify(a, null, 2)}</pre>
+  </section>`;
+}
+
+function renderCedeMgaProfile() {
+  return `
+  ${cedePageHeader('MGA Seeking Profiles', 'MGAs publishing their capacity requirements. Redacted until NDA.',
+    `<button class="btn btn-primary cede-cta" onclick="window.setState({screen:'cd-profile-edit'})">+ New Profile</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Active Seeking · ${D.cedeSeekingProfiles.length} profiles</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>MGA</th><th>LOB</th><th>Target GWP</th><th>Territories</th><th>History</th><th>Capital</th><th>Ideal Structure</th></tr></thead>
+        <tbody>
+          ${D.cedeSeekingProfiles.map(p => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-profile-edit', cedeProfileId:'${p.id}'})">
+              <td><strong>${p.mga}</strong></td>
+              <td>${p.lob}</td>
+              <td><strong>$${p.target_gwp_usd}</strong></td>
+              <td class="row-sub">${p.territories}</td>
+              <td class="row-sub">${p.history_summary}</td>
+              <td>${p.capital_sought}</td>
+              <td class="row-sub">${p.ideal_structure}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeProfileEdit() {
+  const id = state.cedeProfileId || 'SK-01';
+  const p = D.cedeSeekingProfiles.find(x => x.id === id) || D.cedeSeekingProfiles[0];
+  return `
+  ${cedePageHeader('Seeking Profile · ' + p.id, p.mga + ' · ' + p.lob,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-mga-profile'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Public View</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md)">
+      <div><div class="row-sub">Line of Business</div><div><strong>${p.lob}</strong></div></div>
+      <div><div class="row-sub">Target GWP</div><div><strong>$${p.target_gwp_usd}</strong></div></div>
+      <div><div class="row-sub">Territories</div><div>${p.territories}</div></div>
+      <div><div class="row-sub">Attachment</div><div>${p.attach}</div></div>
+      <div><div class="row-sub">History summary</div><div>${p.history_summary}</div></div>
+      <div><div class="row-sub">Team CVs</div><div>${p.team_cv_count}</div></div>
+      <div><div class="row-sub">Capital sought</div><div>${p.capital_sought}</div></div>
+      <div><div class="row-sub">Ideal structure</div><div>${p.ideal_structure}</div></div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>References (NDA-gated)</h3></div>
+    <div style="padding:var(--space-md); display:flex; flex-wrap:wrap; gap:6px">
+      ${p.references.map(r => `<span class="cede-chip active">${r}</span>`).join('')}
+    </div>
+  </section>`;
+}
+
+function renderCedeMatches() {
+  return `
+  ${cedePageHeader('Smart Matches', 'Scored pairings: class fit · geographic fit · size fit · commercial fit · governance fit.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-marketplace'})">🔎 Marketplace</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Top Matches · ${D.cedeMatches.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Match</th><th>Carrier ↔ MGA</th><th>Score</th><th>Class</th><th>Geo</th><th>Size</th><th>Commercial</th><th>Governance</th><th>Confidence</th></tr></thead>
+        <tbody>
+          ${D.cedeMatches.map(m => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-match-detail', cedeMatchId:'${m.id}'})">
+              <td><strong>${m.id}</strong></td>
+              <td>${m.carrier} ↔ ${m.mga}</td>
+              <td><strong style="font-size:1.1rem">${m.score}</strong></td>
+              <td>${m.class_fit}</td>
+              <td>${m.geo_fit}</td>
+              <td>${m.size_fit}</td>
+              <td>${m.commercial_fit}</td>
+              <td>${m.governance_fit}</td>
+              <td>${cedeConfidencePill(m.confidence)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeMatchDetail() {
+  const m = D.cedeMatches.find(x => x.id === state.cedeMatchId) || D.cedeMatches[0];
+  const mandate = D.cedeMandates.find(x => x.id === m.mandate_id) || D.cedeMandates[0];
+  return `
+  ${cedePageHeader('Match · ' + m.id, `${m.carrier} ↔ ${m.mga} · score ${m.score}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-matches'})">← Back</button>
+     <button class="btn btn-primary cede-cta" onclick="window.setState({screen:'cd-opt-in', cedeMandateId:'${m.mandate_id}'})">🤝 Request NDA Reveal</button>`)}
+  <div class="cede-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Match Score Breakdown</h3></div>
+      <div style="padding:var(--space-md)">
+        <div style="margin-bottom:8px"><strong>Class fit:</strong> ${m.class_fit}/100</div>
+        <div style="margin-bottom:8px"><strong>Geographic fit:</strong> ${m.geo_fit}/100</div>
+        <div style="margin-bottom:8px"><strong>Size fit:</strong> ${m.size_fit}/100</div>
+        <div style="margin-bottom:8px"><strong>Commercial fit:</strong> ${m.commercial_fit}/100</div>
+        <div style="margin-bottom:8px"><strong>Governance fit:</strong> ${m.governance_fit}/100</div>
+        <div style="margin-top:var(--space-md); padding-top:var(--space-md); border-top:1px solid var(--border-subtle)"><strong>Composite:</strong> ${m.score}/100 · ${cedeConfidencePill(m.confidence)}</div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>Linked Mandate</h3></div>
+      <div style="padding:var(--space-md)">
+        <div class="row-sub">Mandate</div><div><strong>${mandate.id}</strong></div>
+        <div class="row-sub" style="margin-top:8px">Stage</div><div>${cedeBadge(mandate.stage, cedeStatusColor(mandate.stage))}</div>
+        <div class="row-sub" style="margin-top:8px">Target close</div><div>${mandate.target_close}</div>
+        <div class="row-sub" style="margin-top:8px">Est. premium</div><div><strong>${mandate.est_premium}</strong></div>
+        <div class="row-sub" style="margin-top:8px">BoR</div><div>${mandate.bor_broker}</div>
+      </div>
+    </section>
+  </div>`;
+}
+
+function renderCedeOptIn() {
+  const mandate = D.cedeMandates.find(x => x.id === state.cedeMandateId) || D.cedeMandates[8];
+  return `
+  ${cedePageHeader('NDA Reveal · ' + mandate.id, 'Both parties must opt in before sensitive financials become visible.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-matches'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Mutual Opt-in Status</h3></div>
+    <div style="padding:var(--space-md)">
+      <div class="cede-collateral-verified" style="padding:10px; margin-bottom:10px"><strong>Carrier opt-in:</strong> ${mandate.carrier} · signed NDA 2026-04-18</div>
+      <div class="cede-collateral-verified" style="padding:10px; margin-bottom:10px"><strong>MGA opt-in:</strong> ${mandate.mga} · signed NDA 2026-04-17</div>
+      <div class="cede-collateral-verified" style="padding:10px"><strong>Access unlocked:</strong> full 5-year loss triangles, management accounts, UW leadership bios</div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Access Audit</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Actor</th><th>Accessed</th><th>Fields viewed</th></tr></thead>
+        <tbody>
+          <tr><td>Helena Park (Carrier)</td><td class="row-sub">2026-04-18 09:12</td><td>Loss triangles, UW bios, SOC-1</td></tr>
+          <tr><td>${mandate.owner_mga} (MGA)</td><td class="row-sub">2026-04-18 10:45</td><td>Carrier capital, AM Best, collateral std</td></tr>
+          <tr><td>Priya Shah (BoR)</td><td class="row-sub">2026-04-19 14:22</td><td>Both sides read-only</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeBorNomination() {
+  return `
+  ${cedePageHeader('Broker-of-Record Nomination', 'Preserve specialty broker relationships. BoR joins deal rooms with scoped permissions.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-mandates'})">← Back to mandates</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Approved BoR Brokers</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Broker</th><th>Role</th><th>Mandates YTD</th><th>Fee bps</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Gallagher Re</strong> · Program Solutions</td><td>Specialty reinsurance broker</td><td>11</td><td>45-50</td></tr>
+          <tr><td><strong>Guy Carpenter</strong> · GC Access</td><td>Specialty reinsurance broker</td><td>8</td><td>50</td></tr>
+          <tr><td><strong>Howden Re</strong></td><td>Specialty reinsurance broker</td><td>6</td><td>45</td></tr>
+          <tr><td><strong>Lockton Re</strong></td><td>Specialty reinsurance broker</td><td>4</td><td>50</td></tr>
+          <tr><td><strong>Aon Reinsurance Solutions</strong></td><td>Specialty reinsurance broker</td><td>3</td><td>45</td></tr>
+          <tr><td><strong>TigerRisk / Howden Tiger</strong></td><td>Specialty broker</td><td>2</td><td>45</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeMandatePipeline() {
+  const stage = state.cedeStageFilter || 'All';
+  const list = stage === 'All' ? D.cedeMandates : D.cedeMandates.filter(m => m.stage === stage);
+  return `
+  ${cedePageHeader('Mandate Pipeline', `All active mandates across the lifecycle · ${list.length} shown`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-market-analytics'})">📊 Analytics</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Filter by stage</h3></div>
+    <div style="padding:var(--space-md); display:flex; flex-wrap:wrap; gap:6px">
+      ${['All', ...D.cedeStages].map(s => `<span class="cede-chip${stage===s?' active':''}" onclick="window.setState({cedeStageFilter:'${s}'})">${s}</span>`).join('')}
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Mandates · ${list.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Mandate</th><th>Carrier ↔ MGA</th><th>Stage</th><th>Sub-stage</th><th>SLA</th><th>BoR</th><th>Target close</th><th>Premium</th></tr></thead>
+        <tbody>
+          ${list.map(m => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-mandate', cedeMandateId:'${m.id}'})">
+              <td><strong>${m.id}</strong></td>
+              <td>${m.carrier}<div class="row-sub">↔ ${m.mga}</div></td>
+              <td>${cedeBadge(m.stage, cedeStatusColor(m.stage))}</td>
+              <td class="row-sub">${m.sub_stage}</td>
+              <td>${cedeBadge(m.sla_health, cedeStatusColor(m.sla_health))}</td>
+              <td class="row-sub">${m.bor_broker}</td>
+              <td class="row-sub">${m.target_close}</td>
+              <td><strong>${m.est_premium}</strong></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeMandateDetail() {
+  const m = D.cedeMandates.find(x => x.id === state.cedeMandateId) || D.cedeMandates[0];
+  const ts = D.cedeTermSheets.filter(t => t.mandate_id === m.id);
+  const ag = D.cedeAgreements.find(a => a.mandate_id === m.id);
+  const dd = D.cedeDDPacks.find(d => d.mandate_id === m.id);
+  return `
+  ${cedePageHeader('Mandate · ' + m.id, `${m.carrier} ↔ ${m.mga}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-mandates'})">← Back</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua-detail', cedeAgreementId:'${ag?ag.id:''}'})">📜 View DUA</button>
+     <button class="btn btn-primary cede-cta" onclick="window.setState({screen:'cd-term-sheets', cedeMandateId:'${m.id}'})">🤝 Term Sheets</button>`)}
+  ${cedeStageTracker(m.stage)}
+  <div class="cede-split-3">
+    <section class="card"><div class="card-header"><h3>Parties</h3></div>
+      <div style="padding:var(--space-md)">
+        <div class="row-sub">Carrier</div><div><strong>${m.carrier}</strong> · ${m.owner_carrier}</div>
+        <div class="row-sub" style="margin-top:8px">MGA</div><div><strong>${m.mga}</strong> · ${m.owner_mga}</div>
+        <div class="row-sub" style="margin-top:8px">Broker / BoR</div><div>${m.bor_broker}</div>
+      </div>
+    </section>
+    <section class="card"><div class="card-header"><h3>Economics</h3></div>
+      <div style="padding:var(--space-md)">
+        <div class="row-sub">Estimated premium</div><div style="font-size:1.2rem"><strong>${m.est_premium}</strong></div>
+        <div class="row-sub" style="margin-top:8px">Sub-stage</div><div>${m.sub_stage}</div>
+        <div class="row-sub" style="margin-top:8px">Days in stage</div><div>${m.days_in_stage}</div>
+      </div>
+    </section>
+    <section class="card"><div class="card-header"><h3>Timeline</h3></div>
+      <div style="padding:var(--space-md)">
+        <div class="row-sub">Target close</div><div>${m.target_close}</div>
+        <div class="row-sub" style="margin-top:8px">Actual close</div><div>${m.actual_close || '—'}</div>
+        <div class="row-sub" style="margin-top:8px">SLA</div><div>${cedeBadge(m.sla_health, cedeStatusColor(m.sla_health))}</div>
+      </div>
+    </section>
+  </div>
+  ${ts.length ? `
+  <section class="card"><div class="card-header"><h3>Term Sheet Versions · ${ts.length}</h3></div>
+    <div class="table-scroll"><table class="data-table">
+      <thead><tr><th>Ver</th><th>Proposed by</th><th>Date</th><th>Ceding</th><th>Fronting fee</th><th>Profit comm</th><th>Status</th></tr></thead>
+      <tbody>
+        ${ts.map(t => `<tr class="row-clickable" onclick="window.setState({screen:'cd-term-sheet', cedeTsId:'${t.id}'})"><td><strong>${t.version}</strong></td><td>${t.proposed_by}</td><td class="row-sub">${t.date}</td><td>${t.ceding_comm_pct}%</td><td>${t.fronting_fee_pct}%</td><td class="row-sub">${t.profit_comm_struct}</td><td>${cedeBadge(t.status, cedeStatusColor(t.status))}</td></tr>`).join('')}
+      </tbody>
+    </table></div>
+  </section>` : ''}
+  ${dd ? `
+  <section class="card"><div class="card-header"><h3>Due Diligence</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:repeat(4, 1fr); gap:var(--space-md)">
+      <div><div class="row-sub">Items received</div><div><strong>${dd.items_received} / ${dd.items_required}</strong></div></div>
+      <div><div class="row-sub">Items approved</div><div><strong>${dd.items_approved}</strong></div></div>
+      <div><div class="row-sub">Red flags</div><div>${dd.red_flags}</div></div>
+      <div><div class="row-sub">Overall score</div><div><strong>${dd.overall_score || '—'}</strong></div></div>
+    </div>
+  </section>` : ''}`;
+}
+
+function renderCedeMarketAnalytics() {
+  return `
+  ${cedePageHeader('Market Analytics', 'Anonymized platform telemetry · industry benchmarks · k-anonymity ≥ 5.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-marketplace'})">🔎 Marketplace</button>`)}
+  ${cedeKPIs([
+    { label: 'Platform GWP routed', value: '$2.9B' },
+    { label: 'Avg placement time', value: '83 days' },
+    { label: 'Typical ceding comm', value: '25.4%' },
+    { label: 'Typical fronting fee', value: '6.1%' },
+    { label: 'Typical profit comm', value: '20%' },
+    { label: 'New mandates / mo', value: '14' }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>Industry Benchmarks (2024)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Metric</th><th>Value</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>US MGA DPW 2024</td><td><strong>$114.1B (+16% YoY)</strong></td><td class="row-sub">Conning 2025</td></tr>
+          <tr><td>US fronting GWP 2024</td><td><strong>~$28B (+26% YoY)</strong></td><td class="row-sub">Gallagher Re</td></tr>
+          <tr><td>MGA-produced premium on fronts</td><td><strong>~$18B</strong></td><td class="row-sub">Gallagher Re</td></tr>
+          <tr><td>Active US MGAs</td><td><strong>~1,000+</strong></td><td class="row-sub">Conning 2025</td></tr>
+          <tr><td>Top 4 fronts' share</td><td><strong>43%</strong></td><td class="row-sub">Gallagher Re</td></tr>
+          <tr><td>Typical MGA ceding commission</td><td><strong>20-30% of GWP</strong></td><td class="row-sub">IRMI / industry</td></tr>
+          <tr><td>Typical fronting fee</td><td><strong>3-8% of GWP</strong></td><td class="row-sub">Trisura band 4-8%</td></tr>
+          <tr><td>Typical profit-commission trigger</td><td><strong>LR below 55-60%</strong></td><td class="row-sub">IRMI</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── Module 2: Due Diligence ───
+function renderCedeDDList() {
+  return `
+  ${cedePageHeader('Due Diligence Data Rooms', 'Shared, scorable, auditable. 48+ required items per program by default.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd-export'})">📑 Export Pack</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Active DD Packs · ${D.cedeDDPacks.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>DD Pack</th><th>MGA</th><th>Progress</th><th>Approved</th><th>Red Flags</th><th>Score</th><th>Status</th><th>Due</th></tr></thead>
+        <tbody>
+          ${D.cedeDDPacks.map(d => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-dd-detail', cedeDDId:'${d.id}'})">
+              <td><strong>${d.id}</strong></td>
+              <td>${d.mga}</td>
+              <td>${d.items_received} / ${d.items_required}</td>
+              <td>${d.items_approved}</td>
+              <td>${d.red_flags}</td>
+              <td><strong>${d.overall_score || '—'}</strong></td>
+              <td>${cedeBadge(d.status, cedeStatusColor(d.status))}</td>
+              <td class="row-sub">${d.due}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDDDetail() {
+  const d = D.cedeDDPacks.find(x => x.id === state.cedeDDId) || D.cedeDDPacks[0];
+  return `
+  ${cedePageHeader('DD Pack · ' + d.id, `${d.mga} · due ${d.due}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd'})">← Back</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd-vault', cedeDDId:'${d.id}'})">🗂 Vault</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd-scoring', cedeDDId:'${d.id}'})">📊 Scoring</button>
+     <button class="btn btn-primary cede-cta" onclick="window.setState({screen:'cd-dd-export', cedeDDId:'${d.id}'})">📑 Export</button>`)}
+  ${cedeKPIs([
+    { label: 'Items required', value: String(d.items_required) },
+    { label: 'Items received', value: String(d.items_received) },
+    { label: 'Items approved', value: String(d.items_approved) },
+    { label: 'Red flags', value: String(d.red_flags), warning: d.red_flags > 0 },
+    { label: 'Overall score', value: String(d.overall_score || '—') },
+    { label: 'Status', value: d.status }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>Reviewers</h3></div>
+    <div style="padding:var(--space-md); display:flex; flex-wrap:wrap; gap:6px">
+      ${d.reviewers.map(r => `<span class="cede-chip active">${r}</span>`).join('')}
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Checklist Items · ${D.cedeDDChecklist.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Category</th><th>Item</th><th>Status</th><th>Reviewer</th><th>Score</th><th>Confidence</th><th>Notes</th></tr></thead>
+        <tbody>
+          ${D.cedeDDChecklist.map(c => `
+            <tr>
+              <td>${c.category}</td>
+              <td class="row-sub">${c.item}</td>
+              <td>${cedeBadge(c.status, cedeStatusColor(c.status))}</td>
+              <td>${c.reviewer}</td>
+              <td>${c.score || '—'}</td>
+              <td>${cedeConfidencePill(c.confidence)}</td>
+              <td class="row-sub">${c.notes}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDDVault() {
+  return `
+  ${cedePageHeader('DD Document Vault', 'Versioned uploads · annotation · AI extraction with confidence scoring.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd'})">← Back</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd-viewer'})">📖 Viewer</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd-extraction'})">🤖 AI Extraction</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Documents</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Document</th><th>Category</th><th>Version</th><th>Uploaded</th><th>Size</th><th>Reviewer</th></tr></thead>
+        <tbody>
+          <tr class="row-clickable" onclick="window.setState({screen:'cd-dd-viewer'})"><td><strong>FY2024 audited financials</strong></td><td>Financial</td><td>v1</td><td class="row-sub">2026-04-02</td><td>4.2 MB</td><td>Actuary</td></tr>
+          <tr><td><strong>Monthly management accounts (T12)</strong></td><td>Financial</td><td>v2</td><td class="row-sub">2026-04-04</td><td>1.8 MB</td><td>Actuary</td></tr>
+          <tr><td><strong>UW leadership CVs (18 PDFs)</strong></td><td>Governance</td><td>v1</td><td class="row-sub">2026-04-02</td><td>12 MB</td><td>UW</td></tr>
+          <tr><td><strong>E&amp;O certificate — Liberty</strong></td><td>Governance</td><td>v1</td><td class="row-sub">2026-04-02</td><td>180 KB</td><td>Compliance</td></tr>
+          <tr><td><strong>SOC-1 Type II (Deloitte)</strong></td><td>Governance</td><td>v1</td><td class="row-sub">2026-04-02</td><td>6.1 MB</td><td>Compliance</td></tr>
+          <tr><td><strong>SOC-2 Type II (Deloitte)</strong></td><td>Governance</td><td>v1</td><td class="row-sub">2026-04-02</td><td>5.4 MB</td><td>Compliance</td></tr>
+          <tr><td><strong>UW guidelines v3</strong></td><td>Underwriting</td><td>v3</td><td class="row-sub">2026-04-03</td><td>3.2 MB</td><td>UW</td></tr>
+          <tr><td><strong>Rating algorithm docs</strong></td><td>Underwriting</td><td>v1</td><td class="row-sub">2026-04-03</td><td>1.1 MB</td><td>Actuary</td></tr>
+          <tr><td><strong>5-year loss runs (by class)</strong></td><td>Loss history</td><td>v1</td><td class="row-sub">2026-04-03</td><td>22 MB</td><td>Actuary</td></tr>
+          <tr><td><strong>Reserve development triangles</strong></td><td>Loss history</td><td>v1</td><td class="row-sub">2026-04-03</td><td>8.4 MB</td><td>Actuary</td></tr>
+          <tr><td><strong>Claims handling manual</strong></td><td>Claims</td><td>v2</td><td class="row-sub">2026-04-03</td><td>2.4 MB</td><td>Claims</td></tr>
+          <tr><td><strong>Reinsurance panel &amp; ratings</strong></td><td>Reinsurance</td><td>v1</td><td class="row-sub">2026-04-04</td><td>420 KB</td><td>UW</td></tr>
+          <tr><td><strong>Bordereau format samples (ACORD NGDS)</strong></td><td>Operations</td><td>v1</td><td class="row-sub">2026-04-04</td><td>980 KB</td><td>Compliance</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDDViewer() {
+  return `
+  ${cedePageHeader('Document Viewer · FY2024 Audited Financials', 'Deloitte · 68 pages · clean opinion',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd-vault'})">← Vault</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd-extraction'})">🤖 View Extraction</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Preview</h3></div>
+    <div style="padding:var(--space-md); background:var(--bg-secondary); min-height:320px; display:flex; align-items:center; justify-content:center; flex-direction:column">
+      <div style="font-size:3rem; margin-bottom:var(--space-md)">📄</div>
+      <div>PDF preview · page 1 / 68</div>
+      <div class="row-sub" style="margin-top:8px">Annotations: 4 · Highlights: 12 · Reviewer comments: 2</div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Reviewer Annotations</h3></div>
+    <div style="padding:var(--space-md)">
+      <div style="margin-bottom:10px"><strong>p.12 (UW):</strong> Premium growth Q3 — verify against bordereaux</div>
+      <div style="margin-bottom:10px"><strong>p.24 (Actuary):</strong> Reserve development 2019-2022 within expected range</div>
+      <div style="margin-bottom:10px"><strong>p.38 (Compliance):</strong> Related-party transactions disclosed</div>
+      <div style="margin-bottom:10px"><strong>p.61 (Actuary):</strong> Investment income yield 4.2% — reasonable</div>
+    </div>
+  </section>`;
+}
+
+function renderCedeDDExtraction() {
+  return `
+  ${cedePageHeader('AI Extraction', 'Structured fields with confidence scoring · red/amber forced into human review.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd-vault'})">← Vault</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Extracted Fields</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Field</th><th>Source doc</th><th>Value</th><th>Confidence</th><th>Reviewed</th></tr></thead>
+        <tbody>
+          <tr><td>Legal entity</td><td>Financial statements</td><td>Meridian Specialty MGA, LLC</td><td>${cedeConfidencePill('Green')}</td><td>✓</td></tr>
+          <tr><td>Domicile</td><td>Financial statements</td><td>Delaware</td><td>${cedeConfidencePill('Green')}</td><td>✓</td></tr>
+          <tr><td>CEO</td><td>UW bios</td><td>David Ortiz</td><td>${cedeConfidencePill('Green')}</td><td>✓</td></tr>
+          <tr><td>CUO</td><td>UW bios</td><td>Sarah Webb</td><td>${cedeConfidencePill('Green')}</td><td>✓</td></tr>
+          <tr><td>E&amp;O carrier</td><td>E&amp;O cert</td><td>Liberty Mutual</td><td>${cedeConfidencePill('Green')}</td><td>✓</td></tr>
+          <tr><td>E&amp;O limit</td><td>E&amp;O cert</td><td>$20M / $20M</td><td>${cedeConfidencePill('Green')}</td><td>✓</td></tr>
+          <tr><td>Fiduciary bank</td><td>Trust statement</td><td>JPMorgan Chase</td><td>${cedeConfidencePill('Green')}</td><td>✓</td></tr>
+          <tr><td>Premium 2024</td><td>Financials</td><td>$145M</td><td>${cedeConfidencePill('Green')}</td><td>✓</td></tr>
+          <tr><td>LR 2023</td><td>Loss triangles</td><td>54.2%</td><td>${cedeConfidencePill('Amber')}</td><td>Pending</td></tr>
+          <tr><td>Reserve IBNR</td><td>Triangles</td><td>$18.2M</td><td>${cedeConfidencePill('Amber')}</td><td>Pending</td></tr>
+          <tr><td>SOC-1 auditor</td><td>SOC report</td><td>Deloitte</td><td>${cedeConfidencePill('Green')}</td><td>✓</td></tr>
+          <tr><td>Related-party count</td><td>Financials</td><td>3</td><td>${cedeConfidencePill('Red')}</td><td>Required</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDDQA() {
+  return `
+  ${cedePageHeader('Q&A Threads', `Per-document Q&A · SLA-bound responses · ${D.cedeQAThreads.length} threads`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Open &amp; Closed Threads</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Thread</th><th>Category</th><th>Question</th><th>Asker</th><th>Asked</th><th>Answer</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.cedeQAThreads.map(q => `
+            <tr>
+              <td><strong>${q.id}</strong></td>
+              <td>${q.category}</td>
+              <td class="row-sub" style="max-width:280px">${q.question}</td>
+              <td>${q.asker}</td>
+              <td class="row-sub">${q.asked}</td>
+              <td class="row-sub" style="max-width:280px">${q.answer || '—'}</td>
+              <td>${cedeBadge(q.status, cedeStatusColor(q.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDDReviewers() {
+  return `
+  ${cedePageHeader('Reviewer Assignments', 'Reviewers per DD section with SLAs and workload.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Assignments</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Reviewer</th><th>Role</th><th>Sections</th><th>Items assigned</th><th>Items complete</th><th>SLA</th></tr></thead>
+        <tbody>
+          <tr><td><strong>K. Nagasawa</strong></td><td>UW</td><td>Underwriting, Loss history</td><td>12</td><td>10</td><td>${cedeBadge('Green', 'green')}</td></tr>
+          <tr><td><strong>S. Bernstein</strong></td><td>Legal</td><td>Licensing, Governance</td><td>8</td><td>8</td><td>${cedeBadge('Green', 'green')}</td></tr>
+          <tr><td><strong>R. Tanaka</strong></td><td>Actuary</td><td>Financial, Loss history</td><td>10</td><td>8</td><td>${cedeBadge('Amber', 'amber')}</td></tr>
+          <tr><td><strong>M. Holst</strong></td><td>Compliance</td><td>Governance, Privacy, References</td><td>14</td><td>12</td><td>${cedeBadge('Green', 'green')}</td></tr>
+          <tr><td><strong>J. Park</strong></td><td>Claims</td><td>Claims</td><td>4</td><td>4</td><td>${cedeBadge('Green', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDDScoring() {
+  return `
+  ${cedePageHeader('Scoring Rubric', 'Weighted roll-up per DD pack · compared to peer cohort.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd'})">← Back</button>`)}
+  ${cedeKPIs([
+    { label: 'Composite score', value: '86' },
+    { label: 'Peer cohort P50', value: '82' },
+    { label: 'Your percentile', value: 'P65' },
+    { label: 'Red flags', value: '1' },
+    { label: 'Reviewers complete', value: '5 / 5' },
+    { label: 'Gate decision', value: 'Pass' }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>Section Scores</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Section</th><th>Weight</th><th>Score</th><th>Peer P25</th><th>Peer P50</th><th>Peer P75</th></tr></thead>
+        <tbody>
+          <tr><td>Financial</td><td>20%</td><td><strong>9</strong></td><td>7</td><td>8</td><td>9</td></tr>
+          <tr><td>Licensing</td><td>10%</td><td><strong>10</strong></td><td>8</td><td>9</td><td>10</td></tr>
+          <tr><td>Governance</td><td>15%</td><td><strong>9</strong></td><td>7</td><td>8</td><td>9</td></tr>
+          <tr><td>Underwriting</td><td>20%</td><td><strong>8</strong></td><td>6</td><td>8</td><td>9</td></tr>
+          <tr><td>Loss history</td><td>15%</td><td><strong>9</strong></td><td>6</td><td>7</td><td>9</td></tr>
+          <tr><td>Claims</td><td>10%</td><td><strong>8</strong></td><td>7</td><td>8</td><td>9</td></tr>
+          <tr><td>References</td><td>5%</td><td><strong>10</strong></td><td>7</td><td>8</td><td>9</td></tr>
+          <tr><td>Operations</td><td>5%</td><td><strong>8</strong></td><td>7</td><td>8</td><td>9</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDDReferences() {
+  return `
+  ${cedePageHeader('Reference Checks', 'Broker · reinsurer · legal · prior carrier — confidential responses.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Reference Responses · ${D.cedeReferences.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>MGA</th><th>Type</th><th>Reference</th><th>Organization</th><th>Sentiment</th><th>Score</th><th>Key quote</th></tr></thead>
+        <tbody>
+          ${D.cedeReferences.map(r => `
+            <tr>
+              <td>${r.mga}</td>
+              <td>${r.type}</td>
+              <td>${r.ref_name}</td>
+              <td>${r.ref_org}</td>
+              <td>${cedeBadge(r.sentiment, cedeStatusColor(r.sentiment))}</td>
+              <td>${r.score || '—'}</td>
+              <td class="row-sub" style="max-width:360px">${r.key_quotes}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDDRedFlags() {
+  return `
+  ${cedePageHeader('Red Flag Registry', 'Auto-detected + manual flags · severity + remediation.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Active Flags</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Flag</th><th>MGA</th><th>Severity</th><th>Detected</th><th>Remediation</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>B++ reinsurer on panel</td><td>Pet Circle Underwriters</td><td>${cedeBadge('Medium', 'amber')}</td><td class="row-sub">2026-04-08</td><td class="row-sub">Replace with A- by 2026-06-01 · Interim LOC secured</td><td>${cedeBadge('Open', 'amber')}</td></tr>
+          <tr><td>Related-party count unverified</td><td>Meridian Specialty MGA</td><td>${cedeBadge('Low', 'blue')}</td><td class="row-sub">2026-04-02</td><td class="row-sub">Awaiting confirmation from counsel</td><td>${cedeBadge('Open', 'amber')}</td></tr>
+          <tr><td>2 SOC findings prior year</td><td>Frontier Ag Hail</td><td>${cedeBadge('Medium', 'amber')}</td><td class="row-sub">2026-04-10</td><td class="row-sub">Remediation complete — awaiting PwC letter</td><td>${cedeBadge('In progress', 'amber')}</td></tr>
+          <tr><td>Territory gap: HI non-admitted</td><td>Canyon Craft Brewery MGA</td><td>${cedeBadge('Low', 'blue')}</td><td class="row-sub">2026-04-15</td><td class="row-sub">Not applicable — MGA scope excludes HI</td><td>${cedeBadge('Closed', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDDExport() {
+  return `
+  ${cedePageHeader('DD Pack Export', 'Signed, timestamped PDF for internal board / DA committee records.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dd'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Previous Exports</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Export</th><th>MGA</th><th>Requested by</th><th>Requested</th><th>Pages</th><th>Hash</th></tr></thead>
+        <tbody>
+          <tr><td><strong>DDX-2026-04</strong></td><td>Pet Circle Underwriters</td><td>Helena Park</td><td class="row-sub">2026-04-18</td><td>312</td><td class="row-sub"><code>0x8a4b...e92f</code></td></tr>
+          <tr><td><strong>DDX-2026-03</strong></td><td>Canyon Craft Brewery MGA</td><td>D. Abramowitz</td><td class="row-sub">2026-04-15</td><td>186</td><td class="row-sub"><code>0x12f0...ab21</code></td></tr>
+          <tr><td><strong>DDX-2026-02</strong></td><td>Greenline Cannabis Specialty</td><td>Helena Park</td><td class="row-sub">2026-04-10</td><td>244</td><td class="row-sub"><code>0x7c01...dd09</code></td></tr>
+          <tr><td><strong>DDX-2026-01</strong></td><td>Meridian Specialty MGA</td><td>R. Tanaka</td><td class="row-sub">2026-03-20</td><td>298</td><td class="row-sub"><code>0xff9a...44bb</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── Module 3: DUA Builder ───
+function renderCedeDUAList() {
+  return `
+  ${cedePageHeader('Delegated Underwriting Authority (DUA) Agreements', 'Executed program agreements · versioning · amendment history.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua-templates'})">📚 Templates</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua-clauses'})">📜 Clause Library</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Executed DUAs · ${D.cedeAgreements.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>DUA</th><th>Parties</th><th>Template</th><th>Executed</th><th>Expiry</th><th>Pages</th><th>Clauses</th><th>Amendments</th><th>Storage</th></tr></thead>
+        <tbody>
+          ${D.cedeAgreements.map(a => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-dua-detail', cedeAgreementId:'${a.id}'})">
+              <td><strong>${a.id}</strong> · v${a.version}</td>
+              <td class="row-sub" style="max-width:320px">${a.parties}</td>
+              <td class="row-sub">${a.template}</td>
+              <td>${a.executed_date}</td>
+              <td>${a.expiry}</td>
+              <td>${a.pages}</td>
+              <td>${a.clauses}</td>
+              <td>${a.amendments}</td>
+              <td class="row-sub"><code>${a.storage_hash}</code></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDUADetail() {
+  const a = D.cedeAgreements.find(x => x.id === state.cedeAgreementId) || D.cedeAgreements[0];
+  return `
+  ${cedePageHeader('DUA · ' + a.id, `${a.parties} · v${a.version}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua'})">← Back</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua-matrix'})">🎯 Binding Matrix</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua-commission'})">💰 Commission</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua-redline'})">✏️ Redline</button>`)}
+  <div class="cede-split-3">
+    <section class="card"><div class="card-header"><h3>Metadata</h3></div>
+      <div style="padding:var(--space-md)">
+        <div class="row-sub">Executed</div><div><strong>${a.executed_date}</strong></div>
+        <div class="row-sub" style="margin-top:8px">Expiry</div><div>${a.expiry}</div>
+        <div class="row-sub" style="margin-top:8px">Pages / Clauses</div><div>${a.pages} pages · ${a.clauses} clauses</div>
+      </div>
+    </section>
+    <section class="card"><div class="card-header"><h3>Versioning</h3></div>
+      <div style="padding:var(--space-md)">
+        <div class="row-sub">Current version</div><div><strong>v${a.version}</strong></div>
+        <div class="row-sub" style="margin-top:8px">Amendments</div><div>${a.amendments}</div>
+        <div class="row-sub" style="margin-top:8px">Latest amendment</div><div>${a.latest_amendment || '—'}</div>
+      </div>
+    </section>
+    <section class="card"><div class="card-header"><h3>Provenance</h3></div>
+      <div style="padding:var(--space-md)">
+        <div class="row-sub">Template</div><div>${a.template}</div>
+        <div class="row-sub" style="margin-top:8px">E-sign</div><div>${a.esign_provider}</div>
+        <div class="row-sub" style="margin-top:8px">Storage hash</div><div><code>${a.storage_hash}</code></div>
+      </div>
+    </section>
+  </div>
+  <section class="card">
+    <div class="card-header"><h3>Table of Contents · ${a.clauses} clauses</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:repeat(2, 1fr); gap:var(--space-sm)">
+      ${D.cedeClauses.slice(0, 20).map((c, i) => `<div class="cede-clause-card" onclick="window.setState({screen:'cd-dua-clauses'})" style="cursor:pointer"><h4>§${i+1}. ${c.title}</h4><div class="clause-meta">${c.category} · standard: ${c.standard_variant}</div></div>`).join('')}
+    </div>
+  </section>`;
+}
+
+function renderCedeDUATemplates() {
+  return `
+  ${cedePageHeader('DUA Template Library', 'LMA · NAIC · carrier-specific precedents.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Templates</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Template</th><th>Source</th><th>Clauses</th><th>Best for</th><th>Version</th></tr></thead>
+        <tbody>
+          <tr class="row-clickable"><td><strong>LMA 3113</strong></td><td>Lloyd's Market Association</td><td>38</td><td class="row-sub">Standard binding authority — US admitted</td><td>2024</td></tr>
+          <tr class="row-clickable"><td><strong>LMA 3114</strong></td><td>Lloyd's Market Association</td><td>40</td><td class="row-sub">Binding authority with claims handling</td><td>2024</td></tr>
+          <tr class="row-clickable"><td><strong>LMA 5159</strong></td><td>Lloyd's Market Association</td><td>42</td><td class="row-sub">Multi-carrier / subscription business</td><td>2025</td></tr>
+          <tr class="row-clickable"><td><strong>NAIC MGA Model</strong></td><td>NAIC</td><td>34</td><td class="row-sub">US-domestic multi-state baseline</td><td>2024</td></tr>
+          <tr class="row-clickable"><td><strong>Summit Precedent</strong></td><td>Summit Fronting Re</td><td>38</td><td class="row-sub">Summit fronting programs</td><td>v3.2</td></tr>
+          <tr class="row-clickable"><td><strong>Accelerant Member</strong></td><td>Accelerant</td><td>36</td><td class="row-sub">Accelerant Members</td><td>2025</td></tr>
+          <tr class="row-clickable"><td><strong>State National Program</strong></td><td>State National</td><td>42</td><td class="row-sub">State National fronting programs</td><td>v2.8</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDUAClauses() {
+  const cat = state.cedeClauseCat || 'All';
+  const cats = ['All', ...Array.from(new Set(D.cedeClauses.map(c => c.category)))];
+  const list = cat === 'All' ? D.cedeClauses : D.cedeClauses.filter(c => c.category === cat);
+  return `
+  ${cedePageHeader('Clause Library', '40 canonical DUA clauses with carrier-specific variants.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Filter by category</h3></div>
+    <div style="padding:var(--space-md); display:flex; flex-wrap:wrap; gap:6px">
+      ${cats.map(c => `<span class="cede-chip${cat===c?' active':''}" onclick="window.setState({cedeClauseCat:'${c}'})">${c}</span>`).join('')}
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Clauses · ${list.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Clause</th><th>Category</th><th>Standard variant</th><th>Carrier variant</th><th>Usage</th></tr></thead>
+        <tbody>
+          ${list.map(c => `
+            <tr>
+              <td><strong>${c.title}</strong></td>
+              <td>${c.category}</td>
+              <td class="row-sub">${c.standard_variant}</td>
+              <td class="row-sub">${c.carrier_variant}</td>
+              <td>${c.typical_usage}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDUAParties() {
+  return `
+  ${cedePageHeader('Parties & Recitals', 'Legal entities · guarantors · jurisdictions · governing law.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Party A — Carrier</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md)">
+      <div><div class="row-sub">Legal name</div><div><strong>Summit Fronting Re, Inc.</strong></div></div>
+      <div><div class="row-sub">Form</div><div>Delaware C-Corp</div></div>
+      <div><div class="row-sub">NAIC #</div><div>12345</div></div>
+      <div><div class="row-sub">Domicile</div><div>Delaware</div></div>
+      <div><div class="row-sub">AM Best</div><div>A- (Excellent)</div></div>
+      <div><div class="row-sub">Admitted</div><div>All 50 + DC</div></div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Party B — MGA</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md)">
+      <div><div class="row-sub">Legal name</div><div><strong>Meridian Specialty MGA, LLC</strong></div></div>
+      <div><div class="row-sub">Form</div><div>Delaware LLC</div></div>
+      <div><div class="row-sub">Producer licence</div><div>48 states</div></div>
+      <div><div class="row-sub">Domicile</div><div>New York</div></div>
+      <div><div class="row-sub">E&amp;O carrier</div><div>Liberty Mutual</div></div>
+      <div><div class="row-sub">E&amp;O limit</div><div>$20M / $20M</div></div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Governing Law &amp; Jurisdictions</h3></div>
+    <div style="padding:var(--space-md)">
+      <div class="row-sub">Governing law</div><div>State of New York</div>
+      <div class="row-sub" style="margin-top:8px">Exclusive jurisdiction</div><div>New York County, NY</div>
+      <div class="row-sub" style="margin-top:8px">Arbitration</div><div>AAA Commercial Rules; seat in New York</div>
+    </div>
+  </section>`;
+}
+
+function renderCedeDUAGrant() {
+  return `
+  ${cedePageHeader('Grant of Authority', 'Scope · territorial limits · effective/expiry · termination of authority.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Authorized Activities</h3></div>
+    <div style="padding:var(--space-md)">
+      <ul style="line-height:1.8">
+        <li>Solicit, accept, issue, and deliver policies within the Binding Authority Matrix</li>
+        <li>Endorse policies within pre-approved endorsement library</li>
+        <li>Collect premium subject to fiduciary trust handling (Clause §9)</li>
+        <li>Handle claims within Tier 1 authority (up to $100k per claim)</li>
+        <li>Issue Certificates of Insurance to third parties (additional insureds, lienholders)</li>
+      </ul>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Prohibited Acts (per NAIC #225)</h3></div>
+    <div style="padding:var(--space-md)">
+      <ul style="line-height:1.8">
+        <li>Bind reinsurance on carrier's behalf</li>
+        <li>Commit carrier to participate in insurance or reinsurance syndicates</li>
+        <li>Use carrier funds to pay claim settlement commissions to self</li>
+        <li>Delegate authority granted hereunder to any third party without written consent</li>
+        <li>Settle claims above Tier 1 without carrier consultation</li>
+      </ul>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Period</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md)">
+      <div><div class="row-sub">Effective</div><div><strong>2024-11-08</strong></div></div>
+      <div><div class="row-sub">Expiry</div><div><strong>2026-11-07</strong></div></div>
+      <div><div class="row-sub">Auto-renew</div><div>Yes · 90-day opt-out notice</div></div>
+      <div><div class="row-sub">Max extension</div><div>2 × 12-month renewals</div></div>
+    </div>
+  </section>`;
+}
+
+function renderCedeDUAMatrix() {
+  return `
+  ${cedePageHeader('Binding Authority Matrix', 'Machine-readable rules enforced at every bind. Every breach auto-flagged.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Matrix Rules · ${D.cedeBindingMatrices.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Class</th><th>State</th><th>Per-risk</th><th>Deductible</th><th>Auto-bind</th><th>Refer above</th><th>Decline</th><th>Price dev</th><th>Version</th></tr></thead>
+        <tbody>
+          ${D.cedeBindingMatrices.map(b => `
+            <tr>
+              <td>${b.program}</td>
+              <td>${b.class}</td>
+              <td class="row-sub">${b.state}</td>
+              <td><strong>${b.per_risk}</strong></td>
+              <td class="row-sub">${b.deductible}</td>
+              <td>${b.auto ? cedeBadge('Auto', 'green') : cedeBadge('Refer', 'amber')}</td>
+              <td>${b.refer_above}</td>
+              <td class="row-sub">${b.decline.join(', ')}</td>
+              <td>${b.price_dev}</td>
+              <td><span class="cede-quality-pill">${b.version}</span></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Appetite Grid (sample)</h3></div>
+    <div style="padding:var(--space-md)">
+      <div class="cede-matrix" style="grid-template-columns: 140px repeat(6, 1fr)">
+        <div class="cede-matrix-row" style="grid-template-columns: subgrid; grid-column: span 7"><div class="cede-matrix-cell cede-matrix-head">Class / State</div><div class="cede-matrix-cell cede-matrix-head">CA</div><div class="cede-matrix-cell cede-matrix-head">TX</div><div class="cede-matrix-cell cede-matrix-head">FL</div><div class="cede-matrix-cell cede-matrix-head">NY</div><div class="cede-matrix-cell cede-matrix-head">IL</div><div class="cede-matrix-cell cede-matrix-head">GA</div></div>
+        <div class="cede-matrix-row" style="grid-template-columns: subgrid; grid-column: span 7"><div class="cede-matrix-cell">Manufacturing</div><div class="cede-matrix-cell mx-auto">Auto</div><div class="cede-matrix-cell mx-auto">Auto</div><div class="cede-matrix-cell mx-auto">Auto</div><div class="cede-matrix-cell mx-auto">Auto</div><div class="cede-matrix-cell mx-auto">Auto</div><div class="cede-matrix-cell mx-auto">Auto</div></div>
+        <div class="cede-matrix-row" style="grid-template-columns: subgrid; grid-column: span 7"><div class="cede-matrix-cell">Habitational</div><div class="cede-matrix-cell mx-auto">Auto</div><div class="cede-matrix-cell mx-auto">Auto</div><div class="cede-matrix-cell mx-auto">Auto</div><div class="cede-matrix-cell mx-refer">Refer</div><div class="cede-matrix-cell mx-refer">Refer</div><div class="cede-matrix-cell mx-auto">Auto</div></div>
+        <div class="cede-matrix-row" style="grid-template-columns: subgrid; grid-column: span 7"><div class="cede-matrix-cell">Artisan Contractor</div><div class="cede-matrix-cell mx-auto">Auto</div><div class="cede-matrix-cell mx-refer">Refer</div><div class="cede-matrix-cell mx-decline">Decline</div><div class="cede-matrix-cell mx-auto">Auto</div><div class="cede-matrix-cell mx-refer">Refer</div><div class="cede-matrix-cell mx-refer">Refer</div></div>
+        <div class="cede-matrix-row" style="grid-template-columns: subgrid; grid-column: span 7"><div class="cede-matrix-cell">Trucking</div><div class="cede-matrix-cell mx-refer">Refer</div><div class="cede-matrix-cell mx-auto">Auto</div><div class="cede-matrix-cell mx-auto">Auto</div><div class="cede-matrix-cell mx-decline">Decline</div><div class="cede-matrix-cell mx-auto">Auto</div><div class="cede-matrix-cell mx-auto">Auto</div></div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderCedeDUACommission() {
+  return `
+  ${cedePageHeader('Commission Structure', 'Ceding · fronting fee · profit commission · sliding scale · loss corridor.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua'})">← Back</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-simulator'})">🧮 Simulator</button>`)}
+  <div class="cede-split-3">
+    <section class="card">
+      <div class="card-header"><h3>Ceding Commission</h3></div>
+      <div style="padding:var(--space-md)">
+        <div style="font-size:2rem"><strong>26%</strong></div>
+        <div class="row-sub">Flat · of GWP</div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>Fronting Fee</h3></div>
+      <div style="padding:var(--space-md)">
+        <div style="font-size:2rem"><strong>5.7%</strong></div>
+        <div class="row-sub">Of GWP · to carrier</div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>Profit Commission</h3></div>
+      <div style="padding:var(--space-md)">
+        <div style="font-size:2rem"><strong>20%</strong></div>
+        <div class="row-sub">Of UW profit above 60% LR</div>
+      </div>
+    </section>
+  </div>
+  <section class="card">
+    <div class="card-header"><h3>Sliding-scale Commission</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Loss ratio</th><th>Commission</th><th>Band</th></tr></thead>
+        <tbody>
+          <tr><td>Below 50%</td><td><strong>32.5%</strong></td><td>Max</td></tr>
+          <tr><td>50% — 55%</td><td>30.00% to 32.50%</td><td>Upper slope</td></tr>
+          <tr><td>55% — 60%</td><td>27.00% to 30.00%</td><td>Mid slope</td></tr>
+          <tr><td>60% (provisional)</td><td><strong>27.00%</strong></td><td>Provisional</td></tr>
+          <tr><td>60% — 70%</td><td>22.00% to 27.00%</td><td>Loss corridor (MGA absorbs 5% 60-70% LR)</td></tr>
+          <tr><td>70%+</td><td><strong>20.00%</strong></td><td>Min</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Deferred Ceding</h3></div>
+    <div style="padding:var(--space-md)">
+      Clause §14 — <strong>12%</strong> of ceding commission held in escrow until AY+24 mo development; final true-up at AY+36 mo.
+    </div>
+  </section>`;
+}
+
+function renderCedeDUAClaimsAuthority() {
+  return `
+  ${cedePageHeader('Claims Authority', 'Tier 1 / 2 / 3 · large-loss notification · defense counsel panel · coverage disputes.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Tiered Claims Authority · ${D.cedeClaimAuthorities.length} programs</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Tier 1 (MGA)</th><th>Tier 2 (joint)</th><th>Tier 3</th><th>Notify LL</th><th>Threshold %</th><th>Defense panel</th><th>Disputes</th></tr></thead>
+        <tbody>
+          ${D.cedeClaimAuthorities.map(c => `
+            <tr>
+              <td>${c.mandate_id}</td>
+              <td>Up to $${(c.tier1_limit_usd/1000).toFixed(0)}k</td>
+              <td>$${(c.tier1_limit_usd/1000).toFixed(0)}k — $${(c.tier2_limit_usd/1000).toFixed(0)}k</td>
+              <td class="row-sub">${c.tier3_authority}</td>
+              <td>${c.notify_large_loss_hrs} hrs</td>
+              <td>${c.notify_threshold_pct}%</td>
+              <td class="row-sub">${c.defense_panel}</td>
+              <td class="row-sub">${c.covers_disputes}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDUABordereauSpec() {
+  return `
+  ${cedePageHeader('Bordereau Specification', 'Format · cadence · required fields · canonical translation.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua'})">← Back</button>`)}
+  <div class="cede-split-3">
+    <section class="card"><div class="card-header"><h3>Cadence</h3></div>
+      <div style="padding:var(--space-md)"><strong>Monthly</strong><div class="row-sub">By the 5th of following month</div></div></section>
+    <section class="card"><div class="card-header"><h3>Format</h3></div>
+      <div style="padding:var(--space-md)"><strong>ACORD NGDS</strong><div class="row-sub">Fallback: Lloyd's CRS v5.2</div></div></section>
+    <section class="card"><div class="card-header"><h3>Reports</h3></div>
+      <div style="padding:var(--space-md)"><strong>Risk · Premium · Claims</strong><div class="row-sub">3 separate files</div></div></section>
+  </div>
+  <section class="card">
+    <div class="card-header"><h3>Required Fields</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Field</th><th>Type</th><th>Report</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>policy_number</td><td>string</td><td>All</td><td>Unique per policy</td></tr>
+          <tr><td>named_insured</td><td>string</td><td>Risk / Premium</td><td>Legal entity name</td></tr>
+          <tr><td>inception_date</td><td>date</td><td>All</td><td>ISO 8601</td></tr>
+          <tr><td>expiry_date</td><td>date</td><td>All</td><td>ISO 8601</td></tr>
+          <tr><td>gwp_usd</td><td>number</td><td>Premium</td><td>Gross written premium</td></tr>
+          <tr><td>ceding_commission_usd</td><td>number</td><td>Premium</td><td>MGA commission</td></tr>
+          <tr><td>taxes_usd</td><td>number</td><td>Premium</td><td>State-level</td></tr>
+          <tr><td>net_premium_usd</td><td>number</td><td>Premium</td><td>Net to carrier</td></tr>
+          <tr><td>class_code</td><td>string</td><td>Risk</td><td>ISO / SIC</td></tr>
+          <tr><td>state</td><td>string</td><td>All</td><td>2-letter</td></tr>
+          <tr><td>limit_per_occurrence</td><td>number</td><td>Risk</td><td>Policy limit</td></tr>
+          <tr><td>deductible_usd</td><td>number</td><td>Risk</td><td>Per-risk deductible</td></tr>
+          <tr><td>claim_number</td><td>string</td><td>Claim</td><td>Unique claim id</td></tr>
+          <tr><td>loss_date</td><td>date</td><td>Claim</td><td>Date of loss</td></tr>
+          <tr><td>paid_to_date_usd</td><td>number</td><td>Claim</td><td>Cumulative paid</td></tr>
+          <tr><td>outstanding_reserve_usd</td><td>number</td><td>Claim</td><td>Case reserve</td></tr>
+          <tr><td>status</td><td>string</td><td>Claim</td><td>Open / Closed / Reopened</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDUAAuditRights() {
+  return `
+  ${cedePageHeader('Audit Rights', 'Annual · for-cause · 5-10% UW sample · SOC-1 requirement · collateral audit.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Audit Cadence</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Audit type</th><th>Cadence</th><th>Scope</th><th>Cost</th><th>SLA</th></tr></thead>
+        <tbody>
+          <tr><td><strong>UW file audit</strong></td><td>Annual</td><td>5% sample + directed sample</td><td>Carrier expense (carrier-requested)</td><td>30 days to preliminary report</td></tr>
+          <tr><td><strong>Claims file audit</strong></td><td>Annual</td><td>10% sample + directed sample</td><td>Carrier expense</td><td>30 days to preliminary report</td></tr>
+          <tr><td><strong>Premium trust audit</strong></td><td>Annual + on-demand</td><td>Full fiduciary reconciliation</td><td>Carrier expense</td><td>14 days</td></tr>
+          <tr><td><strong>SOC-1 Type II</strong></td><td>Annual</td><td>MGA-provided, Big 4 or equivalent</td><td>MGA expense</td><td>Issue by anniversary + 60 days</td></tr>
+          <tr><td><strong>SOC-2 Type II</strong></td><td>Annual</td><td>MGA-provided</td><td>MGA expense</td><td>Issue by anniversary + 60 days</td></tr>
+          <tr><td><strong>Collateral verification</strong></td><td>Quarterly + on exposure growth +20%</td><td>Issuing bank / custodian direct</td><td>Carrier expense</td><td>T+2 business days</td></tr>
+          <tr><td><strong>For-cause audit</strong></td><td>As needed</td><td>Directed by trigger event</td><td>MGA expense if cause confirmed</td><td>14 days to scope / 60 days to report</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDUATerminationClauses() {
+  return `
+  ${cedePageHeader('Termination & Run-off', 'Notice periods · cause events · run-off commission · data portability SLA.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua'})">← Back</button>`)}
+  <div class="cede-split-3">
+    <section class="card"><div class="card-header"><h3>For Convenience</h3></div>
+      <div style="padding:var(--space-md)"><strong>120 days</strong><div class="row-sub">Mutual notice. In-force book runs off per §33.</div></div></section>
+    <section class="card"><div class="card-header"><h3>For Cause</h3></div>
+      <div style="padding:var(--space-md)"><strong>30-day cure</strong><div class="row-sub">Fraud · UW breach pattern · E&O lapse · regulator action.</div></div></section>
+    <section class="card"><div class="card-header"><h3>Automatic</h3></div>
+      <div style="padding:var(--space-md)"><strong>Immediate</strong><div class="row-sub">Loss of licence · insolvency · unconsented change-of-control · material SOC finding.</div></div></section>
+  </div>
+  <section class="card">
+    <div class="card-header"><h3>Run-off Provisions</h3></div>
+    <div style="padding:var(--space-md)">
+      <div class="row-sub">Run-off duration</div><div><strong>In-force + 12 months tail</strong></div>
+      <div class="row-sub" style="margin-top:8px">Run-off commission</div><div><strong>5% of GWP</strong> (pure admin fee)</div>
+      <div class="row-sub" style="margin-top:8px">Bordereau cadence during run-off</div><div>Weekly · Premium + Claims</div>
+      <div class="row-sub" style="margin-top:8px">Claims authority during run-off</div><div>Reduced to Tier 1 only</div>
+      <div class="row-sub" style="margin-top:8px">Data portability SLA</div><div><strong>5 business days</strong> · ACORD-canonical pack</div>
+    </div>
+  </section>`;
+}
+
+function renderCedeDUADiff() {
+  return `
+  ${cedePageHeader('DUA Diff Viewer', 'Clause-level diff vs template, vs peer programs.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Current vs. Template (Summit Precedent v3.2)</h3></div>
+    <div style="padding:var(--space-md)">
+      <div class="cede-clause-card">
+        <h4>§30. Termination for Convenience</h4>
+        <div class="clause-meta">Category: Termination</div>
+        <div class="cede-clause-body">Either party may terminate for convenience with <span class="cede-diff-del">180 days</span> <span class="cede-diff-add">120 days</span> written notice...</div>
+      </div>
+      <div class="cede-clause-card">
+        <h4>§11. Ceding Commission</h4>
+        <div class="clause-meta">Category: Commission</div>
+        <div class="cede-clause-body">MGA shall receive <span class="cede-diff-del">25%</span> <span class="cede-diff-add">26%</span> flat ceding commission on GWP...</div>
+      </div>
+      <div class="cede-clause-card">
+        <h4>§19. Large-Loss Notification</h4>
+        <div class="clause-meta">Category: Claims</div>
+        <div class="cede-clause-body">MGA shall notify carrier of any loss exceeding <span class="cede-diff-del">50%</span> <span class="cede-diff-add">40%</span> of policy limit within <span class="cede-diff-add">24 hours</span>...</div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderCedeDUARedline() {
+  return `
+  ${cedePageHeader('Redline Tracker', 'Versioning · redlines · accept / reject per clause · counsel comments.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-dua'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Open Redlines · 4</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Clause</th><th>Proposed by</th><th>Change</th><th>Counsel</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>§4 Change Control</td><td>Carrier</td><td class="row-sub">Notice reduced 30 → 14 days</td><td>Sidley Austin (MGA)</td><td>${cedeBadge('Under review', 'amber')}</td></tr>
+          <tr><td>§10 Remittance</td><td>Carrier</td><td class="row-sub">Cadence 25th → 15th</td><td>Morgan Lewis (Carrier)</td><td>${cedeBadge('Counter-proposed', 'amber')}</td></tr>
+          <tr><td>§14 Deferred Ceding</td><td>MGA</td><td class="row-sub">Escrow 12% → 10%</td><td>Sidley Austin (MGA)</td><td>${cedeBadge('Under review', 'amber')}</td></tr>
+          <tr><td>§37 E&amp;O Requirement</td><td>Carrier</td><td class="row-sub">$10M → $20M for programs &gt;$100M</td><td>Morgan Lewis (Carrier)</td><td>${cedeBadge('Accepted', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── Module 4: Term Negotiation ───
+function renderCedeTermSheetList() {
+  return `
+  ${cedePageHeader('Term Sheets', 'Versioned negotiation artefacts · counter-offer flow.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-simulator'})">🧮 Simulator</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Active &amp; Archived Term Sheets · ${D.cedeTermSheets.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>TS</th><th>Mandate</th><th>Ver</th><th>Proposed by</th><th>Date</th><th>Ceding</th><th>Fronting</th><th>Profit</th><th>Corridor</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.cedeTermSheets.map(t => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-term-sheet', cedeTsId:'${t.id}'})">
+              <td><strong>${t.id}</strong></td>
+              <td>${t.mandate_id}</td>
+              <td><span class="cede-quality-pill">${t.version}</span></td>
+              <td>${t.proposed_by}</td>
+              <td class="row-sub">${t.date}</td>
+              <td>${t.ceding_comm_pct}%</td>
+              <td>${t.fronting_fee_pct}%</td>
+              <td class="row-sub">${t.profit_comm_struct}</td>
+              <td class="row-sub">${t.loss_corridor}</td>
+              <td>${cedeBadge(t.status, cedeStatusColor(t.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeTermSheetDetail() {
+  const t = D.cedeTermSheets.find(x => x.id === state.cedeTsId) || D.cedeTermSheets[0];
+  return `
+  ${cedePageHeader('Term Sheet · ' + t.id, `Mandate ${t.mandate_id} · v${t.version}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-term-sheets'})">← Back</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-counteroffer', cedeTsId:'${t.id}'})">🔁 Counter-offer</button>
+     <button class="btn btn-primary cede-cta" onclick="window.setState({screen:'cd-esign', cedeTsId:'${t.id}'})">✒️ E-sign</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Economic Terms</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--space-md)">
+      <div><div class="row-sub">Ceding commission</div><div style="font-size:1.3rem"><strong>${t.ceding_comm_pct}%</strong></div></div>
+      <div><div class="row-sub">Fronting fee</div><div style="font-size:1.3rem"><strong>${t.fronting_fee_pct}%</strong></div></div>
+      <div><div class="row-sub">Profit commission</div><div>${t.profit_comm_struct}</div></div>
+      <div><div class="row-sub">Loss corridor</div><div>${t.loss_corridor}</div></div>
+      <div><div class="row-sub">Collateral</div><div>${t.collateral}</div></div>
+      <div><div class="row-sub">Termination notice</div><div>${t.termination_notice_days} days</div></div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Review Status</h3></div>
+    <div style="padding:var(--space-md)">
+      <div class="row-sub">Proposed by</div><div><strong>${t.proposed_by}</strong> on ${t.date}</div>
+      <div class="row-sub" style="margin-top:8px">Current review</div><div>${t.review_status}</div>
+      <div class="row-sub" style="margin-top:8px">Next meeting</div><div>${t.next_meeting}</div>
+      <div class="row-sub" style="margin-top:8px">Status</div><div>${cedeBadge(t.status, cedeStatusColor(t.status))}</div>
+    </div>
+  </section>`;
+}
+
+function renderCedeCounterOffer() {
+  return `
+  ${cedePageHeader('Counter-offer', 'Versioned workflow · explicit accept / counter / reject per party.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-term-sheets'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Counter-offer Flow</h3></div>
+    <div style="padding:var(--space-md)">
+      <ul class="cede-timeline">
+        <li class="done"><strong>v1 · Carrier proposes</strong> · 2026-04-02 · ceding 24% / fronting 7.0% / profit 18% above 62% LR</li>
+        <li class="done"><strong>v2 · Carrier revises</strong> · 2026-04-10 · ceding 25% / fronting 6.5% / profit 20% above 62% LR</li>
+        <li><strong>v3 · MGA counters</strong> · 2026-04-18 · ceding 26% / fronting 6.2% / profit 20% above 60% LR (current)</li>
+        <li><strong>v4 · Carrier response</strong> · pending · expected 2026-04-25</li>
+      </ul>
+    </div>
+  </section>`;
+}
+
+function renderCedeEconomicSimulator() {
+  return `
+  ${cedePageHeader('Economic Simulator', 'Model commission under LR scenarios · visualise slide-scale · P&L at expected frequency/severity.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-term-sheets'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Scenario: Meridian E&amp;S Casualty · GWP $145M</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>LR scenario</th><th>Ceding comm</th><th>Fronting fee</th><th>Profit accrual</th><th>Net premium</th><th>MGA total economics</th><th>Carrier UW result</th></tr></thead>
+        <tbody>
+          <tr><td>50% (best)</td><td>$47.1M (32.5%)</td><td>$8.3M (5.7%)</td><td>$5.8M</td><td>$89.6M</td><td><strong>$52.9M</strong></td><td><strong>$16.4M</strong></td></tr>
+          <tr><td>55%</td><td>$43.5M (30.0%)</td><td>$8.3M</td><td>$2.9M</td><td>$93.2M</td><td>$46.4M</td><td>$12.2M</td></tr>
+          <tr><td>60% (plan)</td><td>$39.2M (27.0%)</td><td>$8.3M</td><td>$0</td><td>$97.5M</td><td>$39.2M</td><td>$9.7M</td></tr>
+          <tr><td>65%</td><td>$36.3M (25.0%)</td><td>$8.3M</td><td>$0</td><td>$100.4M</td><td>$36.3M</td><td>$2.9M</td></tr>
+          <tr><td>70% (corridor)</td><td>$31.9M (22.0%)</td><td>$8.3M</td><td>$0</td><td>$104.8M</td><td>$31.9M</td><td>$(3.7)M</td></tr>
+          <tr><td>75% (worst)</td><td>$29.0M (20.0%)</td><td>$8.3M</td><td>$0</td><td>$107.7M</td><td>$29.0M</td><td>$(8.1)M</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeEsignCeremony() {
+  return `
+  ${cedePageHeader('E-sign Ceremony', 'DocuSign integration · signatories · legal entities · jurisdictions.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-term-sheets'})">← Back</button>
+     <button class="btn btn-primary cede-cta" onclick="window.setState({screen:'cd-closing'})">📦 Closing Bundle</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Signatories</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Signatory</th><th>Role</th><th>Entity</th><th>Status</th><th>Signed</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Helena Park</strong></td><td>Program Manager</td><td>Summit Fronting Re, Inc.</td><td>${cedeBadge('Signed', 'green')}</td><td class="row-sub">2026-04-20 10:12</td></tr>
+          <tr><td><strong>Megan Harris</strong></td><td>CUO</td><td>Summit Fronting Re, Inc.</td><td>${cedeBadge('Signed', 'green')}</td><td class="row-sub">2026-04-20 11:44</td></tr>
+          <tr><td><strong>David Ortiz</strong></td><td>MGA CEO</td><td>Meridian Specialty MGA, LLC</td><td>${cedeBadge('Signed', 'green')}</td><td class="row-sub">2026-04-20 14:01</td></tr>
+          <tr><td><strong>Sarah Webb</strong></td><td>MGA CUO</td><td>Meridian Specialty MGA, LLC</td><td>${cedeBadge('Signed', 'green')}</td><td class="row-sub">2026-04-20 14:05</td></tr>
+          <tr><td><strong>Priya Shah</strong></td><td>BoR acknowledgement</td><td>Gallagher Re</td><td>${cedeBadge('Signed', 'green')}</td><td class="row-sub">2026-04-20 15:30</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeClosingBundle() {
+  return `
+  ${cedePageHeader('Closing Bundle', 'Final executed DUA + exhibits + binding matrix + UW guidelines + bordereau spec + claims manual.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-term-sheets'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Immutable Bundle</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Document</th><th>Pages</th><th>Hash</th><th>Signed</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Executed DUA v1.0</strong></td><td>142</td><td class="row-sub"><code>0x8a4b...e92f</code></td><td>2026-04-20</td></tr>
+          <tr><td>Exhibit A — Binding Authority Matrix</td><td>8</td><td class="row-sub"><code>0x4c12...a018</code></td><td>2026-04-20</td></tr>
+          <tr><td>Exhibit B — UW Guidelines v3</td><td>62</td><td class="row-sub"><code>0x12a8...dd33</code></td><td>2026-04-20</td></tr>
+          <tr><td>Exhibit C — Bordereau Specification</td><td>12</td><td class="row-sub"><code>0x9911...cd01</code></td><td>2026-04-20</td></tr>
+          <tr><td>Exhibit D — Claims Handling Manual</td><td>38</td><td class="row-sub"><code>0x771a...bb20</code></td><td>2026-04-20</td></tr>
+          <tr><td>Exhibit E — Reinsurance Panel</td><td>6</td><td class="row-sub"><code>0x5512...ee7a</code></td><td>2026-04-20</td></tr>
+          <tr><td>Exhibit F — Commission Schedule + Sliding Scale</td><td>4</td><td class="row-sub"><code>0xff01...1193</code></td><td>2026-04-20</td></tr>
+          <tr><td>E-sign certificate (DocuSign)</td><td>2</td><td class="row-sub"><code>0x2211...c0a4</code></td><td>2026-04-20</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── Module 5: Activation ───
+function renderCedeActivationList() {
+  return `
+  ${cedePageHeader('Program Activation', 'Auto-generated checklists post-signing · collateral · integration · go-live.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-collateral'})">🏦 Collateral</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Active Activations · ${D.cedeActivations.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Activation</th><th>Program</th><th>Progress</th><th>Target go-live</th></tr></thead>
+        <tbody>
+          ${D.cedeActivations.map(a => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-activation-detail', cedeActId:'${a.id}'})">
+              <td><strong>${a.id}</strong></td>
+              <td>${a.program}</td>
+              <td><strong>${a.progress_pct}%</strong></td>
+              <td>${a.target_golive}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeActivationDetail() {
+  const a = D.cedeActivations.find(x => x.id === state.cedeActId) || D.cedeActivations[0];
+  return `
+  ${cedePageHeader('Activation · ' + a.id, a.program + ' · target go-live ' + a.target_golive,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-activation'})">← Back</button>`)}
+  ${cedeKPIs([
+    { label: 'Progress', value: a.progress_pct + '%' },
+    { label: 'Target go-live', value: a.target_golive },
+    { label: 'Steps', value: String(a.steps.length) },
+    { label: 'Completed', value: String(a.steps.filter(s => s.status === 'Done').length) },
+    { label: 'In progress', value: String(a.steps.filter(s => s.status === 'In progress').length) },
+    { label: 'Pending', value: String(a.steps.filter(s => s.status === 'Pending').length) }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>Activation Steps</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Step</th><th>Owner</th><th>Status</th><th>Due / Done</th></tr></thead>
+        <tbody>
+          ${a.steps.map(s => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-activation-${s.key === 'collateral' ? 'collateral' : s.key === 'matrix-push' ? 'integration' : s.key === 'bordereau-endpoint' ? 'integration' : s.key === 'producers' ? 'producers' : s.key === 'reinsurance' ? 'reins' : 'signoff'}'})">
+              <td><strong>${s.label}</strong></td>
+              <td class="row-sub">${s.owner}</td>
+              <td>${cedeBadge(s.status, cedeStatusColor(s.status))}</td>
+              <td class="row-sub">${s.done || s.due || '—'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeActivationCollateral() {
+  return `
+  ${cedePageHeader('Activation · Collateral Setup', 'Trust / LOC setup · direct bank confirmation · collateral ledger live.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-activation'})">← Back</button>`)}
+  ${cedeKPIs([
+    { label: 'Required collateral', value: '$6.0M' },
+    { label: 'Funded', value: '$6.2M' },
+    { label: 'Form', value: 'LOC (G-SIB)' },
+    { label: 'Issuing bank', value: 'Citibank' },
+    { label: 'Verification', value: 'Done' },
+    { label: 'Activation gate', value: 'Passed' }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>Setup Steps</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Step</th><th>Owner</th><th>Status</th><th>Completed</th></tr></thead>
+        <tbody>
+          <tr><td>Funding amount confirmed ($6.0M)</td><td>Carrier CFO</td><td>${cedeBadge('Done', 'green')}</td><td class="row-sub">2026-04-05</td></tr>
+          <tr><td>Form selected — LOC from Citibank</td><td>Carrier CFO</td><td>${cedeBadge('Done', 'green')}</td><td class="row-sub">2026-04-05</td></tr>
+          <tr><td>LOC issued by Citibank</td><td>Citibank Treasury</td><td>${cedeBadge('Done', 'green')}</td><td class="row-sub">2026-04-06</td></tr>
+          <tr><td>Direct issuing-bank confirmation via Citibank Treasury API</td><td>Platform</td><td>${cedeBadge('Done', 'green')}</td><td class="row-sub">2026-04-05 15:30</td></tr>
+          <tr><td>Collateral-vs-exposure ledger active</td><td>Platform</td><td>${cedeBadge('Done', 'green')}</td><td class="row-sub">2026-04-05</td></tr>
+          <tr><td>Reg 114 trust backstop (if LOC triggered)</td><td>Carrier CFO</td><td>${cedeBadge('Pending', 'amber')}</td><td class="row-sub">Due 2026-05-01</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeActivationIntegration() {
+  return `
+  ${cedePageHeader('Activation · System Integration', 'Push binding matrix · configure bordereau endpoint · claims API.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-activation'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Integration Checklist</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Integration</th><th>Target system</th><th>Status</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Binding Matrix JSON push</strong></td><td>MGA PAS (Duck Creek)</td><td>${cedeBadge('Done', 'green')}</td><td class="row-sub">Rule engine live; enforcement at bind-time</td></tr>
+          <tr><td><strong>Bordereau endpoint</strong></td><td>ACORD NGDS ingest</td><td>${cedeBadge('Done', 'green')}</td><td class="row-sub">Risk / Premium / Claims — 3 streams</td></tr>
+          <tr><td><strong>Claims ESB / API</strong></td><td>MGA claims platform</td><td>${cedeBadge('Done', 'green')}</td><td class="row-sub">Tier 1 → Tier 3 routing wired</td></tr>
+          <tr><td><strong>Webhooks</strong></td><td>Synapi event bus</td><td>${cedeBadge('Done', 'green')}</td><td class="row-sub">Subscribed: policy.issued, policy.endorsed, claim.opened</td></tr>
+          <tr><td><strong>SSO</strong></td><td>MGA Okta → Cede</td><td>${cedeBadge('In progress', 'amber')}</td><td class="row-sub">OIDC flow; due 2026-04-28</td></tr>
+          <tr><td><strong>Reporting dashboards</strong></td><td>Carrier MGA ops dashboard</td><td>${cedeBadge('Done', 'green')}</td><td class="row-sub">Live</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeActivationProducers() {
+  return `
+  ${cedePageHeader('Activation · Producer Appointments', 'State-by-state NIPR appointments.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-activation'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Appointments</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>State</th><th>MGA licence</th><th>Carrier appointment</th><th>Status</th><th>NIPR Verified</th></tr></thead>
+        <tbody>
+          ${['MA','CT','RI','NH','VT','ME','NY','NJ','PA','CA'].map((s, i) => `
+            <tr><td><strong>${s}</strong></td><td>Active</td><td>Part A + Part B filed</td><td>${cedeBadge(i < 8 ? 'Active' : 'Pending', i < 8 ? 'green' : 'amber')}</td><td class="row-sub">${i < 8 ? '2026-04-12' : 'Due 2026-04-30'}</td></tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeActivationReins() {
+  return `
+  ${cedePageHeader('Activation · Reinsurance Handoff', 'Coordinate outward cession to CarrierQP treaties and/or Konduit capacity.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-activation'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Outward Cession Plan</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Layer</th><th>Type</th><th>Reinsurer</th><th>Share</th><th>Limit</th><th>Retention</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Quota Share</td><td>Munich Re</td><td>40%</td><td>$2M</td><td>60% net</td><td>${cedeBadge('Executed', 'green')}</td></tr>
+          <tr><td>2</td><td>Quota Share</td><td>Hannover Re</td><td>30%</td><td>$2M</td><td>—</td><td>${cedeBadge('Executed', 'green')}</td></tr>
+          <tr><td>3</td><td>Quota Share</td><td>Swiss Re</td><td>20%</td><td>$2M</td><td>—</td><td>${cedeBadge('Executed', 'green')}</td></tr>
+          <tr><td>4 (XoL)</td><td>Excess of Loss</td><td>Lloyd's Syndicate 4472</td><td>100%</td><td>$3M xs $2M</td><td>—</td><td>${cedeBadge('Executed', 'green')}</td></tr>
+          <tr><td>5 (CAT)</td><td>CAT XoL</td><td>Axis Capital</td><td>100%</td><td>$5M xs $5M</td><td>—</td><td>${cedeBadge('Pending', 'amber')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeActivationSignoff() {
+  return `
+  ${cedePageHeader('Activation · Go-live Sign-off', 'Dual CUO confirmation · final gating check.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-activation'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Pre-Go-Live Gate Checks</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Check</th><th>Owner</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Collateral verified</td><td>Platform</td><td>${cedeBadge('Passed', 'green')}</td></tr>
+          <tr><td>Binding matrix pushed</td><td>Platform</td><td>${cedeBadge('Passed', 'green')}</td></tr>
+          <tr><td>Bordereau endpoint live</td><td>Platform</td><td>${cedeBadge('Passed', 'green')}</td></tr>
+          <tr><td>Producer appointments (80%+ states)</td><td>MGA Ops</td><td>${cedeBadge('Passed', 'green')}</td></tr>
+          <tr><td>Reinsurance panel bound</td><td>Carrier Reins</td><td>${cedeBadge('Passed', 'green')}</td></tr>
+          <tr><td>SOC reports current</td><td>Compliance</td><td>${cedeBadge('Passed', 'green')}</td></tr>
+          <tr><td>E&amp;O in force</td><td>Compliance</td><td>${cedeBadge('Passed', 'green')}</td></tr>
+          <tr><td>NAIC #225 compliance (per state)</td><td>Compliance</td><td>${cedeBadge('Passed', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Sign-off</h3></div>
+    <div style="padding:var(--space-md)">
+      <div class="cede-collateral-verified" style="padding:10px; margin-bottom:10px"><strong>Carrier CUO:</strong> Megan Harris · signed 2026-04-20 11:44</div>
+      <div class="cede-collateral-verified" style="padding:10px; margin-bottom:10px"><strong>MGA CUO:</strong> Sarah Webb · signed 2026-04-20 14:05</div>
+      <div class="cede-collateral-verified" style="padding:10px"><strong>Go-live:</strong> scheduled 2026-05-01 00:00 UTC</div>
+    </div>
+  </section>`;
+}
+
+// ─── Module 6: Monitoring & UW Compliance ───
+function renderCedeMonitoringList() {
+  return `
+  ${cedePageHeader('Program Monitoring', 'Real-time LR · UW compliance · claims authority · alerts',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-alerts'})">🔔 Alerts</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-program-bench'})">📊 Benchmarking</button>`)}
+  ${cedeKPIs([
+    { label: 'Programs live', value: '14' },
+    { label: 'Trailing 12m LR', value: '58.3%' },
+    { label: 'UW compliance', value: '96.2%' },
+    { label: 'Breaches 30d', value: String(D.cedeCompliance.filter(c => c.status === 'Open').length), warning: true },
+    { label: 'Bordereau on-time', value: '94%' },
+    { label: 'Concentration alert', value: '0' }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>Programs</h3>
+      <a href="#" class="link-subtle" onclick="window.setState({screen:'cd-program-perf'});return false;">Performance →</a>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>GWP YTD</th><th>LR</th><th>UW score</th><th>Bord timeliness</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr class="row-clickable" onclick="window.setState({screen:'cd-program-perf'})"><td><strong>Meridian E&amp;S Casualty</strong></td><td>$36.2M</td><td>58.3%</td><td>98.1%</td><td>100%</td><td>${cedeBadge('In-force', 'green')}</td></tr>
+          <tr class="row-clickable" onclick="window.setState({screen:'cd-program-perf'})"><td><strong>Aurora Cyber</strong></td><td>$22.0M</td><td>50.2%</td><td>98.1%</td><td>100%</td><td>${cedeBadge('In-force', 'green')}</td></tr>
+          <tr class="row-clickable" onclick="window.setState({screen:'cd-program-perf'})"><td><strong>Pacifica Habitational</strong></td><td>$28.8M</td><td>60.2%</td><td>96.4%</td><td>100%</td><td>${cedeBadge('In-force', 'green')}</td></tr>
+          <tr class="row-clickable" onclick="window.setState({screen:'cd-program-perf'})"><td><strong>Heartland Trucking</strong></td><td>$52.6M</td><td>71.2%</td><td>88.5%</td><td>60%</td><td>${cedeBadge('Watch', 'amber')}</td></tr>
+          <tr class="row-clickable" onclick="window.setState({screen:'cd-program-perf'})"><td><strong>Thalassa Marine</strong></td><td>$24.3M</td><td>59.4%</td><td>97.2%</td><td>100%</td><td>${cedeBadge('In-force', 'green')}</td></tr>
+          <tr class="row-clickable" onclick="window.setState({screen:'cd-program-perf'})"><td><strong>Summit Alpine Resort</strong></td><td>$7.2M</td><td>57.1%</td><td>97.0%</td><td>100%</td><td>${cedeBadge('In-force', 'green')}</td></tr>
+          <tr class="row-clickable" onclick="window.setState({screen:'cd-program-perf'})"><td><strong>Frontier Ag Hail</strong></td><td>$34.2M</td><td>72.3%</td><td>91.8%</td><td>80%</td><td>${cedeBadge('Watch', 'amber')}</td></tr>
+          <tr class="row-clickable" onclick="window.setState({screen:'cd-program-perf'})"><td><strong>Legacy E&amp;S Casualty</strong></td><td>$42.6M</td><td>52.1%</td><td>98.4%</td><td>100%</td><td>${cedeBadge('In-force', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeProgramPerformance() {
+  return `
+  ${cedePageHeader('Program Performance · Meridian E&S Casualty', 'Real-time premium, LR, loss triangles, frequency / severity, retention.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-monitoring'})">← Back</button>`)}
+  ${cedeKPIs([
+    { label: 'GWP YTD 2026', value: '$36.2M' },
+    { label: 'GWP Q1 2026', value: '$36.2M' },
+    { label: 'Paid LR (T12)', value: '42.8%' },
+    { label: 'Incurred LR (T12)', value: '58.3%' },
+    { label: 'Expense ratio', value: '33.8%' },
+    { label: 'Combined ratio', value: '92.1%' }
+  ])}
+  <div class="cede-split-2">
+    <section class="card">
+      <div class="card-header"><h3>Loss Triangle (AY × Dev · Manufacturing class)</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>AY</th><th>12 mo</th><th>24 mo</th><th>36 mo</th><th>48 mo</th><th>60 mo</th></tr></thead>
+          <tbody>
+            <tr><td>2021</td><td>38.2%</td><td>49.1%</td><td>54.8%</td><td>56.2%</td><td>56.8%</td></tr>
+            <tr><td>2022</td><td>41.0%</td><td>52.0%</td><td>56.2%</td><td>57.5%</td><td>—</td></tr>
+            <tr><td>2023</td><td>39.5%</td><td>50.2%</td><td>54.1%</td><td>—</td><td>—</td></tr>
+            <tr><td>2024</td><td>42.1%</td><td>53.5%</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>2025</td><td>40.8%</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h3>Frequency &amp; Severity</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Class</th><th>Freq (claims / $M premium)</th><th>Severity (avg $)</th><th>Trend</th></tr></thead>
+          <tbody>
+            <tr><td>Manufacturing</td><td>2.8</td><td>$42,000</td><td class="row-sub">Stable</td></tr>
+            <tr><td>Habitational</td><td>4.2</td><td>$31,000</td><td class="row-sub">Stable</td></tr>
+            <tr><td>Artisan Contractor</td><td>3.5</td><td>$28,500</td><td class="row-sub">Down 4% YoY</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>`;
+}
+
+function renderCedeUWScorecard() {
+  return `
+  ${cedePageHeader('UW Compliance Scorecard', 'Every bound policy validated at bind-time against binding matrix. Breaches flagged within 24hrs.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-monitoring'})">← Back</button>`)}
+  ${cedeKPIs([
+    { label: 'Policies bound 30d', value: '1,842' },
+    { label: 'Matrix compliant', value: '98.1%' },
+    { label: 'Breaches detected', value: '34' },
+    { label: 'Breaches resolved', value: '28' },
+    { label: 'Open breaches', value: '6', warning: true },
+    { label: 'Avg detection time', value: '2.4 hrs' }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>Breach Registry · ${D.cedeCompliance.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Breach</th><th>Program</th><th>Policy</th><th>Type</th><th>Rule</th><th>Severity</th><th>Status</th><th>Detected</th></tr></thead>
+        <tbody>
+          ${D.cedeCompliance.map(b => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-breach-resolve', cedeBreachId:'${b.id}'})">
+              <td><strong>${b.id}</strong></td>
+              <td>${b.program}</td>
+              <td><code>${b.policy_no}</code></td>
+              <td>${b.breach_type}</td>
+              <td class="row-sub">${b.rule}</td>
+              <td>${cedeBadge(b.severity, cedeStatusColor(b.severity))}</td>
+              <td>${cedeBadge(b.status, cedeStatusColor(b.status))}</td>
+              <td class="row-sub">${b.detected}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeBreachResolution() {
+  const b = D.cedeCompliance.find(x => x.id === state.cedeBreachId) || D.cedeCompliance[0];
+  return `
+  ${cedePageHeader('Breach Resolution · ' + b.id, `${b.program} · policy ${b.policy_no}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-uw-score'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Breach Details</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md)">
+      <div><div class="row-sub">Type</div><div><strong>${b.breach_type}</strong></div></div>
+      <div><div class="row-sub">Severity</div><div>${cedeBadge(b.severity, cedeStatusColor(b.severity))}</div></div>
+      <div style="grid-column:span 2"><div class="row-sub">Rule</div><div>${b.rule}</div></div>
+      <div><div class="row-sub">Detected</div><div>${b.detected}</div></div>
+      <div><div class="row-sub">Status</div><div>${cedeBadge(b.status, cedeStatusColor(b.status))}</div></div>
+      <div><div class="row-sub">Carrier owner</div><div>${b.carrier_owner}</div></div>
+      <div style="grid-column:span 2"><div class="row-sub">MGA response</div><div>${b.mga_response}</div></div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Resolution Options</h3></div>
+    <div style="padding:var(--space-md)">
+      <ul style="line-height:1.8">
+        <li><strong>Accept breach</strong> — UW desk documents rationale; no rescission</li>
+        <li><strong>Rescind bind</strong> — policy cancelled flat; premium returned</li>
+        <li><strong>Refer to CUO</strong> — escalate for authority decision</li>
+        <li><strong>Request matrix amendment</strong> — clause §4 change-control process</li>
+      </ul>
+    </div>
+  </section>`;
+}
+
+function renderCedeRateAdequacy() {
+  return `
+  ${cedePageHeader('Rate Adequacy Monitor', 'Chief actuary view · MGA pricing vs indicated rate.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-monitoring'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Rate Adequacy by Class</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program · Class</th><th>Indicated rate</th><th>MGA filed</th><th>Schedule mod avg</th><th>Net deviation</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Meridian · Manufacturing</td><td>Base × 1.00</td><td>Base × 1.00</td><td>+2.1%</td><td><strong>+2.1%</strong></td><td>${cedeBadge('Adequate', 'green')}</td></tr>
+          <tr><td>Meridian · Habitational</td><td>Base × 1.00</td><td>Base × 1.02</td><td>-0.8%</td><td><strong>+1.2%</strong></td><td>${cedeBadge('Adequate', 'green')}</td></tr>
+          <tr><td>Meridian · Artisan</td><td>Base × 1.00</td><td>Base × 0.98</td><td>-3.4%</td><td><strong>-5.4%</strong></td><td>${cedeBadge('Watch', 'amber')}</td></tr>
+          <tr><td>Aurora · SMB Cyber</td><td>Base × 1.00</td><td>Base × 1.05</td><td>-1.8%</td><td><strong>+3.1%</strong></td><td>${cedeBadge('Adequate', 'green')}</td></tr>
+          <tr><td>Heartland · Trucking</td><td>Base × 1.00</td><td>Base × 0.96</td><td>-5.2%</td><td><strong>-9.2%</strong></td><td>${cedeBadge('Inadequate', 'red')}</td></tr>
+          <tr><td>Pacifica · Habitational</td><td>Base × 1.00</td><td>Base × 1.00</td><td>-1.4%</td><td><strong>-1.4%</strong></td><td>${cedeBadge('Adequate', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeHitRatio() {
+  return `
+  ${cedePageHeader('Quote-to-Bind Hit Ratio', 'Per MGA · per class · per state.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-monitoring'})">← Back</button>`)}
+  ${cedeKPIs([
+    { label: 'Quotes 30d',     value: '8,420' },
+    { label: 'Binds 30d',      value: '2,856' },
+    { label: 'Hit ratio',      value: '33.9%' },
+    { label: 'vs peer P50',    value: '+2.4 pts' },
+    { label: 'Best class',     value: 'Cyber 42%' },
+    { label: 'Weakest class',  value: 'Trucking 21%' }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>Hit Ratio Breakdown</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Class</th><th>State</th><th>Quotes</th><th>Binds</th><th>Hit %</th></tr></thead>
+        <tbody>
+          <tr><td>Meridian</td><td>Manufacturing</td><td>CA</td><td>412</td><td>168</td><td><strong>40.8%</strong></td></tr>
+          <tr><td>Meridian</td><td>Manufacturing</td><td>TX</td><td>385</td><td>142</td><td><strong>36.9%</strong></td></tr>
+          <tr><td>Meridian</td><td>Habitational</td><td>CA</td><td>288</td><td>104</td><td><strong>36.1%</strong></td></tr>
+          <tr><td>Meridian</td><td>Artisan</td><td>MA</td><td>224</td><td>78</td><td><strong>34.8%</strong></td></tr>
+          <tr><td>Aurora</td><td>SMB Cyber</td><td>All 50</td><td>1,420</td><td>596</td><td><strong>42.0%</strong></td></tr>
+          <tr><td>Aurora</td><td>Middle-market</td><td>All 50</td><td>512</td><td>196</td><td><strong>38.3%</strong></td></tr>
+          <tr><td>Heartland</td><td>Trucking</td><td>All 48</td><td>1,280</td><td>270</td><td><strong>21.1%</strong></td></tr>
+          <tr><td>Pacifica</td><td>Habitational</td><td>CA</td><td>588</td><td>224</td><td><strong>38.1%</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeBindingVelocity() {
+  return `
+  ${cedePageHeader('Binding Velocity & Concentration', 'Flag unusual spikes · concentration risk by class/state.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-monitoring'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Weekly Binding Volume (trailing 8 weeks)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Week</th><th>Policies bound</th><th>GWP</th><th>Variance vs P50</th><th>Flag</th></tr></thead>
+        <tbody>
+          <tr><td>Week 15 (current)</td><td>485</td><td>$3.2M</td><td>+2.4%</td><td>${cedeBadge('Normal', 'green')}</td></tr>
+          <tr><td>Week 14</td><td>452</td><td>$3.0M</td><td>-3.1%</td><td>${cedeBadge('Normal', 'green')}</td></tr>
+          <tr><td>Week 13</td><td>468</td><td>$3.1M</td><td>+0.2%</td><td>${cedeBadge('Normal', 'green')}</td></tr>
+          <tr><td>Week 12</td><td>598</td><td>$4.0M</td><td>+27.5%</td><td>${cedeBadge('Spike', 'amber')}</td></tr>
+          <tr><td>Week 11</td><td>442</td><td>$2.9M</td><td>-5.5%</td><td>${cedeBadge('Normal', 'green')}</td></tr>
+          <tr><td>Week 10</td><td>478</td><td>$3.2M</td><td>+2.2%</td><td>${cedeBadge('Normal', 'green')}</td></tr>
+          <tr><td>Week 09</td><td>461</td><td>$3.1M</td><td>-1.4%</td><td>${cedeBadge('Normal', 'green')}</td></tr>
+          <tr><td>Week 08</td><td>455</td><td>$3.0M</td><td>-2.7%</td><td>${cedeBadge('Normal', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Concentration</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Dimension</th><th>Top exposure</th><th>% of portfolio</th><th>Limit</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>LOB</td><td>E&amp;S Casualty</td><td>34%</td><td>≤40%</td><td>${cedeBadge('OK', 'green')}</td></tr>
+          <tr><td>State</td><td>CA</td><td>22%</td><td>≤25%</td><td>${cedeBadge('OK', 'green')}</td></tr>
+          <tr><td>MGA</td><td>Meridian Specialty MGA</td><td>18%</td><td>≤20%</td><td>${cedeBadge('Watch', 'amber')}</td></tr>
+          <tr><td>ZIP CAT zone</td><td>90210 (LA)</td><td>3.2%</td><td>≤5%</td><td>${cedeBadge('OK', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeClaimAuthorityMonitor() {
+  return `
+  ${cedePageHeader('Claim Authority Monitor', 'Every settled claim validated against matrix.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-monitoring'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Recent Settlements (last 30 days)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Claim</th><th>Program</th><th>Amount</th><th>Authority tier</th><th>Actual tier</th><th>Compliance</th></tr></thead>
+        <tbody>
+          <tr><td><code>ME-2026-Q1-0212</code></td><td>Meridian</td><td>$24,800</td><td>Tier 1 ≤ $100k</td><td>Tier 1 (MGA)</td><td>${cedeBadge('Compliant', 'green')}</td></tr>
+          <tr><td><code>AC-2026-Q1-0481</code></td><td>Aurora</td><td>$82,000</td><td>Tier 2 ≤ $250k</td><td>Tier 2 (joint)</td><td>${cedeBadge('Compliant', 'green')}</td></tr>
+          <tr><td><code>PH-2026-Q1-0044</code></td><td>Pacifica</td><td>$82,500</td><td>Tier 1 ≤ $75k</td><td>Tier 1 (MGA)</td><td>${cedeBadge('Breach', 'red')}</td></tr>
+          <tr><td><code>HT-2026-Q1-0822</code></td><td>Heartland</td><td>$145,000</td><td>Tier 2 ≤ $150k</td><td>Tier 2 (joint)</td><td>${cedeBadge('Compliant', 'green')}</td></tr>
+          <tr><td><code>TM-2026-Q1-0012</code></td><td>Thalassa</td><td>$512,000</td><td>Tier 3 Carrier only</td><td>Tier 3 (carrier)</td><td>${cedeBadge('Compliant', 'green')}</td></tr>
+          <tr><td><code>LE-2026-Q1-0198</code></td><td>Legacy</td><td>$38,000</td><td>Tier 1 ≤ $100k</td><td>Tier 1 (MGA)</td><td>${cedeBadge('Compliant', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeClaimAuditSampling() {
+  return `
+  ${cedePageHeader('Claim Audit Sampling', 'AI-driven stratified sampling · high-severity · coverage-dispute · reserve-change patterns.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-monitoring'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Current Sample (Meridian Q1 2026)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Claim</th><th>Sampling reason</th><th>Amount</th><th>Auditor</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><code>ME-2026-0824</code></td><td>Large loss (&gt;80% limit)</td><td>$2.4M</td><td>J. Park</td><td>${cedeBadge('Reviewed', 'green')}</td></tr>
+          <tr><td><code>ME-2026-0812</code></td><td>Coverage dispute flag</td><td>$488k</td><td>J. Park</td><td>${cedeBadge('In review', 'amber')}</td></tr>
+          <tr><td><code>ME-2026-0788</code></td><td>Reserve change &gt; 50%</td><td>$312k</td><td>J. Park</td><td>${cedeBadge('Reviewed', 'green')}</td></tr>
+          <tr><td><code>ME-2026-0754</code></td><td>Random sample</td><td>$28k</td><td>J. Park</td><td>${cedeBadge('Reviewed', 'green')}</td></tr>
+          <tr><td><code>ME-2026-0732</code></td><td>Random sample</td><td>$44k</td><td>J. Park</td><td>${cedeBadge('Reviewed', 'green')}</td></tr>
+          <tr><td><code>ME-2026-0701</code></td><td>Random sample</td><td>$82k</td><td>J. Park</td><td>${cedeBadge('Reviewed', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Sampling Strategy</h3></div>
+    <div style="padding:var(--space-md)">
+      <ul style="line-height:1.8">
+        <li><strong>Stratified:</strong> 100% of claims &gt; 80% of policy limit</li>
+        <li><strong>Coverage-dispute flag:</strong> 100% of claims with flagged dispute</li>
+        <li><strong>Reserve change pattern:</strong> 100% of claims with reserve changes &gt; 50%</li>
+        <li><strong>Random sample:</strong> 5% of remaining claims (quarterly)</li>
+      </ul>
+    </div>
+  </section>`;
+}
+
+function renderCedeProgramBenchmarking() {
+  return `
+  ${cedePageHeader('Program Benchmarking', 'Anonymized cohort · k-anonymity ≥ 5 · differential privacy thresholds applied.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-monitoring'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Your programs vs. peer cohort</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>LOB</th><th>Cohort</th><th>Metric</th><th>P25</th><th>P50</th><th>P75</th><th>You</th><th>Cohort N</th></tr></thead>
+        <tbody>
+          ${D.cedeBenchmarks.map(b => `
+            <tr>
+              <td>${b.lob}</td>
+              <td class="row-sub">${b.cohort}</td>
+              <td>${b.metric}</td>
+              <td>${b.peer_p25}</td>
+              <td>${b.peer_p50}</td>
+              <td>${b.peer_p75}</td>
+              <td><strong>${b.you}</strong></td>
+              <td class="row-sub">${b.k_anon_count}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeAlerts() {
+  return `
+  ${cedePageHeader('Early-warning Alerts', 'Rule engine · LR drift · bordereau lag · authority breaches · missed notifications.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-monitoring'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Active Alerts</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Alert</th><th>Rule</th><th>Program</th><th>Severity</th><th>Triggered</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>AL-001</strong></td><td>LR &gt; 65% trailing 12mo</td><td>Heartland Trucking</td><td>${cedeBadge('High', 'red')}</td><td class="row-sub">2026-04-10</td><td>${cedeBadge('Open', 'red')}</td></tr>
+          <tr><td><strong>AL-002</strong></td><td>LR &gt; 70% trailing 12mo</td><td>Frontier Ag Hail</td><td>${cedeBadge('High', 'red')}</td><td class="row-sub">2026-04-08</td><td>${cedeBadge('Open', 'red')}</td></tr>
+          <tr><td><strong>AL-003</strong></td><td>Bordereau &gt; T+15</td><td>Heartland Trucking</td><td>${cedeBadge('Medium', 'amber')}</td><td class="row-sub">2026-04-18</td><td>${cedeBadge('Open', 'amber')}</td></tr>
+          <tr><td><strong>AL-004</strong></td><td>Authority breaches &gt; 5 / quarter</td><td>Heartland Trucking</td><td>${cedeBadge('High', 'red')}</td><td class="row-sub">2026-04-14</td><td>${cedeBadge('Open', 'red')}</td></tr>
+          <tr><td><strong>AL-005</strong></td><td>Large-loss notification missed</td><td>Frontier Ag Hail</td><td>${cedeBadge('High', 'red')}</td><td class="row-sub">2026-04-12</td><td>${cedeBadge('Resolved', 'green')}</td></tr>
+          <tr><td><strong>AL-006</strong></td><td>Concentration MGA &gt; 18%</td><td>Meridian Specialty MGA</td><td>${cedeBadge('Low', 'blue')}</td><td class="row-sub">2026-04-15</td><td>${cedeBadge('Open', 'amber')}</td></tr>
+          <tr><td><strong>AL-007</strong></td><td>Collateral renewal T-60</td><td>Frontier Ag Hail</td><td>${cedeBadge('Low', 'blue')}</td><td class="row-sub">2026-04-20</td><td>${cedeBadge('Open', 'amber')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── Module 7: Bordereau ───
+function renderCedeBordereauInbox() {
+  return `
+  ${cedePageHeader('Bordereau Inbox', 'Inbound risk / premium / claims bordereaux · ACORD NGDS canonical.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-bord-transformer'})">🔄 Transformer</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-bord-exceptions'})">⚠️ Exceptions</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-lr-feed'})">📈 T+5 LR Feed</button>`)}
+  ${cedeKPIs([
+    { label: 'Inbox 30d', value: String(D.cedeBordereaux.length) },
+    { label: 'On-time',   value: '94%' },
+    { label: 'Reconciled',value: String(D.cedeBordereaux.filter(b => b.status === 'Reconciled').length) },
+    { label: 'Exceptions',value: String(D.cedeBordereaux.filter(b => b.status === 'Exceptions').length) },
+    { label: 'Auto-match',value: '97%' },
+    { label: 'LR lag',    value: 'T+5 days' }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>Recent Bordereau · ${D.cedeBordereaux.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Bordereau</th><th>Program</th><th>Type</th><th>Period</th><th>Received</th><th>GWP / Paid</th><th>Policies / Claims</th><th>Variance</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.cedeBordereaux.map(b => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-bord-validation', cedeBordId:'${b.id}'})">
+              <td><strong>${b.id}</strong></td>
+              <td>${b.program}</td>
+              <td>${b.type}</td>
+              <td class="row-sub">${b.period}</td>
+              <td class="row-sub">${b.received}</td>
+              <td><strong>${b.gwp_usd ? '$'+(b.gwp_usd/1e6).toFixed(1)+'M' : '$'+(b.paid_usd/1e6).toFixed(1)+'M'}</strong></td>
+              <td>${b.policies || (b.count_open + ' open')}</td>
+              <td>${b.variance_pct}%</td>
+              <td>${cedeBadge(b.status, cedeStatusColor(b.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeBordereauTransformer() {
+  return `
+  ${cedePageHeader('Canonical Transformer', 'Translate between MGA source format and each carrier requirement. Preserves audit trail.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-bordereau'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Mapping Rules</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Source format</th><th>Target format</th><th>Programs</th><th>Mapping version</th><th>Fields mapped</th><th>Test pass rate</th></tr></thead>
+        <tbody>
+          <tr><td>ACORD NGDS v1.2</td><td>Canonical</td><td>12</td><td>v3.1</td><td>184 / 184</td><td>100%</td></tr>
+          <tr><td>Lloyd’s CRS v5.2</td><td>Canonical</td><td>3</td><td>v2.4</td><td>142 / 146</td><td>97%</td></tr>
+          <tr><td>Carrier Excel (Summit)</td><td>Canonical</td><td>4</td><td>v1.8</td><td>88 / 92</td><td>96%</td></tr>
+          <tr><td>Carrier Excel (State National)</td><td>Canonical</td><td>2</td><td>v1.2</td><td>76 / 80</td><td>95%</td></tr>
+          <tr><td>ACORD AL3 XML</td><td>Canonical</td><td>1</td><td>v1.0</td><td>168 / 180</td><td>93%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeBordereauValidation() {
+  const b = D.cedeBordereaux.find(x => x.id === state.cedeBordId) || D.cedeBordereaux[0];
+  const rules = D.cedeBordereauxValidns.filter(v => v.bordereau_id === b.id);
+  return `
+  ${cedePageHeader('Validation · ' + b.id, `${b.program} · ${b.period}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-bordereau'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Schema &amp; Business-rule Validation</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Rule</th><th>Result</th></tr></thead>
+        <tbody>
+          ${rules.length ? rules.map(r => `<tr><td>${r.rule}</td><td>${cedeBadge(r.result.split(' —')[0], cedeStatusColor(r.result.split(' —')[0]))}${r.result.includes('—') ? '<div class="row-sub">'+r.result+'</div>' : ''}</td></tr>`).join('') : `
+            <tr><td>ACORD NGDS schema</td><td>${cedeBadge('Pass', 'green')}</td></tr>
+            <tr><td>Policy count matches AUM</td><td>${cedeBadge('Pass', 'green')}</td></tr>
+            <tr><td>Commission % within range</td><td>${cedeBadge('Pass', 'green')}</td></tr>
+            <tr><td>Taxes by state</td><td>${cedeBadge('Pass', 'green')}</td></tr>
+            <tr><td>Reserve delta &lt; 15%</td><td>${cedeBadge('Pass', 'green')}</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Summary Numbers</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:repeat(4, 1fr); gap:var(--space-md)">
+      ${b.gwp_usd ? `<div><div class="row-sub">GWP</div><div><strong>$${(b.gwp_usd/1e6).toFixed(2)}M</strong></div></div>` : ''}
+      ${b.paid_usd ? `<div><div class="row-sub">Paid losses</div><div><strong>$${(b.paid_usd/1e6).toFixed(2)}M</strong></div></div>` : ''}
+      ${b.policies ? `<div><div class="row-sub">Policies</div><div><strong>${b.policies}</strong></div></div>` : ''}
+      ${b.os_reserve_usd ? `<div><div class="row-sub">O/S reserve</div><div><strong>$${(b.os_reserve_usd/1e6).toFixed(1)}M</strong></div></div>` : ''}
+      ${b.comm_usd ? `<div><div class="row-sub">Commission</div><div><strong>$${(b.comm_usd/1e6).toFixed(2)}M</strong></div></div>` : ''}
+      ${b.tax_usd ? `<div><div class="row-sub">Taxes</div><div><strong>$${(b.tax_usd/1000).toFixed(0)}k</strong></div></div>` : ''}
+      <div><div class="row-sub">Variance</div><div><strong>${b.variance_pct}%</strong></div></div>
+      <div><div class="row-sub">Status</div><div>${cedeBadge(b.status, cedeStatusColor(b.status))}</div></div>
+    </div>
+  </section>`;
+}
+
+function renderCedeBordereauReconciliation() {
+  return `
+  ${cedePageHeader('Reconciliation', 'Cash · premium · commission · earned premium · tax · auto-match ≥ 95%.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-bordereau'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Reconciliation Ledger · ${D.cedeReconciliations.length} programs</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Period</th><th>Bordereau GWP</th><th>Ledger cash</th><th>Earned</th><th>Commission</th><th>Tax</th><th>Matched</th><th>Exceptions</th></tr></thead>
+        <tbody>
+          ${D.cedeReconciliations.map(r => `
+            <tr>
+              <td>${r.program}</td>
+              <td class="row-sub">${r.period}</td>
+              <td>$${(r.bordereau_gwp/1e6).toFixed(2)}M</td>
+              <td>$${(r.ledger_cash/1e6).toFixed(2)}M</td>
+              <td>$${(r.earned/1e6).toFixed(2)}M</td>
+              <td>$${(r.commission_paid/1e6).toFixed(2)}M</td>
+              <td>$${(r.tax_filed/1000).toFixed(0)}k</td>
+              <td><strong>${r.matched_pct.toFixed(2)}%</strong></td>
+              <td>${r.exceptions}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeBordereauExceptions() {
+  return `
+  ${cedePageHeader('Exception Handler', 'Variance resolution queue · MGA clarification · manual override.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-bordereau'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Open Exceptions</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Exception</th><th>Bordereau</th><th>Rule</th><th>Delta</th><th>MGA response</th><th>Owner</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>EX-01</strong></td><td>BX-05 (Heartland)</td><td>Policy count mismatch</td><td>312 vs 319 in AUM</td><td class="row-sub">Reviewing 7 outliers</td><td>MGA Ops</td><td>${cedeBadge('Open', 'amber')}</td></tr>
+          <tr><td><strong>EX-02</strong></td><td>BX-06 (Heartland)</td><td>Reserve delta 18.2%</td><td>+3.2 pts above threshold</td><td class="row-sub">4 large-loss reserve increases</td><td>MGA Claims</td><td>${cedeBadge('Open', 'amber')}</td></tr>
+          <tr><td><strong>EX-03</strong></td><td>BX-10 (Frontier)</td><td>Tax by state mismatch</td><td>NE $8,200 discrepancy</td><td class="row-sub">Rate table lookup correction</td><td>MGA Ops</td><td>${cedeBadge('In progress', 'amber')}</td></tr>
+          <tr><td><strong>EX-04</strong></td><td>BX-10 (Frontier)</td><td>Class code unknown</td><td>12 policies with unmapped class</td><td class="row-sub">Mapping extended</td><td>Platform</td><td>${cedeBadge('Resolved', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeLRFeed() {
+  return `
+  ${cedePageHeader('T+5 Loss-Ratio Feed', 'Live LR dashboard updated as each bordereau posts.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-bordereau'})">← Back</button>`)}
+  ${cedeKPIs([
+    { label: 'Programs feeding',   value: '14' },
+    { label: 'Average latency',    value: 'T+4.2 days' },
+    { label: 'Portfolio LR (T12)', value: '58.3%' },
+    { label: 'vs plan',            value: '+1.8 pts' },
+    { label: 'Worst LR program',   value: 'Frontier 72%' },
+    { label: 'Best LR program',    value: 'Aurora 50%' }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>Live LR by Program</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Paid LR</th><th>Incurred LR</th><th>T12 LR</th><th>Plan</th><th>Delta</th><th>Data as-of</th></tr></thead>
+        <tbody>
+          <tr><td>Meridian E&amp;S Casualty</td><td>42.8%</td><td>58.3%</td><td>58.3%</td><td>60%</td><td><strong>-1.7 pts</strong></td><td class="row-sub">2026-04-16</td></tr>
+          <tr><td>Aurora Cyber</td><td>28.4%</td><td>50.2%</td><td>50.2%</td><td>55%</td><td><strong>-4.8 pts</strong></td><td class="row-sub">2026-04-15</td></tr>
+          <tr><td>Pacifica Habitational</td><td>46.1%</td><td>60.2%</td><td>60.2%</td><td>60%</td><td><strong>+0.2 pts</strong></td><td class="row-sub">2026-04-16</td></tr>
+          <tr><td>Heartland Trucking</td><td>58.2%</td><td>71.2%</td><td>71.2%</td><td>68%</td><td><strong>+3.2 pts</strong></td><td class="row-sub">2026-04-18</td></tr>
+          <tr><td>Thalassa Marine</td><td>41.8%</td><td>59.4%</td><td>59.4%</td><td>60%</td><td><strong>-0.6 pts</strong></td><td class="row-sub">2026-04-14</td></tr>
+          <tr><td>Summit Alpine Resort</td><td>28.0%</td><td>57.1%</td><td>57.1%</td><td>58%</td><td><strong>-0.9 pts</strong></td><td class="row-sub">2026-04-17</td></tr>
+          <tr><td>Frontier Ag Hail</td><td>38.4%</td><td>72.3%</td><td>72.3%</td><td>68%</td><td><strong>+4.3 pts</strong></td><td class="row-sub">2026-04-18</td></tr>
+          <tr><td>Legacy E&amp;S Casualty</td><td>34.2%</td><td>52.1%</td><td>52.1%</td><td>55%</td><td><strong>-2.9 pts</strong></td><td class="row-sub">2026-04-15</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeBordereauArchive() {
+  return `
+  ${cedePageHeader('Bordereau Archive', 'Immutable · signed · searchable · 7-year retention.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-bordereau'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Archive · 168 records · 2023-2026</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Bordereau</th><th>Program</th><th>Type</th><th>Period</th><th>Signed hash</th><th>Storage</th></tr></thead>
+        <tbody>
+          ${D.cedeBordereaux.slice(0, 10).map((b, i) => `
+            <tr>
+              <td><strong>${b.id}</strong></td>
+              <td>${b.program}</td>
+              <td>${b.type}</td>
+              <td class="row-sub">${b.period}</td>
+              <td class="row-sub"><code>0x${(8421+i*97).toString(16)}a4b${(i*31).toString(16)}...${(i*7+42).toString(16)}92f</code></td>
+              <td>S3 · Glacier cold storage</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDDMSync() {
+  return `
+  ${cedePageHeader('Lloyd’s Delegated Data Manager Sync', 'Bordereau submissions to Lloyd’s DDM · Blueprint Two Phase 2 integration.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-bordereau'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Lloyd’s DDM Submissions</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Coverholder #</th><th>Binder ref</th><th>Period</th><th>Status</th><th>Ack</th></tr></thead>
+        <tbody>
+          <tr><td>Thalassa Marine</td><td>B0429</td><td>B0429TM24001</td><td>2026-03</td><td>${cedeBadge('Submitted', 'green')}</td><td class="row-sub">2026-04-04</td></tr>
+          <tr><td>Legacy E&amp;S Casualty</td><td>B0721</td><td>B0721LE25001</td><td>2026-03</td><td>${cedeBadge('Submitted', 'green')}</td><td class="row-sub">2026-04-03</td></tr>
+          <tr><td>Meridian E&amp;S Casualty</td><td>B0885</td><td>B0885ME24001</td><td>2026-03</td><td>${cedeBadge('Submitted', 'green')}</td><td class="row-sub">2026-04-05</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>ATLAS Coverholder Status</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>MGA</th><th>ATLAS status</th><th>Approval date</th><th>Classes</th><th>Last review</th></tr></thead>
+        <tbody>
+          <tr><td>Thalassa Marine Underwriters</td><td>${cedeBadge('Approved', 'green')}</td><td>2019-08-14</td><td>Hull, Cargo, P&amp;I</td><td class="row-sub">2025-08-01</td></tr>
+          <tr><td>Legacy E&amp;S Casualty</td><td>${cedeBadge('Approved', 'green')}</td><td>2017-02-20</td><td>Excess Casualty</td><td class="row-sub">2025-02-10</td></tr>
+          <tr><td>Meridian Specialty MGA</td><td>${cedeBadge('Approved', 'green')}</td><td>2021-11-08</td><td>E&amp;S Casualty, Property</td><td class="row-sub">2025-11-01</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── Module 8: Collateral ───
+function renderCedeCollateralDashboard() {
+  return `
+  ${cedePageHeader('Collateral Dashboard', 'Post-Vesttoo: direct issuing-bank verification · live exposure ratio.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-coll-verification'})">🔐 Verification</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-vesttoo-flags'})">⚠️ Red-flag Registry</button>`)}
+  ${cedeKPIs([
+    { label: 'Programs with collateral', value: String(D.cedeCollateral.length) },
+    { label: 'Total collateral', value: '$322M' },
+    { label: 'Verified', value: '9 of 10' },
+    { label: 'LOC maturing T-90', value: '2' },
+    { label: 'Deficit programs', value: '1', warning: true },
+    { label: 'Red flags', value: '1', warning: true }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>Collateral by Program</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Type</th><th>Amount</th><th>Required</th><th>Custodian / Issuer</th><th>Maturity</th><th>Verified</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.cedeCollateral.map(c => `
+            <tr>
+              <td><strong>${c.program}</strong></td>
+              <td>${c.type}</td>
+              <td><strong>$${(c.amount_usd/1e6).toFixed(1)}M</strong></td>
+              <td>$${(c.required_usd/1e6).toFixed(1)}M</td>
+              <td class="row-sub">${c.custodian || c.issuing_bank}</td>
+              <td class="row-sub">${c.maturity}</td>
+              <td class="row-sub">${c.verified}</td>
+              <td>${cedeBadge(c.status, cedeStatusColor(c.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeCollateralVerification() {
+  return `
+  ${cedePageHeader('Collateral Verification', 'Direct issuing-bank API confirmation · attestation chain · audit-grade evidence.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-collateral'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Recent Verifications · ${D.cedeCollateralVerifs.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Verification</th><th>Collateral</th><th>Method</th><th>Requested</th><th>Confirmed</th><th>Confirmer</th><th>Status</th><th>Signature</th></tr></thead>
+        <tbody>
+          ${D.cedeCollateralVerifs.map(v => `
+            <tr>
+              <td><strong>${v.id}</strong></td>
+              <td>${v.collateral_id}</td>
+              <td class="row-sub">${v.method}</td>
+              <td class="row-sub">${v.requested}</td>
+              <td class="row-sub">${v.confirmed}</td>
+              <td>${v.by}</td>
+              <td>${cedeBadge(v.status, cedeStatusColor(v.status))}</td>
+              <td class="row-sub"><code>${v.signature}</code></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Partner Banks</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Bank</th><th>Role</th><th>API verified</th><th>G-SIB</th><th>Tier</th></tr></thead>
+        <tbody>
+          ${D.cedePartnerBanks.map(b => `
+            <tr>
+              <td><strong>${b.name}</strong></td>
+              <td>${b.role}</td>
+              <td>${b.api_verified ? cedeBadge('Yes', 'green') : cedeBadge('No', 'amber')}</td>
+              <td>${b.g_sib ? '✓' : '—'}</td>
+              <td>${b.tier}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeCollateralVsExposure() {
+  return `
+  ${cedePageHeader('Collateral vs Exposure', 'Live ratio · alerts when exposure grows past % of collateral.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-collateral'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Exposure Ratios</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Collateral</th><th>Max exposure</th><th>Current exposure</th><th>Utilization</th><th>Alert threshold</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Meridian E&amp;S Casualty</td><td>$42M</td><td>$50M</td><td>$38M</td><td><strong>76%</strong></td><td>80%</td><td>${cedeBadge('OK', 'green')}</td></tr>
+          <tr><td>Aurora Cyber</td><td>$28M</td><td>$32M</td><td>$22M</td><td><strong>69%</strong></td><td>80%</td><td>${cedeBadge('OK', 'green')}</td></tr>
+          <tr><td>Pacifica Habitational</td><td>$34M</td><td>$40M</td><td>$30M</td><td><strong>75%</strong></td><td>80%</td><td>${cedeBadge('OK', 'green')}</td></tr>
+          <tr><td>Heartland Trucking</td><td>$78M</td><td>$85M</td><td>$82M</td><td><strong>96%</strong></td><td>80%</td><td>${cedeBadge('Deficit', 'red')}</td></tr>
+          <tr><td>Thalassa Marine</td><td>$18.5M</td><td>$22M</td><td>$17M</td><td><strong>77%</strong></td><td>80%</td><td>${cedeBadge('OK', 'green')}</td></tr>
+          <tr><td>Frontier Ag Hail</td><td>$32M</td><td>$38M</td><td>$30M</td><td><strong>79%</strong></td><td>80%</td><td>${cedeBadge('Watch', 'amber')}</td></tr>
+          <tr><td>Legacy E&amp;S Casualty</td><td>$68M</td><td>$75M</td><td>$54M</td><td><strong>72%</strong></td><td>80%</td><td>${cedeBadge('OK', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeLocMaturity() {
+  return `
+  ${cedePageHeader('LOC Maturity Tracker', 'Countdown · auto-trigger renewal workflow at T-60.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-collateral'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>LOCs by Maturity</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>LOC</th><th>Program</th><th>Amount</th><th>Issuer</th><th>Maturity</th><th>Days to maturity</th><th>Renewal status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>CO-08</strong></td><td>Frontier Ag Hail</td><td>$32M</td><td>HSBC USA</td><td>2026-07-01</td><td><strong>71 days</strong></td><td>${cedeBadge('Renewal-due', 'amber')}</td></tr>
+          <tr><td><strong>CO-02</strong></td><td>Meridian E&amp;S Casualty</td><td>$8M</td><td>Bank of America</td><td>2026-10-15</td><td><strong>177 days</strong></td><td>${cedeBadge('Current', 'green')}</td></tr>
+          <tr><td><strong>CO-05</strong></td><td>Brookline Artisan</td><td>$6.2M</td><td>Citibank</td><td>2027-01-20</td><td><strong>274 days</strong></td><td>${cedeBadge('Current', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Renewal Actions (Frontier HSBC LOC)</h3></div>
+    <div style="padding:var(--space-md)">
+      <ul style="line-height:1.8">
+        <li>✓ T-90: Notice issued to HSBC renewal desk</li>
+        <li>✓ T-75: Collateral calc refreshed — $34M needed (from $32M)</li>
+        <li>○ T-60: LOC increase authorization from MGA CFO — pending</li>
+        <li>○ T-45: Renewed LOC draft from HSBC</li>
+        <li>○ T-30: Carrier Treasury approval</li>
+        <li>○ T-15: Renewed LOC executed</li>
+        <li>○ T-0: Old LOC expires / new LOC goes live</li>
+      </ul>
+    </div>
+  </section>`;
+}
+
+function renderCedeTrustLedger() {
+  const trusts = D.cedeCollateral.filter(c => c.type.includes('Trust') || c.type.includes('Funds'));
+  return `
+  ${cedePageHeader('Trust Account Ledger', 'Reg 114 trusts · funds-withheld · reconciliation · FDIC-insured institution confirmation.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-collateral'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Trust Accounts · ${trusts.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Custodian</th><th>Trust type</th><th>Balance</th><th>Required</th><th>FDIC</th><th>Last recon</th></tr></thead>
+        <tbody>
+          ${trusts.map(c => `
+            <tr>
+              <td>${c.program}</td>
+              <td>${c.custodian}</td>
+              <td>${c.type}</td>
+              <td><strong>$${(c.amount_usd/1e6).toFixed(1)}M</strong></td>
+              <td>$${(c.required_usd/1e6).toFixed(1)}M</td>
+              <td>${c.custodian && c.custodian !== 'Transverse in-house' ? '✓ FDIC-insured' : 'Non-FDIC'}</td>
+              <td class="row-sub">${c.verified}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeVesttooRedFlags() {
+  return `
+  ${cedePageHeader('Post-Vesttoo Red-flag Registry', 'Issuing-bank concentration · non-G-SIB exposure · segregated-account structures · unusual counterparties.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-collateral'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Active Red Flags</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Flag</th><th>Program</th><th>Rule</th><th>Severity</th><th>Detected</th><th>Status</th><th>Remediation</th></tr></thead>
+        <tbody>
+          <tr><td><strong>RF-V1</strong></td><td>Heartland Trucking</td><td>Collateral deficit (LOC vs required)</td><td>${cedeBadge('High', 'red')}</td><td class="row-sub">2026-02-10</td><td>${cedeBadge('Open', 'red')}</td><td class="row-sub">Top-up due by 2026-05-01</td></tr>
+          <tr><td><strong>RF-V2</strong></td><td>Summit Alpine Resort</td><td>US Bank custodian — G-SIB Tier 2</td><td>${cedeBadge('Low', 'blue')}</td><td class="row-sub">2026-01-30</td><td>${cedeBadge('Monitoring', 'amber')}</td><td class="row-sub">Consider move to Tier 1 G-SIB</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Concentration by Issuing Bank</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Bank</th><th>Programs</th><th>Total collateral</th><th>% of book</th><th>G-SIB</th></tr></thead>
+        <tbody>
+          <tr><td>JPMorgan Chase</td><td>3</td><td>$152M</td><td>47%</td><td>✓</td></tr>
+          <tr><td>Bank of America</td><td>1</td><td>$8M</td><td>2%</td><td>✓</td></tr>
+          <tr><td>BNY Mellon</td><td>1</td><td>$28M</td><td>9%</td><td>✓</td></tr>
+          <tr><td>Citibank</td><td>1</td><td>$6.2M</td><td>2%</td><td>✓</td></tr>
+          <tr><td>Wells Fargo</td><td>1</td><td>$34M</td><td>11%</td><td>✓</td></tr>
+          <tr><td>HSBC USA</td><td>1</td><td>$32M</td><td>10%</td><td>✓</td></tr>
+          <tr><td>US Bank</td><td>1</td><td>$9.2M</td><td>3%</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── Module 9: Amendments & Renewal ───
+function renderCedeAmendmentList() {
+  return `
+  ${cedePageHeader('Amendments', 'Change to binding matrix · commission · territory · authority. Clause-level diff.',
+    `<button class="btn btn-primary cede-cta" onclick="window.setState({screen:'cd-amend-effective'})">+ New Amendment</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Amendment History · ${D.cedeAmendments.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Amendment</th><th>Program</th><th>From</th><th>To</th><th>Effective</th><th>Changes</th><th>Counsel</th><th>Executed</th></tr></thead>
+        <tbody>
+          ${D.cedeAmendments.map(a => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-amendment-detail', cedeAmendId:'${a.id}'})">
+              <td><strong>${a.id}</strong></td>
+              <td>${a.program}</td>
+              <td>v${a.version_from}</td>
+              <td>v${a.version_to}</td>
+              <td>${a.effective}</td>
+              <td class="row-sub" style="max-width:320px">${a.changes.join('; ')}</td>
+              <td class="row-sub">${a.counsel}</td>
+              <td class="row-sub">${a.executed_by}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeAmendmentDetail() {
+  const a = D.cedeAmendments.find(x => x.id === state.cedeAmendId) || D.cedeAmendments[0];
+  return `
+  ${cedePageHeader('Amendment · ' + a.id, `${a.program} · v${a.version_from} → v${a.version_to}`,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-amendments'})">← Back</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-amend-diff', cedeAmendId:'${a.id}'})">🔀 Diff</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Changes (${a.changes.length})</h3></div>
+    <div style="padding:var(--space-md)">
+      <ul style="line-height:1.8">
+        ${a.changes.map(c => `<li>${c}</li>`).join('')}
+      </ul>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Execution</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md)">
+      <div><div class="row-sub">Effective</div><div><strong>${a.effective}</strong></div></div>
+      <div><div class="row-sub">Counsel</div><div>${a.counsel}</div></div>
+      <div><div class="row-sub">Executed by</div><div>${a.executed_by}</div></div>
+      <div><div class="row-sub">E-sign</div><div>${a.esign}</div></div>
+      <div><div class="row-sub">Applies to</div><div>${a.prior ? 'Prior amendment (historical)' : 'Proposed — not yet effective'}</div></div>
+    </div>
+  </section>`;
+}
+
+function renderCedeAmendmentDiff() {
+  return `
+  ${cedePageHeader('Amendment Diff', 'Clause-level + rule-level diff vs current DUA.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-amendments'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Diff Viewer</h3></div>
+    <div style="padding:var(--space-md)">
+      <div class="cede-clause-card">
+        <h4>§5. Binding Authority — Per-risk Limit · Artisan Contractor</h4>
+        <div class="clause-meta">Category: Binding Authority</div>
+        <div class="cede-clause-body">
+          Per-risk limit for Artisan Contractor class shall not exceed <span class="cede-diff-del">$1,500,000</span> <span class="cede-diff-add">$2,000,000</span>. Risks above this threshold require written referral to carrier UW desk.
+        </div>
+      </div>
+      <div class="cede-clause-card">
+        <h4>§12. Profit Commission — Trigger</h4>
+        <div class="clause-meta">Category: Commission</div>
+        <div class="cede-clause-body">
+          MGA shall earn a profit commission of 20% of underwriting profit above <span class="cede-diff-del">62% loss ratio</span> <span class="cede-diff-add">60% loss ratio</span>, calculated on a cohort basis per accident year with final true-up at AY+36 months.
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderCedeAmendmentEffective() {
+  return `
+  ${cedePageHeader('Effective Dating &amp; In-force Handling', 'New business only vs retroactive · surface conflicts with in-force policies.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-amendments'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Amendment Application Options</h3></div>
+    <div style="padding:var(--space-md)">
+      <div class="cede-collateral-verified" style="padding:10px; margin-bottom:10px">
+        <strong>New business only (default):</strong> amendment applies to policies bound on or after effective date. Existing in-force policies continue on prior terms through natural expiry.
+      </div>
+      <div class="cede-collateral-pending" style="padding:10px; margin-bottom:10px">
+        <strong>Retroactive to AY-start:</strong> amendment re-applies to in-force policies. Triggers re-calc of commission, reserves, and bordereau. Requires dual-CUO sign-off and usually counsel review for reg impact.
+      </div>
+      <div class="cede-collateral-pending" style="padding:10px">
+        <strong>Effective at next anniversary:</strong> amendment lives in the DUA but does not apply until next annual renewal.
+      </div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Conflict Detection</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Conflict</th><th>In-force policy</th><th>Effective date</th><th>Resolution</th></tr></thead>
+        <tbody>
+          <tr><td>Per-risk limit change · Artisan</td><td>84 policies at $1.8M - $2.0M</td><td>Various</td><td>No conflict — new limit matches</td></tr>
+          <tr><td>Profit commission trigger 62% → 60%</td><td>AY 2025 policies</td><td>2025-11-08 → 2026-11-07</td><td>Retroactive to AY-start required for true-up</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeRenewalPipeline() {
+  return `
+  ${cedePageHeader('Renewal Pipeline', 'Programs approaching annual anniversary · 30 / 60 / 90 / 120 day look-ahead.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-renewal-nego'})">🤝 Negotiation</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Renewals · ${D.cedeRenewals.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Current expiry</th><th>Lookahead (days)</th><th>Status</th><th>Rate change</th><th>Key changes</th><th>Commission change</th><th>Target terms</th></tr></thead>
+        <tbody>
+          ${D.cedeRenewals.map(r => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-annual-review'})">
+              <td>${r.program}</td>
+              <td>${r.current_expiry}</td>
+              <td><strong>${r.lookahead_days}</strong></td>
+              <td>${cedeBadge(r.plan_status, cedeStatusColor(r.plan_status))}</td>
+              <td>${r.rate_change_pct !== null ? r.rate_change_pct + '%' : '—'}</td>
+              <td class="row-sub" style="max-width:280px">${r.key_changes}</td>
+              <td class="row-sub">${r.commission_change}</td>
+              <td class="row-sub">${r.terms_target}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeRenewalNegotiation() {
+  return `
+  ${cedePageHeader('Renewal Negotiation', 'Legacy E&S Casualty · renewal terms · rate change · commission recast.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-renewals'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Legacy E&amp;S Casualty — Renewal Terms</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md)">
+      <div><div class="row-sub">Current term</div><div>2025-06-01 — 2026-05-31</div></div>
+      <div><div class="row-sub">Renewal term</div><div><strong>2026-06-01 — 2027-05-31</strong></div></div>
+      <div><div class="row-sub">Rate change</div><div><strong>+3%</strong> (inflation + target LR)</div></div>
+      <div><div class="row-sub">Ceding commission</div><div>27% (unchanged)</div></div>
+      <div><div class="row-sub">Sliding scale</div><div>Recast to 24-31% / 50-70% LR</div></div>
+      <div><div class="row-sub">Fronting fee</div><div>5.8% (unchanged)</div></div>
+      <div><div class="row-sub">Profit commission</div><div>Tier added: 22% @ LR &lt; 50%</div></div>
+      <div><div class="row-sub">New class added</div><div>E&amp;O for financial advisors</div></div>
+    </div>
+  </section>`;
+}
+
+function renderCedeAnnualReview() {
+  return `
+  ${cedePageHeader('Annual Program Review Pack', 'Auto-built pack for DA committee · KPIs · LR walk · compliance · audit findings.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-renewals'})">← Back</button>`)}
+  ${cedeKPIs([
+    { label: 'GWP 2025', value: '$145M' },
+    { label: 'Ultimate LR', value: '55.8%' },
+    { label: 'Combined ratio', value: '89.6%' },
+    { label: 'Policies bound', value: '1,842' },
+    { label: 'Retention', value: '87%' },
+    { label: 'UW compliance', value: '98.1%' }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>LR Walk (from Plan)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Component</th><th>LR pt</th></tr></thead>
+        <tbody>
+          <tr><td>Plan LR</td><td><strong>58.0%</strong></td></tr>
+          <tr><td>+ Loss cost inflation</td><td>+1.2%</td></tr>
+          <tr><td>- Favorable reserve development</td><td>-2.8%</td></tr>
+          <tr><td>- Improved class mix (artisan 5% → 12%)</td><td>-0.6%</td></tr>
+          <tr><td>- Rate adequacy</td><td>-0.4%</td></tr>
+          <tr><td>+ Adverse trend — weather claims</td><td>+0.4%</td></tr>
+          <tr><td><strong>Actual LR 2025</strong></td><td><strong>55.8%</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Compliance &amp; Audit</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Area</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>NAIC #225 per-state</td><td>${cedeBadge('Compliant', 'green')} · all states</td></tr>
+          <tr><td>Annual UW audit</td><td>${cedeBadge('Passed', 'green')} · 4 observations (Low)</td></tr>
+          <tr><td>Annual claims audit</td><td>${cedeBadge('Passed', 'green')} · 3 observations (Low)</td></tr>
+          <tr><td>SOC-1 Type II (Deloitte)</td><td>${cedeBadge('Clean', 'green')}</td></tr>
+          <tr><td>E&amp;O renewal</td><td>${cedeBadge('In force', 'green')} · $20M/$20M Liberty</td></tr>
+          <tr><td>Collateral verification</td><td>${cedeBadge('Verified', 'green')} · JPMC</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── Module 10: Termination ───
+function renderCedeTerminationList() {
+  return `
+  ${cedePageHeader('Terminations', 'Active run-offs · completed terminations · data portability status.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-termination-init'})">+ Initiate</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Terminations · ${D.cedeTerminations.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Termination</th><th>Program</th><th>Reason</th><th>Notice</th><th>Effective</th><th>Run-off end</th><th>In-force</th><th>Status</th><th>Data export</th></tr></thead>
+        <tbody>
+          ${D.cedeTerminations.map(t => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-runoff'})">
+              <td><strong>${t.id}</strong></td>
+              <td>${t.program}</td>
+              <td class="row-sub">${t.reason}</td>
+              <td class="row-sub">${t.notice_date}</td>
+              <td>${t.effective_date}</td>
+              <td>${t.runoff_end}</td>
+              <td>${t.in_force_policies}</td>
+              <td>${cedeBadge(t.status, cedeStatusColor(t.status))}</td>
+              <td>${cedeBadge(t.data_export_status, cedeStatusColor(t.data_export_status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeTerminationInitiator() {
+  return `
+  ${cedePageHeader('Initiate Termination', 'Convenience · cause · automatic · evidence · legal review.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-terminations'})">← Back</button>`)}
+  <div class="cede-split-3">
+    <section class="card"><div class="card-header"><h3>For Convenience</h3></div>
+      <div style="padding:var(--space-md)">
+        <div>Mutual 120-day notice.</div>
+        <div class="row-sub" style="margin-top:8px">No cause required · in-force book runs off naturally.</div>
+      </div></section>
+    <section class="card"><div class="card-header"><h3>For Cause</h3></div>
+      <div style="padding:var(--space-md)">
+        <div>Enumerated cause events.</div>
+        <div class="row-sub" style="margin-top:8px">Examples: fraud · UW breach pattern · E&O lapse · regulator action.</div>
+      </div></section>
+    <section class="card"><div class="card-header"><h3>Automatic</h3></div>
+      <div style="padding:var(--space-md)">
+        <div>Immediate.</div>
+        <div class="row-sub" style="margin-top:8px">Licence loss · insolvency · unconsented change-of-control.</div>
+      </div></section>
+  </div>
+  <section class="card">
+    <div class="card-header"><h3>Cause Evidence Checklist (if for-cause)</h3></div>
+    <div style="padding:var(--space-md)">
+      <ul style="line-height:1.8">
+        <li>Documented cause event (breach log, regulatory letter, audit finding)</li>
+        <li>30-day cure notice (if curable)</li>
+        <li>Counsel review &amp; draft termination notice</li>
+        <li>CUO sign-off</li>
+        <li>Formal notice delivery (certified + e-sign)</li>
+        <li>Run-off plan attached</li>
+      </ul>
+    </div>
+  </section>`;
+}
+
+function renderCedeNoticeTracker() {
+  return `
+  ${cedePageHeader('Notice Period Tracker', 'Auto-compute cure period · notice expiry · run-off start.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-terminations'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Heartland Trucking — For Convenience</h3></div>
+    <div style="padding:var(--space-md)">
+      <ul class="cede-timeline">
+        <li class="done"><strong>2026-03-10</strong> · Notice delivered (120-day TfC)</li>
+        <li class="done"><strong>2026-04-01</strong> · Accelerated bordereau cadence engaged (weekly)</li>
+        <li class="done"><strong>2026-04-10</strong> · Data export request filed</li>
+        <li><strong>2026-05-01</strong> · Binding authority reduced (new-business only)</li>
+        <li><strong>2026-07-10</strong> · T-60 · data export staging begins</li>
+        <li><strong>2026-09-10</strong> · Termination effective · run-off begins</li>
+        <li><strong>2027-09-10</strong> · Run-off ends · final data pack delivered</li>
+      </ul>
+    </div>
+  </section>`;
+}
+
+function renderCedeRunoffDashboard() {
+  return `
+  ${cedePageHeader('Run-off Dashboard', 'In-force book · expected expiries · commission under run-off rules.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-terminations'})">← Back</button>`)}
+  ${cedeKPIs([
+    { label: 'In-force policies',   value: '312' },
+    { label: 'Expiring <90 days',   value: '84' },
+    { label: 'Expiring 90-180',     value: '126' },
+    { label: 'Expiring 180-365',    value: '102' },
+    { label: 'Open claims',         value: '188' },
+    { label: 'Run-off commission',  value: '5% flat' }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>In-force Book (Heartland Trucking)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Month</th><th>Policies expiring</th><th>Premium expiring</th><th>Claims reported</th><th>Run-off commission</th></tr></thead>
+        <tbody>
+          <tr><td>2026-05</td><td>28</td><td>$1.6M</td><td>22</td><td>$80k</td></tr>
+          <tr><td>2026-06</td><td>42</td><td>$2.4M</td><td>34</td><td>$120k</td></tr>
+          <tr><td>2026-07</td><td>38</td><td>$2.1M</td><td>28</td><td>$105k</td></tr>
+          <tr><td>2026-08</td><td>44</td><td>$2.5M</td><td>32</td><td>$125k</td></tr>
+          <tr><td>2026-09</td><td>52</td><td>$2.9M</td><td>38</td><td>$145k</td></tr>
+          <tr><td>2026-10</td><td>36</td><td>$2.0M</td><td>24</td><td>$100k</td></tr>
+          <tr><td>2026-11</td><td>30</td><td>$1.7M</td><td>18</td><td>$85k</td></tr>
+          <tr><td>2026-12</td><td>22</td><td>$1.2M</td><td>12</td><td>$60k</td></tr>
+          <tr><td>2027-01-09</td><td>20</td><td>$1.1M</td><td>14</td><td>$55k</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDataExport() {
+  return `
+  ${cedePageHeader('Data Portability Export', 'ACORD-canonical machine-readable data pack · 5 business-day SLA.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-terminations'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Exports · ${D.cedeDataPortability.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Export</th><th>Termination</th><th>Requested</th><th>Delivered</th><th>Format</th><th>Volume</th><th>Scope</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.cedeDataPortability.map(e => `
+            <tr>
+              <td><strong>${e.id}</strong></td>
+              <td>${e.termination_id}</td>
+              <td class="row-sub">${e.requested}</td>
+              <td class="row-sub">${e.delivered || '—'}</td>
+              <td>${e.format}</td>
+              <td>${e.volume}</td>
+              <td class="row-sub">${e.scope}</td>
+              <td>${cedeBadge(e.status, cedeStatusColor(e.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Export Contents (ACORD NGDS canonical)</h3></div>
+    <div style="padding:var(--space-md)">
+      <ul style="line-height:1.8">
+        <li>All policies with full risk data (declarations, endorsements, schedule)</li>
+        <li>Claims (FNOL through settlement) with reserves and development</li>
+        <li>Bordereaux (risk, premium, claims) — full history</li>
+        <li>Commission ledger + profit commission accruals</li>
+        <li>Collateral records + verification trail</li>
+        <li>Audit logs + SOC reports</li>
+        <li>State filings (by state, by year)</li>
+        <li>Reconciliation records (cash vs bordereau)</li>
+      </ul>
+    </div>
+  </section>`;
+}
+
+function renderCedeAuthorityWinddown() {
+  return `
+  ${cedePageHeader('Authority Wind-down', 'Reduce / revoke binding authority · increase referral scope.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-terminations'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Wind-down Schedule (Heartland Trucking)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Date</th><th>Authority change</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>2026-05-01</td><td>Binding authority: new business blocked</td><td class="row-sub">Renewals allowed within matrix</td></tr>
+          <tr><td>2026-07-01</td><td>Renewal authority: capped to existing insureds</td><td class="row-sub">No new NAICS classes</td></tr>
+          <tr><td>2026-08-01</td><td>Claims Tier 1 reduced: $25k → $10k</td><td class="row-sub">Over-threshold refer to carrier</td></tr>
+          <tr><td>2026-09-10</td><td>Authority revoked</td><td class="row-sub">Carrier takes direct control for run-off</td></tr>
+          <tr><td>2026-09-10+</td><td>Service-only authority (billing, COIs, loss notification)</td><td class="row-sub">Claims Tier 0 — no settlement authority</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeNovation() {
+  return `
+  ${cedePageHeader('Novation / Loss-Portfolio Transfer (LPT)', 'Transfer in-force book to replacement carrier or successor MGA.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-terminations'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Novation Options</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Option</th><th>Pros</th><th>Cons</th><th>Economics</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Natural run-off</strong></td><td>No novation cost · clear book by expiry</td><td>12-24 months · operational overhead</td><td>Run-off commission 5%</td></tr>
+          <tr><td><strong>LPT to new carrier</strong></td><td>Clean exit · carrier takes reserves</td><td>Discounting risk · reinsurer consent needed</td><td>Transfer fee 3-5% of reserves</td></tr>
+          <tr><td><strong>Novation to successor MGA</strong></td><td>Preserves insured relationship</td><td>Complex — new DUA required · state filings</td><td>Novation-fee agreement</td></tr>
+          <tr><td><strong>Commutation with reinsurers</strong></td><td>Capital release</td><td>Counterparty-specific</td><td>Commutation terms</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── Module 11: Audit & Compliance ───
+function renderCedeAuditCalendar() {
+  return `
+  ${cedePageHeader('Audit Calendar', 'Annual + for-cause audits · reviewer assignments · SLA tracking.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-audit-findings'})">🔎 Findings</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-orsa-export'})">📤 ORSA Export</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Audits · ${D.cedeAudits.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Audit</th><th>Program</th><th>Type</th><th>Kickoff</th><th>Complete</th><th>Sampled UW</th><th>Sampled claims</th><th>Observations</th><th>Critical</th><th>Severity</th></tr></thead>
+        <tbody>
+          ${D.cedeAudits.map(a => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-uw-file-audit'})">
+              <td><strong>${a.id}</strong></td>
+              <td>${a.program}</td>
+              <td>${a.type}</td>
+              <td class="row-sub">${a.kickoff}</td>
+              <td class="row-sub">${a.complete || 'In progress'}</td>
+              <td>${a.sampled_uw}</td>
+              <td>${a.sampled_claims}</td>
+              <td>${a.observations}</td>
+              <td>${a.critical_findings}</td>
+              <td>${cedeBadge(a.severity, cedeStatusColor(a.severity))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeUWFileAudit() {
+  return `
+  ${cedePageHeader('UW File Audit Workbench', 'Sample selection · file review · observations · critical findings.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-audit'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Meridian E&amp;S Casualty — Annual 2026 (85 files sampled)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Policy</th><th>Class</th><th>Underwriter</th><th>Rating deviation</th><th>Matrix compliance</th><th>Docs complete</th><th>Observation</th></tr></thead>
+        <tbody>
+          <tr><td><code>ME-2025-01821</code></td><td>Manufacturing</td><td>J. Howell</td><td>+8.2%</td><td>${cedeBadge('Compliant', 'green')}</td><td>${cedeBadge('Complete', 'green')}</td><td class="row-sub">Loss control rationale for schedule mod documented</td></tr>
+          <tr><td><code>ME-2025-01855</code></td><td>Habitational</td><td>J. Howell</td><td>+4.1%</td><td>${cedeBadge('Compliant', 'green')}</td><td>${cedeBadge('Complete', 'green')}</td><td class="row-sub">—</td></tr>
+          <tr><td><code>ME-2025-02105</code></td><td>Artisan</td><td>T. Brenner</td><td>-6.8%</td><td>${cedeBadge('Compliant', 'green')}</td><td>${cedeBadge('Incomplete', 'amber')}</td><td class="row-sub">Missing loss run > 3 years</td></tr>
+          <tr><td><code>ME-2025-02288</code></td><td>Manufacturing</td><td>J. Howell</td><td>-11.4%</td><td>${cedeBadge('Compliant', 'green')}</td><td>${cedeBadge('Complete', 'green')}</td><td class="row-sub">Deviation within ±15% auth</td></tr>
+          <tr><td><code>ME-2025-02502</code></td><td>Habitational</td><td>T. Brenner</td><td>+2.2%</td><td>${cedeBadge('Compliant', 'green')}</td><td>${cedeBadge('Complete', 'green')}</td><td class="row-sub">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeClaimFileAudit() {
+  return `
+  ${cedePageHeader('Claim File Audit Workbench', 'Sampled claims · coverage analysis · reserve setting · settlement rationale.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-audit'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Meridian — Annual 2026 (42 claim files)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Claim</th><th>Paid</th><th>Reserve</th><th>Coverage analysis</th><th>Reserve setting</th><th>Settlement rationale</th><th>Bad-faith risk</th></tr></thead>
+        <tbody>
+          <tr><td><code>ME-2025-CL-0088</code></td><td>$248k</td><td>$0 (closed)</td><td>${cedeBadge('Documented', 'green')}</td><td>${cedeBadge('Appropriate', 'green')}</td><td>${cedeBadge('Documented', 'green')}</td><td>${cedeBadge('None', 'green')}</td></tr>
+          <tr><td><code>ME-2025-CL-0141</code></td><td>$68k</td><td>$0 (closed)</td><td>${cedeBadge('Documented', 'green')}</td><td>${cedeBadge('Appropriate', 'green')}</td><td>${cedeBadge('Documented', 'green')}</td><td>${cedeBadge('None', 'green')}</td></tr>
+          <tr><td><code>ME-2025-CL-0212</code></td><td>$412k</td><td>$180k</td><td>${cedeBadge('Documented', 'green')}</td><td>${cedeBadge('Appropriate', 'green')}</td><td>${cedeBadge('Pending settlement', 'amber')}</td><td>${cedeBadge('None', 'green')}</td></tr>
+          <tr><td><code>ME-2025-CL-0298</code></td><td>$22k</td><td>$0 (closed)</td><td>${cedeBadge('Documented', 'green')}</td><td>${cedeBadge('Appropriate', 'green')}</td><td>${cedeBadge('Documented', 'green')}</td><td>${cedeBadge('None', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedePremiumTrustAudit() {
+  return `
+  ${cedePageHeader('Premium Trust Audit', 'Fiduciary reconciliation · FDIC status · unclaimed-funds exposure.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-audit'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Trust Account Integrity</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program · Trust</th><th>Institution</th><th>FDIC</th><th>Balance</th><th>Cleared</th><th>In transit</th><th>Unclaimed</th><th>Audit result</th></tr></thead>
+        <tbody>
+          <tr><td>Meridian Premium Trust</td><td>JPMorgan Chase</td><td>✓</td><td>$11.2M</td><td>$10.8M</td><td>$380k</td><td>$0</td><td>${cedeBadge('Compliant', 'green')}</td></tr>
+          <tr><td>Aurora Premium Trust</td><td>BNY Mellon</td><td>✓</td><td>$6.8M</td><td>$6.6M</td><td>$180k</td><td>$0</td><td>${cedeBadge('Compliant', 'green')}</td></tr>
+          <tr><td>Pacifica Premium Trust</td><td>Wells Fargo</td><td>✓</td><td>$8.9M</td><td>$8.7M</td><td>$210k</td><td>$0</td><td>${cedeBadge('Compliant', 'green')}</td></tr>
+          <tr><td>Heartland Premium Trust</td><td>JPMorgan Chase</td><td>✓</td><td>$14.8M</td><td>$14.1M</td><td>$420k</td><td>$280k</td><td>${cedeBadge('Observation', 'amber')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeSocRegistry() {
+  return `
+  ${cedePageHeader('SOC Report Registry', 'SOC-1 / SOC-2 Type II reports · auditor · renewal tracking.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-audit'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>SOC Reports · ${D.cedeSocReports.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>MGA</th><th>Type</th><th>Auditor</th><th>Period</th><th>Issued</th><th>Findings</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.cedeSocReports.map(s => `
+            <tr>
+              <td><strong>${s.mga}</strong></td>
+              <td>${s.type}</td>
+              <td>${s.auditor}</td>
+              <td class="row-sub">${s.period}</td>
+              <td class="row-sub">${s.issued}</td>
+              <td>${s.material_findings === 0 ? '<span class="cede-confidence-green">● None</span>' : s.material_findings === 1 ? '<span class="cede-confidence-amber">● '+s.material_findings+'</span>' : '<span class="cede-confidence-red">● '+s.material_findings+'</span>'}</td>
+              <td>${cedeBadge(s.status, cedeStatusColor(s.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeNaicChecklist() {
+  return `
+  ${cedePageHeader('NAIC #225 Compliance', 'Per-state · per-program compliance checklist.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-state-variations'})">🗺 State Variations</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Compliance Matrix · ${D.cedeNaicCompliance.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>State</th><th>Contract</th><th>UW guidelines</th><th>Prohibited acts</th><th>Commission</th><th>Termination</th><th>Claims std</th><th>Bordereau</th><th>Producer lic</th><th>Fiduciary</th><th>Financial exam</th><th>Board review</th><th>On-site</th><th>E&amp;O</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.cedeNaicCompliance.map(n => `
+            <tr>
+              <td>${n.program}</td>
+              <td class="row-sub">${n.state}</td>
+              <td>${n.written_contract ? '✓' : '✗'}</td>
+              <td>${n.uw_guidelines ? '✓' : '✗'}</td>
+              <td>${n.prohibited_acts ? '✓' : '✗'}</td>
+              <td>${n.commission_terms ? '✓' : '✗'}</td>
+              <td>${n.termination ? '✓' : '✗'}</td>
+              <td>${n.claims_standards ? '✓' : '✗'}</td>
+              <td>${n.bordereaux_cadence ? '✓' : '✗'}</td>
+              <td>${n.producer_licensed ? '✓' : '✗'}</td>
+              <td>${n.fiduciary ? '✓' : '✗'}</td>
+              <td class="row-sub">${n.mga_financial_exam_date}</td>
+              <td class="row-sub">${n.board_review_date}</td>
+              <td class="row-sub">${n.onsite_review_date}</td>
+              <td>${n.eo_in_force ? '✓' : '✗'}</td>
+              <td>${cedeBadge(n.status, cedeStatusColor(n.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeStateVarsScreen() {
+  return `
+  ${cedePageHeader('State Variations', 'NAIC uniform + state-specific deltas (NY Reg 120 · TX Ch. 4053 · CA appointments · FL scrutiny).',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-naic-225'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>State-specific Requirements · ${D.cedeStateVariations.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>State</th><th>Additional requirement</th><th>Impacted programs</th><th>Severity</th><th>Action</th></tr></thead>
+        <tbody>
+          ${D.cedeStateVariations.map(s => `
+            <tr>
+              <td><strong>${s.state}</strong></td>
+              <td class="row-sub">${s.additional_requirement}</td>
+              <td>${s.impacted_programs}</td>
+              <td>${cedeBadge(s.severity, s.severity === 'Material' ? 'amber' : 'blue')}</td>
+              <td class="row-sub">${s.action}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeAuditFindings() {
+  return `
+  ${cedePageHeader('Audit Findings Tracker', 'Open findings · remediation SLAs · escalation.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-audit'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Open Findings</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Finding</th><th>Audit</th><th>Program</th><th>Severity</th><th>Description</th><th>Remediation</th><th>Due</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>FD-001</strong></td><td>AUD-HT-2026-02</td><td>Heartland Trucking</td><td>${cedeBadge('Critical', 'red')}</td><td class="row-sub">UW authority breaches pattern (5 in Q1)</td><td class="row-sub">Matrix retraining + CUO sign-off on rescinds</td><td>2026-05-15</td><td>${cedeBadge('Open', 'red')}</td></tr>
+          <tr><td><strong>FD-002</strong></td><td>AUD-HT-2026-02</td><td>Heartland Trucking</td><td>${cedeBadge('Critical', 'red')}</td><td class="row-sub">Bordereau timeliness &lt; 60%</td><td class="row-sub">IT upgrade + weekly bordereau cadence</td><td>2026-05-30</td><td>${cedeBadge('In progress', 'amber')}</td></tr>
+          <tr><td><strong>FD-003</strong></td><td>AUD-FA-2026-01</td><td>Frontier Ag Hail</td><td>${cedeBadge('High', 'red')}</td><td class="row-sub">Reserve delta 18% vs 15% threshold</td><td class="row-sub">Actuarial review + methodology documentation</td><td>2026-05-10</td><td>${cedeBadge('In progress', 'amber')}</td></tr>
+          <tr><td><strong>FD-004</strong></td><td>AUD-ME-2026-01</td><td>Meridian E&amp;S Casualty</td><td>${cedeBadge('Low', 'blue')}</td><td class="row-sub">3 of 85 files missing 3+ year loss run</td><td class="row-sub">File completion SOP update</td><td>2026-04-30</td><td>${cedeBadge('Resolved', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeOrsaExport() {
+  return `
+  ${cedePageHeader('ORSA / ERM Export', 'One-click regulatory pack aligned to NAIC ORSA Summary Report requirements.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-audit'})">← Back</button>`)}
+  ${cedeKPIs([
+    { label: 'Report period', value: 'Q1 2026' },
+    { label: 'MGA concentration', value: '18% / 20% limit' },
+    { label: 'Total MGAs', value: '8' },
+    { label: 'Counterparty risk', value: 'Moderate' },
+    { label: 'Collateral risk',   value: 'Low' },
+    { label: 'Governance score',  value: '92 / 100' }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>Exportable Sections</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Section</th><th>Contents</th><th>Last refresh</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>MGA concentration exposure</td><td class="row-sub">% of PHS / NWP per MGA, with trend</td><td>2026-04-20</td><td>${cedeBadge('Ready', 'green')}</td></tr>
+          <tr><td>Operational risk attestations</td><td class="row-sub">Bordereau timeliness, SOC-1 coverage, IT posture</td><td>2026-04-18</td><td>${cedeBadge('Ready', 'green')}</td></tr>
+          <tr><td>Collateral risk exposure</td><td class="row-sub">By issuing-bank concentration · non-G-SIB %</td><td>2026-04-15</td><td>${cedeBadge('Ready', 'green')}</td></tr>
+          <tr><td>Governance evidence</td><td class="row-sub">DA committee minutes · reviews · sign-offs</td><td>2026-04-21</td><td>${cedeBadge('Ready', 'green')}</td></tr>
+          <tr><td>Stress scenarios</td><td class="row-sub">MGA failure · bordereau error · UW drift · CAT event</td><td>2026-04-01</td><td>${cedeBadge('Ready', 'green')}</td></tr>
+          <tr><td>Vesttoo-style fraud attestations</td><td class="row-sub">Collateral verification coverage, red-flag registry</td><td>2026-04-20</td><td>${cedeBadge('Ready', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeExamPack() {
+  return `
+  ${cedePageHeader('DOI Exam Pack Builder', 'One-click bundle of evidence for a DOI exam · per program · per state.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-audit'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Recent Exam Packs</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Pack</th><th>Program</th><th>State</th><th>Requested by</th><th>Requested</th><th>Delivered</th><th>Scope</th></tr></thead>
+        <tbody>
+          <tr><td><strong>EXM-2026-05</strong></td><td>Heartland Trucking</td><td>TX</td><td>TX DOI Market Conduct</td><td class="row-sub">2026-03-10</td><td class="row-sub">2026-03-18</td><td class="row-sub">Q4 2025 UW + claims files</td></tr>
+          <tr><td><strong>EXM-2026-04</strong></td><td>Frontier Ag Hail</td><td>NE</td><td>NE DOI Financial Exam</td><td class="row-sub">2026-02-15</td><td class="row-sub">2026-02-28</td><td class="row-sub">2024-2025 financials + bordereau</td></tr>
+          <tr><td><strong>EXM-2026-03</strong></td><td>Aurora Cyber</td><td>NY</td><td>NY DFS Cyber Exam</td><td class="row-sub">2026-01-20</td><td class="row-sub">2026-02-05</td><td class="row-sub">Cyber-program UW guidelines + 500 sampled binders</td></tr>
+          <tr><td><strong>EXM-2026-02</strong></td><td>Pacifica Habitational</td><td>FL</td><td>FL DOI post-2022 exam</td><td class="row-sub">2026-01-10</td><td class="row-sub">2026-01-24</td><td class="row-sub">FL book with enhanced disclosure pack</td></tr>
+          <tr><td><strong>EXM-2026-01</strong></td><td>Meridian E&amp;S Casualty</td><td>NY</td><td>NY DFS Annual Exam</td><td class="row-sub">2025-12-05</td><td class="row-sub">2025-12-22</td><td class="row-sub">Full annual pack</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── Module 12: Commissions ───
+function renderCedeCommissionLedger() {
+  return `
+  ${cedePageHeader('Commission Ledger', 'Multi-layer: ceding · fronting · profit · BoR.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-sliding-scale'})">📉 Sliding Scale</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-profit-accrual'})">📈 Profit</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-settlement'})">💸 Settlement</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Commission Ledger · ${D.cedeCommissions.length} entries</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Period</th><th>GWP</th><th>Ceding %</th><th>Fronting %</th><th>Ceding $</th><th>Fronting $</th><th>Net premium</th><th>Profit accrual</th><th>Paid</th></tr></thead>
+        <tbody>
+          ${D.cedeCommissions.map(c => `
+            <tr>
+              <td><strong>${c.program}</strong></td>
+              <td class="row-sub">${c.period}</td>
+              <td>$${(c.gwp_usd/1e6).toFixed(1)}M</td>
+              <td>${c.ceding_comm_pct}%</td>
+              <td>${c.fronting_fee_pct}%</td>
+              <td>$${(c.ceding_comm_usd/1e6).toFixed(2)}M</td>
+              <td>$${(c.fronting_fee_usd/1000).toFixed(0)}k</td>
+              <td>$${(c.net_premium_usd/1e6).toFixed(2)}M</td>
+              <td>$${(c.profit_comm_accrued_usd/1000).toFixed(0)}k</td>
+              <td>${c.paid ? cedeBadge('Paid · '+c.paid_date, 'green') : cedeBadge('Pending', 'amber')}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeSlidingScale() {
+  return `
+  ${cedePageHeader('Sliding-Scale Commission Calculator', 'Live LR-driven commission calc · provisional vs. final.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-commissions'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Active Sliding Scales · ${D.cedeSlidingScales.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Min</th><th>Provisional</th><th>Max</th><th>LR band</th><th>Step</th><th>Current LR</th><th>Current commission</th><th>Next true-up</th></tr></thead>
+        <tbody>
+          ${D.cedeSlidingScales.map(s => `
+            <tr>
+              <td><strong>${s.program}</strong></td>
+              <td>${s.min_comm_pct}%</td>
+              <td>${s.provisional_pct}%</td>
+              <td>${s.max_comm_pct}%</td>
+              <td class="row-sub">${s.min_lr}% — ${s.max_lr}%</td>
+              <td class="row-sub">${s.step_pct_per_pt_lr} pts / pt LR</td>
+              <td><strong>${s.current_lr.toFixed(1)}%</strong></td>
+              <td><strong>${s.current_commission_pct.toFixed(2)}%</strong></td>
+              <td class="row-sub">${s.next_true_up}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Legacy E&amp;S Casualty — Commission vs LR Table</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>LR band</th><th>Commission %</th><th>Band</th></tr></thead>
+        <tbody>
+          <tr><td>Below 50%</td><td><strong>32%</strong></td><td>Max</td></tr>
+          <tr><td>50% — 55%</td><td>29.5% — 32%</td><td>Upper slope</td></tr>
+          <tr><td>55% — 60%</td><td>27% — 29.5%</td><td>Mid slope</td></tr>
+          <tr><td>60% (provisional)</td><td>28%</td><td>Provisional</td></tr>
+          <tr><td>60% — 65%</td><td>25.5% — 28%</td><td>Lower slope</td></tr>
+          <tr><td>65% — 70%</td><td>24% — 25.5%</td><td>Floor slope</td></tr>
+          <tr><td>Above 70%</td><td>24%</td><td>Min</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeProfitAccrual() {
+  return `
+  ${cedePageHeader('Profit Commission Accrual', 'Cohort-based · development-factor-adjusted · escrow / deferred where applicable.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-commissions'})">← Back</button>
+     <button class="btn btn-ghost" onclick="window.setState({screen:'cd-profit-trueup'})">🔁 True-up</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Active Accruals · ${D.cedeProfitCommissions.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>AY</th><th>Est. LR</th><th>Est. profit</th><th>Profit %</th><th>Accrual</th><th>Realized %</th><th>Next true-up</th></tr></thead>
+        <tbody>
+          ${D.cedeProfitCommissions.map(p => `
+            <tr>
+              <td><strong>${p.program}</strong></td>
+              <td>${p.ay}</td>
+              <td>${(p.est_lr*100).toFixed(1)}%</td>
+              <td>$${(p.estimated_profit_usd/1e6).toFixed(2)}M</td>
+              <td>${p.profit_comm_pct}%</td>
+              <td><strong>$${(p.accrual_usd/1000).toFixed(0)}k</strong></td>
+              <td>${(p.realized_pct*100).toFixed(0)}%</td>
+              <td class="row-sub">${p.next_true_up}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeSettlementDashboard() {
+  return `
+  ${cedePageHeader('Settlement Dashboard', 'Net amounts owed each way · settlement cadence · ACH.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-commissions'})">← Back</button>`)}
+  ${cedeKPIs([
+    { label: 'Settlements this cycle', value: '14' },
+    { label: 'Carrier → MGA',          value: '$12.8M' },
+    { label: 'MGA → Carrier',          value: '$2.1M' },
+    { label: 'Net to MGA',             value: '$10.7M' },
+    { label: 'Cadence',                value: 'Monthly' },
+    { label: 'Next cycle',             value: '2026-04-25' }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>Settlements by Program (March 2026)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Carrier receives</th><th>MGA receives (comm)</th><th>MGA owes (true-up)</th><th>BoR fee</th><th>Net</th><th>ACH status</th></tr></thead>
+        <tbody>
+          <tr><td>Meridian E&amp;S Casualty</td><td>$8.06M</td><td>$3.07M</td><td>$0</td><td>$55k</td><td>MGA → $3.07M, BoR → $55k</td><td>${cedeBadge('Scheduled', 'amber')}</td></tr>
+          <tr><td>Aurora Cyber</td><td>$4.72M</td><td>$2.22M</td><td>$0</td><td>$37k</td><td>MGA → $2.22M, BoR → $37k</td><td>${cedeBadge('Scheduled', 'amber')}</td></tr>
+          <tr><td>Pacifica Habitational</td><td>$6.72M</td><td>$2.30M</td><td>$0</td><td>$44k</td><td>MGA → $2.30M, BoR → $44k</td><td>${cedeBadge('Scheduled', 'amber')}</td></tr>
+          <tr><td>Heartland Trucking</td><td>$12.81M</td><td>$3.44M</td><td>$0 (pending audit)</td><td>$80k</td><td>Pending audit</td><td>${cedeBadge('On hold', 'amber')}</td></tr>
+          <tr><td>Thalassa Marine</td><td>$5.75M</td><td>$1.78M</td><td>$0</td><td>$32k</td><td>MGA → $1.78M, BoR → $32k</td><td>${cedeBadge('Sent', 'green')}</td></tr>
+          <tr><td>Legacy E&amp;S Casualty</td><td>$9.56M</td><td>$3.83M</td><td>$0</td><td>$58k</td><td>MGA → $3.83M, BoR → $58k</td><td>${cedeBadge('Sent', 'green')}</td></tr>
+          <tr><td>Summit Alpine Resort</td><td>$1.60M</td><td>$624k</td><td>$0</td><td>$10k</td><td>MGA → $624k, BoR → $10k</td><td>${cedeBadge('Sent', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeBorFees() {
+  return `
+  ${cedePageHeader('Broker-of-Record Fees', 'Specialty broker fees paid through the platform.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-commissions'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>BoR Fee Ledger · ${D.cedeBorFees.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Broker</th><th>Mandate</th><th>Program</th><th>GWP</th><th>Fee bps</th><th>Fee $</th><th>Status</th><th>Paid</th></tr></thead>
+        <tbody>
+          ${D.cedeBorFees.map(f => `
+            <tr>
+              <td><strong>${f.broker}</strong></td>
+              <td>${f.mandate_id}</td>
+              <td>${f.program}</td>
+              <td>$${(f.gwp_usd/1e6).toFixed(1)}M</td>
+              <td>${f.fee_bps}</td>
+              <td><strong>$${(f.fee_usd/1000).toFixed(0)}k</strong></td>
+              <td>${cedeBadge(f.status, cedeStatusColor(f.status))}</td>
+              <td class="row-sub">${f.paid || '—'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeProfitTrueUp() {
+  return `
+  ${cedePageHeader('Profit Commission True-up', 'YoY restatement · IBNR re-estimation · commission true-up.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-commissions'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Meridian E&amp;S Casualty — AY 2024 True-up Walk</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Snapshot</th><th>Estimated ultimate LR</th><th>Estimated profit</th><th>Profit comm (20%)</th><th>Commission diff</th></tr></thead>
+        <tbody>
+          <tr><td>AY+12 mo (initial accrual)</td><td>56.2%</td><td>$2.9M</td><td>$580k</td><td>+$580k</td></tr>
+          <tr><td>AY+24 mo (first true-up)</td><td>54.8%</td><td>$3.4M</td><td>$680k</td><td>+$100k</td></tr>
+          <tr><td>AY+36 mo (final true-up)</td><td>54.1%</td><td>$3.7M</td><td>$740k</td><td>+$60k</td></tr>
+          <tr><td><strong>Final commission paid</strong></td><td>—</td><td>—</td><td><strong>$740k</strong></td><td><strong>—</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── Module 13: Benchmarks ───
+function renderCedeBenchmarkHome() {
+  return `
+  ${cedePageHeader('Benchmarks', 'Neutral · anonymized · k-anonymity ≥ 5. Your programs vs. peer cohort.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-privacy-controls'})">🔐 Privacy Controls</button>`)}
+  ${cedeKPIs([
+    { label: 'Your portfolio LR', value: '58.3%' },
+    { label: 'Peer P50 LR',       value: '60.5%' },
+    { label: 'Your rank',         value: '34th percentile' },
+    { label: 'Your expense ratio',value: '33.8%' },
+    { label: 'Peer P50',          value: '35.5%' },
+    { label: 'Cohort coverage',   value: '8 of 8 LOBs' }
+  ])}
+  <section class="card">
+    <div class="card-header"><h3>All Benchmarks · ${D.cedeBenchmarks.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>LOB</th><th>Cohort</th><th>Metric</th><th>P25</th><th>P50</th><th>P75</th><th>You</th></tr></thead>
+        <tbody>
+          ${D.cedeBenchmarks.map(b => `
+            <tr>
+              <td>${b.lob}</td>
+              <td class="row-sub">${b.cohort}</td>
+              <td>${b.metric}</td>
+              <td>${b.peer_p25}</td>
+              <td>${b.peer_p50}</td>
+              <td>${b.peer_p75}</td>
+              <td><strong>${b.you}</strong></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeBenchmarkCommission() {
+  return `
+  ${cedePageHeader('Commission Benchmarking', 'Typical commission structures in your class.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-benchmarks'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Commission Structures by LOB</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>LOB</th><th>Ceding comm (P25)</th><th>P50</th><th>P75</th><th>Fronting fee (P50)</th><th>Profit comm trigger (P50)</th><th>Profit split (P50)</th></tr></thead>
+        <tbody>
+          <tr><td>E&amp;S Casualty</td><td>22%</td><td>25%</td><td>28%</td><td>6.0%</td><td>60% LR</td><td>20%</td></tr>
+          <tr><td>Cyber</td><td>26%</td><td>30%</td><td>32%</td><td>6.5%</td><td>55% LR</td><td>25%</td></tr>
+          <tr><td>Commercial Auto</td><td>18%</td><td>21%</td><td>24%</td><td>5.5%</td><td>65% LR</td><td>15%</td></tr>
+          <tr><td>Habitational Property</td><td>22%</td><td>25%</td><td>27%</td><td>6.2%</td><td>60% LR</td><td>20%</td></tr>
+          <tr><td>Marine</td><td>18%</td><td>22%</td><td>25%</td><td>7.0%</td><td>60% LR</td><td>20%</td></tr>
+          <tr><td>Pet Insurance</td><td>18%</td><td>20%</td><td>22%</td><td>6.5%</td><td>65% LR</td><td>15%</td></tr>
+          <tr><td>Artisan Contractor GL</td><td>22%</td><td>26%</td><td>28%</td><td>6.0%</td><td>60% LR</td><td>20%</td></tr>
+          <tr><td>Excess Casualty</td><td>24%</td><td>28%</td><td>32%</td><td>5.8%</td><td>55% LR</td><td>22%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeCarrierScorecard() {
+  return `
+  ${cedePageHeader('Carrier Scorecard (MGA view)', 'Fronting-fee trend · collateral demand trend · termination frequency · dispute history.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-benchmarks'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Carriers on Platform · ${D.cedeCarriers.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Carrier</th><th>Fronting fee</th><th>Collateral asked</th><th>Terminations last 3y</th><th>Disputes</th><th>Bordereau SLA</th><th>Overall rep</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Summit Fronting Re</strong></td><td>5.7%</td><td>Moderate</td><td>1 (convenience)</td><td>0</td><td>On-time 95%+</td><td>${cedeBadge('Strong', 'green')}</td></tr>
+          <tr><td><strong>Accelerant</strong></td><td>6.2%</td><td>High (RCP collateral stack)</td><td>2 (convenience)</td><td>0</td><td>On-time 92%</td><td>${cedeBadge('Good', 'green')}</td></tr>
+          <tr><td><strong>Sutton National</strong></td><td>5.8%</td><td>Moderate</td><td>0</td><td>0</td><td>On-time 94%</td><td>${cedeBadge('Good', 'green')}</td></tr>
+          <tr><td><strong>Clear Blue</strong></td><td>5.2%</td><td>Moderate</td><td>3 (convenience)</td><td>1</td><td>On-time 90%</td><td>${cedeBadge('Fair', 'amber')}</td></tr>
+          <tr><td><strong>State National</strong></td><td>5.5%</td><td>Low</td><td>1 (cause)</td><td>0</td><td>On-time 96%</td><td>${cedeBadge('Strong', 'green')}</td></tr>
+          <tr><td><strong>Trisura US</strong></td><td>6.0%</td><td>Moderate</td><td>1 (convenience)</td><td>0</td><td>On-time 93%</td><td>${cedeBadge('Good', 'green')}</td></tr>
+          <tr><td><strong>Core Specialty</strong></td><td>7.5%</td><td>High</td><td>0</td><td>1</td><td>On-time 88%</td><td>${cedeBadge('Fair', 'amber')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeMgaScorecard() {
+  return `
+  ${cedePageHeader('MGA Scorecard (Carrier view)', 'LR drift · bordereau timeliness · UW compliance · claims-authority compliance · E&O / licensing status.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-benchmarks'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>MGAs on Platform (Summit portfolio)</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>MGA</th><th>LR drift (vs plan)</th><th>Bordereau on-time</th><th>UW compliance</th><th>Claim authority compliance</th><th>SOC current</th><th>E&amp;O</th><th>Rating</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Meridian Specialty MGA</strong></td><td>-1.7 pts</td><td>100%</td><td>98.1%</td><td>100%</td><td>✓</td><td>✓</td><td>${cedeBadge('Tier 1', 'green')}</td></tr>
+          <tr><td><strong>Aurora Cyber Underwriters</strong></td><td>-4.8 pts</td><td>100%</td><td>98.1%</td><td>100%</td><td>✓</td><td>✓</td><td>${cedeBadge('Tier 1', 'green')}</td></tr>
+          <tr><td><strong>Pacifica Habitational</strong></td><td>+0.2 pts</td><td>100%</td><td>96.4%</td><td>99%</td><td>✓</td><td>✓</td><td>${cedeBadge('Tier 1', 'green')}</td></tr>
+          <tr><td><strong>Legacy E&amp;S Casualty</strong></td><td>-2.9 pts</td><td>100%</td><td>98.4%</td><td>100%</td><td>✓</td><td>✓</td><td>${cedeBadge('Tier 1', 'green')}</td></tr>
+          <tr><td><strong>Thalassa Marine</strong></td><td>-0.6 pts</td><td>100%</td><td>97.2%</td><td>100%</td><td>✓</td><td>✓</td><td>${cedeBadge('Tier 1', 'green')}</td></tr>
+          <tr><td><strong>Summit Alpine Resort</strong></td><td>-0.9 pts</td><td>100%</td><td>97.0%</td><td>100%</td><td>✓</td><td>✓</td><td>${cedeBadge('Tier 1', 'green')}</td></tr>
+          <tr><td><strong>Frontier Ag Hail</strong></td><td>+4.3 pts</td><td>80%</td><td>91.8%</td><td>96%</td><td>⚠️</td><td>✓</td><td>${cedeBadge('Tier 2 · Watch', 'amber')}</td></tr>
+          <tr><td><strong>Heartland Trucking</strong></td><td>+3.2 pts</td><td>60%</td><td>88.5%</td><td>91%</td><td>⚠️</td><td>✓</td><td>${cedeBadge('Tier 3 · Cause', 'red')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeMarketTrends() {
+  return `
+  ${cedePageHeader('Market Trends', 'Aggregate platform telemetry · class-level LR medians · commission medians.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-benchmarks'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Platform GWP Growth</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Quarter</th><th>GWP routed</th><th>New mandates</th><th>Active programs</th><th>Avg placement (days)</th></tr></thead>
+        <tbody>
+          <tr><td>2025 Q1</td><td>$520M</td><td>8</td><td>82</td><td>95</td></tr>
+          <tr><td>2025 Q2</td><td>$620M</td><td>12</td><td>88</td><td>88</td></tr>
+          <tr><td>2025 Q3</td><td>$680M</td><td>14</td><td>95</td><td>85</td></tr>
+          <tr><td>2025 Q4</td><td>$740M</td><td>15</td><td>104</td><td>84</td></tr>
+          <tr><td>2026 Q1</td><td>$820M</td><td>18</td><td>112</td><td>83</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>LOB Trends</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>LOB</th><th>Platform GWP</th><th>YoY growth</th><th>Median LR</th><th>Median ceding comm</th></tr></thead>
+        <tbody>
+          <tr><td>E&amp;S Casualty</td><td>$740M</td><td>+22%</td><td>58.5%</td><td>25%</td></tr>
+          <tr><td>Cyber</td><td>$380M</td><td>+45%</td><td>54.5%</td><td>30%</td></tr>
+          <tr><td>Commercial Auto</td><td>$612M</td><td>+8%</td><td>68.0%</td><td>21%</td></tr>
+          <tr><td>Habitational Property</td><td>$412M</td><td>+14%</td><td>62.0%</td><td>25%</td></tr>
+          <tr><td>Marine</td><td>$186M</td><td>+6%</td><td>60.0%</td><td>22%</td></tr>
+          <tr><td>Artisan Contractor GL</td><td>$224M</td><td>+18%</td><td>60.5%</td><td>26%</td></tr>
+          <tr><td>Excess Casualty</td><td>$340M</td><td>+12%</td><td>54.0%</td><td>28%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedePrivacyControls() {
+  return `
+  ${cedePageHeader('Privacy Controls', 'k-anonymity · ε (epsilon) thresholds · differential privacy · cohort reveal rules.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-benchmarks'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Privacy Guarantees</h3></div>
+    <div style="padding:var(--space-md)">
+      <ul style="line-height:1.8">
+        <li><strong>k-anonymity k ≥ 5:</strong> any benchmark cell with fewer than 5 contributing programs is suppressed</li>
+        <li><strong>ε (differential privacy) ≤ 1.0:</strong> noise added to all aggregated statistics</li>
+        <li><strong>No program-identifying fields:</strong> cohorts defined by LOB × size band · not by carrier or MGA name</li>
+        <li><strong>Re-identification testing:</strong> quarterly attacker-model simulations</li>
+        <li><strong>Opt-out:</strong> either party can withdraw their program from benchmarking</li>
+      </ul>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Cohort Size Status</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Cohort</th><th>Programs contributing</th><th>k-anon threshold</th><th>Reveal status</th></tr></thead>
+        <tbody>
+          <tr><td>E&amp;S Casualty · Mid-sized ($100-200M)</td><td>12</td><td>≥ 5</td><td>${cedeBadge('Available', 'green')}</td></tr>
+          <tr><td>Cyber · SMB focus ($50-100M)</td><td>9</td><td>≥ 5</td><td>${cedeBadge('Available', 'green')}</td></tr>
+          <tr><td>Habitational · Mid-market</td><td>14</td><td>≥ 5</td><td>${cedeBadge('Available', 'green')}</td></tr>
+          <tr><td>Commercial Auto · Specialty Trucking</td><td>7</td><td>≥ 5</td><td>${cedeBadge('Available', 'green')}</td></tr>
+          <tr><td>Pet Insurance</td><td>3</td><td>≥ 5</td><td>${cedeBadge('Suppressed · insufficient sample', 'amber')}</td></tr>
+          <tr><td>Craft Brewery GL</td><td>2</td><td>≥ 5</td><td>${cedeBadge('Suppressed · insufficient sample', 'amber')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── Module 14: Governance (Admin) ───
+function renderCedeApplications() {
+  return `
+  ${cedePageHeader('Applications Queue', 'MGA / carrier / broker applications · rubric scoring · curation.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-bor-registry'})">🧾 BoR Registry</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Applications · ${D.cedeMemberApplications.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Applicant</th><th>Type</th><th>Submitted</th><th>Rubric score</th><th>Reviewer</th><th>Status</th><th>Notes</th></tr></thead>
+        <tbody>
+          ${D.cedeMemberApplications.map(a => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-app-detail', cedeAppId:'${a.id}'})">
+              <td><strong>${a.applicant}</strong></td>
+              <td>${a.type}</td>
+              <td class="row-sub">${a.submitted}</td>
+              <td>${a.rubric_score}</td>
+              <td>${a.reviewer}</td>
+              <td>${cedeBadge(a.status, cedeStatusColor(a.status))}</td>
+              <td class="row-sub">${a.notes}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeApplicationDetail() {
+  const a = D.cedeMemberApplications.find(x => x.id === state.cedeAppId) || D.cedeMemberApplications[0];
+  return `
+  ${cedePageHeader('Application · ' + a.id, a.applicant + ' · ' + a.type,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-applications'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Summary</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md)">
+      <div><div class="row-sub">Applicant</div><div><strong>${a.applicant}</strong></div></div>
+      <div><div class="row-sub">Type</div><div>${a.type}</div></div>
+      <div><div class="row-sub">Submitted</div><div>${a.submitted}</div></div>
+      <div><div class="row-sub">Status</div><div>${cedeBadge(a.status, cedeStatusColor(a.status))}</div></div>
+      <div><div class="row-sub">Rubric score</div><div><strong>${a.rubric_score}</strong></div></div>
+      <div><div class="row-sub">Reviewer</div><div>${a.reviewer}</div></div>
+      <div style="grid-column:span 2"><div class="row-sub">Notes</div><div>${a.notes}</div></div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Curation Rubric</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Criterion</th><th>Weight</th><th>Score</th></tr></thead>
+        <tbody>
+          <tr><td>Financial stability</td><td>20%</td><td>8 / 10</td></tr>
+          <tr><td>Leadership depth</td><td>20%</td><td>9 / 10</td></tr>
+          <tr><td>UW track record</td><td>20%</td><td>9 / 10</td></tr>
+          <tr><td>Governance + compliance</td><td>15%</td><td>9 / 10</td></tr>
+          <tr><td>References</td><td>10%</td><td>9 / 10</td></tr>
+          <tr><td>Data completeness</td><td>10%</td><td>8 / 10</td></tr>
+          <tr><td>Market need (class / region)</td><td>5%</td><td>7 / 10</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeBorRegistry() {
+  return `
+  ${cedePageHeader('BoR Registry', 'Approved specialty brokers · credentials · mandate volume.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-applications'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Approved BoR Brokers</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Broker</th><th>Practice</th><th>Credentials</th><th>Mandates YTD</th><th>BoR fees YTD</th><th>Fee band</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Gallagher Re</strong></td><td>Program Solutions</td><td>AM Best A+ · 800+ reinsurance professionals</td><td>11</td><td>$1.86M</td><td>45-50 bps</td><td>${cedeBadge('Approved', 'green')}</td></tr>
+          <tr><td><strong>Guy Carpenter</strong></td><td>GC Access</td><td>AM Best A++ · largest reinsurance broker</td><td>8</td><td>$1.42M</td><td>50 bps</td><td>${cedeBadge('Approved', 'green')}</td></tr>
+          <tr><td><strong>Howden Re</strong></td><td>Specialty programs</td><td>AM Best A · growing reinsurance arm</td><td>6</td><td>$1.02M</td><td>45 bps</td><td>${cedeBadge('Approved', 'green')}</td></tr>
+          <tr><td><strong>Lockton Re</strong></td><td>Specialty reinsurance</td><td>AM Best A · private partnership</td><td>4</td><td>$720k</td><td>50 bps</td><td>${cedeBadge('Approved', 'green')}</td></tr>
+          <tr><td><strong>Aon Reinsurance Solutions</strong></td><td>Reinsurance broking</td><td>AM Best A++ · global scale</td><td>3</td><td>$540k</td><td>45 bps</td><td>${cedeBadge('Approved', 'green')}</td></tr>
+          <tr><td><strong>TigerRisk / Howden Tiger</strong></td><td>Specialty broker</td><td>Merged into Howden (2022)</td><td>2</td><td>$280k</td><td>45 bps</td><td>${cedeBadge('Approved', 'green')}</td></tr>
+          <tr><td><strong>Bolton Re Program Solutions</strong></td><td>Emerging specialist</td><td>New applicant — approved 2026-04</td><td>0</td><td>—</td><td>45 bps</td><td>${cedeBadge('Approved', 'green')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDisputes() {
+  return `
+  ${cedePageHeader('Disputes', 'Mediation workflow · open disputes · historical resolutions.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-applications'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Open Disputes · ${D.cedeDisputes.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Dispute</th><th>Program</th><th>Filed by</th><th>Subject</th><th>Amount</th><th>Filed</th><th>Next hearing</th><th>Status</th></tr></thead>
+        <tbody>
+          ${D.cedeDisputes.map(d => `
+            <tr class="row-clickable" onclick="window.setState({screen:'cd-dispute-detail', cedeDispId:'${d.id}'})">
+              <td><strong>${d.id}</strong></td>
+              <td>${d.program}</td>
+              <td>${d.filed_by}</td>
+              <td class="row-sub">${d.subject}</td>
+              <td>$${(d.amount_usd/1000).toFixed(0)}k</td>
+              <td class="row-sub">${d.filed}</td>
+              <td class="row-sub">${d.next_hearing}</td>
+              <td>${cedeBadge(d.status, cedeStatusColor(d.status))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedeDisputeDetail() {
+  const d = D.cedeDisputes.find(x => x.id === state.cedeDispId) || D.cedeDisputes[0];
+  return `
+  ${cedePageHeader('Dispute · ' + d.id, d.program,
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-disputes'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Details</h3></div>
+    <div style="padding:var(--space-md); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md)">
+      <div><div class="row-sub">Filed by</div><div><strong>${d.filed_by}</strong></div></div>
+      <div><div class="row-sub">Program</div><div>${d.program}</div></div>
+      <div><div class="row-sub">Subject</div><div>${d.subject}</div></div>
+      <div><div class="row-sub">Amount</div><div><strong>$${(d.amount_usd/1000).toFixed(0)}k</strong></div></div>
+      <div><div class="row-sub">Filed</div><div>${d.filed}</div></div>
+      <div><div class="row-sub">Next hearing</div><div>${d.next_hearing}</div></div>
+      <div><div class="row-sub">Status</div><div>${cedeBadge(d.status, cedeStatusColor(d.status))}</div></div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h3>Timeline</h3></div>
+    <div style="padding:var(--space-md)">
+      <ul class="cede-timeline">
+        <li class="done"><strong>2026-03-20</strong> · Carrier (Core Specialty) filed dispute — 2024 AY profit commission true-up disputed</li>
+        <li class="done"><strong>2026-03-28</strong> · MGA (Frontier Ag Hail) responded — challenge to carrier actuarial methodology</li>
+        <li class="done"><strong>2026-04-05</strong> · Mediation scheduled · AAA arbitrator appointed</li>
+        <li><strong>2026-05-05</strong> · Mediation hearing</li>
+        <li><strong>2026-06-15</strong> · Expected resolution date</li>
+      </ul>
+    </div>
+  </section>`;
+}
+
+function renderCedeDataResidency() {
+  return `
+  ${cedePageHeader('Data Residency', 'Per-tenant privacy controls · region pinning · cross-border flow tracking.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-applications'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Tenant Residency Settings</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Tenant</th><th>Type</th><th>Primary region</th><th>Backup region</th><th>Cross-border allowed</th><th>GDPR</th><th>CCPA</th></tr></thead>
+        <tbody>
+          <tr><td>Summit Fronting Re</td><td>Carrier</td><td>US-East-1</td><td>US-West-2</td><td>No</td><td>N/A</td><td>✓</td></tr>
+          <tr><td>Accelerant</td><td>Carrier</td><td>US-East-1</td><td>US-West-2</td><td>Yes (EU)</td><td>✓</td><td>✓</td></tr>
+          <tr><td>Meridian Specialty MGA</td><td>MGA</td><td>US-East-1</td><td>US-West-2</td><td>No</td><td>N/A</td><td>✓</td></tr>
+          <tr><td>Aurora Cyber Underwriters</td><td>MGA</td><td>US-West-2</td><td>US-East-1</td><td>No</td><td>N/A</td><td>✓</td></tr>
+          <tr><td>Gallagher Re</td><td>Broker</td><td>US-East-1</td><td>EU-West-1</td><td>Yes (UK + EU)</td><td>✓</td><td>✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderCedePlatformAudit() {
+  return `
+  ${cedePageHeader('Platform Audit Log', 'Immutable · append-only · cryptographically signed hourly.',
+    `<button class="btn btn-ghost" onclick="window.setState({screen:'cd-applications'})">← Back</button>`)}
+  <section class="card">
+    <div class="card-header"><h3>Recent Activity · ${D.cedeAuditLog.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Event</th><th>Timestamp</th><th>Actor</th><th>Role</th><th>Action</th><th>Target</th><th>Context</th></tr></thead>
+        <tbody>
+          ${D.cedeAuditLog.map(l => `
+            <tr>
+              <td><strong>${l.id}</strong></td>
+              <td class="row-sub">${l.ts}</td>
+              <td>${l.actor}</td>
+              <td class="row-sub">${l.role}</td>
+              <td>${l.action}</td>
+              <td><code>${l.target}</code></td>
+              <td class="row-sub">${l.context}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
 // ─── Boot ───
 render();
+
+
 
 
 

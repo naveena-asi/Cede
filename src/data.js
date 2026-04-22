@@ -6855,3 +6855,489 @@ export const synapiDashboardKPIs = {
     { label: 'SOC2 last evidence',   value: '2026-03-31' }
   ]
 };
+
+// ════════════════════════════════════════════════════════════════
+// CEDE PORTAL — Carrier ↔ MGA Capacity Bridge (7th portal)
+// ════════════════════════════════════════════════════════════════
+
+export const CEDE_USERS = {
+  carrier:  { name: 'Helena Park',    role: 'Program Manager',           company: 'Summit Fronting Re',          avatar: 'HP' },
+  mga:      { name: 'David Ortiz',    role: 'MGA Founder / CEO',         company: 'Meridian Specialty MGA',      avatar: 'DO' },
+  broker:   { name: 'Priya Shah',     role: 'Program Solutions Director',company: 'Gallagher Re',                avatar: 'PS' },
+  admin:    { name: 'Noa Bergman',    role: 'Platform Operations',       company: 'Cede Platform',               avatar: 'NB' }
+};
+
+export const cedeDashboardKPIs = {
+  carrier: [
+    { label: 'Active programs',      value: '18' },
+    { label: 'MGA-produced GWP',     value: '$412M' },
+    { label: 'Trailing LR',          value: '58.3%' },
+    { label: 'UW-compliance score',  value: '96.2%' },
+    { label: 'Bordereau on-time',    value: '94%' },
+    { label: 'Pending activations',  value: '3' }
+  ],
+  mga: [
+    { label: 'Active carriers',      value: '4' },
+    { label: 'Capacity deployed',    value: '$185M' },
+    { label: 'Profit commission YTD',value: '$2.42M' },
+    { label: 'Your trailing LR',     value: '55.8%' },
+    { label: 'Matrix compliance',    value: '98.1%' },
+    { label: 'Days to renewal',      value: '67' }
+  ],
+  broker: [
+    { label: 'Open mandates',        value: '11' },
+    { label: 'BoR fees YTD',         value: '$1.86M' },
+    { label: 'Avg placement time',   value: '83 days' },
+    { label: 'Mandates won YTD',     value: '9' },
+    { label: 'Pipeline value',       value: '$72M' },
+    { label: 'Conversion',           value: '64%' }
+  ],
+  admin: [
+    { label: 'Carriers on platform', value: '32' },
+    { label: 'MGAs on platform',     value: '148' },
+    { label: 'Mandates in flight',   value: '47' },
+    { label: 'Platform GWP routed',  value: '$2.9B' },
+    { label: 'Disputes open',        value: '1', warning: true },
+    { label: 'SOC2 evidence ready',  value: '100%' }
+  ]
+};
+
+export const cedeCarriers = [
+  { id: 'CR-01', name: 'State National',      domicile: 'TX', ambest: 'A (Excellent)', model: 'Pure fronting',    fronting_fee_pct: 5.5, admitted_states: 50, partners: 38, gwp_2024_usd: '4.1B',  status: 'Active',  collateral_std: 'Reg 114 trust',                       retained_risk_pct: 0    },
+  { id: 'CR-02', name: 'Accelerant',           domicile: 'DE', ambest: 'A- (Excellent)', model: 'Risk exchange',   fronting_fee_pct: 6.2, admitted_states: 50, partners: 232,gwp_2024_usd: '4.19B', status: 'Active',  collateral_std: 'Reg 114 trust + RCPs',                retained_risk_pct: 12   },
+  { id: 'CR-03', name: 'Sutton National',      domicile: 'OK', ambest: 'A- (Excellent)', model: 'Hybrid fronting', fronting_fee_pct: 5.8, admitted_states: 50, partners: 54, gwp_2024_usd: '1.2B',  status: 'Active',  collateral_std: 'Reg 114 trust',                       retained_risk_pct: 5    },
+  { id: 'CR-04', name: 'Transverse (RSG)',     domicile: 'NJ', ambest: 'A- (Excellent)', model: 'Program writer',  fronting_fee_pct: 7.0, admitted_states: 49, partners: 41, gwp_2024_usd: '1.1B',  status: 'Active',  collateral_std: 'Reg 114 trust',                       retained_risk_pct: 10   },
+  { id: 'CR-05', name: 'Clear Blue Insurance', domicile: 'TX', ambest: 'A- (Excellent)', model: 'Pure fronting',   fronting_fee_pct: 5.2, admitted_states: 50, partners: 36, gwp_2024_usd: '1.9B',  status: 'Active',  collateral_std: 'Reg 114 trust + LOC',                 retained_risk_pct: 0    },
+  { id: 'CR-06', name: 'Trisura US',           domicile: 'NY', ambest: 'A- (Excellent)', model: 'Hybrid fronting', fronting_fee_pct: 6.0, admitted_states: 49, partners: 28, gwp_2024_usd: '980M',  status: 'Active',  collateral_std: 'Reg 114 trust',                       retained_risk_pct: 4    },
+  { id: 'CR-07', name: 'Spinnaker (Hippo)',    domicile: 'IL', ambest: 'A- (Excellent)', model: 'Hybrid fronting', fronting_fee_pct: 6.4, admitted_states: 50, partners: 22, gwp_2024_usd: '510M',  status: 'Active',  collateral_std: 'Reg 114 trust',                       retained_risk_pct: 8    },
+  { id: 'CR-08', name: 'Obsidian Insurance',   domicile: 'SC', ambest: 'A- (Excellent)', model: 'Hybrid fronting', fronting_fee_pct: 5.9, admitted_states: 50, partners: 19, gwp_2024_usd: '410M',  status: 'Active',  collateral_std: 'Reg 114 trust + LOC',                 retained_risk_pct: 6    },
+  { id: 'CR-09', name: 'Summit Fronting Re',   domicile: 'DE', ambest: 'A- (Excellent)', model: 'Pure fronting',   fronting_fee_pct: 5.7, admitted_states: 50, partners: 24, gwp_2024_usd: '680M',  status: 'Active',  collateral_std: 'Reg 114 trust + G-SIB LOC',           retained_risk_pct: 0    },
+  { id: 'CR-10', name: 'Everspan Insurance',   domicile: 'AZ', ambest: 'A- (Excellent)', model: 'Program writer',  fronting_fee_pct: 7.2, admitted_states: 48, partners: 15, gwp_2024_usd: '340M',  status: 'Active',  collateral_std: 'Reg 114 trust',                       retained_risk_pct: 15   },
+  { id: 'CR-11', name: 'Core Specialty',       domicile: 'OH', ambest: 'A (Excellent)',  model: 'Program writer',  fronting_fee_pct: 7.5, admitted_states: 50, partners: 12, gwp_2024_usd: '780M',  status: 'Active',  collateral_std: 'Reg 114 trust',                       retained_risk_pct: 22   },
+  { id: 'CR-12', name: 'Palomar Specialty',    domicile: 'OR', ambest: 'A- (Excellent)', model: 'Program writer',  fronting_fee_pct: 7.0, admitted_states: 49, partners: 9,  gwp_2024_usd: '410M',  status: 'Pending',  collateral_std: 'Reg 114 trust',                       retained_risk_pct: 20   }
+];
+
+export const cedeMGAs = [
+  { id: 'MG-01', name: 'Meridian Specialty MGA',     founded: 2019, domicile: 'NY', lobs: ['E&S Casualty', 'Specialty Property'],  gwp_2024_usd: '145M', lr_5yr: 0.561, lr_3yr: 0.548, employees: 42, leadership: 'David Ortiz (CEO, ex-Chubb)', e_o_limit: '$20M/$20M', producer_states: 48, status: 'Active',     soc1: '2025-09-12', soc2: '2025-09-12' },
+  { id: 'MG-02', name: 'Aurora Cyber Underwriters',  founded: 2021, domicile: 'CA', lobs: ['Cyber', 'Tech E&O'],                  gwp_2024_usd: '88M',  lr_5yr: 0.481, lr_3yr: 0.502, employees: 28, leadership: 'Amelia Walsh (CUO, ex-Beazley)', e_o_limit: '$15M/$15M', producer_states: 50, status: 'Active',     soc1: '2026-01-10', soc2: '2026-01-10' },
+  { id: 'MG-03', name: 'Heartland Trucking MGA',      founded: 2017, domicile: 'TX', lobs: ['Commercial Auto — Trucking'],          gwp_2024_usd: '212M', lr_5yr: 0.712, lr_3yr: 0.685, employees: 54, leadership: 'Ray Vaughn (CEO, ex-Progressive)', e_o_limit: '$20M/$20M', producer_states: 48, status: 'Watch',      soc1: '2025-06-30', soc2: '2025-06-30' },
+  { id: 'MG-04', name: 'Brookline Artisan Contractors',founded:2020, domicile: 'MA', lobs: ['Artisan Contractor GL', 'BOP'],       gwp_2024_usd: '52M',  lr_5yr: 0.593, lr_3yr: 0.577, employees: 19, leadership: 'Joanne Liu (COO, ex-CNA)',      e_o_limit: '$10M/$10M', producer_states: 14, status: 'Active',     soc1: '2025-11-30', soc2: '2025-11-30' },
+  { id: 'MG-05', name: 'Pacifica Habitational Cover', founded: 2016, domicile: 'CA', lobs: ['Habitational Property', 'Dwelling'],   gwp_2024_usd: '118M', lr_5yr: 0.624, lr_3yr: 0.602, employees: 36, leadership: 'Elias Kumar (CEO, ex-Allianz)', e_o_limit: '$15M/$15M', producer_states: 22, status: 'Active',     soc1: '2026-02-20', soc2: '2026-02-20' },
+  { id: 'MG-06', name: 'Greenline Cannabis Specialty',founded: 2019, domicile: 'CO', lobs: ['Cannabis GL', 'Property', 'Product'], gwp_2024_usd: '38M',  lr_5yr: 0.528, lr_3yr: 0.541, employees: 15, leadership: 'Sky Mendoza (CEO, ex-Hiscox)', e_o_limit: '$10M/$10M', producer_states: 18, status: 'Active',     soc1: '2025-10-01', soc2: '2025-10-01' },
+  { id: 'MG-07', name: 'Pet Circle Underwriters',     founded: 2022, domicile: 'WA', lobs: ['Pet Insurance'],                      gwp_2024_usd: '74M',  lr_5yr: 0.648, lr_3yr: 0.629, employees: 31, leadership: 'Nadia Patel (CEO, ex-Trupanion)', e_o_limit: '$10M/$10M', producer_states: 50, status: 'Active',     soc1: '2026-03-15', soc2: '2026-03-15' },
+  { id: 'MG-08', name: 'Canyon Craft Brewery MGA',    founded: 2018, domicile: 'CO', lobs: ['Craft Brewery GL', 'Product'],        gwp_2024_usd: '22M',  lr_5yr: 0.559, lr_3yr: 0.571, employees: 12, leadership: 'Mark Feldman (CEO, ex-Liberty)', e_o_limit: '$10M/$10M', producer_states: 16, status: 'Active',     soc1: '2025-08-15', soc2: '2025-08-15' },
+  { id: 'MG-09', name: 'Flatiron Event Cover',        founded: 2020, domicile: 'NY', lobs: ['Special Event GL', 'Wedding Cancel'], gwp_2024_usd: '18M',  lr_5yr: 0.512, lr_3yr: 0.489, employees: 9,  leadership: 'Rachel Simons (CEO, ex-XL Catlin)', e_o_limit: '$5M/$5M',   producer_states: 41, status: 'Active',     soc1: '2025-12-01', soc2: '2025-12-01' },
+  { id: 'MG-10', name: 'Thalassa Marine Underwriters',founded: 2015, domicile: 'FL', lobs: ['Hull', 'P&I', 'Marine Cargo'],        gwp_2024_usd: '96M',  lr_5yr: 0.604, lr_3yr: 0.594, employees: 33, leadership: 'Captain A. Morales (CUO)',     e_o_limit: '$20M/$20M', producer_states: 10, status: 'Active',     soc1: '2025-07-22', soc2: '2025-07-22' },
+  { id: 'MG-11', name: 'Summit Alpine Resort MGA',    founded: 2017, domicile: 'CO', lobs: ['Ski Resort GL', 'Adventure Sports'],  gwp_2024_usd: '29M',  lr_5yr: 0.587, lr_3yr: 0.571, employees: 14, leadership: 'Ingrid Vestergaard (CEO)',     e_o_limit: '$10M/$10M', producer_states: 12, status: 'Active',     soc1: '2025-09-30', soc2: '2025-09-30' },
+  { id: 'MG-12', name: 'Frontier Ag Hail',            founded: 2014, domicile: 'NE', lobs: ['Crop Hail', 'Parametric Weather'],    gwp_2024_usd: '142M', lr_5yr: 0.691, lr_3yr: 0.723, employees: 46, leadership: 'Hank Olsen (CEO, ex-CNA Re)',    e_o_limit: '$20M/$20M', producer_states: 19, status: 'Watch',      soc1: '2025-05-20', soc2: '2025-05-20' },
+  { id: 'MG-13', name: 'Metro Mobility MGU',          founded: 2023, domicile: 'IL', lobs: ['Livery / TNC', 'Delivery Auto'],      gwp_2024_usd: '44M',  lr_5yr: 0.738, lr_3yr: 0.758, employees: 22, leadership: 'Jesse Rowan (CEO, ex-Uber)',    e_o_limit: '$15M/$15M', producer_states: 26, status: 'Under review', soc1: '—',          soc2: '—'          },
+  { id: 'MG-14', name: 'Legacy E&S Casualty',         founded: 2011, domicile: 'GA', lobs: ['Excess Casualty', 'Umbrella'],        gwp_2024_usd: '168M', lr_5yr: 0.537, lr_3yr: 0.521, employees: 61, leadership: 'Carla Bennet (CEO, ex-AIG)',    e_o_limit: '$25M/$25M', producer_states: 50, status: 'Active',     soc1: '2026-02-01', soc2: '2026-02-01' },
+  { id: 'MG-15', name: 'Orchard Workforce MGA',       founded: 2018, domicile: 'FL', lobs: ['Workers Comp — Agriculture'],         gwp_2024_usd: '89M',  lr_5yr: 0.672, lr_3yr: 0.639, employees: 30, leadership: 'Lucia Reyes (COO, ex-Zurich)', e_o_limit: '$15M/$15M', producer_states: 11, status: 'Active',     soc1: '2025-11-15', soc2: '2025-11-15' },
+  { id: 'MG-16', name: 'Sentry Educator Liability',   founded: 2016, domicile: 'MN', lobs: ['Educator PL', 'Abuse & Molestation'], gwp_2024_usd: '34M',  lr_5yr: 0.479, lr_3yr: 0.463, employees: 17, leadership: 'P. Okonkwo (CEO, ex-Markel)',  e_o_limit: '$15M/$15M', producer_states: 40, status: 'Active',     soc1: '2025-10-20', soc2: '2025-10-20' }
+];
+
+export const cedeMandates = [
+  { id: 'MD-2026-001', carrier: 'Summit Fronting Re', mga: 'Meridian Specialty MGA',   stage: 'In-force',       sub_stage: 'Monitoring',         owner_carrier: 'Helena Park',    owner_mga: 'David Ortiz',     bor_broker: 'Gallagher Re', target_close: '2024-11-15', actual_close: '2024-11-08', sla_health: 'Green',  est_premium: '$145M',  days_in_stage: 170 },
+  { id: 'MD-2026-002', carrier: 'Accelerant',         mga: 'Aurora Cyber Underwriters', stage: 'In-force',       sub_stage: 'Monitoring',         owner_carrier: 'R. Chen',        owner_mga: 'Amelia Walsh',    bor_broker: 'Guy Carpenter (GC Access)', target_close: '2025-02-01', actual_close: '2025-01-22', sla_health: 'Green',  est_premium: '$88M',   days_in_stage: 95 },
+  { id: 'MD-2026-003', carrier: 'State National',      mga: 'Heartland Trucking MGA',   stage: 'Run-off',        sub_stage: 'Data export',        owner_carrier: 'M. Levine',      owner_mga: 'Ray Vaughn',      bor_broker: 'Howden Re',    target_close: '2023-06-15', actual_close: '2023-05-30', sla_health: 'Amber',  est_premium: '$212M',  days_in_stage: 62  },
+  { id: 'MD-2026-004', carrier: 'Clear Blue Insurance',mga: 'Brookline Artisan Contractors', stage: 'Activating',  sub_stage: 'Collateral setup',   owner_carrier: 'T. Okafor',      owner_mga: 'Joanne Liu',      bor_broker: 'Gallagher Re', target_close: '2026-05-01', actual_close: null,        sla_health: 'Green',  est_premium: '$52M',   days_in_stage: 18  },
+  { id: 'MD-2026-005', carrier: 'Trisura US',          mga: 'Pacifica Habitational Cover',   stage: 'Term negotiation', sub_stage: 'Counter-offer v3',   owner_carrier: 'J. Park',        owner_mga: 'Elias Kumar',     bor_broker: 'Gallagher Re', target_close: '2026-06-15', actual_close: null,        sla_health: 'Amber',  est_premium: '$118M',  days_in_stage: 23  },
+  { id: 'MD-2026-006', carrier: 'Summit Fronting Re', mga: 'Greenline Cannabis Specialty',  stage: 'DUA drafting', sub_stage: 'Clause review',      owner_carrier: 'Helena Park',    owner_mga: 'Sky Mendoza',     bor_broker: 'Gallagher Re', target_close: '2026-07-01', actual_close: null,        sla_health: 'Green',  est_premium: '$38M',   days_in_stage: 11  },
+  { id: 'MD-2026-007', carrier: 'Sutton National',     mga: 'Pet Circle Underwriters',      stage: 'Due diligence',sub_stage: 'Actuarial review',   owner_carrier: 'K. Nagasawa',    owner_mga: 'Nadia Patel',     bor_broker: 'Lockton Re',   target_close: '2026-07-15', actual_close: null,        sla_health: 'Green',  est_premium: '$74M',   days_in_stage: 19  },
+  { id: 'MD-2026-008', carrier: 'Obsidian Insurance',  mga: 'Canyon Craft Brewery MGA',     stage: 'Due diligence',sub_stage: 'Reference checks',   owner_carrier: 'D. Abramowitz',  owner_mga: 'Mark Feldman',    bor_broker: 'Gallagher Re', target_close: '2026-08-01', actual_close: null,        sla_health: 'Green',  est_premium: '$22M',   days_in_stage: 8   },
+  { id: 'MD-2026-009', carrier: 'Accelerant',          mga: 'Flatiron Event Cover',         stage: 'Prospecting',  sub_stage: 'Mutual NDA',        owner_carrier: 'R. Chen',        owner_mga: 'Rachel Simons',   bor_broker: 'Direct',        target_close: '2026-08-15', actual_close: null,        sla_health: 'Green',  est_premium: '$18M',   days_in_stage: 4   },
+  { id: 'MD-2026-010', carrier: 'Transverse (RSG)',    mga: 'Thalassa Marine Underwriters', stage: 'In-force',     sub_stage: 'Amendment pending', owner_carrier: 'E. Delacroix',    owner_mga: 'A. Morales',      bor_broker: 'Aon Re',        target_close: '2024-03-01', actual_close: '2024-02-20', sla_health: 'Amber',  est_premium: '$96M',   days_in_stage: 410 },
+  { id: 'MD-2026-011', carrier: 'Everspan Insurance',  mga: 'Summit Alpine Resort MGA',     stage: 'In-force',     sub_stage: 'Monitoring',        owner_carrier: 'S. Huang',       owner_mga: 'Ingrid V.',       bor_broker: 'Gallagher Re', target_close: '2025-09-01', actual_close: '2025-08-25', sla_health: 'Green',  est_premium: '$29M',   days_in_stage: 240 },
+  { id: 'MD-2026-012', carrier: 'Core Specialty',      mga: 'Frontier Ag Hail',             stage: 'In-force',     sub_stage: 'Rate-review triggered', owner_carrier: 'B. Lindstrom',owner_mga: 'Hank Olsen',     bor_broker: 'Howden Re',    target_close: '2024-01-15', actual_close: '2023-12-30', sla_health: 'Red',    est_premium: '$142M',  days_in_stage: 480 },
+  { id: 'MD-2026-013', carrier: 'Spinnaker (Hippo)',   mga: 'Metro Mobility MGU',           stage: 'Term negotiation', sub_stage: 'Carrier CUO approval', owner_carrier: 'A. Yamamoto', owner_mga: 'Jesse Rowan',  bor_broker: 'Gallagher Re', target_close: '2026-06-01', actual_close: null,        sla_health: 'Red',    est_premium: '$44M',   days_in_stage: 35  },
+  { id: 'MD-2026-014', carrier: 'Summit Fronting Re',  mga: 'Legacy E&S Casualty',          stage: 'Renewal',      sub_stage: 'Renewal terms',      owner_carrier: 'Helena Park',   owner_mga: 'Carla Bennet',    bor_broker: 'Gallagher Re', target_close: '2026-05-30', actual_close: null,        sla_health: 'Green',  est_premium: '$168M',  days_in_stage: 12  }
+];
+
+export const cedeAppetites = [
+  { id: 'AP-01', carrier_id: 'CR-09', carrier: 'Summit Fronting Re', lob: 'E&S Casualty',       territory: 'All 50',        class_focus: 'Manufacturing, Habitational, Artisan',      per_risk_limit: '$5M/$10M', aggregate_limit: '$100M', target_lr: 0.60, commission_range: '25-30%', effective: '2026-01-01', version: 'v3' },
+  { id: 'AP-02', carrier_id: 'CR-09', carrier: 'Summit Fronting Re', lob: 'Specialty Property', territory: 'CA, TX, FL, NY',class_focus: 'Habitational, Small Commercial',            per_risk_limit: '$10M TIV', aggregate_limit: '$250M', target_lr: 0.58, commission_range: '22-27%', effective: '2026-01-01', version: 'v3' },
+  { id: 'AP-03', carrier_id: 'CR-02', carrier: 'Accelerant',          lob: 'Cyber',              territory: 'All 50',        class_focus: 'SMB, Middle market, Tech E&O',              per_risk_limit: '$5M/$5M',  aggregate_limit: '$150M', target_lr: 0.55, commission_range: '28-32%', effective: '2026-01-15', version: 'v2' },
+  { id: 'AP-04', carrier_id: 'CR-01', carrier: 'State National',       lob: 'Commercial Auto',    territory: 'All 50',        class_focus: 'Regional trucking, Delivery fleets',        per_risk_limit: '$2M/$5M',  aggregate_limit: '$200M', target_lr: 0.68, commission_range: '18-22%', effective: '2025-09-01', version: 'v4' },
+  { id: 'AP-05', carrier_id: 'CR-05', carrier: 'Clear Blue',           lob: 'Artisan Contractor GL', territory: 'Northeast + CA', class_focus: 'Electricians, Plumbers, HVAC',       per_risk_limit: '$2M/$4M',  aggregate_limit: '$80M',  target_lr: 0.62, commission_range: '24-28%', effective: '2026-03-01', version: 'v2' },
+  { id: 'AP-06', carrier_id: 'CR-06', carrier: 'Trisura US',           lob: 'Habitational Property', territory: 'CA, TX, FL, AZ, CO', class_focus: 'Apartments, Condos, Mixed-use',   per_risk_limit: '$25M TIV', aggregate_limit: '$350M', target_lr: 0.60, commission_range: '22-26%', effective: '2026-04-01', version: 'v1' },
+  { id: 'AP-07', carrier_id: 'CR-03', carrier: 'Sutton National',      lob: 'Pet Insurance',      territory: 'All 50',        class_focus: 'Companion animals',                          per_risk_limit: '$10K/ani', aggregate_limit: '$90M',  target_lr: 0.65, commission_range: '20-24%', effective: '2026-02-01', version: 'v2' },
+  { id: 'AP-08', carrier_id: 'CR-08', carrier: 'Obsidian Insurance',   lob: 'Craft Brewery GL',   territory: 'CO, OR, WA, CA',class_focus: 'Brewpubs, Distilleries, Tap rooms',         per_risk_limit: '$2M/$4M',  aggregate_limit: '$40M',  target_lr: 0.58, commission_range: '26-30%', effective: '2026-01-01', version: 'v1' }
+];
+
+export const cedeSeekingProfiles = [
+  { id: 'SK-01', mga_id: 'MG-01', mga: 'Meridian Specialty MGA',   lob: 'E&S Casualty',       target_gwp_usd: '160M', territories: 'All 50', attach: '$1M',  history_summary: '5yr LR 56.1% · 3yr LR 54.8%', team_cv_count: 18, references: ['Aon Re','Lockton Re','Sidley Austin'], capital_sought: '100%', ideal_structure: 'Pure fronting + profit commission' },
+  { id: 'SK-02', mga_id: 'MG-02', mga: 'Aurora Cyber Underwriters', lob: 'Cyber',              target_gwp_usd: '110M', territories: 'All 50', attach: '$250k',history_summary: '5yr LR 48.1% · 3yr LR 50.2%', team_cv_count: 12, references: ['Guy Carpenter','Orrick','Coalition Re'], capital_sought: '100%', ideal_structure: 'Hybrid: 15% retention' },
+  { id: 'SK-03', mga_id: 'MG-04', mga: 'Brookline Artisan Contractors', lob: 'Artisan Contractor GL', target_gwp_usd: '75M', territories: 'Northeast + CA',attach: '$0',  history_summary: '5yr LR 59.3% · 3yr LR 57.7%', team_cv_count: 8,  references: ['Gallagher Re','Marsh'],           capital_sought: '100%', ideal_structure: 'Pure fronting' },
+  { id: 'SK-04', mga_id: 'MG-05', mga: 'Pacifica Habitational Cover',   lob: 'Habitational Property', target_gwp_usd: '140M', territories: 'CA, TX, FL, AZ', attach: '$50k',history_summary: '5yr LR 62.4% · 3yr LR 60.2%', team_cv_count: 16, references: ['Gallagher Re','Aon Re'],           capital_sought: '80%',  ideal_structure: 'Fronting + QS reinsurance' },
+  { id: 'SK-05', mga_id: 'MG-06', mga: 'Greenline Cannabis Specialty',  lob: 'Cannabis GL',           target_gwp_usd: '60M',  territories: 'CO, WA, CA, OR, NV', attach: '$0',history_summary: '5yr LR 52.8% · 3yr LR 54.1%', team_cv_count: 6,  references: ['Howden Re','Goldberg Segalla'],    capital_sought: '100%', ideal_structure: 'Pure fronting + deferred commission' },
+  { id: 'SK-06', mga_id: 'MG-09', mga: 'Flatiron Event Cover',          lob: 'Special Event GL',      target_gwp_usd: '25M',  territories: 'All 50', attach: '$0',  history_summary: '5yr LR 51.2% · 3yr LR 48.9%', team_cv_count: 4,  references: ['Lockton Re'],                       capital_sought: '100%', ideal_structure: 'Pure fronting' }
+];
+
+export const cedeMatches = [
+  { id: 'MA-01', mandate_id: 'MD-2026-007', carrier: 'Sutton National',      mga: 'Pet Circle Underwriters',       score: 92, class_fit: 95, geo_fit: 100, size_fit: 88, commercial_fit: 85, governance_fit: 92, confidence: 'Green' },
+  { id: 'MA-02', mandate_id: 'MD-2026-006', carrier: 'Summit Fronting Re',   mga: 'Greenline Cannabis Specialty',   score: 88, class_fit: 92, geo_fit: 86, size_fit: 85, commercial_fit: 90, governance_fit: 88, confidence: 'Green' },
+  { id: 'MA-03', mandate_id: 'MD-2026-008', carrier: 'Obsidian Insurance',   mga: 'Canyon Craft Brewery MGA',        score: 90, class_fit: 98, geo_fit: 95, size_fit: 80, commercial_fit: 88, governance_fit: 88, confidence: 'Green' },
+  { id: 'MA-04', mandate_id: 'MD-2026-009', carrier: 'Accelerant',           mga: 'Flatiron Event Cover',            score: 81, class_fit: 88, geo_fit: 100, size_fit: 70, commercial_fit: 82, governance_fit: 78, confidence: 'Amber' },
+  { id: 'MA-05', mandate_id: 'MD-2026-013', carrier: 'Spinnaker (Hippo)',    mga: 'Metro Mobility MGU',              score: 68, class_fit: 75, geo_fit: 85, size_fit: 60, commercial_fit: 55, governance_fit: 62, confidence: 'Amber' },
+  { id: 'MA-06', mandate_id: 'MD-2026-005', carrier: 'Trisura US',           mga: 'Pacifica Habitational Cover',     score: 86, class_fit: 92, geo_fit: 95, size_fit: 82, commercial_fit: 80, governance_fit: 80, confidence: 'Green' },
+  { id: 'MA-07', mandate_id: 'MD-2026-004', carrier: 'Clear Blue Insurance', mga: 'Brookline Artisan Contractors',   score: 93, class_fit: 96, geo_fit: 100, size_fit: 88, commercial_fit: 92, governance_fit: 88, confidence: 'Green' }
+];
+
+export const cedeDDPacks = [
+  { id: 'DD-01', mandate_id: 'MD-2026-007', mga: 'Pet Circle Underwriters', items_required: 48, items_received: 42, items_approved: 36, red_flags: 1, overall_score: 86, reviewers: ['UW: K. Nagasawa','Legal: S. Bernstein','Actuary: R. Tanaka','Compliance: M. Holst'], status: 'In review',  due: '2026-06-01' },
+  { id: 'DD-02', mandate_id: 'MD-2026-008', mga: 'Canyon Craft Brewery MGA', items_required: 44, items_received: 38, items_approved: 24, red_flags: 0, overall_score: 80, reviewers: ['UW: D. Abramowitz','Legal: J. Park','Actuary: T. Kline','Compliance: L. Nair'], status: 'In review', due: '2026-06-10' },
+  { id: 'DD-03', mandate_id: 'MD-2026-006', mga: 'Greenline Cannabis Specialty', items_required: 52, items_received: 50, items_approved: 46, red_flags: 2, overall_score: 83, reviewers: ['UW: Helena Park','Legal: A. Chen','Actuary: S. Rehman','Compliance: N. Olsen'], status: 'Approved',  due: '2026-04-15' },
+  { id: 'DD-04', mandate_id: 'MD-2026-009', mga: 'Flatiron Event Cover',   items_required: 40, items_received: 22, items_approved: 0,  red_flags: 0, overall_score: null, reviewers: ['UW: R. Chen','Legal: J. Park'], status: 'Collecting', due: '2026-06-30' }
+];
+
+export const cedeDDChecklist = [
+  { id: 'CK-01', category: 'Financial',     item: '3-year audited financial statements',         required: true, status: 'Received',  reviewer: 'Actuary',   score: 9, confidence: 'Green', notes: 'Deloitte audit, clean opinion' },
+  { id: 'CK-02', category: 'Financial',     item: 'Monthly management accounts (trailing 12)',    required: true, status: 'Received',  reviewer: 'Actuary',   score: 8, confidence: 'Green', notes: 'Complete' },
+  { id: 'CK-03', category: 'Licensing',     item: 'Producer licenses by state (NIPR verified)',   required: true, status: 'Verified',  reviewer: 'Compliance',score: 10,confidence: 'Green', notes: 'All 50 states active' },
+  { id: 'CK-04', category: 'Licensing',     item: 'MGA contract filings (per state)',             required: true, status: 'Received',  reviewer: 'Compliance',score: 9, confidence: 'Green', notes: 'NY Reg 120 — pending' },
+  { id: 'CK-05', category: 'Governance',    item: 'UW leadership CVs',                            required: true, status: 'Received',  reviewer: 'UW',        score: 9, confidence: 'Green', notes: '18 CVs, avg 14 yrs tenure' },
+  { id: 'CK-06', category: 'Governance',    item: 'E&O certificate + limits',                      required: true, status: 'Received',  reviewer: 'Compliance',score: 10,confidence: 'Green', notes: '$20M/$20M Liberty' },
+  { id: 'CK-07', category: 'Governance',    item: 'SOC-1 Type II report (annual)',                 required: true, status: 'Received',  reviewer: 'Compliance',score: 9, confidence: 'Green', notes: '2025-09-12, no material findings' },
+  { id: 'CK-08', category: 'Governance',    item: 'SOC-2 Type II report (annual)',                 required: true, status: 'Received',  reviewer: 'Compliance',score: 9, confidence: 'Green', notes: '2025-09-12, clean' },
+  { id: 'CK-09', category: 'Underwriting',  item: 'UW guidelines (current)',                       required: true, status: 'Received',  reviewer: 'UW',        score: 8, confidence: 'Green', notes: 'Machine-readable v3' },
+  { id: 'CK-10', category: 'Underwriting',  item: 'Sample binders (10 per class)',                 required: true, status: 'Received',  reviewer: 'UW',        score: 8, confidence: 'Amber', notes: 'Manual rate deviations in 3 samples' },
+  { id: 'CK-11', category: 'Underwriting',  item: 'Rating algorithm documentation',                required: true, status: 'Received',  reviewer: 'Actuary',   score: 8, confidence: 'Green', notes: 'Docs complete' },
+  { id: 'CK-12', category: 'Loss history',  item: '5-year loss runs by class',                     required: true, status: 'Received',  reviewer: 'Actuary',   score: 9, confidence: 'Green', notes: 'No material deterioration' },
+  { id: 'CK-13', category: 'Loss history',  item: 'Reserve development triangles',                 required: true, status: 'Received',  reviewer: 'Actuary',   score: 8, confidence: 'Green', notes: 'Normal development' },
+  { id: 'CK-14', category: 'Claims',        item: 'Claims handling manual',                         required: true, status: 'Received',  reviewer: 'Claims',    score: 8, confidence: 'Green', notes: 'In-house + Sedgwick overflow' },
+  { id: 'CK-15', category: 'Claims',        item: 'TPA agreements (if applicable)',                 required: false,status: 'N/A',       reviewer: 'Claims',    score: 0, confidence: 'Green', notes: 'In-house' },
+  { id: 'CK-16', category: 'Reinsurance',   item: 'Reinsurance panel + ratings',                    required: true, status: 'Received',  reviewer: 'UW',        score: 7, confidence: 'Amber', notes: 'One B++ carrier; flagged' },
+  { id: 'CK-17', category: 'Operations',    item: 'Policy admin system audit',                      required: true, status: 'Received',  reviewer: 'UW',        score: 8, confidence: 'Green', notes: 'Duck Creek, on-prem' },
+  { id: 'CK-18', category: 'Operations',    item: 'Bordereau format samples',                       required: true, status: 'Received',  reviewer: 'Compliance',score: 9, confidence: 'Green', notes: 'ACORD NGDS compliant' },
+  { id: 'CK-19', category: 'Privacy',       item: 'CCPA / state privacy attestations',              required: true, status: 'Received',  reviewer: 'Compliance',score: 10,confidence: 'Green', notes: 'All states covered' },
+  { id: 'CK-20', category: 'References',    item: 'Broker references (3)',                          required: true, status: 'Received',  reviewer: 'Program Mgr',score: 9,confidence: 'Green', notes: 'Strong endorsements' },
+  { id: 'CK-21', category: 'References',    item: 'Legal counsel references (1)',                   required: true, status: 'Received',  reviewer: 'Legal',     score: 10,confidence: 'Green', notes: 'Sidley Austin' },
+  { id: 'CK-22', category: 'References',    item: 'Prior carrier references (if any)',              required: false,status: 'N/A',       reviewer: 'Program Mgr',score: 0,confidence: 'Green', notes: 'First carrier relationship' }
+];
+
+export const cedeQAThreads = [
+  { id: 'QA-01', dd_id: 'DD-01', category: 'Loss history', question: 'Can you explain the 2023 class 7471 (delivery auto) spike?', asker: 'K. Nagasawa',  asked: '2026-04-10', answer: '3-vehicle at-fault in Q3; subrogation recovered 62%. Not a pattern.', answered_by: 'N. Patel', answered: '2026-04-11', status: 'Closed' },
+  { id: 'QA-02', dd_id: 'DD-01', category: 'Reinsurance',  question: 'Replace B++ reinsurer or add collateral?',                   asker: 'Helena Park',   asked: '2026-04-12', answer: 'Replacing with A- by 2026-06-01. Interim LOC secured.',                    answered_by: 'N. Patel', answered: '2026-04-13', status: 'Closed' },
+  { id: 'QA-03', dd_id: 'DD-02', category: 'Underwriting', question: 'Sample binder SBR-8821 deviated from rate table — why?',      asker: 'D. Abramowitz', asked: '2026-04-15', answer: 'Schedule mod of 12% for fire-suppression sprinklers — within authority.',  answered_by: 'M. Feldman', answered: '2026-04-16', status: 'Closed' },
+  { id: 'QA-04', dd_id: 'DD-02', category: 'Claims',       question: 'Large-loss 2024-0844 — coverage dispute resolved?',          asker: 'D. Abramowitz', asked: '2026-04-17', answer: 'Settled at policy limit; no bad-faith allegation pursued.',                answered_by: 'M. Feldman', answered: '2026-04-18', status: 'Closed' },
+  { id: 'QA-05', dd_id: 'DD-01', category: 'Operations',   question: 'Duck Creek version and upgrade roadmap?',                     asker: 'K. Nagasawa',  asked: '2026-04-18', answer: 'On v8.3; upgrade to v10 planned Q4 2026.',                                   answered_by: 'N. Patel', answered: null,        status: 'Open' }
+];
+
+export const cedeReferences = [
+  { id: 'RF-01', mga: 'Pet Circle Underwriters', type: 'Broker',   ref_name: 'Matt Rivera',    ref_org: 'Gallagher Re', contacted: '2026-04-10', response: 'Received', sentiment: 'Strong positive', key_quotes: '"Best-in-class operational discipline and UW leadership. No surprises."', score: 9 },
+  { id: 'RF-02', mga: 'Pet Circle Underwriters', type: 'Reinsurer', ref_name: 'Anya Petrova',   ref_org: 'Hannover Re', contacted: '2026-04-10', response: 'Received', sentiment: 'Positive',        key_quotes: '"Bordereaux consistently on-time. LR tracking within plan."',         score: 8 },
+  { id: 'RF-03', mga: 'Pet Circle Underwriters', type: 'Legal',     ref_name: 'Jennifer Klein', ref_org: 'Orrick',      contacted: '2026-04-11', response: 'Received', sentiment: 'Strong positive', key_quotes: '"Rare MGA that engages counsel early on regulatory change."',        score: 10 },
+  { id: 'RF-04', mga: 'Canyon Craft Brewery MGA',type: 'Broker',   ref_name: 'Trevor Kim',     ref_org: 'Gallagher Re', contacted: '2026-04-15', response: 'Pending',  sentiment: '—',                key_quotes: '—',                                                                    score: null },
+  { id: 'RF-05', mga: 'Canyon Craft Brewery MGA',type: 'Reinsurer', ref_name: 'B. Santos',     ref_org: 'Everest Re',   contacted: '2026-04-15', response: 'Received', sentiment: 'Positive',        key_quotes: '"Niche class, well managed. Expense ratio higher than average."',     score: 7 }
+];
+
+export const cedeClauses = [
+  { id: 'CL-001', category: 'Grant of Authority',   title: 'Scope of delegated authority',         standard_variant: 'LMA 3113 §2.1', carrier_variant: 'Territorial limit to admitted states only', typical_usage: '100%' },
+  { id: 'CL-002', category: 'Grant of Authority',   title: 'Effective & expiry dates',              standard_variant: '12-month term', carrier_variant: '12-month + auto-renew w/ 90-day opt-out', typical_usage: '78%' },
+  { id: 'CL-003', category: 'UW Guidelines',        title: 'Incorporation by reference',            standard_variant: 'Current guidelines incorporated', carrier_variant: 'Change control requires written consent', typical_usage: '92%' },
+  { id: 'CL-004', category: 'UW Guidelines',        title: 'Change control process',                 standard_variant: '30-day notice for material change', carrier_variant: '14-day notice + CUO sign-off', typical_usage: '61%' },
+  { id: 'CL-005', category: 'Binding Authority',    title: 'Per-risk limit',                         standard_variant: 'Per-risk limit per class',   carrier_variant: 'Tiered by class with referral triggers', typical_usage: '98%' },
+  { id: 'CL-006', category: 'Binding Authority',    title: 'Aggregate limit',                        standard_variant: 'Annual aggregate per program', carrier_variant: 'Quarterly monitoring + stop-loss trigger', typical_usage: '88%' },
+  { id: 'CL-007', category: 'Binding Authority',    title: 'Pricing deviation authority',            standard_variant: '±10% from rate card', carrier_variant: '±15% with documented rationale', typical_usage: '72%' },
+  { id: 'CL-008', category: 'Binding Authority',    title: 'Excluded risks',                          standard_variant: 'Standard LMA exclusions', carrier_variant: 'Program-specific additions (e.g., no US opioid)', typical_usage: '94%' },
+  { id: 'CL-009', category: 'Premium Handling',     title: 'Fiduciary trust account',                standard_variant: 'FDIC-insured, segregated',  carrier_variant: 'Same + monthly recon to carrier treasurer', typical_usage: '100%' },
+  { id: 'CL-010', category: 'Premium Handling',     title: 'Remittance cadence',                      standard_variant: '25th of following month', carrier_variant: '15th of following month', typical_usage: '45%' },
+  { id: 'CL-011', category: 'Commission',           title: 'Ceding commission (flat)',                standard_variant: 'Percentage of GWP', carrier_variant: '25% flat',  typical_usage: '60%' },
+  { id: 'CL-012', category: 'Commission',           title: 'Profit commission — flat',                 standard_variant: '20% of UW profit above 60% LR', carrier_variant: 'Customizable', typical_usage: '40%' },
+  { id: 'CL-013', category: 'Commission',           title: 'Sliding scale commission',                  standard_variant: '1:2 ratio of commission to LR change', carrier_variant: 'Min 20% / Provisional 27% / Max 32.5%', typical_usage: '30%' },
+  { id: 'CL-014', category: 'Commission',           title: 'Deferred ceding commission',                standard_variant: 'Escrow until 24mo development', carrier_variant: '36-month escrow for long-tail', typical_usage: '18%' },
+  { id: 'CL-015', category: 'Commission',           title: 'Loss corridor',                             standard_variant: 'MGA absorbs 5% between 60-70% LR', carrier_variant: 'Varies by LOB', typical_usage: '25%' },
+  { id: 'CL-016', category: 'Claims Authority',     title: 'Tier 1 (MGA authority)',                   standard_variant: 'Up to $100k per claim', carrier_variant: 'Varies by class: $25k–$250k', typical_usage: '100%' },
+  { id: 'CL-017', category: 'Claims Authority',     title: 'Tier 2 (joint consultation)',              standard_variant: '$100k–$500k', carrier_variant: 'Carrier claims dept. consulted; MGA settles', typical_usage: '85%' },
+  { id: 'CL-018', category: 'Claims Authority',     title: 'Tier 3 (carrier-only)',                    standard_variant: 'Above $500k or coverage dispute', carrier_variant: 'Carrier sole settlement authority', typical_usage: '100%' },
+  { id: 'CL-019', category: 'Claims Authority',     title: 'Large-loss notification',                   standard_variant: 'Within 48 hours', carrier_variant: 'Within 24 hours for 50% of limit or fatality', typical_usage: '88%' },
+  { id: 'CL-020', category: 'Claims Authority',     title: 'Defense counsel panel',                    standard_variant: 'Carrier-approved panel', carrier_variant: 'Panel + MGA-proposed alternates', typical_usage: '72%' },
+  { id: 'CL-021', category: 'Reporting',            title: 'Bordereau cadence',                         standard_variant: 'Monthly', carrier_variant: 'Weekly premium + monthly claims', typical_usage: '55%' },
+  { id: 'CL-022', category: 'Reporting',            title: 'Bordereau format',                          standard_variant: 'ACORD NGDS', carrier_variant: 'ACORD NGDS or Lloyd CRS v5.2', typical_usage: '62%' },
+  { id: 'CL-023', category: 'Audit Rights',         title: 'UW file audit',                             standard_variant: 'Annual + for-cause', carrier_variant: '5% sample + directed sample', typical_usage: '96%' },
+  { id: 'CL-024', category: 'Audit Rights',         title: 'Claims file audit',                         standard_variant: '10% sample annually', carrier_variant: 'Risk-stratified sampling', typical_usage: '94%' },
+  { id: 'CL-025', category: 'Audit Rights',         title: 'SOC-1 Type II requirement',                 standard_variant: 'Annual', carrier_variant: 'Annual + material change triggers', typical_usage: '100%' },
+  { id: 'CL-026', category: 'Audit Rights',         title: 'Collateral verification',                   standard_variant: 'At activation + renewal', carrier_variant: 'Quarterly + upon exposure growth 20%', typical_usage: '85%' },
+  { id: 'CL-027', category: 'Collateral',           title: 'Reg 114 trust',                             standard_variant: 'US custodian bank', carrier_variant: 'Top-3 G-SIB only', typical_usage: '78%' },
+  { id: 'CL-028', category: 'Collateral',           title: 'Acceptable LOC forms',                      standard_variant: 'Top-20 US/G-SIB', carrier_variant: 'Direct issuing-bank confirmation required', typical_usage: '100%' },
+  { id: 'CL-029', category: 'Collateral',           title: 'Collateral maturity',                       standard_variant: '12-month minimum', carrier_variant: '18-month with 90-day renewal notice', typical_usage: '68%' },
+  { id: 'CL-030', category: 'Termination',         title: 'Termination for convenience',               standard_variant: '180-day notice', carrier_variant: '90-day mutual notice', typical_usage: '55%' },
+  { id: 'CL-031', category: 'Termination',         title: 'Termination for cause',                     standard_variant: 'Immediate or 30-day cure', carrier_variant: 'Enumerated cause events only', typical_usage: '92%' },
+  { id: 'CL-032', category: 'Termination',         title: 'Automatic termination',                     standard_variant: 'Licensing loss, insolvency, change of control', carrier_variant: 'Plus: material SOC finding', typical_usage: '85%' },
+  { id: 'CL-033', category: 'Run-off',             title: 'Run-off commission',                        standard_variant: 'Pure admin fee (5-10%)',  carrier_variant: '50% of new-business commission', typical_usage: '42%' },
+  { id: 'CL-034', category: 'Run-off',             title: 'Data portability SLA',                      standard_variant: '30 days for full data pack', carrier_variant: '5 business days ACORD-canonical', typical_usage: '28%' },
+  { id: 'CL-035', category: 'General',             title: 'Representations & Warranties',              standard_variant: 'Standard LMA R&W', carrier_variant: 'Plus: MGA key-person retention', typical_usage: '84%' },
+  { id: 'CL-036', category: 'General',             title: 'Indemnification',                            standard_variant: 'Mutual, capped at 2x fees', carrier_variant: 'MGA uncapped for UW breach', typical_usage: '62%' },
+  { id: 'CL-037', category: 'General',             title: 'E&O insurance requirement',                  standard_variant: '$10M/$10M minimum', carrier_variant: '$20M/$20M for programs > $100M GWP', typical_usage: '55%' },
+  { id: 'CL-038', category: 'General',             title: 'Confidentiality',                            standard_variant: '5-year post-termination', carrier_variant: 'Perpetual for customer data', typical_usage: '91%' },
+  { id: 'CL-039', category: 'General',             title: 'IP ownership of data',                        standard_variant: 'MGA retains; carrier license', carrier_variant: 'Carrier co-owner of policy data', typical_usage: '52%' },
+  { id: 'CL-040', category: 'Compliance',          title: 'Anti-bribery (FCPA / UK Bribery Act)',        standard_variant: 'Standard representations', carrier_variant: 'Annual training certification', typical_usage: '96%' }
+];
+
+export const cedeBindingMatrices = [
+  { id: 'BM-01', mandate_id: 'MD-2026-001', program: 'Meridian E&S Casualty',    class: 'Manufacturing',      state: 'All 50',       per_risk: '$5M/$10M',  deductible: '$5k-$50k', attach: '$0',   auto: true,  refer_above: '$4M', decline: ['Munitions','Opioids'], price_dev: '±15%', version: 'v3.1', effective: '2026-01-01' },
+  { id: 'BM-02', mandate_id: 'MD-2026-001', program: 'Meridian E&S Casualty',    class: 'Habitational',       state: 'CA, TX, FL',    per_risk: '$3M/$6M',   deductible: '$5k-$25k', attach: '$0',   auto: true,  refer_above: '$2.5M', decline: ['Student housing','Section 8'], price_dev: '±10%', version: 'v3.1', effective: '2026-01-01' },
+  { id: 'BM-03', mandate_id: 'MD-2026-001', program: 'Meridian E&S Casualty',    class: 'Artisan Contractor', state: 'Northeast',     per_risk: '$2M/$4M',   deductible: '$2.5k-$10k', attach: '$0', auto: true,  refer_above: '$1.5M', decline: ['Roofers','Demolition'], price_dev: '±12%', version: 'v3.1', effective: '2026-01-01' },
+  { id: 'BM-04', mandate_id: 'MD-2026-002', program: 'Aurora Cyber',             class: 'SMB Cyber',          state: 'All 50',        per_risk: '$5M/$5M',   deductible: '$10k-$100k', attach: '$0', auto: true,  refer_above: '$3M',   decline: ['Crypto exchanges','Adult'], price_dev: '±20%', version: 'v2.2', effective: '2026-01-15' },
+  { id: 'BM-05', mandate_id: 'MD-2026-002', program: 'Aurora Cyber',             class: 'Middle-market',      state: 'All 50',        per_risk: '$10M/$10M', deductible: '$25k-$250k', attach: '$0', auto: false, refer_above: '$5M',   decline: ['Defense primes','Nuclear'], price_dev: '±15%', version: 'v2.2', effective: '2026-01-15' },
+  { id: 'BM-06', mandate_id: 'MD-2026-003', program: 'Heartland Trucking',       class: 'Regional Trucking',  state: 'All 50 ex NY,NJ',per_risk:'$2M/$5M',   deductible: '$2.5k-$25k', attach: '$0', auto: true,  refer_above: '$1.5M', decline: ['Hazmat','Interstate long-haul >1500mi'], price_dev: '±10%', version: 'v4.3', effective: '2025-09-01' },
+  { id: 'BM-07', mandate_id: 'MD-2026-004', program: 'Brookline Artisan',        class: 'Electrical',         state: 'MA, CT, RI, NH',per_risk: '$2M/$4M',  deductible: '$2.5k-$10k', attach: '$0', auto: true,  refer_above: '$1.5M', decline: ['Commercial > $5M revenue'], price_dev: '±12%', version: 'v2.0', effective: '2026-03-01' },
+  { id: 'BM-08', mandate_id: 'MD-2026-004', program: 'Brookline Artisan',        class: 'Plumbing',           state: 'MA, CT, RI',    per_risk: '$2M/$4M',  deductible: '$2.5k-$10k', attach: '$0', auto: true,  refer_above: '$1.5M', decline: ['Asbestos'], price_dev: '±12%', version: 'v2.0', effective: '2026-03-01' }
+];
+
+export const cedeClaimAuthorities = [
+  { id: 'CA-01', mandate_id: 'MD-2026-001', tier1_limit_usd: 100000,  tier2_limit_usd: 500000, tier3_authority: 'Carrier only', notify_large_loss_hrs: 24, notify_threshold_pct: 50, defense_panel: 'Carrier-approved panel + MGA proposals',             covers_disputes: 'Tier 3 only' },
+  { id: 'CA-02', mandate_id: 'MD-2026-002', tier1_limit_usd: 50000,   tier2_limit_usd: 250000, tier3_authority: 'Carrier only', notify_large_loss_hrs: 24, notify_threshold_pct: 40, defense_panel: 'Carrier panel',                                     covers_disputes: 'Tier 3 + any coverage dispute' },
+  { id: 'CA-03', mandate_id: 'MD-2026-003', tier1_limit_usd: 25000,   tier2_limit_usd: 150000, tier3_authority: 'Carrier only', notify_large_loss_hrs: 24, notify_threshold_pct: 40, defense_panel: 'Carrier panel (trucking specialists)',             covers_disputes: 'Tier 2+' },
+  { id: 'CA-04', mandate_id: 'MD-2026-004', tier1_limit_usd: 75000,   tier2_limit_usd: 300000, tier3_authority: 'Carrier only', notify_large_loss_hrs: 48, notify_threshold_pct: 50, defense_panel: 'Carrier panel + MGA proposals',                     covers_disputes: 'Tier 3 only' }
+];
+
+export const cedeTermSheets = [
+  { id: 'TS-01', mandate_id: 'MD-2026-005', version: 'v3', status: 'Counter-offer pending', proposed_by: 'MGA',      date: '2026-04-18', ceding_comm_pct: 26, fronting_fee_pct: 6.2, profit_comm_struct: '20% above 60% LR', loss_corridor: '5% in 60-70% LR', collateral: 'Reg 114 + LOC $18M', termination_notice_days: 120, review_status: 'Carrier CUO', next_meeting: '2026-04-25' },
+  { id: 'TS-02', mandate_id: 'MD-2026-005', version: 'v2', status: 'Superseded',         proposed_by: 'Carrier',   date: '2026-04-10', ceding_comm_pct: 25, fronting_fee_pct: 6.5, profit_comm_struct: '20% above 62% LR', loss_corridor: '5% in 62-72% LR', collateral: 'Reg 114 + LOC $20M', termination_notice_days: 90,  review_status: '—',               next_meeting: '—' },
+  { id: 'TS-03', mandate_id: 'MD-2026-005', version: 'v1', status: 'Superseded',         proposed_by: 'Carrier',   date: '2026-04-02', ceding_comm_pct: 24, fronting_fee_pct: 7.0, profit_comm_struct: '18% above 62% LR', loss_corridor: '8% in 62-75% LR', collateral: 'Reg 114 only $25M',  termination_notice_days: 90,  review_status: '—',               next_meeting: '—' },
+  { id: 'TS-04', mandate_id: 'MD-2026-013', version: 'v2', status: 'Carrier review',     proposed_by: 'Carrier',   date: '2026-04-16', ceding_comm_pct: 20, fronting_fee_pct: 7.5, profit_comm_struct: '15% above 65% LR', loss_corridor: '10% in 65-80% LR', collateral: 'Reg 114 + LOC $12M', termination_notice_days: 90, review_status: 'Pending actuarial', next_meeting: '2026-04-28' },
+  { id: 'TS-05', mandate_id: 'MD-2026-014', version: 'v1', status: 'Renewal proposal',   proposed_by: 'Carrier',   date: '2026-04-15', ceding_comm_pct: 27, fronting_fee_pct: 5.8, profit_comm_struct: 'Sliding 20-30%', loss_corridor: '5% in 58-65% LR', collateral: 'Reg 114 + LOC $28M', termination_notice_days: 120, review_status: 'MGA review',  next_meeting: '2026-05-05' }
+];
+
+export const cedeAgreements = [
+  { id: 'AG-01', mandate_id: 'MD-2026-001', version: '1.2', executed_date: '2024-11-08',  parties: 'Summit Fronting Re (DE) & Meridian Specialty MGA (NY)', pages: 142, clauses: 38, amendments: 2, latest_amendment: '2025-09-01', expiry: '2026-11-07', template: 'LMA 3113 + carrier precedent', storage_hash: '0x8a4b...e92f', esign_provider: 'DocuSign' },
+  { id: 'AG-02', mandate_id: 'MD-2026-002', version: '1.0', executed_date: '2025-01-22',  parties: 'Accelerant (DE) & Aurora Cyber Underwriters (CA)',     pages: 98,  clauses: 36, amendments: 0, latest_amendment: null,        expiry: '2027-01-21', template: 'Accelerant Member template',     storage_hash: '0x4c12...a018', esign_provider: 'DocuSign' },
+  { id: 'AG-03', mandate_id: 'MD-2026-003', version: '2.3', executed_date: '2023-05-30',  parties: 'State National (TX) & Heartland Trucking MGA (TX)',    pages: 124, clauses: 42, amendments: 3, latest_amendment: '2025-11-20', expiry: '2026-05-29', template: 'State National program agreement',storage_hash:'0x12a8...dd33', esign_provider: 'DocuSign' },
+  { id: 'AG-04', mandate_id: 'MD-2026-010', version: '1.1', executed_date: '2024-02-20',  parties: 'Transverse (NJ) & Thalassa Marine Underwriters (FL)',   pages: 116, clauses: 40, amendments: 1, latest_amendment: '2025-03-10', expiry: '2027-02-19', template: 'LMA 5159 + RSG precedent',       storage_hash: '0x9911...cd01', esign_provider: 'AdobeSign' },
+  { id: 'AG-05', mandate_id: 'MD-2026-011', version: '1.0', executed_date: '2025-08-25',  parties: 'Everspan (AZ) & Summit Alpine Resort MGA (CO)',        pages: 88,  clauses: 34, amendments: 0, latest_amendment: null,        expiry: '2026-08-24', template: 'LMA 3114 + Everspan precedent',   storage_hash: '0x771a...bb20', esign_provider: 'DocuSign' },
+  { id: 'AG-06', mandate_id: 'MD-2026-012', version: '2.1', executed_date: '2023-12-30',  parties: 'Core Specialty (OH) & Frontier Ag Hail (NE)',          pages: 102, clauses: 39, amendments: 2, latest_amendment: '2025-07-01', expiry: '2026-12-29', template: 'LMA 3113',                        storage_hash: '0x5512...ee7a', esign_provider: 'DocuSign' },
+  { id: 'AG-07', mandate_id: 'MD-2026-014', version: '3.0', executed_date: '2022-06-01',  parties: 'Summit Fronting Re (DE) & Legacy E&S Casualty (GA)',   pages: 138, clauses: 40, amendments: 4, latest_amendment: '2025-06-01', expiry: '2026-05-31', template: 'Summit standard',                 storage_hash: '0xff01...1193', esign_provider: 'DocuSign' }
+];
+
+export const cedeActivations = [
+  { id: 'AC-01', mandate_id: 'MD-2026-004', program: 'Brookline Artisan', steps: [
+    { key:'collateral',         label:'Collateral setup & verification',    status:'Done',        owner:'Carrier CFO',   done:'2026-04-08' },
+    { key:'matrix-push',        label:'Binding matrix pushed to MGA PAS',   status:'Done',        owner:'Platform',      done:'2026-04-10' },
+    { key:'bordereau-endpoint', label:'Bordereau endpoint configured',       status:'Done',        owner:'Platform',      done:'2026-04-12' },
+    { key:'producers',          label:'Producer appointments (NIPR)',        status:'In progress', owner:'MGA Ops',       due:'2026-04-30' },
+    { key:'reinsurance',        label:'Outward cession coordinated',          status:'Pending',     owner:'Carrier Reins', due:'2026-05-05' },
+    { key:'signoff',            label:'Go-live sign-off',                     status:'Pending',     owner:'CUOs',          due:'2026-05-10' }
+  ], target_golive: '2026-05-01', progress_pct: 50 },
+  { id: 'AC-02', mandate_id: 'MD-2026-007', program: 'Pet Circle', steps: [
+    { key:'collateral',         label:'Collateral setup & verification',    status:'Pending',     owner:'Carrier CFO',   due:'2026-06-15' },
+    { key:'matrix-push',        label:'Binding matrix pushed to MGA PAS',   status:'Pending',     owner:'Platform',      due:'2026-06-20' },
+    { key:'bordereau-endpoint', label:'Bordereau endpoint configured',       status:'Pending',     owner:'Platform',      due:'2026-06-20' },
+    { key:'producers',          label:'Producer appointments (NIPR)',        status:'Pending',     owner:'MGA Ops',       due:'2026-06-28' },
+    { key:'reinsurance',        label:'Outward cession coordinated',          status:'Pending',     owner:'Carrier Reins', due:'2026-07-05' },
+    { key:'signoff',            label:'Go-live sign-off',                     status:'Pending',     owner:'CUOs',          due:'2026-07-15' }
+  ], target_golive: '2026-07-15', progress_pct: 0 }
+];
+
+export const cedeCollateral = [
+  { id: 'CO-01', program: 'Meridian E&S Casualty',   type: 'Reg 114 Trust',       amount_usd: 42000000, required_usd: 38000000, custodian: 'JPMorgan Chase',        maturity: 'Evergreen',   verified: '2026-03-28', status: 'Verified',    red_flags: 0 },
+  { id: 'CO-02', program: 'Meridian E&S Casualty',   type: 'LOC',                 amount_usd: 8000000,  required_usd: 8000000,  issuing_bank: 'Bank of America',   maturity: '2026-10-15',  verified: '2026-03-28', status: 'Verified',    red_flags: 0 },
+  { id: 'CO-03', program: 'Aurora Cyber',            type: 'Reg 114 Trust',       amount_usd: 28000000, required_usd: 25000000, custodian: 'BNY Mellon',            maturity: 'Evergreen',   verified: '2026-03-15', status: 'Verified',    red_flags: 0 },
+  { id: 'CO-04', program: 'Heartland Trucking',      type: 'Reg 114 Trust',       amount_usd: 78000000, required_usd: 85000000, custodian: 'JPMorgan Chase',        maturity: 'Evergreen',   verified: '2026-02-10', status: 'Deficit',     red_flags: 1 },
+  { id: 'CO-05', program: 'Brookline Artisan',       type: 'LOC',                 amount_usd: 6200000,  required_usd: 6000000,  issuing_bank: 'Citibank',           maturity: '2027-01-20',  verified: '2026-04-05', status: 'Verified',    red_flags: 0 },
+  { id: 'CO-06', program: 'Pacifica Habitational',   type: 'Reg 114 Trust',       amount_usd: 34000000, required_usd: 30000000, custodian: 'Wells Fargo',           maturity: 'Evergreen',   verified: '2026-03-01', status: 'Verified',    red_flags: 0 },
+  { id: 'CO-07', program: 'Thalassa Marine',         type: 'Funds Withheld',      amount_usd: 18500000, required_usd: 17000000, custodian: 'Transverse in-house',    maturity: 'N/A',         verified: '2026-02-28', status: 'Verified',    red_flags: 0 },
+  { id: 'CO-08', program: 'Frontier Ag Hail',        type: 'LOC',                 amount_usd: 32000000, required_usd: 32000000, issuing_bank: 'HSBC USA',           maturity: '2026-07-01',  verified: '2026-03-20', status: 'Renewal-due', red_flags: 0 },
+  { id: 'CO-09', program: 'Legacy E&S Casualty',     type: 'Reg 114 Trust',       amount_usd: 68000000, required_usd: 62000000, custodian: 'JPMorgan Chase',        maturity: 'Evergreen',   verified: '2026-03-28', status: 'Verified',    red_flags: 0 },
+  { id: 'CO-10', program: 'Summit Alpine Resort',    type: 'Reg 114 Trust',       amount_usd: 9200000,  required_usd: 8500000,  custodian: 'US Bank',                maturity: 'Evergreen',   verified: '2026-01-30', status: 'Verified',    red_flags: 0 }
+];
+
+export const cedeCollateralVerifs = [
+  { id: 'CV-01', collateral_id: 'CO-01', method: 'Custodian bank API + attestation', requested: '2026-03-28 09:12', confirmed: '2026-03-28 09:14', status: 'Verified',   by: 'JPMC Treasury API',    signature: '0x9a82...' },
+  { id: 'CV-02', collateral_id: 'CO-02', method: 'Issuing bank direct confirmation', requested: '2026-03-28 09:15', confirmed: '2026-03-28 10:22', status: 'Verified',   by: 'BofA Treasury',         signature: '0x14bb...' },
+  { id: 'CV-03', collateral_id: 'CO-03', method: 'Custodian bank API',               requested: '2026-03-15 08:00', confirmed: '2026-03-15 08:01', status: 'Verified',   by: 'BNY Mellon API',        signature: '0x7c01...' },
+  { id: 'CV-04', collateral_id: 'CO-04', method: 'Custodian bank API',               requested: '2026-02-10 11:30', confirmed: '2026-02-10 11:32', status: 'Deficit flagged', by: 'JPMC Treasury API', signature: '0x42ab...' },
+  { id: 'CV-05', collateral_id: 'CO-05', method: 'Issuing bank direct confirmation', requested: '2026-04-05 14:45', confirmed: '2026-04-05 15:30', status: 'Verified',   by: 'Citibank Treasury',    signature: '0xef32...' },
+  { id: 'CV-06', collateral_id: 'CO-08', method: 'Issuing bank direct confirmation', requested: '2026-03-20 09:00', confirmed: '2026-03-20 09:45', status: 'Verified',   by: 'HSBC Treasury',         signature: '0x28cd...' }
+];
+
+export const cedeBordereaux = [
+  { id: 'BX-01', program: 'Meridian E&S Casualty',   type: 'Premium', period: '2026-03',  received: '2026-04-05', gwp_usd: 11800000, policies: 428, comm_usd: 3068000, tax_usd: 648000, status: 'Reconciled', variance_pct: 0.02 },
+  { id: 'BX-02', program: 'Meridian E&S Casualty',   type: 'Claim',   period: '2026-03',  received: '2026-04-05', paid_usd: 2820000, os_reserve_usd: 18400000, count_open: 112, count_closed: 18, status: 'Reconciled', variance_pct: 0.04 },
+  { id: 'BX-03', program: 'Aurora Cyber',            type: 'Premium', period: '2026-03',  received: '2026-04-03', gwp_usd: 7400000,  policies: 914, comm_usd: 2220000, tax_usd: 408000, status: 'Reconciled', variance_pct: 0.01 },
+  { id: 'BX-04', program: 'Aurora Cyber',            type: 'Claim',   period: '2026-03',  received: '2026-04-03', paid_usd: 910000,  os_reserve_usd: 4200000,  count_open: 28,  count_closed: 7,  status: 'Reconciled', variance_pct: 0.00 },
+  { id: 'BX-05', program: 'Heartland Trucking',      type: 'Premium', period: '2026-03',  received: '2026-04-18', gwp_usd: 17200000, policies: 312, comm_usd: 3440000, tax_usd: 946000, status: 'Exceptions', variance_pct: 1.12 },
+  { id: 'BX-06', program: 'Heartland Trucking',      type: 'Claim',   period: '2026-03',  received: '2026-04-18', paid_usd: 6900000, os_reserve_usd: 28400000, count_open: 188, count_closed: 22, status: 'Exceptions', variance_pct: 2.41 },
+  { id: 'BX-07', program: 'Pacifica Habitational',   type: 'Premium', period: '2026-03',  received: '2026-04-04', gwp_usd: 9600000,  policies: 542, comm_usd: 2304000, tax_usd: 528000, status: 'Reconciled', variance_pct: 0.03 },
+  { id: 'BX-08', program: 'Pacifica Habitational',   type: 'Claim',   period: '2026-03',  received: '2026-04-04', paid_usd: 1820000, os_reserve_usd: 9800000,  count_open: 76,  count_closed: 14, status: 'Reconciled', variance_pct: 0.08 },
+  { id: 'BX-09', program: 'Thalassa Marine',         type: 'Premium', period: '2026-03',  received: '2026-04-02', gwp_usd: 8100000,  policies: 188, comm_usd: 1782000, tax_usd: 486000, status: 'Reconciled', variance_pct: 0.02 },
+  { id: 'BX-10', program: 'Frontier Ag Hail',        type: 'Premium', period: '2026-03',  received: '2026-04-08', gwp_usd: 11400000, policies: 2418,comm_usd: 2280000, tax_usd: 627000, status: 'Reconciled', variance_pct: 0.09 },
+  { id: 'BX-11', program: 'Legacy E&S Casualty',     type: 'Premium', period: '2026-03',  received: '2026-04-03', gwp_usd: 14200000, policies: 488, comm_usd: 3834000, tax_usd: 781000, status: 'Reconciled', variance_pct: 0.01 },
+  { id: 'BX-12', program: 'Summit Alpine Resort',    type: 'Premium', period: '2026-03',  received: '2026-04-09', gwp_usd: 2400000,  policies: 88,  comm_usd: 624000,  tax_usd: 132000, status: 'Reconciled', variance_pct: 0.00 }
+];
+
+export const cedeBordereauxValidns = [
+  { id: 'BV-01', bordereau_id: 'BX-05', rule: 'ACORD NGDS schema',        result: 'Pass' },
+  { id: 'BV-02', bordereau_id: 'BX-05', rule: 'Policy count matches AUM', result: 'Fail — 312 vs 319' },
+  { id: 'BV-03', bordereau_id: 'BX-05', rule: 'Commission % within range',result: 'Pass' },
+  { id: 'BV-04', bordereau_id: 'BX-06', rule: 'ACORD NGDS schema',        result: 'Pass' },
+  { id: 'BV-05', bordereau_id: 'BX-06', rule: 'Reserve delta < 15%',      result: 'Fail — 18.2%' },
+  { id: 'BV-06', bordereau_id: 'BX-01', rule: 'ACORD NGDS schema',        result: 'Pass' },
+  { id: 'BV-07', bordereau_id: 'BX-01', rule: 'Taxes by state',            result: 'Pass' },
+  { id: 'BV-08', bordereau_id: 'BX-03', rule: 'ACORD NGDS schema',        result: 'Pass' }
+];
+
+export const cedeReconciliations = [
+  { id: 'RC-01', program: 'Meridian E&S Casualty', period: '2026-03', bordereau_gwp: 11800000, ledger_cash: 11797600, earned: 9834000, commission_paid: 3068000, tax_filed: 648000, matched_pct: 99.98, exceptions: 0 },
+  { id: 'RC-02', program: 'Aurora Cyber',          period: '2026-03', bordereau_gwp: 7400000,  ledger_cash: 7399300,  earned: 6166000, commission_paid: 2220000, tax_filed: 408000, matched_pct: 99.99, exceptions: 0 },
+  { id: 'RC-03', program: 'Heartland Trucking',    period: '2026-03', bordereau_gwp: 17200000, ledger_cash: 17008500, earned: 14320000,commission_paid: 3440000, tax_filed: 946000, matched_pct: 98.89, exceptions: 7 },
+  { id: 'RC-04', program: 'Pacifica Habitational', period: '2026-03', bordereau_gwp: 9600000,  ledger_cash: 9597000,  earned: 8010000, commission_paid: 2304000, tax_filed: 528000, matched_pct: 99.97, exceptions: 0 },
+  { id: 'RC-05', program: 'Thalassa Marine',       period: '2026-03', bordereau_gwp: 8100000,  ledger_cash: 8098000,  earned: 6800000, commission_paid: 1782000, tax_filed: 486000, matched_pct: 99.98, exceptions: 0 },
+  { id: 'RC-06', program: 'Frontier Ag Hail',      period: '2026-03', bordereau_gwp: 11400000, ledger_cash: 11386000, earned: 9500000, commission_paid: 2280000, tax_filed: 627000, matched_pct: 99.88, exceptions: 2 },
+  { id: 'RC-07', program: 'Legacy E&S Casualty',   period: '2026-03', bordereau_gwp: 14200000, ledger_cash: 14198000, earned: 11833000,commission_paid: 3834000, tax_filed: 781000, matched_pct: 99.99, exceptions: 0 }
+];
+
+export const cedeCompliance = [
+  { id: 'BR-01', program: 'Heartland Trucking',   policy_no: 'HT-2026-00821', breach_type: 'Binding authority — limit',     rule: 'Per-risk > $1.5M requires referral',           severity: 'High',    detected: '2026-04-12', status: 'Open',       carrier_owner: 'M. Levine', mga_response: 'Schedule mod approved in error; rescinding' },
+  { id: 'BR-02', program: 'Heartland Trucking',   policy_no: 'HT-2026-00844', breach_type: 'Binding authority — class',     rule: 'Hazmat class excluded',                          severity: 'Critical',detected: '2026-04-14', status: 'Resolved',   carrier_owner: 'M. Levine', mga_response: 'Policy cancelled flat; premium returned' },
+  { id: 'BR-03', program: 'Meridian E&S Casualty',policy_no: 'ME-2026-01192', breach_type: 'Pricing deviation',              rule: 'Pricing deviation > ±15%',                        severity: 'Medium',  detected: '2026-03-28', status: 'Closed',     carrier_owner: 'Helena Park',mga_response: 'Documented loss-control rationale accepted' },
+  { id: 'BR-04', program: 'Pacifica Habitational',policy_no: 'PH-2026-00451', breach_type: 'Claims authority',                rule: 'Tier 1 limit $75k exceeded ($82k)',              severity: 'Medium',  detected: '2026-04-02', status: 'Closed',     carrier_owner: 'J. Park',    mga_response: 'Joint consultation post-facto; approved' },
+  { id: 'BR-05', program: 'Frontier Ag Hail',     policy_no: 'FA-2026-02814', breach_type: 'Excluded risk',                   rule: 'GMO crop excluded',                              severity: 'High',    detected: '2026-04-10', status: 'Open',       carrier_owner: 'B. Lindstrom',mga_response: 'Under review — MGA claims misclassified' },
+  { id: 'BR-06', program: 'Aurora Cyber',         policy_no: 'AC-2026-00812', breach_type: 'Territorial',                      rule: 'Non-admitted state (LA)',                        severity: 'Medium',  detected: '2026-04-05', status: 'Closed',     carrier_owner: 'R. Chen',    mga_response: 'E&S filing completed retroactively' }
+];
+
+export const cedeAudits = [
+  { id: 'AU-01', program: 'Meridian E&S Casualty',   type: 'Annual',    kickoff: '2026-03-15', complete: '2026-04-10', sampled_uw: 85, sampled_claims: 42, observations: 4, critical_findings: 0, severity: 'Low',    report_ref: 'AUD-ME-2026-01' },
+  { id: 'AU-02', program: 'Heartland Trucking',       type: 'For-cause',kickoff: '2026-04-01', complete: null,         sampled_uw: 52, sampled_claims: 28, observations: 8, critical_findings: 2, severity: 'High',   report_ref: 'AUD-HT-2026-02' },
+  { id: 'AU-03', program: 'Aurora Cyber',              type: 'Annual',    kickoff: '2026-01-20', complete: '2026-02-18', sampled_uw: 64, sampled_claims: 18, observations: 2, critical_findings: 0, severity: 'Low',    report_ref: 'AUD-AC-2026-01' },
+  { id: 'AU-04', program: 'Frontier Ag Hail',          type: 'For-cause', kickoff: '2026-03-10', complete: '2026-04-08', sampled_uw: 48, sampled_claims: 22, observations: 6, critical_findings: 1, severity: 'Medium', report_ref: 'AUD-FA-2026-01' },
+  { id: 'AU-05', program: 'Legacy E&S Casualty',       type: 'Annual',    kickoff: '2026-02-01', complete: '2026-03-12', sampled_uw: 90, sampled_claims: 38, observations: 3, critical_findings: 0, severity: 'Low',    report_ref: 'AUD-LE-2026-01' }
+];
+
+export const cedeSocReports = [
+  { id: 'SR-01', mga: 'Meridian Specialty MGA',     type: 'SOC-1 Type II', auditor: 'Deloitte',   period: '2024-07-01 to 2025-06-30', issued: '2025-09-12', material_findings: 0, status: 'Current' },
+  { id: 'SR-02', mga: 'Meridian Specialty MGA',     type: 'SOC-2 Type II', auditor: 'Deloitte',   period: '2024-07-01 to 2025-06-30', issued: '2025-09-12', material_findings: 0, status: 'Current' },
+  { id: 'SR-03', mga: 'Aurora Cyber Underwriters',  type: 'SOC-1 Type II', auditor: 'EY',         period: '2024-11-01 to 2025-10-31', issued: '2026-01-10', material_findings: 0, status: 'Current' },
+  { id: 'SR-04', mga: 'Aurora Cyber Underwriters',  type: 'SOC-2 Type II', auditor: 'EY',         period: '2024-11-01 to 2025-10-31', issued: '2026-01-10', material_findings: 0, status: 'Current' },
+  { id: 'SR-05', mga: 'Heartland Trucking MGA',      type: 'SOC-1 Type II', auditor: 'Grant Thornton', period: '2024-01-01 to 2024-12-31', issued: '2025-06-30', material_findings: 1, status: 'Renewal-due' },
+  { id: 'SR-06', mga: 'Pacifica Habitational Cover',type: 'SOC-1 Type II', auditor: 'KPMG',       period: '2024-11-01 to 2025-12-31', issued: '2026-02-20', material_findings: 0, status: 'Current' },
+  { id: 'SR-07', mga: 'Frontier Ag Hail',            type: 'SOC-1 Type II', auditor: 'PwC',        period: '2024-01-01 to 2024-12-31', issued: '2025-05-20', material_findings: 2, status: 'Under review' },
+  { id: 'SR-08', mga: 'Legacy E&S Casualty',         type: 'SOC-1 Type II', auditor: 'Deloitte',   period: '2024-12-01 to 2025-11-30', issued: '2026-02-01', material_findings: 0, status: 'Current' }
+];
+
+export const cedeAmendments = [
+  { id: 'AM-01', program: 'Meridian E&S Casualty', agreement_id: 'AG-01', version_from: '1.1', version_to: '1.2', effective: '2025-09-01', prior: true, changes: ['Binding matrix: artisan contractor per-risk raised $1.5M → $2M','Commission: profit-comm trigger 62% → 60% LR'], counsel: 'Sidley Austin', executed_by: 'Both CUOs', esign: 'DocuSign' },
+  { id: 'AM-02', program: 'State National × Heartland Trucking', agreement_id: 'AG-03', version_from: '2.2', version_to: '2.3', effective: '2025-11-20', prior: true, changes: ['Excluded risk: long-haul >1500mi added','Tier 1 claim authority reduced $50k → $25k'], counsel: 'Wilson Elser', executed_by: 'Both CUOs', esign: 'DocuSign' },
+  { id: 'AM-03', program: 'Thalassa Marine',       agreement_id: 'AG-04', version_from: '1.0', version_to: '1.1', effective: '2025-03-10', prior: true, changes: ['Territories: added Pacific NW','Bordereau cadence: monthly → weekly'], counsel: 'Holland & Knight', executed_by: 'Both CUOs', esign: 'AdobeSign' },
+  { id: 'AM-04', program: 'Legacy E&S Casualty',   agreement_id: 'AG-07', version_from: '2.5', version_to: '3.0', effective: '2025-06-01', prior: true, changes: ['New class: E&O for financial advisors added','Sliding scale commission restructure 25-32% → 24-31%'], counsel: 'Morgan Lewis', executed_by: 'Both CUOs', esign: 'DocuSign' },
+  { id: 'AM-05', program: 'Thalassa Marine',       agreement_id: 'AG-04', version_from: '1.1', version_to: '1.2 (proposed)', effective: '2026-05-15', prior: false, changes: ['Per-risk hull raised $5M → $8M','Commission profit trigger 58% → 56% LR'], counsel: 'Holland & Knight', executed_by: 'Pending', esign: 'Pending' }
+];
+
+export const cedeRenewals = [
+  { id: 'RN-01', program: 'Meridian E&S Casualty',   current_expiry: '2026-11-07', lookahead_days: 200, plan_status: 'Plan drafted',      rate_change_pct: 0,   key_changes: 'Expanded into IL + OH for Habitational',       commission_change: 'Unchanged',  terms_target: '2026-06-01' },
+  { id: 'RN-02', program: 'Aurora Cyber',            current_expiry: '2027-01-21', lookahead_days: 275, plan_status: 'Planning',         rate_change_pct: 5,   key_changes: 'SMB ransomware sub-limit lowered to $250k',     commission_change: '−1% profit commission trigger (63→62%)', terms_target: '2026-09-15' },
+  { id: 'RN-03', program: 'Legacy E&S Casualty',     current_expiry: '2026-05-31', lookahead_days: 40,  plan_status: 'In negotiation',   rate_change_pct: 3,   key_changes: 'New class: E&O for financial advisors',         commission_change: 'Sliding scale recast',               terms_target: '2026-05-05' },
+  { id: 'RN-04', program: 'Brookline Artisan',       current_expiry: '2027-03-01', lookahead_days: 320, plan_status: 'Not started',     rate_change_pct: null,key_changes: '—',                                                commission_change: '—',                                  terms_target: '—' },
+  { id: 'RN-05', program: 'State National × Heartland Trucking', current_expiry: '2026-05-29', lookahead_days: 38, plan_status: 'Non-renewal (Run-off)', rate_change_pct: null, key_changes: 'Non-renewal notice issued due to LR 71%+', commission_change: 'N/A — run-off rules', terms_target: '—' }
+];
+
+export const cedeTerminations = [
+  { id: 'TM-01', program: 'State National × Heartland Trucking', reason: 'For convenience (portfolio exit)', notice_date: '2026-03-10', effective_date: '2026-09-10', runoff_end: '2027-09-10', runoff_comm_pct: 5, status: 'Active (run-off)', in_force_policies: 312, open_claims: 188, data_export_status: 'In progress' },
+  { id: 'TM-02', program: 'Obsidian × Glassline Specialty (legacy)', reason: 'For cause (UW breach pattern)', notice_date: '2025-11-22', effective_date: '2025-12-22', runoff_end: '2026-06-22', runoff_comm_pct: 5, status: 'Completed',        in_force_policies: 0,   open_claims: 4,   data_export_status: 'Exported' }
+];
+
+export const cedeDataPortability = [
+  { id: 'DE-01', termination_id: 'TM-01', requested: '2026-03-15', delivered: null,           format: 'ACORD NGDS', volume: '18.4 GB', scope: 'Policies + claims + bordereaux 2023-2026', status: 'In progress' },
+  { id: 'DE-02', termination_id: 'TM-02', requested: '2025-12-24', delivered: '2025-12-28',  format: 'ACORD NGDS', volume: '4.2 GB',  scope: 'Policies + claims + bordereaux 2024-2025', status: 'Delivered' }
+];
+
+export const cedeCommissions = [
+  { id: 'CM-01', program: 'Meridian E&S Casualty', period: '2026-03', gwp_usd: 11800000, ceding_comm_pct: 26, fronting_fee_pct: 5.7, ceding_comm_usd: 3068000, fronting_fee_usd: 672600, net_premium_usd: 8059400, profit_comm_accrued_usd: 198000, paid: true, paid_date: '2026-04-10' },
+  { id: 'CM-02', program: 'Aurora Cyber',          period: '2026-03', gwp_usd: 7400000,  ceding_comm_pct: 30, fronting_fee_pct: 6.2, ceding_comm_usd: 2220000, fronting_fee_usd: 458800, net_premium_usd: 4721200, profit_comm_accrued_usd: 142000, paid: true, paid_date: '2026-04-10' },
+  { id: 'CM-03', program: 'Pacifica Habitational', period: '2026-03', gwp_usd: 9600000,  ceding_comm_pct: 24, fronting_fee_pct: 6.0, ceding_comm_usd: 2304000, fronting_fee_usd: 576000, net_premium_usd: 6720000, profit_comm_accrued_usd: 118000, paid: true, paid_date: '2026-04-10' },
+  { id: 'CM-04', program: 'Heartland Trucking',    period: '2026-03', gwp_usd: 17200000, ceding_comm_pct: 20, fronting_fee_pct: 5.5, ceding_comm_usd: 3440000, fronting_fee_usd: 946000, net_premium_usd: 12814000,profit_comm_accrued_usd: 0,     paid: false, paid_date: null },
+  { id: 'CM-05', program: 'Thalassa Marine',       period: '2026-03', gwp_usd: 8100000,  ceding_comm_pct: 22, fronting_fee_pct: 7.0, ceding_comm_usd: 1782000, fronting_fee_usd: 567000, net_premium_usd: 5751000, profit_comm_accrued_usd: 88000,  paid: true, paid_date: '2026-04-10' },
+  { id: 'CM-06', program: 'Legacy E&S Casualty',   period: '2026-03', gwp_usd: 14200000, ceding_comm_pct: 27, fronting_fee_pct: 5.7, ceding_comm_usd: 3834000, fronting_fee_usd: 809400, net_premium_usd: 9556600, profit_comm_accrued_usd: 286000, paid: true, paid_date: '2026-04-10' },
+  { id: 'CM-07', program: 'Frontier Ag Hail',      period: '2026-03', gwp_usd: 11400000, ceding_comm_pct: 20, fronting_fee_pct: 7.5, ceding_comm_usd: 2280000, fronting_fee_usd: 855000, net_premium_usd: 8265000, profit_comm_accrued_usd: 0,     paid: false, paid_date: null },
+  { id: 'CM-08', program: 'Summit Alpine Resort',  period: '2026-03', gwp_usd: 2400000,  ceding_comm_pct: 26, fronting_fee_pct: 7.2, ceding_comm_usd: 624000,  fronting_fee_usd: 172800, net_premium_usd: 1603200, profit_comm_accrued_usd: 22000,  paid: true, paid_date: '2026-04-10' }
+];
+
+export const cedeSlidingScales = [
+  { id: 'SS-01', program: 'Legacy E&S Casualty', min_comm_pct: 24, max_comm_pct: 32, provisional_pct: 28, min_lr: 50, max_lr: 70, step_pct_per_pt_lr: 0.5, current_lr: 52.1, current_commission_pct: 30.95, next_true_up: '2026-07-15' },
+  { id: 'SS-02', program: 'Meridian E&S Casualty', min_comm_pct: 22, max_comm_pct: 30, provisional_pct: 26, min_lr: 52, max_lr: 68, step_pct_per_pt_lr: 0.5, current_lr: 58.3, current_commission_pct: 27.15, next_true_up: '2026-08-15' }
+];
+
+export const cedeProfitCommissions = [
+  { id: 'PC-01', program: 'Meridian E&S Casualty', ay: 2025, est_lr: 0.558, estimated_profit_usd: 3120000, profit_comm_pct: 20, accrual_usd: 624000, realized_pct: 0.35, next_true_up: '2026-11-15' },
+  { id: 'PC-02', program: 'Aurora Cyber',          ay: 2025, est_lr: 0.502, estimated_profit_usd: 1880000, profit_comm_pct: 25, accrual_usd: 470000, realized_pct: 0.45, next_true_up: '2026-12-01' },
+  { id: 'PC-03', program: 'Legacy E&S Casualty',   ay: 2025, est_lr: 0.521, estimated_profit_usd: 4220000, profit_comm_pct: 22, accrual_usd: 928400, realized_pct: 0.30, next_true_up: '2026-09-15' },
+  { id: 'PC-04', program: 'Pacifica Habitational', ay: 2025, est_lr: 0.602, estimated_profit_usd: 1840000, profit_comm_pct: 18, accrual_usd: 331200, realized_pct: 0.25, next_true_up: '2026-10-20' },
+  { id: 'PC-05', program: 'Thalassa Marine',       ay: 2025, est_lr: 0.594, estimated_profit_usd: 1280000, profit_comm_pct: 20, accrual_usd: 256000, realized_pct: 0.20, next_true_up: '2026-11-01' },
+  { id: 'PC-06', program: 'Summit Alpine Resort',  ay: 2025, est_lr: 0.571, estimated_profit_usd: 380000,  profit_comm_pct: 20, accrual_usd: 76000,  realized_pct: 0.25, next_true_up: '2026-10-30' }
+];
+
+export const cedeBorFees = [
+  { id: 'BF-01', broker: 'Gallagher Re',                mandate_id: 'MD-2026-001', program: 'Meridian E&S Casualty', gwp_usd: 145000000, fee_bps: 45, fee_usd: 652500, status: 'Paid',    paid: '2024-12-15' },
+  { id: 'BF-02', broker: 'Guy Carpenter (GC Access)',   mandate_id: 'MD-2026-002', program: 'Aurora Cyber',           gwp_usd: 88000000,  fee_bps: 50, fee_usd: 440000, status: 'Paid',    paid: '2025-02-28' },
+  { id: 'BF-03', broker: 'Howden Re',                    mandate_id: 'MD-2026-003', program: 'Heartland Trucking',     gwp_usd: 212000000, fee_bps: 45, fee_usd: 954000, status: 'Paid',    paid: '2023-07-15' },
+  { id: 'BF-04', broker: 'Gallagher Re',                 mandate_id: 'MD-2026-004', program: 'Brookline Artisan',      gwp_usd: 52000000,  fee_bps: 50, fee_usd: 260000, status: 'Pending', paid: null         },
+  { id: 'BF-05', broker: 'Gallagher Re',                 mandate_id: 'MD-2026-005', program: 'Pacifica Habitational',  gwp_usd: 118000000, fee_bps: 45, fee_usd: 531000, status: 'Accruing',paid: null         },
+  { id: 'BF-06', broker: 'Lockton Re',                   mandate_id: 'MD-2026-007', program: 'Pet Circle',             gwp_usd: 74000000,  fee_bps: 50, fee_usd: 370000, status: 'Accruing',paid: null         }
+];
+
+export const cedeBenchmarks = [
+  { id: 'BN-01', lob: 'E&S Casualty',         cohort: 'Mid-sized MGA ($100-200M GWP)', metric: 'Trailing 12mo LR',        peer_p25: 55.0, peer_p50: 58.5, peer_p75: 62.0, you: 55.8,  k_anon_count: 12 },
+  { id: 'BN-02', lob: 'E&S Casualty',         cohort: 'Mid-sized MGA ($100-200M GWP)', metric: 'Expense ratio',            peer_p25: 32.0, peer_p50: 35.5, peer_p75: 40.0, you: 33.8,  k_anon_count: 12 },
+  { id: 'BN-03', lob: 'Cyber',                cohort: 'SMB focus ($50-100M GWP)',      metric: 'Trailing 12mo LR',        peer_p25: 48.0, peer_p50: 54.5, peer_p75: 62.0, you: 50.2,  k_anon_count: 9  },
+  { id: 'BN-04', lob: 'Habitational Property',cohort: 'Mid-market ($50-150M GWP)',     metric: 'Trailing 12mo LR',        peer_p25: 58.0, peer_p50: 62.0, peer_p75: 66.5, you: 60.2,  k_anon_count: 14 },
+  { id: 'BN-05', lob: 'Commercial Auto',       cohort: 'Specialty trucking (>$100M)',  metric: 'Trailing 12mo LR',        peer_p25: 62.0, peer_p50: 68.0, peer_p75: 74.0, you: 71.2,  k_anon_count: 7  },
+  { id: 'BN-06', lob: 'E&S Casualty',         cohort: 'Mid-sized MGA ($100-200M GWP)', metric: 'Bordereau timeliness (%)', peer_p25: 85.0, peer_p50: 91.0, peer_p75: 95.0, you: 94.0,  k_anon_count: 12 },
+  { id: 'BN-07', lob: 'Cyber',                cohort: 'SMB focus ($50-100M GWP)',      metric: 'UW-compliance score (%)', peer_p25: 92.0, peer_p50: 96.0, peer_p75: 98.5, you: 98.1,  k_anon_count: 9  }
+];
+
+export const cedeNaicCompliance = [
+  { id: 'NC-01', program: 'Meridian E&S Casualty',     state: 'NY', written_contract: true,  uw_guidelines: true, prohibited_acts: true, commission_terms: true, termination: true, claims_standards: true, bordereaux_cadence: true, producer_licensed: true, fiduciary: true, mga_financial_exam_date: '2025-09-12', board_review_date: '2026-01-15', onsite_review_date: '2025-11-08', eo_in_force: true, status: 'Compliant' },
+  { id: 'NC-02', program: 'Meridian E&S Casualty',     state: 'CA', written_contract: true,  uw_guidelines: true, prohibited_acts: true, commission_terms: true, termination: true, claims_standards: true, bordereaux_cadence: true, producer_licensed: true, fiduciary: true, mga_financial_exam_date: '2025-09-12', board_review_date: '2026-01-15', onsite_review_date: '2025-11-08', eo_in_force: true, status: 'Compliant' },
+  { id: 'NC-03', program: 'Aurora Cyber',              state: 'All 50', written_contract: true,uw_guidelines: true, prohibited_acts: true, commission_terms: true, termination: true, claims_standards: true, bordereaux_cadence: true, producer_licensed: true, fiduciary: true, mga_financial_exam_date: '2026-01-10', board_review_date: '2026-02-20', onsite_review_date: '2025-10-15', eo_in_force: true, status: 'Compliant' },
+  { id: 'NC-04', program: 'Heartland Trucking',        state: 'All ex NY,NJ', written_contract: true, uw_guidelines: true, prohibited_acts: true, commission_terms: true, termination: true, claims_standards: true, bordereaux_cadence: true, producer_licensed: true, fiduciary: true, mga_financial_exam_date: '2025-06-30', board_review_date: '2026-01-10', onsite_review_date: '2026-02-20', eo_in_force: true, status: 'Under review' },
+  { id: 'NC-05', program: 'Pacifica Habitational',     state: 'CA, TX, FL, AZ', written_contract: true, uw_guidelines: true, prohibited_acts: true, commission_terms: true, termination: true, claims_standards: true, bordereaux_cadence: true, producer_licensed: true, fiduciary: true, mga_financial_exam_date: '2026-02-20', board_review_date: '2026-03-10', onsite_review_date: '2025-12-05', eo_in_force: true, status: 'Compliant' },
+  { id: 'NC-06', program: 'Frontier Ag Hail',          state: 'All 19', written_contract: true, uw_guidelines: true, prohibited_acts: true, commission_terms: true, termination: true, claims_standards: true, bordereaux_cadence: true, producer_licensed: true, fiduciary: true, mga_financial_exam_date: '2025-05-20', board_review_date: '2026-01-30', onsite_review_date: '2026-03-08', eo_in_force: true, status: 'Compliant' }
+];
+
+export const cedeStateVariations = [
+  { id: 'SV-01', state: 'NY', additional_requirement: 'Circular Letters + Reg 120 additional disclosure and licensing', impacted_programs: 6, severity: 'Material',   action: 'Per-program Circular Letter filing required within 60 days of DUA execution' },
+  { id: 'SV-02', state: 'TX', additional_requirement: 'Ch. 4053 Insurance Code: MGA annual statement',                   impacted_programs: 8, severity: 'Standard',   action: 'Annual filing with TX DOI' },
+  { id: 'SV-03', state: 'CA', additional_requirement: 'Producer-appointment filings per NAIC uniform + CA additions',    impacted_programs: 7, severity: 'Standard',   action: 'Appointment Part A/B on every producer' },
+  { id: 'SV-04', state: 'FL', additional_requirement: 'Post-2022 property crisis — program-business scrutiny',            impacted_programs: 4, severity: 'Material',   action: 'Enhanced financial reporting quarterly' },
+  { id: 'SV-05', state: 'LA', additional_requirement: 'Non-admitted E&S filings via SLAC',                                 impacted_programs: 3, severity: 'Standard',   action: 'SLAC monthly filing' },
+  { id: 'SV-06', state: 'HI', additional_requirement: 'State-level MGA appointment form (HI-MGA-100)',                     impacted_programs: 2, severity: 'Standard',   action: 'Form HI-MGA-100 annually' }
+];
+
+export const cedeAuditLog = [
+  { id: 'LG-01', ts: '2026-04-21 09:12', actor: 'Helena Park',  role: 'Carrier Program Mgr', action: 'Approved term-sheet v3', target: 'MD-2026-005', context: 'Counter-offer to Pacifica Habitational' },
+  { id: 'LG-02', ts: '2026-04-21 09:05', actor: 'System',       role: 'Platform',            action: 'Collateral verified',    target: 'CO-01',        context: 'JPMorgan Chase API confirmation' },
+  { id: 'LG-03', ts: '2026-04-20 17:42', actor: 'David Ortiz',  role: 'MGA CEO',             action: 'Submitted bordereau',     target: 'BX-01',        context: 'Meridian March 2026' },
+  { id: 'LG-04', ts: '2026-04-20 15:30', actor: 'System',       role: 'Platform',            action: 'UW-compliance breach',    target: 'BR-01',        context: 'Heartland Trucking policy HT-2026-00821' },
+  { id: 'LG-05', ts: '2026-04-20 11:15', actor: 'Noa Bergman',  role: 'Platform Admin',      action: 'Approved application',    target: 'MG-16',        context: 'Sentry Educator Liability onboarding' },
+  { id: 'LG-06', ts: '2026-04-19 14:22', actor: 'Priya Shah',   role: 'Broker (BoR)',        action: 'Viewed DD pack',          target: 'DD-01',        context: 'Pet Circle Underwriters' },
+  { id: 'LG-07', ts: '2026-04-19 10:50', actor: 'Helena Park',  role: 'Carrier Program Mgr', action: 'Generated ORSA export',   target: 'ORSA-2026-Q1', context: 'Summit quarterly regulatory pack' },
+  { id: 'LG-08', ts: '2026-04-18 16:20', actor: 'System',       role: 'Platform',            action: 'NDA reveal',              target: 'MD-2026-009',   context: 'Accelerant × Flatiron Event Cover' }
+];
+
+export const cedeMemberApplications = [
+  { id: 'AP-01', type: 'MGA',    applicant: 'Sentry Educator Liability',       submitted: '2026-04-10', status: 'Approved',   rubric_score: 86, reviewer: 'Noa Bergman',  notes: 'Strong governance, niche class, approved' },
+  { id: 'AP-02', type: 'MGA',    applicant: 'Bluewater Crop Hail MGA',         submitted: '2026-04-15', status: 'In review',  rubric_score: 78, reviewer: 'Noa Bergman',  notes: 'Leadership references pending' },
+  { id: 'AP-03', type: 'MGA',    applicant: 'Metro Delivery Auto Underwriters',submitted: '2026-04-18', status: 'Waitlisted', rubric_score: 64, reviewer: 'Noa Bergman',  notes: 'Below bar: single-person UW team' },
+  { id: 'AP-04', type: 'Carrier',applicant: 'Coastal Fronting Specialty',      submitted: '2026-04-12', status: 'In review',  rubric_score: 82, reviewer: 'Noa Bergman',  notes: 'AM Best A- confirmed; legal DD outstanding' },
+  { id: 'AP-05', type: 'Broker', applicant: 'Bolton Re Program Solutions',     submitted: '2026-04-14', status: 'Approved',   rubric_score: 88, reviewer: 'Noa Bergman',  notes: 'BoR approved' }
+];
+
+export const cedeDisputes = [
+  { id: 'DS-01', program: 'Frontier Ag Hail',  filed_by: 'Carrier (Core Specialty)', subject: 'Commission true-up 2024 AY', amount_usd: 840000, status: 'Mediation', filed: '2026-03-20', next_hearing: '2026-05-05' }
+];
+
+export const cedeStages = [
+  'Prospecting','Due diligence','DUA drafting','Term negotiation','E-sign','Activating','In-force','Renewal','Amending','Run-off','Completed'
+];
+
+export const cedePartnerBanks = [
+  { id: 'BK-01', name: 'JPMorgan Chase',   role: 'Custodian + LOC issuer', api_verified: true, g_sib: true, tier: 'Tier 1' },
+  { id: 'BK-02', name: 'Bank of America',  role: 'LOC issuer',               api_verified: true, g_sib: true, tier: 'Tier 1' },
+  { id: 'BK-03', name: 'Citibank',         role: 'LOC issuer',               api_verified: true, g_sib: true, tier: 'Tier 1' },
+  { id: 'BK-04', name: 'Wells Fargo',       role: 'Custodian + LOC issuer', api_verified: true, g_sib: true, tier: 'Tier 1' },
+  { id: 'BK-05', name: 'HSBC USA',          role: 'LOC issuer',               api_verified: true, g_sib: true, tier: 'Tier 1' },
+  { id: 'BK-06', name: 'Barclays',          role: 'LOC issuer',               api_verified: true, g_sib: true, tier: 'Tier 1' },
+  { id: 'BK-07', name: 'BNY Mellon',        role: 'Custodian',                api_verified: true, g_sib: true, tier: 'Tier 1' },
+  { id: 'BK-08', name: 'US Bank',            role: 'Custodian',                api_verified: true, g_sib: false,tier: 'Tier 2' }
+];
+
