@@ -7341,3 +7341,781 @@ export const cedePartnerBanks = [
   { id: 'BK-08', name: 'US Bank',            role: 'Custodian',                api_verified: true, g_sib: false,tier: 'Tier 2' }
 ];
 
+// ════════════════════════════════════════════════════════════════
+// DILIGENCE PORTAL — MGA ↔ Carrier onboarding & diligence workflow
+// ════════════════════════════════════════════════════════════════
+
+export const DIL_USERS = {
+  mga:     { name: 'Priya Sharma',   role: 'Head of Program Development', org: 'Quantana Underwriters (MGA)', email: 'priya@quantana-mga.com' },
+  carrier: { name: 'Marcus Webb',    role: 'VP Program Business',         org: 'Acme National Insurance',     email: 'mwebb@acmenational.com' }
+};
+
+// Carrier directory (the MGA picks one of these to apply to)
+export const DIL_CARRIERS = [
+  { id: 'CAR-01', name: 'Acme National Insurance',     amBest: 'A (Excellent)',       admitted: true,  states: ['CA','TX','NY','FL','IL','PA','AZ','CO','WA','OR','NV','GA'], lobs: ['Commercial Auto','General Liability','Workers Comp','Property'], appetite: ['Trucking 10-50 units','Artisan Contractors','Main Street BOP'], capacity: '$75M', capacityUsed: 0.62, panel: 14, contact: 'Marcus Webb — VP Program Business' },
+  { id: 'CAR-02', name: 'Continental Specialty',       amBest: 'A- (Excellent)',      admitted: false, states: ['CA','TX','FL','NY','NV','AZ','CO'], lobs: ['Professional Liability','Cyber','D&O','E&O'], appetite: ['Tech E&O','Miscellaneous Professional','Small Biz Cyber'], capacity: '$40M', capacityUsed: 0.71, panel: 9, contact: 'Elena Ruiz — Director, Program Business' },
+  { id: 'CAR-03', name: 'Pacific Mutual Casualty',     amBest: 'A+ (Superior)',       admitted: true,  states: ['All 50'], lobs: ['Commercial Auto','Workers Comp','General Liability','Umbrella'], appetite: ['Transportation','Construction','Manufacturing'], capacity: '$150M', capacityUsed: 0.44, panel: 22, contact: 'Daniel Kim — SVP Distribution' },
+  { id: 'CAR-04', name: 'Hudson Bay E&S',              amBest: 'A- (Excellent)',      admitted: false, states: ['CA','TX','FL','IL','NY','GA','NC','TN','OH'], lobs: ['Property','Inland Marine','Excess Casualty'], appetite: ['CAT Property','Vacant Buildings','Difficult Property'], capacity: '$60M', capacityUsed: 0.58, panel: 11, contact: 'Anita Patel — Program Manager' },
+  { id: 'CAR-05', name: 'Midwest Heritage Mutual',     amBest: 'A (Excellent)',       admitted: true,  states: ['IL','IN','IA','MO','OH','WI','MI','MN','KS','NE'], lobs: ['Farm','Workers Comp','Commercial Auto','Property'], appetite: ['Agri-business','Small Fleet','Main Street'], capacity: '$50M', capacityUsed: 0.33, panel: 8, contact: 'Robert Chen — Head of Programs' }
+];
+
+// MGA directory (the carrier sees these submitting to them)
+export const DIL_MGAS = [
+  { id: 'MGA-01', name: 'Quantana Underwriters',     founded: 2019, gwp: '$42M', panelSize: 4, states: ['CA','TX','AZ','NV','CO'], lobs: ['Commercial Auto','General Liability'], programs: 3, bindingLimit: '$1M per risk', domicile: 'Delaware', leadership: 'Priya Sharma (CEO, 18y UW)', licenses: 24 },
+  { id: 'MGA-02', name: 'Coastline Program Partners', founded: 2015, gwp: '$128M',panelSize: 7, states: ['FL','GA','SC','NC','AL','MS','LA','TX'], lobs: ['Property','Inland Marine','Flood'], programs: 5, bindingLimit: '$2.5M per risk', domicile: 'Florida', leadership: 'Jonathan Meyers (CEO, 24y UW)', licenses: 14 },
+  { id: 'MGA-03', name: 'Summit Casualty MGA',        founded: 2021, gwp: '$18M', panelSize: 2, states: ['CO','UT','ID','WY','MT'], lobs: ['Workers Comp','General Liability'], programs: 2, bindingLimit: '$750K per risk', domicile: 'Colorado', leadership: 'Rachel Nguyen (CEO, 12y UW)', licenses: 9 },
+  { id: 'MGA-04', name: 'Verity Professional Risks',  founded: 2012, gwp: '$95M', panelSize: 6, states: ['All 50'], lobs: ['Professional Liability','Cyber','D&O'], programs: 4, bindingLimit: '$5M per risk', domicile: 'New York', leadership: 'Alan Goldstein (CEO, 31y UW)', licenses: 51 },
+  { id: 'MGA-05', name: 'Frontier Fleet Underwriting',founded: 2018, gwp: '$67M', panelSize: 3, states: ['TX','OK','NM','AR','LA','MS','AL'], lobs: ['Commercial Auto','Motor Truck Cargo'], programs: 2, bindingLimit: '$1.5M per risk', domicile: 'Texas', leadership: 'Miguel Torres (CEO, 22y UW)', licenses: 7 }
+];
+
+// Diligence categories match the 6-category carrier diligence workbook exactly.
+// Each category maps to a reviewer role on the carrier side.
+export const DIL_CATEGORIES = [
+  { id: 'program',    label: 'Program Management',   icon: '🏢', reviewer: 'Program',       description: 'Entity, org chart, E&O/cyber/bond, data security, disaster recovery, bordereaux, signing officers' },
+  { id: 'compliance', label: 'Compliance',           icon: '⚖️', reviewer: 'Compliance',    description: 'Licenses, regulatory procedures, retail agreements, policyholder notices, complaint handling, filings' },
+  { id: 'claims',     label: 'Claims Administration', icon: '🛡️', reviewer: 'Claims',       description: 'Staffing, procedures, licenses, payment authority, funding requests, litigation tracking' },
+  { id: 'financials', label: 'Financials & Reporting', icon: '💰', reviewer: 'Finance',     description: 'W-9, financial statements, projections, finance staffing, legal-entity org' },
+  { id: 'underwriting', label: 'Underwriting',       icon: '📋', reviewer: 'Underwriting',  description: 'Guidelines, authority letters, policy forms, bind/quote ratios, limit profiles, sample files' },
+  { id: 'actuarial',  label: 'Actuarial',            icon: '📊', reviewer: 'Actuarial',     description: 'Rating plans, profitability & price monitoring, development triangles, loss runs, CAT results' }
+];
+
+// Canonical diligence item template — mirrors the carrier diligence workbook (74 items, 6 categories).
+// Code format: {category}.{item}.{sub}  e.g. 6.05.01
+// Priority: H=High (gates submission), M=Medium, L=Low
+export const DIL_ITEMS_TEMPLATE = [
+  // ═════════════ 1. PROGRAM MANAGEMENT ═════════════
+  { code: '1.01.00', category: 'program',    priority: 'H', type: 'doc',      label: 'Company organizational (personnel) chart',                   why: 'Shows decision authority and operational span; prevents gaps when key staff depart.', sample: 'PDF org chart dated within 90 days, covering all FTEs with reporting lines to CEO.' },
+  { code: '1.02.00', category: 'program',    priority: 'H', type: 'doc',      label: 'E&O certificates + description of any E&O claims in last 5 years', why: 'Protects carrier from MGA negligence; minimum limit is industry standard for delegated authority.', sample: 'E&O dec page from Hiscox, $5M / $10M limits, expires 2026-09-30. No claims in last 5 years.' },
+  { code: '1.03.00', category: 'program',    priority: 'H', type: 'doc',      label: 'Copy of fidelity / crime bonds',                              why: 'Covers employee dishonesty in handling premium trust funds.', sample: 'Travelers Crime policy, $1M per occurrence.' },
+  { code: '1.04.00', category: 'program',    priority: 'H', type: 'doc',      label: 'Cyber insurance policy certificates',                         why: 'MGAs hold sensitive PII; breach exposure must be insured before data sharing.', sample: 'Beazley Cyber, $2M limit, retroactive 2022-01-01.' },
+  { code: '1.05.00', category: 'program',    priority: 'H', type: 'doc',      label: 'Data security policy + privacy policy (incl. backup & storage protocols)', why: 'GDPR / state privacy law inheritance risk sits with the carrier if the MGA fails.', sample: 'Data Governance Policy v2.1. CCPA & GDPR compliant, 7-year retention, encrypted at rest + in transit.' },
+  { code: '1.06.00', category: 'program',    priority: 'H', type: 'doc',      label: 'Disaster recovery plan',                                      why: 'Outages directly impact carrier bind-ability and claim service.', sample: 'BCP last tested 2026-01. RTO 4h, RPO 1h. AWS multi-region failover.' },
+  { code: '1.07.00', category: 'program',    priority: 'M', type: 'doc',      label: 'Sample premium bordereaux',                                   why: 'Proves the MGA can actually produce what they commit to on cadence.', sample: 'March 2026 premium bordereau in Lloyd\'s v5 format + carrier custom layout.' },
+  { code: '1.08.00', category: 'program',    priority: 'M', type: 'question', label: 'Names of signing officers for all contracts',                 why: 'Confirms authority for the DUA and downstream agreements.', sample: 'Priya Sharma (CEO), David Park (COO). Signature authority up to $10M contract value.' },
+
+  // ═════════════ 2. COMPLIANCE ═════════════
+  { code: '2.01.00', category: 'compliance', priority: 'H', type: 'doc',      label: 'Agent / agency license schedule (Excel with NPR, state, license #, expiration)', why: 'Writing without license = void policy; absolute gating requirement.', sample: 'Excel schedule, 24 state licenses, all active, no deficiencies.' },
+  { code: '2.02.00', category: 'compliance', priority: 'H', type: 'doc',      label: 'Procedures for tracking and implementing regulatory changes', why: 'Carriers inherit MGA compliance failures.', sample: 'Reg-tracking SOP using Compliance.ai feed, monthly review by Compliance Officer.' },
+  { code: '2.03.00', category: 'compliance', priority: 'M', type: 'doc',      label: 'Sample retail agency agreement',                              why: 'Flows liability appropriately to downstream producers.', sample: 'Retail Agency Agreement v3.0, includes ISO producer compensation disclosure.' },
+  { code: '2.04.00', category: 'compliance', priority: 'H', type: 'doc',      label: 'Sample policy packet for proposed carrier products',          why: 'Ensures forms are filed where required and acceptable to reinsurers.', sample: '31-page policy packet with declarations, 9 endorsements, all state notices.' },
+  { code: '2.05.00', category: 'compliance', priority: 'M', type: 'doc',      label: 'Cancellation and non-renewal procedures + sample notices',    why: 'Improper cancellation is one of the top DOI complaint drivers.', sample: 'Cancellation SOP v2.1 + sample 45-day and 60-day notices.' },
+  { code: '2.07.00', category: 'compliance', priority: 'M', type: 'doc',      label: 'Regulatory exams / audits + internal audits (last 5 years)',  why: 'DOI orders, fines, C&D, market conduct findings all impact carrier risk assessment.', sample: 'CA DOI informal inquiry 2022 (closed, no action). 3 internal audits 2023-2025, all passed.' },
+  { code: '2.08.00', category: 'compliance', priority: 'M', type: 'doc',      label: 'Consumer complaint procedures + active complaint log',        why: 'Complaint volume is a leading indicator of program health.', sample: 'Complaint SOP v1.4, current log: 12 complaints YTD, 0 DOI-level.' },
+  { code: '2.09.00', category: 'compliance', priority: 'M', type: 'question', label: 'Distribution method + producer / broker management (vetting, periodic review, expiration tracking)', why: 'Should cover onboarding, re-vetting, and offboarding without manual gaps.', sample: 'Independent retail agents (appointed). Annual re-vet, license expiration monitored via AgencyZoom.' },
+  { code: '2.10.00', category: 'compliance', priority: 'L', type: 'doc',      label: 'Policyholder notices',                                        why: 'State-specific notices must accompany every policy.', sample: 'Notice library covering 5 states, last updated 2026-02.' },
+  { code: '2.11.00', category: 'compliance', priority: 'M', type: 'question', label: 'If admitted: procedures for filing producer appointments with DOIs', why: 'Unappointed producers = unauthorized writings.', sample: 'Appointments filed within 15 days of binding, tracked in-system with NIPR integration.' },
+  { code: '2.12.00', category: 'compliance', priority: 'M', type: 'question', label: 'If admitted: ISO/NCCI statistical reporting capability (in-house or vendor)', why: 'Required for every admitted line; inaccurate stat reporting creates regulatory exposure.', sample: 'In-house via Duck Creek Stat module. Reporting on-time 36 consecutive months.' },
+  { code: '2.13.00', category: 'compliance', priority: 'M', type: 'question', label: 'If non-admitted: SLIP reporting — internal or sub-broker?',   why: 'Surplus-line tax filings must happen in every state of risk.', sample: 'Sub-broker handles SLIP. We validate filings quarterly.' },
+
+  // ═════════════ 3. CLAIMS ADMINISTRATION ═════════════
+  { code: '3.01.00', category: 'claims',     priority: 'M', type: 'doc',      label: 'Claims department company resume / biography',                why: 'Carriers underwrite the claims team as heavily as the UW team.', sample: '2-page departmental bio. 14 FTEs, combined 180 years of experience.' },
+  { code: '3.02.00', category: 'claims',     priority: 'M', type: 'doc',      label: 'Claims organizational chart',                                 why: 'Shows authority ladder and span of control.', sample: 'Claims org chart dated 2026-03.' },
+  { code: '3.03.00', category: 'claims',     priority: 'M', type: 'doc',      label: 'Claims staffing and tenure overview',                         why: 'Adjuster turnover correlates with reserve leakage.', sample: 'Tenure roster: average 8.2 years, 0 FTEs <1yr, 2 FTEs >15yr.' },
+  { code: '3.04.00', category: 'claims',     priority: 'H', type: 'doc',      label: 'Claims procedures manual',                                    why: 'Drives reserve adequacy, settlement discipline, regulatory compliance.', sample: '89-page Claims Manual v4.1, FNOL through closure.' },
+  { code: '3.05.00', category: 'claims',     priority: 'M', type: 'doc',      label: 'Claims disaster recovery & business continuation plan',       why: 'Claims operations must survive infrastructure outages.', sample: 'Claims BCP v1.3, tested 2026-02 with 4h RTO.' },
+  { code: '3.06.00', category: 'claims',     priority: 'H', type: 'doc',      label: 'Claims-side insurance certs (E&O, fidelity, cyber)',          why: 'Claims function maintains its own liability exposure even when the rest is insured.', sample: 'Claims E&O $3M (Markel), fidelity $1M (Travelers), cyber shared with parent.' },
+  { code: '3.07.00', category: 'claims',     priority: 'H', type: 'doc',      label: 'Claims administration licenses',                              why: 'Several states require adjuster/TPA licensure.', sample: '18 adjuster licenses across 11 states, all active.' },
+  { code: '3.08.00', category: 'claims',     priority: 'H', type: 'doc',      label: 'Claims payment procedures and authority matrix',              why: 'Unauthorized payments create coverage disputes.', sample: 'Adjuster I: $10K, Adjuster II: $25K, Sr Adjuster: $75K, Manager: $250K.' },
+  { code: '3.09.00', category: 'claims',     priority: 'M', type: 'doc',      label: 'Sample claims reports (feed, large-loss, internal control)',  why: 'Data quality here drives every downstream actuarial and finance number.', sample: 'Sample claims feed (monthly), large-loss narrative report, internal-control QA dashboard.' },
+  { code: '3.10.00', category: 'claims',     priority: 'M', type: 'doc',      label: 'Sample funding request (documentation)',                      why: 'Evidence of disciplined cash management.', sample: 'March 2026 funding request + supporting reserves schedule.' },
+  { code: '3.11.00', category: 'claims',     priority: 'L', type: 'doc',      label: 'Litigation log template',                                     why: 'Litigation velocity is a health metric for the book.', sample: 'Litigation log template with venue, defense counsel, reserves, last-action fields.' },
+
+  // ═════════════ 4. FINANCIALS & REPORTING ═════════════
+  { code: '4.01.00', category: 'financials', priority: 'H', type: 'doc',      label: 'W-9 of legal entity writing the program',                     why: 'Required to pay commissions and set up the counterparty.', sample: 'W-9 signed 2026-02 by CEO.' },
+  { code: '4.02.00', category: 'financials', priority: 'H', type: 'doc',      label: 'Legal entity organization chart',                             why: 'Upstream ownership structure affects sanctions and AML.', sample: 'Entity chart: Quantana Underwriters LLC → Quantana Holdings LLC (Delaware).' },
+  { code: '4.03.00', category: 'financials', priority: 'H', type: 'doc',      label: 'Financial statements (Balance Sheet, Income Statement, Cashflow)', why: 'Confirms entity solvency and premium trust integrity.', sample: '2023-2025 audited statements by BDO, clean opinions all three years.' },
+  { code: '4.04.00', category: 'financials', priority: 'H', type: 'doc',      label: 'Financial projections (3-5 years)',                           why: 'Premium ramp, expense ratio, loss ratio drive capacity commitment.', sample: 'Year 1 $12M GWP → Year 5 $48M. 32% expense ratio, 60% target loss ratio.' },
+  { code: '4.05.00', category: 'financials', priority: 'M', type: 'question', label: 'Finance staffing and roles',                                  why: 'Undersized finance functions are a leading indicator of trust-account problems.', sample: 'CFO, Controller, 2 staff accountants. Outsourced tax + annual audit.' },
+
+  // ═════════════ 5. UNDERWRITING ═════════════
+  { code: '5.01.00', category: 'underwriting', priority: 'H', type: 'doc',    label: 'Underwriting guidelines (incl. submission requirements)',     why: 'Defines the risk appetite being delegated — the core of the binding authority contract.', sample: '47-page UW manual covering appetite, eligibility, rating, referral thresholds.' },
+  { code: '5.02.00', category: 'underwriting', priority: 'H', type: 'doc',    label: 'Current underwriting authority letter',                       why: 'Defines who can bind what; prevents overbinding.', sample: 'Authority letter signed by CUO, limits per role and per LOB.' },
+  { code: '5.03.00', category: 'underwriting', priority: 'H', type: 'doc',    label: 'Policy forms and endorsements library (incl. policy notices)', why: 'Ensures forms are filed where required and acceptable to reinsurers.', sample: 'ISO CA 00 01 10 13 + 9 endorsements, all state-filed where required.' },
+  { code: '5.04.00', category: 'underwriting', priority: 'M', type: 'doc',    label: 'Sample referral template(s)',                                 why: 'Referrals catch the outliers without choking flow.', sample: 'Referral template v2, triggered for TIV >$2M or loss history >3 in 5y.' },
+  { code: '5.05.00', category: 'underwriting', priority: 'M', type: 'doc',    label: 'Underwriting group organizational chart',                     why: 'Authority structure within the UW team.', sample: 'UW org chart: CUO → 2 UW Leads → 8 underwriters.' },
+  { code: '5.06.00', category: 'underwriting', priority: 'H', type: 'doc',    label: 'Bios for key underwriting personnel',                         why: 'UW talent correlates with loss ratio.', sample: '4 senior UW bios, combined 80 years of experience.' },
+  { code: '5.07.00', category: 'underwriting', priority: 'M', type: 'doc',    label: 'Bind / quote / submit ratios — new business and renewals',    why: 'Ratios reveal appetite discipline and sales pipeline health.', sample: 'NB: submit→quote 42%, quote→bind 31%. Renewals: quoted→bound 89%.' },
+  { code: '5.08.00', category: 'underwriting', priority: 'M', type: 'doc',    label: 'Limit profiles',                                              why: 'Large-limit concentrations drive CAT exposure.', sample: 'Limit profile table by LOB: 78% of limits ≤$1M, 4% >$5M.' },
+  { code: '5.09.00', category: 'underwriting', priority: 'M', type: 'doc',    label: 'Aggregations & concentrations management tool / procedural docs', why: 'CAT and systemic risk must be actively managed.', sample: 'AIR Touchstone integration + internal CA+TX quake aggregation model.' },
+  { code: '5.10.00', category: 'underwriting', priority: 'H', type: 'doc',    label: '3-year GWP forecast (broken out by month)',                   why: 'Premium ramp is the #1 input to capacity allocation.', sample: 'Monthly GWP forecast 2026-2028, $12M → $32M.' },
+  { code: '5.11.00', category: 'underwriting', priority: 'M', type: 'doc',    label: 'Sample UW files — 5 renewal (expiring + renewal) + 5 non-renewed (expiring + renewal) + 5 new business', why: 'File quality is the clearest diligence signal.', sample: '25 sample files with redacted insured names, all required decision documentation.' },
+
+  // ═════════════ 6. ACTUARIAL ═════════════
+  { code: '6.01.00', category: 'actuarial',  priority: 'H', type: 'doc',      label: 'Rating plan(s) incl. discretionary/non-discretionary credits + rating tool', why: 'Rate adequacy is the #1 driver of program profitability.', sample: 'ISO loss costs + company modifier. Filed rates in CA, TX, AZ, NV, CO.' },
+  { code: '6.02.00', category: 'actuarial',  priority: 'M', type: 'doc',      label: 'Industry rating vs. rate plan analysis',                      why: 'Benchmark rates against peer competitiveness.', sample: 'Milliman rate benchmark 2026-02. 3.1% above market median for this class.' },
+  { code: '6.03.00', category: 'actuarial',  priority: 'H', type: 'doc',      label: 'Profitability monitoring reports — latest',                   why: 'How you know when rates need to change.', sample: '34-page profitability report, split by 5 states × 8 classes × 3 years. Quarterly cadence.' },
+  { code: '6.04.00', category: 'actuarial',  priority: 'M', type: 'doc',      label: 'Price monitoring reports — deviation from technical price (NB + renewal)', why: 'Identifies discipline drift at the point of sale.', sample: 'Q1 2026 price monitor: NB 4.2% below technical, renewal 1.1% below.' },
+  { code: '6.05.00', category: 'actuarial',  priority: 'H', type: 'doc',      label: 'Program financial dynamics (parent)',                         why: 'Parent row — sub-items below cover each component.', sample: 'Consolidated waterfall of commissions, taxes, boards, fees, claims expenses, other income.' },
+  { code: '6.05.01', category: 'actuarial',  priority: 'H', type: 'doc',      label: 'Fixed commission — MGA, subproducers, reinsurance intermediary (separately)', why: 'Commission structure drives expense ratio.', sample: 'MGA 22%, sub-producer 10%, RI intermediary 1.5%.' },
+  { code: '6.05.02', category: 'actuarial',  priority: 'M', type: 'doc',      label: 'Variable / slide commissions — MGA and subproducers',         why: 'Profit-share structures align incentives but complicate economics.', sample: 'Slide: 2% at 60% LR, 4% at 55% LR, capped at 6% at 50% LR.' },
+  { code: '6.05.03', category: 'actuarial',  priority: 'M', type: 'doc',      label: 'Boards & bureaus (ISO, NCCI, etc.)',                          why: 'Required regulatory costs.', sample: 'ISO + NCCI + state residual market assessments. 0.7% of GWP.' },
+  { code: '6.05.04', category: 'actuarial',  priority: 'M', type: 'doc',      label: 'Taxes, licenses, fees (premium tax, etc.)',                    why: 'State-level cost structure.', sample: 'Premium tax avg 2.3% across 5 states, license fees 0.1%.' },
+  { code: '6.05.05', category: 'actuarial',  priority: 'L', type: 'doc',      label: 'Other expenses (e.g. loss control)',                          why: 'Loss control spend is an investment in better LR.', sample: 'Loss control program $180K/yr, focused on fleet safety.' },
+  { code: '6.05.06', category: 'actuarial',  priority: 'M', type: 'doc',      label: 'Claims expenses (not part of LAE ceded)',                     why: 'Fee expenses separate from LAE.', sample: 'Managed care $0.8M/yr, index bureau $90K, SIU $120K.' },
+  { code: '6.05.07', category: 'actuarial',  priority: 'L', type: 'doc',      label: 'Additional income (policy fees, installment fees, late fees)', why: 'Ancillary revenue is material in some programs.', sample: 'Policy fees $3.2M, installment fees $0.9M, late fees $0.2M (2025).' },
+  { code: '6.06.00', category: 'actuarial',  priority: 'H', type: 'doc',      label: 'Inception-to-date development triangles by coverage × segment (parent)', why: 'Triangle quality is the core input to every reserving and pricing exercise.', sample: 'All 9 triangle views for 2019-2025 by LOB and state.' },
+  { code: '6.06.01', category: 'actuarial',  priority: 'H', type: 'doc',      label: 'Triangle — Premium',                                          why: '', sample: 'Premium triangle, 2019-2025 accident year × development quarter.' },
+  { code: '6.06.02', category: 'actuarial',  priority: 'H', type: 'doc',      label: 'Triangle — Exposures',                                        why: '', sample: 'Exposure triangle (vehicle-years or equivalent) 2019-2025.' },
+  { code: '6.06.03', category: 'actuarial',  priority: 'H', type: 'doc',      label: 'Triangle — Paid loss',                                        why: '', sample: 'Paid loss triangle 2019-2025.' },
+  { code: '6.06.04', category: 'actuarial',  priority: 'M', type: 'doc',      label: 'Triangle — Paid LAE (adjuster fees + legal separately)',      why: '', sample: 'Paid LAE triangle with adjuster fees and legal split.' },
+  { code: '6.06.05', category: 'actuarial',  priority: 'H', type: 'doc',      label: 'Triangle — Incurred loss',                                    why: '', sample: 'Incurred loss triangle 2019-2025.' },
+  { code: '6.06.06', category: 'actuarial',  priority: 'M', type: 'doc',      label: 'Triangle — Incurred LAE',                                     why: '', sample: 'Incurred LAE triangle 2019-2025.' },
+  { code: '6.06.07', category: 'actuarial',  priority: 'M', type: 'doc',      label: 'Triangle — Reported claims',                                  why: '', sample: 'Reported claim counts 2019-2025.' },
+  { code: '6.06.08', category: 'actuarial',  priority: 'M', type: 'doc',      label: 'Triangle — Closed claims with payment',                       why: '', sample: 'Closed-with-payment triangle 2019-2025.' },
+  { code: '6.06.09', category: 'actuarial',  priority: 'M', type: 'doc',      label: 'Triangle — Closed claims, no payment',                        why: '', sample: 'Closed-no-payment triangle 2019-2025.' },
+  { code: '6.07.00', category: 'actuarial',  priority: 'H', type: 'doc',      label: 'Renewal rate change history (experience period + planned prospective), by LOB', why: 'Rate action over time is the single best predictor of future loss ratio.', sample: 'Annual rate-change history 2019-2025 plus planned +4.5% for 2026, by LOB.' },
+  { code: '6.08.00', category: 'actuarial',  priority: 'H', type: 'doc',      label: 'Currently-valued detailed loss run (with descriptions)',      why: 'Line-level loss detail underpins the loss pick.', sample: 'Loss run valued 2026-03-31, per-claim descriptions for all claims >$50K.' },
+  { code: '6.09.00', category: 'actuarial',  priority: 'M', type: 'doc',      label: 'Current CAT modeling results',                                why: 'CAT exposure concentrations must be re-quantified annually.', sample: 'AIR Touchstone 2026 run: 250-yr PML $12M, 1-in-100 $3.4M.' },
+  { code: '6.10.00', category: 'actuarial',  priority: 'M', type: 'doc',      label: 'Historically valued reports in annual increments',            why: 'Evaluates reserve development over time.', sample: 'Historically valued reserves 2019-2025 in annual snapshots.' }
+];
+
+// Lifecycle stages
+export const DIL_LIFECYCLE = [
+  { id: 'draft',          label: 'Draft',           color: 'gray',   mgaLabel: 'In Progress'   },
+  { id: 'submitted',      label: 'Submitted',       color: 'blue',   mgaLabel: 'Submitted'     },
+  { id: 'triage',         label: 'In Triage',       color: 'blue',   mgaLabel: 'In Review'     },
+  { id: 'diligence',      label: 'Diligence',       color: 'purple', mgaLabel: 'Follow-up Needed' },
+  { id: 'committee',      label: 'Committee',       color: 'purple', mgaLabel: 'Final Review'  },
+  { id: 'approved',       label: 'Approved',        color: 'green',  mgaLabel: 'Approved'      },
+  { id: 'declined',       label: 'Declined',        color: 'red',    mgaLabel: 'Declined'      },
+  { id: 'implementation', label: 'Implementation',  color: 'teal',   mgaLabel: 'Onboarding'    }
+];
+
+// Helper to build a fresh items array by cloning the template
+function buildProgItems(overrides = {}) {
+  return DIL_ITEMS_TEMPLATE.map(t => ({
+    code: t.code, category: t.category, priority: t.priority, type: t.type,
+    label: t.label, why: t.why, sample: t.sample,
+    status: overrides[t.code]?.status || 'pending',     // pending | received | na | follow-up
+    comments: overrides[t.code]?.comments || '',
+    answer: overrides[t.code]?.answer || '',
+    fileName: overrides[t.code]?.fileName || null,
+    fileVersion: overrides[t.code]?.fileVersion || null,
+    fileUploaded: overrides[t.code]?.fileUploaded || null,
+    reviewerNote: overrides[t.code]?.reviewerNote || '',
+    qa: overrides[t.code]?.qa || []                      // [{from, role, at, text}]
+  }));
+}
+
+// Program Submissions — the atomic record both sides share
+export const DIL_PROGRAMS = [
+  // PRG-01 — Quantana → Acme — currently in DILIGENCE (most-developed record for demo)
+  {
+    id: 'PRG-01',
+    mgaId: 'MGA-01', carrierId: 'CAR-01',
+    programName: 'Small Fleet Commercial Auto — 5-State',
+    lob: 'Commercial Auto',
+    admitted: true,
+    states: ['CA','TX','AZ','NV','CO'],
+    distribution: 'Independent retail agents (appointed)',
+    claimsModel: 'In-house <$50K, Gallagher Bassett TPA >$50K',
+    capacityAsk: '$25M GWP Year 1, scaling to $48M Year 5',
+    targetEffective: '2026-09-01',
+    status: 'diligence',
+    createdAt: '2026-02-14',
+    submittedAt: '2026-03-02',
+    items: buildProgItems({
+      '1.01.00': { status:'received', fileName:'quantana_orgchart_v3.pdf',     fileVersion:'v3', fileUploaded:'2026-03-02' },
+      '1.02.00': { status:'received', fileName:'EO_dec_hiscox_2025-09.pdf',    fileVersion:'v1', fileUploaded:'2026-03-02' },
+      '1.03.00': { status:'received', fileName:'crime_bond_travelers.pdf',     fileVersion:'v1', fileUploaded:'2026-03-02' },
+      '1.04.00': { status:'received', fileName:'cyber_beazley_2026.pdf',       fileVersion:'v1', fileUploaded:'2026-03-02' },
+      '1.05.00': { status:'received', fileName:'data_governance_v2.1.pdf',     fileVersion:'v2.1', fileUploaded:'2026-03-09' },
+      '1.06.00': { status:'follow-up', comments:'DR plan provided but has not been tested in 2026. Please attach the last test report.', reviewerNote:'Program reviewer asked 2026-03-18.' },
+      '1.07.00': { status:'received', fileName:'sample_premium_bord_2026-03.xlsx', fileVersion:'v1', fileUploaded:'2026-03-09' },
+      '1.08.00': { status:'received', answer:'Priya Sharma (CEO), David Park (COO). Both authorized up to $10M contract value per board resolution 2024-11.' },
+
+      '2.01.00': { status:'received', fileName:'agent_license_schedule.xlsx',  fileVersion:'v2', fileUploaded:'2026-03-02' },
+      '2.02.00': { status:'received', fileName:'reg_change_SOP_v1.4.pdf',       fileVersion:'v1.4', fileUploaded:'2026-03-03' },
+      '2.03.00': { status:'received', fileName:'retail_agency_agreement_v3.pdf', fileVersion:'v3.0', fileUploaded:'2026-03-10' },
+      '2.04.00': { status:'received', fileName:'sample_policy_CA-2025-00847.pdf', fileVersion:'v1', fileUploaded:'2026-03-10' },
+      '2.05.00': { status:'received', fileName:'cancellation_sop_v2.1.pdf',    fileVersion:'v2.1', fileUploaded:'2026-03-10' },
+      '2.07.00': { status:'received', answer:'CA DOI informal inquiry 2022 (closed, no action). 3 internal audits 2023-2025, all passed. No external audits.' },
+      '2.08.00': { status:'follow-up', comments:'Complaint log provided dated 2026-01-31. Please refresh through 2026-03-31.', reviewerNote:'Compliance reviewer 2026-03-20.' },
+      '2.09.00': { status:'received', answer:'Independent retail agents (appointed). Annual re-vet via NIPR + E&O confirmation. Offboarding triggers license revocation within 5 business days.' },
+      '2.10.00': { status:'pending' },
+      '2.11.00': { status:'received', answer:'Appointments filed within 15 days via NIPR Gateway. Tracked in-system with daily reconciliation.' },
+      '2.12.00': { status:'pending' },
+      '2.13.00': { status:'na' },
+
+      '3.01.00': { status:'received', fileName:'claims_dept_bio.pdf',          fileVersion:'v1', fileUploaded:'2026-03-05' },
+      '3.02.00': { status:'received', fileName:'claims_orgchart.pdf',          fileVersion:'v1', fileUploaded:'2026-03-05' },
+      '3.03.00': { status:'received', fileName:'claims_staffing_roster.xlsx',  fileVersion:'v1', fileUploaded:'2026-03-05' },
+      '3.04.00': { status:'received', fileName:'claims_SOP_v4.1.pdf',          fileVersion:'v4.1', fileUploaded:'2026-03-05' },
+      '3.05.00': { status:'received', fileName:'claims_BCP_v1.3.pdf',          fileVersion:'v1.3', fileUploaded:'2026-03-05' },
+      '3.06.00': { status:'received', fileName:'claims_insurance_certs.pdf',   fileVersion:'v1', fileUploaded:'2026-03-05' },
+      '3.07.00': { status:'follow-up', comments:'Adjuster license schedule shows 3 pending renewals in TX. Please provide updated confirmations.', reviewerNote:'Claims reviewer 2026-03-20.' },
+      '3.08.00': { status:'received', fileName:'claims_authority_matrix.pdf',  fileVersion:'v1', fileUploaded:'2026-03-05' },
+      '3.09.00': { status:'received', fileName:'sample_claims_reports.pdf',    fileVersion:'v1', fileUploaded:'2026-03-05' },
+      '3.10.00': { status:'pending' },
+      '3.11.00': { status:'received', fileName:'litigation_log_template.xlsx', fileVersion:'v1', fileUploaded:'2026-03-05' },
+
+      '4.01.00': { status:'received', fileName:'W9_quantana_2026.pdf',         fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '4.02.00': { status:'received', fileName:'legal_entity_org.pdf',         fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '4.03.00': { status:'received', fileName:'audited_financials_2023-2025.pdf', fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '4.04.00': { status:'received', fileName:'5yr_projection_acme_program.xlsx', fileVersion:'v2', fileUploaded:'2026-03-10' },
+      '4.05.00': { status:'received', answer:'CFO Sarah Kim, Controller Jeff Ngo, 2 staff accountants. Tax and annual audit outsourced to BDO.' },
+
+      '5.01.00': { status:'received', fileName:'UW_guidelines_v5.2.pdf',       fileVersion:'v5.2', fileUploaded:'2026-03-02' },
+      '5.02.00': { status:'received', fileName:'uw_authority_letter_2026.pdf', fileVersion:'v1', fileUploaded:'2026-03-02' },
+      '5.03.00': { status:'received', fileName:'policy_forms_packet.pdf',      fileVersion:'v1', fileUploaded:'2026-03-02' },
+      '5.04.00': { status:'received', fileName:'referral_template_v2.pdf',     fileVersion:'v2', fileUploaded:'2026-03-02' },
+      '5.05.00': { status:'received', fileName:'uw_orgchart.pdf',              fileVersion:'v1', fileUploaded:'2026-03-02' },
+      '5.06.00': { status:'received', fileName:'senior_uw_bios.pdf',           fileVersion:'v1', fileUploaded:'2026-03-02' },
+      '5.07.00': { status:'received', fileName:'bind_quote_submit_ratios.xlsx',fileVersion:'v1', fileUploaded:'2026-03-02' },
+      '5.08.00': { status:'pending' },
+      '5.09.00': { status:'received', fileName:'aggregations_mgmt.pdf',        fileVersion:'v1', fileUploaded:'2026-03-02' },
+      '5.10.00': { status:'follow-up', comments:'3-year GWP forecast provided but only annual totals — please provide monthly breakout per request.', reviewerNote:'UW reviewer 2026-03-19.' },
+      '5.11.00': { status:'pending' },
+
+      '6.01.00': { status:'received', fileName:'rating_plan_2026.pdf',         fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.02.00': { status:'received', fileName:'industry_vs_rateplan.pdf',     fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.03.00': { status:'received', fileName:'profitability_monitor_q1.pdf', fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.04.00': { status:'received', fileName:'price_monitor_q1_2026.pdf',    fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.05.00': { status:'received', fileName:'program_financial_dynamics.xlsx', fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.05.01': { status:'received', fileName:'fixed_commission_schedule.pdf',fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.05.02': { status:'received', fileName:'variable_commission_slide.pdf',fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.05.03': { status:'received', answer:'ISO + NCCI + state residual market assessments. Average 0.7% of GWP.' },
+      '6.05.04': { status:'received', answer:'Premium tax: CA 2.35%, TX 1.6%, AZ 2.0%, NV 3.5%, CO 2.0%. License fees 0.1% of GWP.' },
+      '6.05.05': { status:'na' },
+      '6.05.06': { status:'received', answer:'Managed care $0.8M/yr, index bureau $90K, SIU $120K.' },
+      '6.05.07': { status:'received', answer:'Policy fees $3.2M, installment fees $0.9M, late fees $0.2M (2025 actuals).' },
+      '6.06.00': { status:'received', fileName:'triangles_bundle_2026.xlsx',   fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.06.01': { status:'received', fileName:'triangle_premium.xlsx',        fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.06.02': { status:'received', fileName:'triangle_exposures.xlsx',      fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.06.03': { status:'received', fileName:'triangle_paid_loss.xlsx',      fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.06.04': { status:'received', fileName:'triangle_paid_lae.xlsx',       fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.06.05': { status:'received', fileName:'triangle_incurred_loss.xlsx',  fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.06.06': { status:'received', fileName:'triangle_incurred_lae.xlsx',   fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.06.07': { status:'received', fileName:'triangle_reported_claims.xlsx',fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.06.08': { status:'follow-up', comments:'Closed-with-payment triangle shows a large paid-to-incurred jump in AY 2022 — please annotate.', reviewerNote:'Actuarial reviewer 2026-03-22 — HIGH PRIORITY.' },
+      '6.06.09': { status:'received', fileName:'triangle_closed_no_pay.xlsx',  fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.07.00': { status:'received', fileName:'rate_change_history.xlsx',     fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.08.00': { status:'follow-up', comments:'Loss run is valued 2025-12-31. Please refresh to 2026-03-31.', reviewerNote:'Actuarial reviewer 2026-03-22 — HIGH PRIORITY.' },
+      '6.09.00': { status:'received', fileName:'CAT_model_run_2026.pdf',       fileVersion:'v1', fileUploaded:'2026-03-07' },
+      '6.10.00': { status:'pending' }
+    }),
+    activity: [
+      { at: '2026-02-14 09:12', actor: 'Priya Sharma (MGA)',     action: 'Created program draft' },
+      { at: '2026-03-02 16:47', actor: 'Priya Sharma (MGA)',     action: 'Submitted program — 38 of 44 items provided' },
+      { at: '2026-03-03 10:20', actor: 'Marcus Webb (Carrier)',  action: 'Program triaged — routed to 6 reviewer roles' },
+      { at: '2026-03-05 14:30', actor: 'Helen Ortiz (Claims)',   action: 'Claims review started' },
+      { at: '2026-03-18 11:05', actor: 'James Liu (Program)',    action: 'Follow-up requested on MT-03 (2 more references for Head of Claims)' },
+      { at: '2026-03-19 15:42', actor: 'Sonia Patel (UW)',       action: 'Follow-up requested on UW-04 (state-filed rates for TX, AZ, NV, CO)' },
+      { at: '2026-03-20 09:18', actor: 'Helen Ortiz (Claims)',   action: 'Follow-up requested on CM-05 (refresh claim inventory)' },
+      { at: '2026-03-21 13:55', actor: 'Derek Tan (Finance)',    action: 'Follow-up requested on FN-03 (newer trust rec)' },
+      { at: '2026-03-22 08:40', actor: 'Nora Whitfield (Actuarial)', action: 'Follow-up requested on AC-02 (current loss pick) — HIGH PRIORITY' }
+    ],
+    reviewerAssignments: {
+      'Program':      { name: 'James Liu',      status: 'in-progress', sla: '2026-04-02', itemsOpen: 2, itemsDone: 8 },
+      'Compliance':   { name: 'Reena Alvarez',  status: 'in-progress', sla: '2026-04-02', itemsOpen: 1, itemsDone: 5 },
+      'Underwriting': { name: 'Sonia Patel',    status: 'in-progress', sla: '2026-04-05', itemsOpen: 2, itemsDone: 4 },
+      'Claims':       { name: 'Helen Ortiz',    status: 'in-progress', sla: '2026-04-05', itemsOpen: 1, itemsDone: 5 },
+      'Finance':      { name: 'Derek Tan',      status: 'in-progress', sla: '2026-04-02', itemsOpen: 1, itemsDone: 3 },
+      'Actuarial':    { name: 'Nora Whitfield', status: 'blocked',     sla: '2026-04-05', itemsOpen: 1, itemsDone: 3 }
+    }
+  },
+
+  // PRG-02 — Coastline → Acme — currently SUBMITTED/TRIAGE (fresh in the pipeline)
+  {
+    id: 'PRG-02',
+    mgaId: 'MGA-02', carrierId: 'CAR-01',
+    programName: 'Coastal Homeowners — SE US',
+    lob: 'Property',
+    admitted: true,
+    states: ['FL','GA','SC','NC','AL'],
+    distribution: 'Captive agency network + direct-to-consumer',
+    claimsModel: 'Crawford TPA, carrier for >$100K',
+    capacityAsk: '$60M GWP Year 1',
+    targetEffective: '2026-10-01',
+    status: 'triage',
+    createdAt: '2026-03-24',
+    submittedAt: '2026-04-08',
+    items: buildProgItems({
+      '1.01.00': { status:'received', fileName:'coastline_org_2026.pdf' },
+      '1.02.00': { status:'received', fileName:'EO_chubb_2025.pdf' },
+      '1.03.00': { status:'received', fileName:'crime_hartford.pdf' },
+      '1.04.00': { status:'received', fileName:'cyber_AIG.pdf' },
+      '1.05.00': { status:'pending' },
+      '1.06.00': { status:'pending' },
+      '1.08.00': { status:'received', answer:'Jonathan Meyers (CEO) and Linda Foster (COO) authorized up to $5M per contract.' },
+
+      '2.01.00': { status:'received', fileName:'licenses_SE_states.pdf' },
+      '2.03.00': { status:'pending' },
+      '2.04.00': { status:'received', fileName:'sample_policy_FL.pdf' },
+      '2.05.00': { status:'pending' },
+      '2.07.00': { status:'received', answer:'None.' },
+
+      '3.01.00': { status:'received', fileName:'claims_dept_bio_coastline.pdf' },
+      '3.04.00': { status:'received', fileName:'claims_SOP_crawford_addendum.pdf' },
+
+      '4.01.00': { status:'received', fileName:'W9_coastline.pdf' },
+      '4.03.00': { status:'received', fileName:'audited_FS_2023-2025.pdf' },
+      '4.04.00': { status:'received', fileName:'projection_se_homeowners.xlsx' },
+
+      '5.01.00': { status:'received', fileName:'UW_manual_v8.pdf' },
+      '5.03.00': { status:'received', fileName:'forms_packet_FL.pdf' },
+
+      '6.01.00': { status:'received', fileName:'rating_plan_2026.pdf' },
+      '6.08.00': { status:'received', fileName:'loss_runs_5yr.xlsx' },
+      '6.03.00': { status:'received', fileName:'loss_pick_memo_2026-03.pdf' }
+    }),
+    activity: [
+      { at: '2026-03-24 11:05', actor: 'Jonathan Meyers (MGA)', action: 'Created program draft' },
+      { at: '2026-04-08 14:22', actor: 'Jonathan Meyers (MGA)', action: 'Submitted program — 24 of 44 items' },
+      { at: '2026-04-09 08:40', actor: 'Marcus Webb (Carrier)', action: 'Program received, triage pending' }
+    ],
+    reviewerAssignments: {
+      'Program':      { name: 'James Liu',      status: 'queued', sla: '2026-04-23', itemsOpen: 3, itemsDone: 1 },
+      'Compliance':   { name: 'Reena Alvarez',  status: 'queued', sla: '2026-04-23', itemsOpen: 2, itemsDone: 0 },
+      'Underwriting': { name: 'Sonia Patel',    status: 'queued', sla: '2026-04-26', itemsOpen: 3, itemsDone: 0 },
+      'Claims':       { name: 'Helen Ortiz',    status: 'queued', sla: '2026-04-26', itemsOpen: 3, itemsDone: 0 },
+      'Finance':      { name: 'Derek Tan',      status: 'queued', sla: '2026-04-23', itemsOpen: 2, itemsDone: 0 },
+      'Actuarial':    { name: 'Nora Whitfield', status: 'queued', sla: '2026-04-26', itemsOpen: 3, itemsDone: 0 }
+    }
+  },
+
+  // PRG-03 — Quantana → Continental — DRAFT (MGA still working on it)
+  {
+    id: 'PRG-03',
+    mgaId: 'MGA-01', carrierId: 'CAR-02',
+    programName: 'Tech E&O — National',
+    lob: 'Professional Liability',
+    admitted: false,
+    states: ['CA','TX','NY','FL','WA'],
+    distribution: 'Wholesale brokers',
+    claimsModel: 'In-house for <$100K, carrier for all over',
+    capacityAsk: '$15M GWP Year 1',
+    targetEffective: '2026-11-01',
+    status: 'draft',
+    createdAt: '2026-04-01',
+    submittedAt: null,
+    items: buildProgItems({
+      '1.01.00': { status:'received', fileName:'quantana_orgchart_v3.pdf' },
+      '1.02.00': { status:'received', fileName:'EO_dec_page_hiscox_2025-09.pdf' },
+      '1.04.00': { status:'received', fileName:'cyber_beazley_2026.pdf' },
+      '4.01.00': { status:'received', fileName:'W9_quantana_2026.pdf' },
+      '5.06.00': { status:'received', fileName:'senior_uw_bios.pdf' },
+      '2.01.00': { status:'pending' },
+      '5.01.00': { status:'pending' }
+    }),
+    activity: [
+      { at: '2026-04-01 10:11', actor: 'Priya Sharma (MGA)', action: 'Created draft for Tech E&O program' },
+      { at: '2026-04-14 16:30', actor: 'Priya Sharma (MGA)', action: 'Uploaded 6 artifacts from prior Acme submission' }
+    ],
+    reviewerAssignments: {}
+  },
+
+  // PRG-04 — Summit → Pacific Mutual — APPROVED → IMPLEMENTATION
+  {
+    id: 'PRG-04',
+    mgaId: 'MGA-03', carrierId: 'CAR-03',
+    programName: 'Mountain States Workers Comp',
+    lob: 'Workers Compensation',
+    admitted: true,
+    states: ['CO','UT','WY','MT','ID'],
+    distribution: 'Independent agents',
+    claimsModel: 'In-house all levels',
+    capacityAsk: '$12M GWP Year 1',
+    targetEffective: '2026-07-01',
+    status: 'implementation',
+    createdAt: '2026-01-10',
+    submittedAt: '2026-01-28',
+    decisionAt: '2026-04-01',
+    decision: 'approved',
+    items: buildProgItems({}),
+    activity: [
+      { at: '2026-01-10 09:00', actor: 'Rachel Nguyen (MGA)',    action: 'Created program draft' },
+      { at: '2026-01-28 12:40', actor: 'Rachel Nguyen (MGA)',    action: 'Submitted program — all 44 items' },
+      { at: '2026-02-05 11:05', actor: 'Daniel Kim (Carrier)',   action: 'Program triaged' },
+      { at: '2026-03-18 14:20', actor: 'Pacific Mutual Committee', action: 'Approved at Program Committee' },
+      { at: '2026-04-01 09:30', actor: 'Daniel Kim (Carrier)',   action: 'Moved to Implementation' }
+    ],
+    reviewerAssignments: {
+      'Program':      { name: 'Pacific Mutual — James Liu',      status: 'complete', sla: 'met', itemsOpen: 0, itemsDone: 10 },
+      'Compliance':   { name: 'Pacific Mutual — Reena Alvarez',  status: 'complete', sla: 'met', itemsOpen: 0, itemsDone: 6 },
+      'Underwriting': { name: 'Pacific Mutual — Sonia Patel',    status: 'complete', sla: 'met', itemsOpen: 0, itemsDone: 6 },
+      'Claims':       { name: 'Pacific Mutual — Helen Ortiz',    status: 'complete', sla: 'met', itemsOpen: 0, itemsDone: 6 },
+      'Finance':      { name: 'Pacific Mutual — Derek Tan',      status: 'complete', sla: 'met', itemsOpen: 0, itemsDone: 5 },
+      'Actuarial':    { name: 'Pacific Mutual — Nora Whitfield', status: 'complete', sla: 'met', itemsOpen: 0, itemsDone: 5 }
+    },
+    implementation: {
+      targetLive: '2026-07-01',
+      tasks: [
+        { id: 'IMP-01', owner: 'IT',       label: 'Policy admin integration — test environment',       due: '2026-05-10', status: 'done' },
+        { id: 'IMP-02', owner: 'MGA',      label: 'Submit final UW guidelines with reinsurer redlines', due: '2026-05-15', status: 'done' },
+        { id: 'IMP-03', owner: 'Carrier',  label: 'Executed DUA + schedules',                           due: '2026-05-22', status: 'in-progress' },
+        { id: 'IMP-04', owner: 'MGA',      label: 'Producer appointment filing — 5 states',            due: '2026-06-01', status: 'in-progress' },
+        { id: 'IMP-05', owner: 'Carrier',  label: 'Bordereau specification sign-off',                   due: '2026-06-05', status: 'not-started' },
+        { id: 'IMP-06', owner: 'MGA',      label: 'Joint training — UW + claims kickoff',              due: '2026-06-15', status: 'not-started' },
+        { id: 'IMP-07', owner: 'Joint',    label: 'Live-test bordereau submission',                     due: '2026-06-22', status: 'not-started' },
+        { id: 'IMP-08', owner: 'Joint',    label: 'Go-live readiness review',                           due: '2026-06-28', status: 'not-started' }
+      ]
+    }
+  },
+
+  // PRG-05 — Frontier → Acme — COMMITTEE (awaiting vote)
+  {
+    id: 'PRG-05',
+    mgaId: 'MGA-05', carrierId: 'CAR-01',
+    programName: 'Southwest Fleet Trucking',
+    lob: 'Commercial Auto',
+    admitted: true,
+    states: ['TX','OK','NM','AR','LA'],
+    distribution: 'Independent agents (appointed)',
+    claimsModel: 'In-house',
+    capacityAsk: '$32M GWP Year 1',
+    targetEffective: '2026-08-01',
+    status: 'committee',
+    createdAt: '2026-01-22',
+    submittedAt: '2026-02-14',
+    items: buildProgItems({}),
+    activity: [
+      { at: '2026-01-22 10:00', actor: 'Miguel Torres (MGA)',     action: 'Created program draft' },
+      { at: '2026-02-14 13:10', actor: 'Miguel Torres (MGA)',     action: 'Submitted program' },
+      { at: '2026-02-18 09:30', actor: 'Marcus Webb (Carrier)',   action: 'Program triaged' },
+      { at: '2026-04-10 16:45', actor: 'Carrier Diligence Team',  action: 'Diligence complete — advanced to Program Committee' },
+      { at: '2026-04-18 11:00', actor: 'Program Committee',       action: 'Committee meeting scheduled 2026-04-30' }
+    ],
+    reviewerAssignments: {
+      'Program':      { name: 'James Liu',      status: 'complete', sla: 'met',      itemsOpen: 0, itemsDone: 10 },
+      'Compliance':   { name: 'Reena Alvarez',  status: 'complete', sla: 'met',      itemsOpen: 0, itemsDone: 6 },
+      'Underwriting': { name: 'Sonia Patel',    status: 'complete', sla: 'met',      itemsOpen: 0, itemsDone: 6 },
+      'Claims':       { name: 'Helen Ortiz',    status: 'complete', sla: 'met',      itemsOpen: 0, itemsDone: 6 },
+      'Finance':      { name: 'Derek Tan',      status: 'complete', sla: 'met',      itemsOpen: 0, itemsDone: 5 },
+      'Actuarial':    { name: 'Nora Whitfield', status: 'complete', sla: 'late 2d',  itemsOpen: 0, itemsDone: 5 }
+    }
+  },
+
+  // PRG-06 — Verity → Continental — DECLINED (for educational contrast)
+  {
+    id: 'PRG-06',
+    mgaId: 'MGA-04', carrierId: 'CAR-02',
+    programName: 'Mid-Market D&O — National',
+    lob: 'D&O',
+    admitted: false,
+    states: ['All 50'],
+    distribution: 'Wholesale',
+    claimsModel: 'In-house + panel counsel',
+    capacityAsk: '$25M GWP Year 1',
+    targetEffective: '2026-06-01',
+    status: 'declined',
+    createdAt: '2025-11-02',
+    submittedAt: '2025-12-10',
+    decisionAt: '2026-02-05',
+    decision: 'declined',
+    declineReason: 'Rate adequacy: actuarial loss pick materially below carrier\'s selected LR for this class. Capacity commitment not feasible at submitted pricing.',
+    items: buildProgItems({}),
+    activity: [
+      { at: '2025-11-02 09:00', actor: 'Alan Goldstein (MGA)',  action: 'Created program draft' },
+      { at: '2025-12-10 14:00', actor: 'Alan Goldstein (MGA)',  action: 'Submitted program' },
+      { at: '2026-01-08 11:20', actor: 'Elena Ruiz (Carrier)',  action: 'Triaged and assigned' },
+      { at: '2026-02-05 16:30', actor: 'Program Committee',     action: 'Declined — rate adequacy concerns' }
+    ],
+    reviewerAssignments: {}
+  }
+];
+
+// ─────────────────────────────────────────────────────────────
+// SMART DOCUMENT COLLECTION — extraction + validation library
+// Keyed by diligence-item code. Each extractor returns:
+//   { summary:String, fields:[{label, value, confidence?}], steps:[String...] }
+// Each validator returns:
+//   [{ label, status: 'pass'|'warn'|'fail', note }]
+// Each crossCheck returns:
+//   [{ level: 'info'|'warn'|'fail', text, refs:[codes...] }]
+// ─────────────────────────────────────────────────────────────
+
+const DIL_EXTRACTORS = {
+  '1.01.00': () => ({
+    summary: 'Organizational chart for Quantana Underwriters LLC. 14 FTEs, 4 direct reports to CEO, reporting lines to Board.',
+    steps: ['Read PDF (3 pages) · 1.2s', 'Detected entity names + reporting lines · 0.8s', 'Matched against diligence item 1.01.00 · 0.1s'],
+    fields: [
+      { label: 'Entity name',      value: 'Quantana Underwriters LLC',   confidence: 99 },
+      { label: 'Total FTEs',       value: '14',                           confidence: 92 },
+      { label: 'Direct reports (CEO)', value: '4 (COO, CUO, Head of Claims, Head of Compliance)', confidence: 94 },
+      { label: 'Chart date',       value: '2026-02-18 (within 90 days)',  confidence: 96 },
+      { label: 'Signing authority noted', value: 'Yes — CEO and COO',     confidence: 88 }
+    ]
+  }),
+  '1.02.00': () => ({
+    summary: 'E&O certificate for Quantana Underwriters LLC. $5M / $10M limits through Hiscox. Valid through 2026-09-30.',
+    steps: ['Read PDF declarations page · 0.6s', 'Located policy & limits · 0.4s', 'Cross-referenced named insured against W-9 · 0.3s'],
+    fields: [
+      { label: 'Carrier',           value: 'Hiscox Insurance Company',      confidence: 99 },
+      { label: 'Policy #',          value: 'UHN-2025-000847',                confidence: 99 },
+      { label: 'Per-claim limit',   value: '$5,000,000',                     confidence: 98 },
+      { label: 'Aggregate limit',   value: '$10,000,000',                    confidence: 98 },
+      { label: 'Deductible',        value: '$25,000',                        confidence: 96 },
+      { label: 'Named insured',     value: 'Quantana Underwriters LLC',      confidence: 97 },
+      { label: 'Effective',         value: '2025-09-30',                      confidence: 99 },
+      { label: 'Expiration',        value: '2026-09-30',                      confidence: 99 }
+    ]
+  }),
+  '1.03.00': () => ({
+    summary: 'Surety bond — Travelers Casualty. Penal sum $1,000,000. Insured: Quantana Underwriters LLC. Active.',
+    steps: ['OCR of bond cert · 0.8s', 'Extracted obligee + penal sum · 0.3s'],
+    fields: [
+      { label: 'Surety',       value: 'Travelers Casualty and Surety Co',  confidence: 99 },
+      { label: 'Bond #',       value: 'SB-2025-44812',                      confidence: 97 },
+      { label: 'Penal sum',    value: '$1,000,000',                          confidence: 98 },
+      { label: 'Principal',    value: 'Quantana Underwriters LLC',           confidence: 97 },
+      { label: 'Effective',    value: '2025-09-30',                           confidence: 99 },
+      { label: 'Expiration',   value: '2026-09-30',                           confidence: 99 }
+    ]
+  }),
+  '1.04.00': () => ({
+    summary: 'Cyber liability — Beazley. $2M single / $2M aggregate. Retroactive 2022-01-01. Valid through 2026-09-30.',
+    steps: ['Read declarations page · 0.7s', 'Located retroactive date · 0.2s'],
+    fields: [
+      { label: 'Carrier',              value: 'Beazley Insurance Services',      confidence: 99 },
+      { label: 'Policy #',             value: 'BEA-CY-48291',                    confidence: 99 },
+      { label: 'Per-claim / aggregate',value: '$2,000,000 / $2,000,000',         confidence: 98 },
+      { label: 'Retroactive date',     value: '2022-01-01',                       confidence: 99 },
+      { label: 'Expiration',           value: '2026-09-30',                       confidence: 99 }
+    ]
+  }),
+  '2.01.00': () => ({
+    summary: 'Producer license schedule — Excel. 24 active state licenses. 3 expiring within 90 days.',
+    steps: ['Parsed spreadsheet · 0.5s', 'Validated against NIPR format · 0.4s', 'Flagged expiring licenses · 0.2s'],
+    fields: [
+      { label: 'Active licenses',      value: '24',                               confidence: 100 },
+      { label: 'States covered',       value: 'CA, TX, AZ, NV, CO + 19 others',   confidence: 100 },
+      { label: 'Expiring ≤ 90 days',   value: '3 (CA renewal 2026-05-12, NV 2026-06-18, CO 2026-07-04)', confidence: 100 },
+      { label: 'Expired entries',      value: '0',                                 confidence: 100 },
+      { label: 'Missing NPR numbers',  value: '0',                                 confidence: 100 }
+    ]
+  }),
+  '2.04.00': () => ({
+    summary: 'Sample policy packet — 31 pages covering declarations, forms, endorsements, and state notices for Commercial Auto.',
+    steps: ['OCR document (31 pages) · 2.4s', 'Classified sections · 0.6s', 'Detected ISO form codes · 0.4s'],
+    fields: [
+      { label: 'Line of business',   value: 'Commercial Auto',                  confidence: 99 },
+      { label: 'Base form',          value: 'CA 00 01 10 13',                   confidence: 99 },
+      { label: 'Endorsements',       value: '9 detected',                        confidence: 97 },
+      { label: 'State notices',      value: 'CA, TX, AZ, NV, CO — all present',  confidence: 95 },
+      { label: 'Pages',              value: '31',                                 confidence: 100 }
+    ]
+  }),
+  '3.04.00': () => ({
+    summary: 'Claims Procedures Manual v4.1 — 89 pages. Covers FNOL through closure. Authority matrix + reserving philosophy present.',
+    steps: ['OCR + TOC extraction · 1.9s', 'Classified 12 sections · 0.6s', 'Checked for required components · 0.3s'],
+    fields: [
+      { label: 'Version',                value: 'v4.1',                         confidence: 99 },
+      { label: 'Pages',                   value: '89',                            confidence: 100 },
+      { label: 'FNOL procedure',          value: 'Present (§2)',                  confidence: 98 },
+      { label: 'Authority matrix',        value: 'Present (§5)',                  confidence: 97 },
+      { label: 'Reserving philosophy',    value: 'Present (§6)',                  confidence: 96 },
+      { label: 'Litigation management',   value: 'Present (§9)',                  confidence: 95 }
+    ]
+  }),
+  '4.01.00': () => ({
+    summary: 'W-9 signed 2026-02-18. Legal entity: Quantana Underwriters LLC. TIN on file.',
+    steps: ['OCR signed W-9 · 0.6s', 'Validated TIN format · 0.2s'],
+    fields: [
+      { label: 'Legal entity',    value: 'Quantana Underwriters LLC',    confidence: 99 },
+      { label: 'Entity type',     value: 'LLC (multi-member)',           confidence: 98 },
+      { label: 'TIN',             value: '**-*****1204 (masked)',        confidence: 99 },
+      { label: 'Signed by',       value: 'Priya Sharma, CEO',            confidence: 97 },
+      { label: 'Date signed',     value: '2026-02-18',                    confidence: 99 }
+    ]
+  }),
+  '4.03.00': () => ({
+    summary: 'Audited financials 2023-2025. BDO opinion clean all three years. Revenue growth 18% CAGR.',
+    steps: ['Parsed PDF bundle (3 statements) · 2.1s', 'Located audit opinion pages · 0.6s', 'Summarised key metrics · 0.9s'],
+    fields: [
+      { label: 'Audit firm',       value: 'BDO USA LLP',                     confidence: 99 },
+      { label: 'Years covered',    value: '2023, 2024, 2025',                confidence: 100 },
+      { label: 'Audit opinion',    value: 'Unqualified (clean) ×3',         confidence: 99 },
+      { label: '2025 revenue',     value: '$42.1M',                          confidence: 97 },
+      { label: '2025 net income',  value: '$8.7M (20.7% margin)',           confidence: 97 },
+      { label: 'Revenue CAGR',     value: '18% (2023→2025)',                 confidence: 95 }
+    ]
+  }),
+  '5.01.00': () => ({
+    summary: 'Underwriting guidelines v5.2. 47 pages. Covers Commercial Auto in 5 states. Authority matrix + referral thresholds present.',
+    steps: ['OCR + TOC (47 pages) · 1.4s', 'Classified sections · 0.5s', 'Verified required components · 0.3s'],
+    fields: [
+      { label: 'Version',              value: 'v5.2',                          confidence: 99 },
+      { label: 'Pages',                value: '47',                             confidence: 100 },
+      { label: 'LOB',                  value: 'Commercial Auto',                confidence: 99 },
+      { label: 'States',               value: 'CA, TX, AZ, NV, CO',             confidence: 98 },
+      { label: 'Appetite table',       value: 'Present (§4)',                   confidence: 97 },
+      { label: 'Eligibility rules',    value: 'Present (§3)',                   confidence: 97 },
+      { label: 'Rating plan',          value: 'Present (§6)',                   confidence: 96 },
+      { label: 'Referral thresholds',  value: '5 triggers defined (§7)',       confidence: 96 }
+    ]
+  }),
+  '5.10.00': () => ({
+    summary: '3-year GWP forecast — monthly breakout detected across 36 months (2026-01 → 2028-12) for Commercial Auto.',
+    steps: ['Parsed spreadsheet · 0.7s', 'Verified monthly granularity · 0.2s', 'Summed to program totals · 0.3s'],
+    fields: [
+      { label: 'Monthly periods',  value: '36 months',                        confidence: 100 },
+      { label: 'LOB',              value: 'Commercial Auto',                    confidence: 99 },
+      { label: 'Year 1 GWP',       value: '$12.4M',                             confidence: 98 },
+      { label: 'Year 2 GWP',       value: '$22.8M',                             confidence: 98 },
+      { label: 'Year 3 GWP',       value: '$32.1M',                             confidence: 98 },
+      { label: '3-yr CAGR',        value: '61%',                                confidence: 97 }
+    ]
+  }),
+  '6.08.00': () => ({
+    summary: 'Loss run valued 2026-03-31. 2,487 claims over 5 years. Paid $18.4M, incurred $24.1M, 42% open count.',
+    steps: ['Parsed XLSX (14,312 rows) · 1.8s', 'Aggregated by AY and status · 0.9s', 'Computed ratios · 0.4s'],
+    fields: [
+      { label: 'Valuation date',    value: '2026-03-31',                       confidence: 99 },
+      { label: 'Claim count (5y)',  value: '2,487',                             confidence: 100 },
+      { label: 'Paid loss',         value: '$18.4M',                             confidence: 99 },
+      { label: 'Incurred loss',     value: '$24.1M',                             confidence: 99 },
+      { label: 'Open count',        value: '1,046 (42%)',                        confidence: 100 },
+      { label: 'LOB',               value: 'Commercial Auto',                    confidence: 99 },
+      { label: 'AYs covered',       value: '2021, 2022, 2023, 2024, 2025, 2026', confidence: 100 }
+    ]
+  }),
+  '6.06.03': () => ({
+    summary: 'Paid loss triangle 2019-2025 detected. 7 accident years × 7 development quarters.',
+    steps: ['Parsed XLSX · 0.5s', 'Detected triangle structure · 0.6s', 'Offered auto-fill to sibling triangles · 0.2s'],
+    fields: [
+      { label: 'Triangle type',    value: 'Paid loss',                         confidence: 99 },
+      { label: 'Accident years',   value: '2019–2025',                          confidence: 100 },
+      { label: 'Development',      value: '12 / 24 / 36 / 48 / 60 / 72 / 84 months', confidence: 100 },
+      { label: 'Cells populated',  value: '49 / 49 (no gaps)',                  confidence: 100 }
+    ]
+  })
+};
+
+const DIL_VALIDATORS = {
+  '1.02.00': () => [
+    { label: 'Per-claim limit ≥ $5M (program requirement)',         status: 'pass', note: 'Found $5,000,000' },
+    { label: 'Aggregate limit ≥ $10M',                              status: 'pass', note: 'Found $10,000,000' },
+    { label: 'Policy currently active',                             status: 'pass', note: 'Valid through 2026-09-30' },
+    { label: 'Expires after program effective date (2026-09-01)',   status: 'pass', note: 'Gap: 29 days' },
+    { label: 'Named insured matches legal entity on W-9',           status: 'pass', note: '"Quantana Underwriters LLC" — exact match' },
+    { label: 'No claims in last 5 years (or narrative attached)',   status: 'warn', note: 'No narrative attached — if clean, please confirm explicitly' }
+  ],
+  '1.03.00': () => [
+    { label: 'Penal sum ≥ $1M',                                    status: 'pass', note: 'Found $1,000,000' },
+    { label: 'Bond currently active',                              status: 'pass', note: 'Valid through 2026-09-30' },
+    { label: 'Principal matches legal entity on W-9',              status: 'pass', note: 'Matches' }
+  ],
+  '1.04.00': () => [
+    { label: 'Per-claim limit ≥ $2M',                              status: 'pass', note: 'Found $2,000,000' },
+    { label: 'Retroactive date set',                               status: 'pass', note: '2022-01-01 — covers historical exposure' },
+    { label: 'Currently active',                                    status: 'pass', note: 'Valid through 2026-09-30' }
+  ],
+  '1.01.00': () => [
+    { label: 'Chart dated within 90 days',                         status: 'pass', note: '2026-02-18 (52 days old)' },
+    { label: 'Reporting lines visible',                             status: 'pass', note: '14 FTEs, 4 direct to CEO' },
+    { label: 'Signing authority indicated',                         status: 'warn', note: 'Only 2 signing officers; confirm whether full list is in 1.08.00' }
+  ],
+  '2.01.00': () => [
+    { label: 'Covers all program target states (5)',               status: 'pass', note: 'CA, TX, AZ, NV, CO all present' },
+    { label: 'No expired licenses',                                 status: 'pass', note: '0 expired' },
+    { label: 'NPR numbers present for every row',                  status: 'pass', note: '24 of 24 populated' },
+    { label: 'No licenses expiring before program effective date', status: 'warn', note: '3 licenses expire within 90 days (CA 2026-05-12, NV 2026-06-18, CO 2026-07-04); confirm renewal plan' }
+  ],
+  '2.04.00': () => [
+    { label: 'Includes state notices for every target state',      status: 'pass', note: '5/5 states covered' },
+    { label: 'Base ISO form identifiable',                          status: 'pass', note: 'CA 00 01 10 13' },
+    { label: 'Endorsement schedule readable',                       status: 'pass', note: '9 endorsements' }
+  ],
+  '3.04.00': () => [
+    { label: 'FNOL procedure documented',                           status: 'pass', note: '§2' },
+    { label: 'Authority matrix present',                             status: 'pass', note: '§5' },
+    { label: 'Reserving philosophy present',                         status: 'pass', note: '§6' },
+    { label: 'Cross-ref with 3.08.00 (payment procedures)',         status: 'pass', note: 'Aligned' }
+  ],
+  '4.01.00': () => [
+    { label: 'Legal entity name matches entity on file',            status: 'pass', note: 'Quantana Underwriters LLC' },
+    { label: 'TIN present and valid format',                         status: 'pass', note: 'Format valid, verified ending' },
+    { label: 'Signed within 12 months',                              status: 'pass', note: '2026-02-18' }
+  ],
+  '4.03.00': () => [
+    { label: 'Three most recent years included',                    status: 'pass', note: '2023, 2024, 2025' },
+    { label: 'Audited (not compiled or reviewed)',                   status: 'pass', note: 'Audited by BDO USA LLP' },
+    { label: 'Clean audit opinions',                                 status: 'pass', note: 'Unqualified ×3' },
+    { label: 'Revenue trajectory consistent with projections',       status: 'warn', note: 'Projection (4.04.00) shows 12% YoY; audited history shows 18% — consider updating forecast' }
+  ],
+  '5.01.00': () => [
+    { label: 'Authority matrix present',                            status: 'pass', note: '§8' },
+    { label: 'Referral thresholds defined',                          status: 'pass', note: '5 triggers, §7' },
+    { label: 'LOB matches program LOB',                              status: 'pass', note: 'Commercial Auto ✓' },
+    { label: 'States match program target states',                   status: 'pass', note: '5/5 states ✓' }
+  ],
+  '5.10.00': () => [
+    { label: 'Monthly (not annual) granularity',                    status: 'pass', note: '36 monthly periods' },
+    { label: 'Covers 3 years from program effective date',           status: 'pass', note: '2026-01 → 2028-12' },
+    { label: 'LOB matches program LOB',                              status: 'pass', note: 'Commercial Auto ✓' }
+  ],
+  '6.08.00': () => [
+    { label: 'Valuation within 45 days of submission',              status: 'pass', note: '2026-03-31 · 23 days old' },
+    { label: 'Minimum 5 AYs of history',                             status: 'pass', note: '6 AYs present' },
+    { label: 'Per-claim descriptions for claims > $50K',             status: 'warn', note: 'Descriptions present for 47 of 52 large claims — 5 missing narratives' },
+    { label: 'LOB matches program LOB',                              status: 'pass', note: 'Commercial Auto ✓' }
+  ]
+};
+
+const DIL_CROSS_DOC = {
+  '1.02.00': () => [
+    { level: 'info', text: 'Named insured on E&O matches the W-9 legal entity in 4.01.00.', refs: ['4.01.00'] },
+    { level: 'info', text: 'E&O expiration (2026-09-30) is after the program target effective date (2026-09-01).' }
+  ],
+  '1.01.00': () => [
+    { level: 'info', text: 'Entity name matches 4.01.00 (W-9) and 4.02.00 (legal entity org chart).', refs: ['4.01.00','4.02.00'] }
+  ],
+  '2.01.00': () => [
+    { level: 'info', text: 'All 5 program target states have at least one active license.', refs: [] },
+    { level: 'warn', text: '3 licenses expire before program effective date — please attach evidence of renewal (or confirm in 2.11.00).', refs: ['2.11.00'] }
+  ],
+  '5.01.00': () => [
+    { level: 'info', text: 'UW guidelines LOB (Commercial Auto) matches program profile and 5.10.00 GWP forecast.', refs: ['5.10.00'] }
+  ],
+  '4.03.00': () => [
+    { level: 'warn', text: 'Audited revenue growth (18% CAGR) exceeds projection assumption in 4.04.00 (12% CAGR) — consider updating projections.', refs: ['4.04.00'] }
+  ],
+  '5.10.00': () => [
+    { level: 'info', text: 'Forecast LOB matches 5.01.00 UW guidelines.', refs: ['5.01.00'] },
+    { level: 'info', text: 'Year 1 capacity ask ($12.4M) aligns with carrier capacity announcement.' }
+  ],
+  '6.08.00': () => [
+    { level: 'info', text: 'Loss run claim count reconciles to 6.06.07 (reported claims triangle).', refs: ['6.06.07'] },
+    { level: 'warn', text: '5 large claims (>$50K) in the loss run have no description — the carrier\'s actuarial reviewer will likely request these.', refs: [] }
+  ]
+};
+
+export function dilExtract(code /*, fileName */) {
+  const fn = DIL_EXTRACTORS[code];
+  return fn ? fn() : {
+    summary: 'Document ingested. The AI could not derive structured fields for this item — a reviewer will inspect it manually.',
+    steps: ['Read file · 0.6s', 'Matched to diligence item · 0.1s', 'Flagged for manual review · —'],
+    fields: []
+  };
+}
+export function dilValidateDoc(code) {
+  const fn = DIL_VALIDATORS[code];
+  return fn ? fn() : [];
+}
+export function dilCrossCheck(code) {
+  const fn = DIL_CROSS_DOC[code];
+  return fn ? fn() : [];
+}
+
+// Status display labels — show the MGA/carrier vocabulary from the diligence workbook
+export const DIL_STATUS_LABELS = {
+  'pending':    'Missing',
+  'received':   'Accepted',
+  'follow-up':  'Needs revision',
+  'na':         'Not applicable',
+  'draft':      'Draft',
+  'submitted':  'Submitted'
+};
+
+// Reviewer identity roster (used for "view as" switching on the carrier side demo)
+export const DIL_REVIEWERS = [
+  { id: 'all',           name: 'Program Lead (all)',    role: 'Program',      icon: '👔' },
+  { id: 'james_liu',     name: 'James Liu',             role: 'Program',      icon: '🏢' },
+  { id: 'reena_alvarez', name: 'Reena Alvarez',         role: 'Compliance',   icon: '⚖️' },
+  { id: 'sonia_patel',   name: 'Sonia Patel',           role: 'Underwriting', icon: '📋' },
+  { id: 'helen_ortiz',   name: 'Helen Ortiz',           role: 'Claims',       icon: '🛡️' },
+  { id: 'derek_tan',     name: 'Derek Tan',             role: 'Finance',      icon: '💰' },
+  { id: 'nora_whitfield',name: 'Nora Whitfield',        role: 'Actuarial',    icon: '📊' }
+];
+

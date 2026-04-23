@@ -7,9 +7,41 @@ import * as D from './data.js';
 const $ = (sel, ctx = document) => ctx.querySelector(sel);
 const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
 
+// ─── Theme (shared by all 8 portals) ───
+const THEME_KEY = 'qad-theme';
+function loadTheme() {
+  try { return localStorage.getItem(THEME_KEY) || 'dark'; } catch { return 'dark'; }
+}
+function applyTheme(t) {
+  document.documentElement.classList.toggle('theme-light', t === 'light');
+  try { localStorage.setItem(THEME_KEY, t); } catch {}
+}
+applyTheme(loadTheme());
+
+function ensureThemeToggle() {
+  let btn = document.getElementById('theme-toggle-fab');
+  const light = document.documentElement.classList.contains('theme-light');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.id = 'theme-toggle-fab';
+    btn.className = 'theme-toggle-fab';
+    btn.title = 'Toggle light / dark theme';
+    document.body.appendChild(btn);
+    btn.addEventListener('click', () => {
+      const next = document.documentElement.classList.contains('theme-light') ? 'dark' : 'light';
+      applyTheme(next);
+      ensureThemeToggle();
+    });
+  }
+  btn.innerHTML = light
+    ? '<span class="tt-icon">☀</span><span class="tt-label">Light</span>'
+    : '<span class="tt-icon">◐</span><span class="tt-label">Dark</span>';
+  btn.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+}
+
 // ─── State ───
 let state = {
-  portal: null,          // 'customer' | 'broker' | 'mga'
+  portal: null,          // 'customer' | 'broker' | 'mga' | 'konduit' | 'carrier' | 'synapi' | 'cede' | 'diligence'
   screen: 'dashboard',
   wizardStep: 1,
   selectedCarriers: [0,1,2,3,4],
@@ -20,7 +52,18 @@ let state = {
   coiValidationView: false,
   coiIsIssued: false,
   searchQuery: '',
-  searchResults: null
+  searchResults: null,
+  // Diligence portal
+  dilRole: null,          // 'mga' | 'carrier'
+  dilMgaId: 'MGA-01',
+  dilCarrierId: 'CAR-01',
+  dilProgramId: null,
+  dilWizardSection: 'program',
+  dilWizardItemCode: null,
+  dilWizardFilter: 'open',  // all | open | followup | done
+  dilReviewerRole: 'all',
+  dilDirTab: 'carriers',
+  dilDirFilters: { lob: '', state: '', query: '' }
 };
 
 window.showModal = function(title, content, actionLabel = 'OK', actionCallback = null) {
@@ -89,7 +132,12 @@ function render() {
     app.innerHTML = renderCedePortal() + (state.modal ? renderModal() : '');
     bindCede();
     if (state.modal) bindModal();
+  } else if (state.portal === 'diligence') {
+    app.innerHTML = renderDiligencePortal() + (state.modal ? renderModal() : '');
+    bindDiligence();
+    if (state.modal) bindModal();
   }
+  ensureThemeToggle();
 }
 
 function renderModal() {
@@ -202,6 +250,14 @@ function renderLogin() {
           <div class="portal-card-info">
             <h3>Cede — Carrier ↔ MGA Capacity Bridge</h3>
             <p>Program origination · DUA builder · bordereau · UW compliance · post-Vesttoo collateral</p>
+          </div>
+          <span class="portal-card-arrow">→</span>
+        </div>
+        <div class="portal-card diligence-card" data-portal="diligence" id="portal-diligence">
+          <span class="portal-card-icon">🧭</span>
+          <div class="portal-card-info">
+            <h3>Diligence — MGA ↔ Carrier Onboarding Workflow</h3>
+            <p>Guided intake · smart data room · readiness scoring · carrier triage · decision memo · implementation handoff</p>
           </div>
           <span class="portal-card-arrow">→</span>
         </div>
@@ -41695,11 +41751,2593 @@ function renderCedePlatformAudit() {
   </section>`;
 }
 
+
+// ════════════════════════════════════════════════════════════════
+// DILIGENCE PORTAL — MGA ↔ Carrier onboarding & diligence workflow
+// ════════════════════════════════════════════════════════════════
+
+function dilRole() { return state.dilRole || null; }
+function dilProg(id) { return D.DIL_PROGRAMS.find(p => p.id === id); }
+function dilMga(id) { return D.DIL_MGAS.find(m => m.id === id); }
+function dilCar(id) { return D.DIL_CARRIERS.find(c => c.id === id); }
+function dilCat(id) { return D.DIL_CATEGORIES.find(c => c.id === id); }
+function dilLife(id) { return D.DIL_LIFECYCLE.find(l => l.id === id); }
+
+function dilProgramsForMga(mgaId) { return D.DIL_PROGRAMS.filter(p => p.mgaId === mgaId); }
+function dilProgramsForCarrier(carId) { return D.DIL_PROGRAMS.filter(p => p.carrierId === carId); }
+
+// Completeness scoring — weighted by priority
+function dilCompleteness(prog) {
+  let total = 0, earned = 0;
+  prog.items.forEach(it => {
+    const w = it.priority === 'H' ? 3 : it.priority === 'M' ? 2 : 1;
+    total += w;
+    if (it.status === 'received' || it.status === 'na') earned += w;
+    else if (it.status === 'follow-up') earned += w * 0.5;
+  });
+  return Math.round((earned / total) * 100);
+}
+
+// Per-category readiness
+function dilCategoryReadiness(prog, categoryId) {
+  const items = prog.items.filter(i => i.category === categoryId);
+  let total = 0, earned = 0, high = 0, highMet = 0;
+  items.forEach(it => {
+    const w = it.priority === 'H' ? 3 : it.priority === 'M' ? 2 : 1;
+    total += w;
+    if (it.priority === 'H') high++;
+    if (it.status === 'received' || it.status === 'na') {
+      earned += w;
+      if (it.priority === 'H') highMet++;
+    } else if (it.status === 'follow-up') {
+      earned += w * 0.5;
+    }
+  });
+  return {
+    pct: total ? Math.round((earned / total) * 100) : 0,
+    total: items.length,
+    done: items.filter(i => i.status === 'received' || i.status === 'na').length,
+    pending: items.filter(i => i.status === 'pending').length,
+    followup: items.filter(i => i.status === 'follow-up').length,
+    high, highMet
+  };
+}
+
+// Red/Yellow/Green flag resolver for decision memo
+function dilCategoryFlag(prog, categoryId) {
+  const r = dilCategoryReadiness(prog, categoryId);
+  if (r.pending + r.followup === 0) return 'green';
+  if (r.high > r.highMet) return 'red';
+  return 'yellow';
+}
+
+// Header shared between MGA and Carrier role views
+function dilTopBar() {
+  const role = dilRole();
+  const u = role === 'mga' ? D.DIL_USERS.mga : D.DIL_USERS.carrier;
+  return `
+  <header class="top-bar dil-topbar">
+    <div class="top-bar-left">
+      <span class="top-bar-logo"><span class="top-bar-logo-icon">🧭</span><span class="top-bar-logo-text">Diligence</span></span>
+      <span class="top-bar-context">${u.org}</span>
+    </div>
+    <div class="top-bar-right">
+      <div class="dil-role-switch">
+        <span class="dil-role-switch-label">Viewing as:</span>
+        <button class="sr-btn${role==='mga'?' active':''}" data-dilrole="mga">MGA</button>
+        <button class="sr-btn${role==='carrier'?' active':''}" data-dilrole="carrier">Carrier</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="dil-exit">← Portal Selector</button>
+      <div class="user-chip">
+        <span class="user-chip-avatar">${u.name.split(' ').map(n=>n[0]).slice(0,2).join('')}</span>
+        <div>
+          <div class="user-chip-name">${u.name}</div>
+          <div class="user-chip-role">${u.role}</div>
+        </div>
+      </div>
+    </div>
+  </header>`;
+}
+
+// Sidebar — role-specific
+function dilNav() {
+  const role = dilRole();
+  const mgaItems = [
+    { icon: '🏠', label: 'My Dashboard',           screen: 'dil-m-dashboard' },
+    { icon: '📄', label: 'My Programs',             screen: 'dil-m-programs'  },
+    { icon: '📋', label: 'Requirements Checklist',  screen: 'dil-m-checklist' },
+    { icon: '📝', label: 'Guided Intake Wizard',    screen: 'dil-m-wizard'    },
+    { icon: '🗄️', label: 'Data Room',               screen: 'dil-m-dataroom'  },
+    { icon: '📊', label: 'Submission Scorecard',    screen: 'dil-m-scorecard' },
+    { icon: '💬', label: 'Q&A Center',              screen: 'dil-m-qa'        },
+    { icon: '🏢', label: 'Carrier Directory',       screen: 'dil-directory'   }
+  ];
+  const carrierItems = [
+    { icon: '📊', label: 'Pipeline',                screen: 'dil-c-pipeline'  },
+    { icon: '🎯', label: 'Triage Queue',            screen: 'dil-c-triage'    },
+    { icon: '🔍', label: 'Review Workspace',        screen: 'dil-c-review'    },
+    { icon: '🚧', label: 'Gap Tracker',             screen: 'dil-c-gaps'      },
+    { icon: '💬', label: 'Q&A Center',              screen: 'dil-c-qa'        },
+    { icon: '📝', label: 'Decision Memo',           screen: 'dil-c-memo'      },
+    { icon: '⚖️', label: 'Committee',               screen: 'dil-c-committee' },
+    { icon: '🚀', label: 'Implementation',          screen: 'dil-c-impl'      },
+    { icon: '🏢', label: 'MGA Directory',           screen: 'dil-directory'   }
+  ];
+  const items = role === 'mga' ? mgaItems : carrierItems;
+  const cta = role === 'mga' ? '+ New Program' : '+ Invite MGA';
+  const ctaScreen = role === 'mga' ? 'dil-m-new' : 'dil-directory';
+  return `
+  <nav class="side-nav dil-side-nav">
+    ${items.map(i => `
+      <div class="side-nav-item${state.screen === i.screen ? ' active' : ''}" data-screen="${i.screen}">
+        <span class="side-nav-item-icon">${i.icon}</span>
+        <span>${i.label}</span>
+      </div>`).join('')}
+    <div class="side-nav-cta">
+      <button class="btn btn-primary" style="width:100%" onclick="window.setState({screen:'${ctaScreen}'})">${cta}</button>
+    </div>
+  </nav>`;
+}
+
+// Role picker (landing screen inside Diligence portal, before role is chosen)
+function renderDilRolePicker() {
+  return `
+  <div class="dil-rolepicker-screen">
+    <div class="dil-rolepicker-card">
+      <div class="dil-rolepicker-logo">
+        <span class="dil-rolepicker-icon">🧭</span>
+        <h1>Diligence</h1>
+        <p>One shared workflow. Two sides of the table.</p>
+      </div>
+      <div class="dil-rolepicker-grid">
+        <div class="dil-role-card" data-dilrole="mga">
+          <span class="dil-role-card-icon">⚡</span>
+          <h3>I'm an MGA</h3>
+          <p>Build a program submission, show the carrier what they need, and track progress against readiness.</p>
+          <ul>
+            <li>Guided intake wizard with "why the carrier asks"</li>
+            <li>Smart data room that flags missing & stale artifacts</li>
+            <li>Submission readiness score before you hit submit</li>
+            <li>Inline Q&amp;A — no more scattered email chains</li>
+          </ul>
+          <span class="dil-role-card-arrow">Enter as MGA →</span>
+        </div>
+        <div class="dil-role-card carrier" data-dilrole="carrier">
+          <span class="dil-role-card-icon">🛡️</span>
+          <h3>I'm a Carrier</h3>
+          <p>Triage new submissions, route diligence to reviewers, and drive each program to a decision.</p>
+          <ul>
+            <li>Pipeline from Triage → Committee → Approved</li>
+            <li>Side-by-side review workspace with reviewer sub-roles</li>
+            <li>Auto-compiled decision memo with R/Y/G flags</li>
+            <li>Implementation handoff with onboarding checklist</li>
+          </ul>
+          <span class="dil-role-card-arrow">Enter as Carrier →</span>
+        </div>
+      </div>
+      <div class="dil-rolepicker-footer">
+        Both sides work on the <strong>same Program Submission</strong> — what the MGA provides is exactly what the carrier reviews, no duplicate systems.
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderDiligencePortal() {
+  if (!dilRole()) {
+    return renderDilRolePicker();
+  }
+  const role = dilRole();
+  const screens = {
+    // MGA side
+    'dashboard':         role === 'mga' ? renderDilMgaDashboard : renderDilCarrierPipeline,
+    'dil-m-dashboard':   renderDilMgaDashboard,
+    'dil-m-programs':    renderDilMgaPrograms,
+    'dil-m-new':         renderDilMgaNewProgram,
+    'dil-m-program':     renderDilMgaProgramDetail,
+    'dil-m-checklist':   renderDilMgaChecklist,
+    'dil-m-wizard':      renderDilMgaWizard,
+    'dil-m-dataroom':    renderDilMgaDataRoom,
+    'dil-m-scorecard':   renderDilMgaScorecard,
+    'dil-m-qa':          renderDilMgaQA,
+    // Carrier side
+    'dil-c-pipeline':    renderDilCarrierPipeline,
+    'dil-c-triage':      renderDilCarrierTriage,
+    'dil-c-review':      renderDilCarrierReview,
+    'dil-c-gaps':        renderDilCarrierGaps,
+    'dil-c-qa':          renderDilCarrierQA,
+    'dil-c-memo':        renderDilCarrierMemo,
+    'dil-c-committee':   renderDilCarrierCommittee,
+    'dil-c-impl':        renderDilCarrierImpl,
+    // Shared
+    'dil-directory':     renderDilDirectory,
+    'dil-profile':       renderDilProfile,
+    // Action screens (replace toasts)
+    'dil-file-preview':          renderDilFilePreview,
+    'dil-file-version':          renderDilFileVersion,
+    'dil-file-upload':           renderDilFileUpload,
+    'dil-file-analyze':          renderDilFileAnalyze,
+    'dil-file-review':           renderDilFileReview,
+    'dil-file-upload-result':    renderDilFileUploadResult,
+    'dil-bulk-upload':           renderDilBulkUpload,
+    'dil-bulk-upload-queue':     renderDilBulkUploadQueue,
+    'dil-bulk-upload-committed': renderDilBulkUploadCommitted,
+    'dil-m-submit-blocked':      renderDilSubmitBlocked,
+    'dil-m-submit-confirm':      renderDilSubmitConfirm,
+    'dil-m-mark-na':             renderDilMarkNA,
+    'dil-c-invite':              renderDilInviteMga,
+    'dil-invite-sent':           renderDilInviteSent,
+    'dil-c-triage-rmi':          renderDilTriageRMI,
+    'dil-c-triage-rmi-sent':     renderDilTriageRMISent,
+    'dil-c-triage-decline':      renderDilTriageDecline,
+    'dil-c-triage-decline-sent': renderDilTriageDeclineSent,
+    'dil-c-memo-export':         renderDilMemoExport,
+    'dil-memo-exported':         renderDilMemoExported,
+    'dil-c-decision-decline':    renderDilDecisionDecline,
+    'dil-decision-declined':     renderDilDecisionDeclined,
+    'dil-c-decision-rmi':        renderDilDecisionRMI,
+    'dil-decision-rmi-sent':     renderDilDecisionRMISent,
+    'dil-c-decision-termsheet':  renderDilDecisionTermSheet,
+    'dil-decision-ts-sent':      renderDilDecisionTermSheetSent,
+    'dil-c-vote-cast':           renderDilVoteCast,
+    'dil-c-impl-task-add':       renderDilImplTaskAdd
+  };
+  const fn = screens[state.screen] || (role === 'mga' ? renderDilMgaDashboard : renderDilCarrierPipeline);
+  return `
+  <div class="portal-layout dil-theme">
+    ${dilTopBar()}
+    ${dilNav()}
+    <main class="main-content">
+      ${fn()}
+    </main>
+  </div>`;
+}
+
+// ─── MGA Dashboard ───
+function renderDilMgaDashboard() {
+  const mga = dilMga(state.dilMgaId);
+  const myProgs = dilProgramsForMga(state.dilMgaId);
+  const buckets = {
+    draft:      myProgs.filter(p => p.status === 'draft'),
+    submitted:  myProgs.filter(p => p.status === 'submitted' || p.status === 'triage'),
+    review:     myProgs.filter(p => p.status === 'diligence' || p.status === 'committee'),
+    followup:   myProgs.filter(p => p.status === 'diligence' && p.items.some(i => i.status === 'follow-up')),
+    closed:     myProgs.filter(p => p.status === 'approved' || p.status === 'declined' || p.status === 'implementation')
+  };
+  return `
+  <section class="page-header">
+    <div>
+      <h1>${mga.name} · Program Submissions</h1>
+      <p class="page-subtitle">Track every carrier submission through draft, diligence, and onboarding.</p>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-directory'})">Browse Carriers</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-m-new'})">+ New Program</button>
+    </div>
+  </section>
+
+  ${kpiCards([
+    { label: 'Draft', value: buckets.draft.length },
+    { label: 'Submitted · In Review', value: buckets.submitted.length + buckets.review.length },
+    { label: 'Follow-up Needed', value: buckets.followup.length, warning: buckets.followup.length > 0 },
+    { label: 'Approved / Live', value: buckets.closed.filter(p => p.status !== 'declined').length }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Follow-up Needed — action required</h3></div>
+    ${buckets.followup.length === 0 ? `<p class="empty-state">Nothing waiting on you right now.</p>` : `
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Carrier</th><th>Open follow-ups</th><th>Oldest</th><th>Readiness</th><th></th></tr></thead>
+        <tbody>
+          ${buckets.followup.map(p => {
+            const fu = p.items.filter(i => i.status === 'follow-up');
+            const oldestAct = p.activity.filter(a => a.action.includes('Follow-up')).slice(-1)[0];
+            return `
+            <tr>
+              <td><strong>${p.programName}</strong><div class="row-sub">${p.lob} · ${p.states.join(', ')}</div></td>
+              <td>${dilCar(p.carrierId).name}</td>
+              <td>${fu.length} item${fu.length===1?'':'s'}</td>
+              <td class="row-sub">${oldestAct ? oldestAct.at : '—'}</td>
+              <td>${dilProgressBar(dilCompleteness(p))}</td>
+              <td><button class="btn btn-primary btn-sm" onclick="window.setState({screen:'dil-m-program', dilProgramId:'${p.id}'})">Open</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`}
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>All my programs · ${myProgs.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Carrier</th><th>LOB</th><th>Status</th><th>Readiness</th><th>Submitted</th><th></th></tr></thead>
+        <tbody>
+          ${myProgs.map(p => `
+            <tr>
+              <td><strong>${p.programName}</strong><div class="row-sub">${p.states.join(', ')}</div></td>
+              <td>${dilCar(p.carrierId).name}</td>
+              <td>${p.lob}</td>
+              <td>${badge(dilLife(p.status).color, dilLife(p.status).mgaLabel)}</td>
+              <td>${dilProgressBar(dilCompleteness(p))}</td>
+              <td class="row-sub">${p.submittedAt || 'not submitted'}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-m-program', dilProgramId:'${p.id}'})">Open</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function dilProgressBar(pct) {
+  const color = pct >= 85 ? 'green' : pct >= 60 ? 'yellow' : 'red';
+  return `<div class="dil-progress"><div class="dil-progress-bar dil-progress-${color}" style="width:${pct}%"></div><span class="dil-progress-text">${pct}%</span></div>`;
+}
+
+// ─── MGA Programs list ───
+function renderDilMgaPrograms() {
+  const myProgs = dilProgramsForMga(state.dilMgaId);
+  return `
+  <section class="page-header"><div><h1>My Programs</h1><p class="page-subtitle">Every program submission you have initiated.</p></div>
+    <div class="page-header-actions"><button class="btn btn-primary" onclick="window.setState({screen:'dil-m-new'})">+ New Program</button></div></section>
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Carrier</th><th>LOB · States</th><th>Capacity</th><th>Effective</th><th>Status</th><th>Readiness</th><th></th></tr></thead>
+        <tbody>
+          ${myProgs.map(p => `
+            <tr>
+              <td><strong>${p.programName}</strong><div class="row-sub">Created ${p.createdAt}</div></td>
+              <td>${dilCar(p.carrierId).name}</td>
+              <td>${p.lob}<div class="row-sub">${p.states.join(', ')}</div></td>
+              <td class="row-sub">${p.capacityAsk}</td>
+              <td class="row-sub">${p.targetEffective}</td>
+              <td>${badge(dilLife(p.status).color, dilLife(p.status).mgaLabel)}</td>
+              <td>${dilProgressBar(dilCompleteness(p))}</td>
+              <td><button class="btn btn-primary btn-sm" onclick="window.setState({screen:'dil-m-program', dilProgramId:'${p.id}'})">Open</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── MGA: New Program Setup ───
+function renderDilMgaNewProgram() {
+  return `
+  <section class="page-header"><div><h1>Start a new program</h1>
+    <p class="page-subtitle">Set the program profile first — every diligence item adapts to these answers.</p></div></section>
+  <div class="dil-form-grid">
+    <section class="card">
+      <div class="card-header"><h3>Program profile</h3></div>
+      <div class="dil-form">
+        <label>Program name <input type="text" placeholder="e.g. Small Fleet Commercial Auto — 5-State" /></label>
+        <label>Target carrier
+          <select>
+            ${D.DIL_CARRIERS.map(c => `<option>${c.name} — ${c.amBest}</option>`).join('')}
+          </select>
+        </label>
+        <label>Line of business
+          <select>
+            <option>Commercial Auto</option><option>General Liability</option><option>Workers Compensation</option>
+            <option>Property</option><option>Professional Liability</option><option>Cyber</option><option>D&amp;O</option>
+          </select>
+        </label>
+        <label>Admitted / Non-admitted
+          <select><option>Admitted</option><option>Non-admitted / E&amp;S</option></select>
+        </label>
+        <label>Target states <input type="text" placeholder="e.g. CA, TX, AZ, NV, CO" /></label>
+        <label>Distribution model
+          <select>
+            <option>Independent retail agents (appointed)</option>
+            <option>Wholesale brokers</option><option>Direct-to-consumer</option>
+            <option>Captive agency network</option>
+          </select>
+        </label>
+        <label>Claims model
+          <select>
+            <option>In-house all levels</option>
+            <option>In-house &lt;$50K, TPA &gt;$50K</option>
+            <option>TPA all levels</option>
+            <option>Carrier-handled</option>
+          </select>
+        </label>
+        <label>Capacity ask <input type="text" placeholder="e.g. $25M GWP Year 1, scaling to $48M Year 5" /></label>
+        <label>Target effective date <input type="date" /></label>
+      </div>
+    </section>
+    <aside class="card dil-why">
+      <div class="card-header"><h3>Why the carrier needs this</h3></div>
+      <p>The program profile drives everything that follows — the diligence items, the reviewer routing on the carrier side, and the readiness gate on yours. Get the profile right once and the rest of the submission stays coherent.</p>
+      <ul class="dil-why-list">
+        <li><strong>LOB + admitted status</strong> determines which state filings and forms the carrier must validate.</li>
+        <li><strong>Target states</strong> filters the license checks and rate filings the carrier's compliance team will request.</li>
+        <li><strong>Claims model</strong> drives whether Claims Dept even reviews (if carrier-handled) or goes deep (if in-house).</li>
+        <li><strong>Capacity ask</strong> drives the actuarial loss pick and the committee approval threshold.</li>
+      </ul>
+    </aside>
+  </div>
+  <div class="dil-form-actions">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-m-dashboard'})">Cancel</button>
+    <button class="btn btn-primary" onclick="window.setState({screen:'dil-m-wizard', dilProgramId:'PRG-03'})">Create draft &amp; start wizard</button>
+  </div>`;
+}
+
+// ─── MGA: Program Detail (entry into all the sub-screens for one program) ───
+function renderDilMgaProgramDetail() {
+  const p = dilProg(state.dilProgramId) || dilProgramsForMga(state.dilMgaId)[0];
+  if (!p) return `<p>Select a program.</p>`;
+  const car = dilCar(p.carrierId);
+  const pct = dilCompleteness(p);
+  return `
+  <section class="page-header">
+    <div>
+      <h1>${p.programName}</h1>
+      <p class="page-subtitle">${car.name} · ${p.lob} · ${p.states.join(', ')} · ${badge(dilLife(p.status).color, dilLife(p.status).mgaLabel)}</p>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-m-programs'})">← All programs</button>
+      ${p.status === 'draft' ? `<button class="btn btn-primary" onclick="window.setState({screen:'dil-m-scorecard', dilProgramId:'${p.id}'})">Go to submission scorecard</button>` : ''}
+    </div>
+  </section>
+
+  ${kpiCards([
+    { label: 'Readiness', value: pct + '%', warning: pct < 80 },
+    { label: 'Items Provided', value: p.items.filter(i => i.status==='received'||i.status==='na').length + ' / ' + p.items.length },
+    { label: 'Follow-ups', value: p.items.filter(i => i.status==='follow-up').length, warning: p.items.some(i => i.status==='follow-up') },
+    { label: 'Days since submit', value: p.submittedAt ? Math.max(1, Math.round((new Date('2026-04-23') - new Date(p.submittedAt))/(1000*60*60*24))) : '—' }
+  ], 4)}
+
+  <div class="dil-quick-nav">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-m-checklist'})">📋 Requirements</button>
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-m-wizard'})">📝 Wizard</button>
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-m-dataroom'})">🗄️ Data Room</button>
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-m-scorecard'})">📊 Scorecard</button>
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-m-qa'})">💬 Q&amp;A (${p.items.filter(i=>i.status==='follow-up').length})</button>
+  </div>
+
+  <section class="card">
+    <div class="card-header"><h3>Activity timeline</h3></div>
+    <ul class="dil-timeline">
+      ${p.activity.slice().reverse().map(a => `
+        <li><span class="dil-timeline-time">${a.at}</span><span class="dil-timeline-actor">${a.actor}</span><span class="dil-timeline-action">${a.action}</span></li>
+      `).join('')}
+    </ul>
+  </section>`;
+}
+
+// ─── MGA: Requirements Checklist (category grouping, priority sort) ───
+function renderDilMgaChecklist() {
+  const progs = dilProgramsForMga(state.dilMgaId);
+  const p = dilProg(state.dilProgramId) || progs.find(p => p.status === 'diligence') || progs[0];
+  return `
+  <section class="page-header"><div>
+    <h1>Requirements Checklist</h1>
+    <p class="page-subtitle">${p.programName} · ${dilCar(p.carrierId).name}</p></div>
+    <div class="page-header-actions">${dilProgramPicker(progs, p.id)}</div>
+  </section>
+
+  <div class="dil-legend">
+    <span class="dil-legend-item"><span class="dil-prio-dot dil-prio-H"></span>High — gates submission</span>
+    <span class="dil-legend-item"><span class="dil-prio-dot dil-prio-M"></span>Medium</span>
+    <span class="dil-legend-item"><span class="dil-prio-dot dil-prio-L"></span>Low</span>
+    <span class="dil-legend-item"><span class="dil-status-pill received">received</span></span>
+    <span class="dil-legend-item"><span class="dil-status-pill pending">pending</span></span>
+    <span class="dil-legend-item"><span class="dil-status-pill followup">follow-up</span></span>
+    <span class="dil-legend-item"><span class="dil-status-pill na">N/A</span></span>
+  </div>
+
+  ${D.DIL_CATEGORIES.map(cat => {
+    const r = dilCategoryReadiness(p, cat.id);
+    const items = p.items.filter(i => i.category === cat.id).slice().sort((a,b) => {
+      const ord = { H:0, M:1, L:2 };
+      return ord[a.priority] - ord[b.priority];
+    });
+    return `
+    <section class="card dil-checklist-cat">
+      <div class="card-header">
+        <h3>${cat.icon} ${cat.label} <span class="dil-cat-count">${r.done}/${r.total}</span></h3>
+        <div class="dil-cat-meta">${dilProgressBar(r.pct)}</div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table dil-checklist-table">
+          <thead><tr><th>Priority</th><th>Code</th><th>Requirement</th><th>Type</th><th>Status</th><th>Latest</th><th></th></tr></thead>
+          <tbody>
+            ${items.map(it => `
+              <tr>
+                <td><span class="dil-prio-dot dil-prio-${it.priority}"></span>${it.priority}</td>
+                <td><code>${it.code}</code></td>
+                <td><strong>${it.label}</strong>${it.reviewerNote ? `<div class="row-sub">${it.reviewerNote}</div>` : ''}</td>
+                <td class="row-sub">${it.type}</td>
+                <td><span class="dil-status-pill ${it.status}">${dilStatusLabel(it.status)}</span></td>
+                <td class="row-sub">${it.fileName ? it.fileName + ' · ' + it.fileVersion : (it.answer ? it.answer.slice(0,60) + (it.answer.length>60?'…':'') : '—')}</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-m-wizard', dilWizardSection:'${cat.id}'})">Open →</button></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>`;
+  }).join('')}`;
+}
+
+function dilProgramPicker(progs, currentId) {
+  return `
+  <select class="dil-prog-picker" onchange="window.setState({dilProgramId: this.value})">
+    ${progs.map(p => `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${p.programName}</option>`).join('')}
+  </select>`;
+}
+
+// ─── MGA: Guided Intake Wizard — 3-pane master-detail ───
+function renderDilMgaWizard() {
+  const progs = dilProgramsForMga(state.dilMgaId);
+  const p = dilProg(state.dilProgramId) || progs.find(p => p.status === 'diligence') || progs[0];
+  const section = state.dilWizardSection || 'program';
+  const cat = dilCat(section);
+  const filter = state.dilWizardFilter || 'open'; // all | open | followup | done
+
+  // Sort: status-first (pending, follow-up, received, na), then priority
+  const statusOrder = { pending: 0, 'follow-up': 1, received: 2, na: 3 };
+  const prioOrder   = { H: 0, M: 1, L: 2 };
+  let items = p.items.filter(i => i.category === section).slice()
+    .sort((a,b) => (statusOrder[a.status] - statusOrder[b.status]) || (prioOrder[a.priority] - prioOrder[b.priority]) || a.code.localeCompare(b.code));
+
+  const allItems = items;
+  if (filter === 'open')     items = items.filter(i => i.status === 'pending');
+  if (filter === 'followup') items = items.filter(i => i.status === 'follow-up');
+  if (filter === 'done')     items = items.filter(i => i.status === 'received' || i.status === 'na');
+
+  const r = dilCategoryReadiness(p, section);
+  const counts = {
+    all: allItems.length,
+    open: allItems.filter(i => i.status === 'pending').length,
+    followup: allItems.filter(i => i.status === 'follow-up').length,
+    done: allItems.filter(i => i.status === 'received' || i.status === 'na').length
+  };
+
+  // Pick an active item: remembered → first in filtered list
+  let activeItem = items.find(i => i.code === state.dilWizardItemCode);
+  if (!activeItem) activeItem = items[0] || allItems[0];
+  const activeIdx = allItems.findIndex(i => activeItem && i.code === activeItem.code);
+  const prevItem = activeIdx > 0 ? allItems[activeIdx - 1] : null;
+  const nextItem = activeIdx > -1 && activeIdx < allItems.length - 1 ? allItems[activeIdx + 1] : null;
+
+  return `
+  <section class="page-header">
+    <div>
+      <h1>Guided Intake</h1>
+      <p class="page-subtitle"><strong>${p.programName}</strong> · Sections explain what "good" looks like before you submit.</p>
+    </div>
+    <div class="page-header-actions">${dilProgramPicker(progs, p.id)}</div>
+  </section>
+
+  <div class="dil-wz">
+    <!-- Column 1: Category stepper -->
+    <aside class="dil-wz-stepper">
+      ${D.DIL_CATEGORIES.map(c => {
+        const rr = dilCategoryReadiness(p, c.id);
+        const done = rr.pct === 100;
+        const hasBlocker = p.items.some(i => i.category === c.id && i.priority === 'H' && i.status !== 'received' && i.status !== 'na');
+        return `
+        <button class="dil-wz-cat${c.id === section ? ' active' : ''}${done ? ' done' : ''}${hasBlocker ? ' has-blocker' : ''}" data-section="${c.id}">
+          <span class="dil-wz-cat-icon">${c.icon}</span>
+          <div class="dil-wz-cat-info">
+            <div class="dil-wz-cat-label">${c.label}</div>
+            <div class="dil-wz-cat-meta"><span>${rr.done}/${rr.total}</span><span class="dil-wz-cat-pct">${rr.pct}%</span></div>
+            <div class="dil-wz-cat-bar"><span style="width:${rr.pct}%"></span></div>
+          </div>
+          ${done ? '<span class="dil-wz-cat-check">✓</span>' : hasBlocker ? '<span class="dil-wz-cat-flag">!</span>' : ''}
+        </button>`;
+      }).join('')}
+      <div class="dil-wz-stepper-foot">
+        <button class="btn btn-primary btn-sm" style="width:100%" onclick="window.setState({screen:'dil-m-scorecard'})">Review scorecard →</button>
+      </div>
+    </aside>
+
+    <!-- Column 2: Item list -->
+    <div class="dil-wz-list">
+      <div class="dil-wz-list-head">
+        <div class="dil-wz-list-title">
+          <span class="dil-wz-cat-icon lg">${cat.icon}</span>
+          <div>
+            <h2>${cat.label}</h2>
+            <p class="row-sub">${cat.description}</p>
+          </div>
+        </div>
+        <div class="dil-wz-list-filters">
+          <button class="dil-wz-chip${filter==='all'?' active':''}" data-filter="all">All <span>${counts.all}</span></button>
+          <button class="dil-wz-chip${filter==='open'?' active':''}" data-filter="open">Missing <span>${counts.open}</span></button>
+          <button class="dil-wz-chip${filter==='followup'?' active':''}" data-filter="followup">Needs revision <span>${counts.followup}</span></button>
+          <button class="dil-wz-chip${filter==='done'?' active':''}" data-filter="done">Accepted <span>${counts.done}</span></button>
+        </div>
+      </div>
+      <div class="dil-wz-list-body">
+        ${items.length === 0 ? `
+          <div class="dil-wz-empty">
+            <div class="dil-wz-empty-icon">${filter === 'done' ? '📋' : '🎉'}</div>
+            <h4>${filter === 'done' ? 'No completed items here yet.' : 'Nothing here — nice work.'}</h4>
+            <p class="row-sub">${filter === 'done' ? 'Start uploading artifacts to see them appear.' : 'Try another filter or move to the next category.'}</p>
+          </div>
+        ` : items.map(it => `
+          <div class="dil-wz-row${activeItem && it.code === activeItem.code ? ' active' : ''} dil-wz-row-${it.status}" data-code="${it.code}">
+            <span class="dil-wz-row-prio dil-prio-${it.priority}" title="Priority ${it.priority === 'H' ? 'High' : it.priority === 'M' ? 'Medium' : 'Low'}"></span>
+            <div class="dil-wz-row-main">
+              <div class="dil-wz-row-top">
+                <code class="dil-wz-row-code">${it.code}</code>
+                <span class="dil-wz-row-type">${it.type === 'doc' ? '📄' : '✏️'}</span>
+              </div>
+              <div class="dil-wz-row-label">${it.label}</div>
+            </div>
+            <span class="dil-status-pill ${it.status} dil-wz-row-status">${dilStatusLabelShort(it.status)}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Column 3: Item detail -->
+    <div class="dil-wz-detail">
+      ${activeItem ? renderDilWizardDetail(p, activeItem, section, prevItem, nextItem, cat, r) : `
+        <div class="dil-wz-empty tall">
+          <div class="dil-wz-empty-icon">✨</div>
+          <h4>All caught up in this category.</h4>
+          <p class="row-sub">Jump to another section from the left.</p>
+        </div>`}
+    </div>
+  </div>`;
+}
+
+function renderDilWizardDetail(p, it, section, prevItem, nextItem, cat, catReadiness) {
+  const catIdx = D.DIL_CATEGORIES.findIndex(c => c.id === section);
+  const nextCat = D.DIL_CATEGORIES[catIdx + 1];
+
+  return `
+  <article class="dil-wz-detail-card">
+    <header class="dil-wz-detail-head">
+      <div class="dil-wz-detail-meta">
+        <span class="dil-prio-chip dil-prio-${it.priority}">${it.priority === 'H' ? 'HIGH' : it.priority === 'M' ? 'MED' : 'LOW'}</span>
+        <code class="dil-item-code">${it.code}</code>
+        <span class="dil-status-pill ${it.status}">${dilStatusLabel(it.status)}</span>
+        <span class="dil-wz-detail-type">${it.type === 'doc' ? 'Document upload' : 'Written answer'}</span>
+      </div>
+      <div class="dil-wz-detail-prog">
+        <span class="row-sub">${cat.label}</span>
+        <span class="dil-wz-detail-prog-num">${catReadiness.done} / ${catReadiness.total}</span>
+      </div>
+    </header>
+
+    <h2 class="dil-wz-detail-title">${it.label}</h2>
+
+    ${it.reviewerNote ? `
+      <aside class="dil-reviewer-note">
+        <strong>⚠️ Carrier follow-up</strong>
+        ${it.comments ? `<p>${it.comments}</p>` : ''}
+        <p class="row-sub">${it.reviewerNote}</p>
+      </aside>` : ''}
+
+    <div class="dil-wz-why">
+      <div class="dil-wz-why-block">
+        <div class="dil-wz-why-label">Why the carrier asks</div>
+        <p>${it.why || 'Required input for diligence.'}</p>
+      </div>
+      <div class="dil-wz-why-block">
+        <div class="dil-wz-why-label">Example of an acceptable answer</div>
+        <p class="dil-wz-sample">${it.sample || '—'}</p>
+      </div>
+    </div>
+
+    <div class="dil-wz-input">
+      <div class="dil-wz-input-label">${it.type === 'doc' ? 'Your upload' : 'Your answer'}</div>
+      ${it.type === 'doc' ? `
+        ${it.fileName ? `
+          <div class="dil-file-chip">
+            <span class="dil-file-icon">📄</span>
+            <div>
+              <strong>${it.fileName}</strong>
+              <div class="row-sub">${it.fileVersion || 'v1'} · uploaded ${it.fileUploaded || '—'}</div>
+            </div>
+            <div class="dil-file-actions">
+              <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-file-preview', dilPreviewFile:'${it.fileName}', dilPreviewCode:'${it.code}'})">Preview</button>
+              <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-file-upload', dilUploadCode:'${it.code}'})">Replace</button>
+            </div>
+          </div>` : `
+          <div class="dil-upload-zone" onclick="window.setState({screen:'dil-file-upload', dilUploadCode:'${it.code}'})">
+            <span class="dil-upload-icon">⬆️</span>
+            <p>Drop file here or click to upload</p>
+            <small>Auto-maps to ${it.code} · flagged if missing, stale, or wrong format</small>
+          </div>`}
+      ` : `
+        <textarea class="dil-answer-area" placeholder="Write your answer — reference specific numbers, dates, and document names where possible.">${it.answer || ''}</textarea>
+      `}
+    </div>
+
+    <footer class="dil-wz-detail-actions">
+      <div class="dil-wz-detail-actions-left">
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-m-mark-na', dilNACode:'${it.code}'})">Mark N/A</button>
+      </div>
+      <div class="dil-wz-detail-actions-right">
+        ${prevItem ? `<button class="btn btn-secondary btn-sm" onclick="window.setState({dilWizardItemCode:'${prevItem.code}'})">← Previous</button>` : ''}
+        ${nextItem
+          ? `<button class="btn btn-primary btn-sm" onclick="window.setState({dilWizardItemCode:'${nextItem.code}'})">Save &amp; next →</button>`
+          : nextCat
+            ? `<button class="btn btn-primary btn-sm" onclick="window.setState({dilWizardSection:'${nextCat.id}', dilWizardItemCode:null})">Next section: ${nextCat.label} →</button>`
+            : `<button class="btn btn-primary btn-sm" onclick="window.setState({screen:'dil-m-scorecard'})">Review scorecard →</button>`}
+      </div>
+    </footer>
+  </article>`;
+}
+
+// ─── MGA: Data Room ───
+function renderDilMgaDataRoom() {
+  const progs = dilProgramsForMga(state.dilMgaId);
+  const p = dilProg(state.dilProgramId) || progs.find(p => p.status === 'diligence') || progs[0];
+  const allFiles = p.items.filter(i => i.fileName).map(i => ({ ...i }));
+  const pending = p.items.filter(i => i.type === 'doc' && i.status === 'pending');
+  const stale = allFiles.filter(f => {
+    if (!f.fileUploaded) return false;
+    const days = (new Date('2026-04-23') - new Date(f.fileUploaded)) / (1000*60*60*24);
+    return days > 45;
+  });
+  return `
+  <section class="page-header"><div><h1>Data Room · ${p.programName}</h1>
+    <p class="page-subtitle">All uploads, tagged to the diligence item they satisfy.</p></div>
+    <div class="page-header-actions">${dilProgramPicker(progs, p.id)}</div></section>
+
+  ${kpiCards([
+    { label: 'Files uploaded', value: allFiles.length },
+    { label: 'Missing high-priority docs', value: pending.filter(i=>i.priority==='H').length, warning: pending.filter(i=>i.priority==='H').length > 0 },
+    { label: 'Stale (>45d)', value: stale.length, warning: stale.length > 0 },
+    { label: 'Total items of type doc', value: p.items.filter(i=>i.type==='doc').length }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Upload — files auto-map to the right diligence item</h3>
+      <button class="btn btn-primary btn-sm" onclick="window.setState({screen:'dil-bulk-upload'})">+ Bulk Upload</button>
+    </div>
+    <div class="dil-upload-zone large" onclick="window.setState({screen:'dil-bulk-upload'})">
+      <span class="dil-upload-icon">⬆️</span>
+      <p>Drop multiple files or click to select</p>
+      <small>AI auto-tags each file. Manual override available per file.</small>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Uploaded artifacts · ${allFiles.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>File</th><th>Tagged to</th><th>Category</th><th>Version</th><th>Uploaded</th><th>Flags</th><th></th></tr></thead>
+        <tbody>
+          ${allFiles.map(f => {
+            const days = f.fileUploaded ? Math.round((new Date('2026-04-23') - new Date(f.fileUploaded))/(1000*60*60*24)) : 0;
+            const isStale = days > 45;
+            const cat = dilCat(f.category);
+            return `
+            <tr>
+              <td><strong>📄 ${f.fileName}</strong></td>
+              <td><code>${f.code}</code> — ${f.label.slice(0,45)}${f.label.length>45?'…':''}</td>
+              <td class="row-sub">${cat.icon} ${cat.label}</td>
+              <td class="row-sub">${f.fileVersion}</td>
+              <td class="row-sub">${f.fileUploaded} <span class="row-sub">(${days}d)</span></td>
+              <td>${isStale ? badge('red','stale') : badge('green','fresh')}</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-file-preview', dilPreviewFile:'${f.fileName}', dilPreviewCode:'${f.code}'})">Preview</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-file-upload', dilUploadCode:'${f.code}'})">Replace</button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  ${pending.length > 0 ? `
+  <section class="card dil-missing-card">
+    <div class="card-header"><h3>⚠️ Missing — the carrier will flag these</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Priority</th><th>Code</th><th>Document</th><th>Category</th><th></th></tr></thead>
+        <tbody>
+          ${pending.slice().sort((a,b) => ({H:0,M:1,L:2}[a.priority]-{H:0,M:1,L:2}[b.priority])).map(it => `
+            <tr>
+              <td><span class="dil-prio-dot dil-prio-${it.priority}"></span>${it.priority}</td>
+              <td><code>${it.code}</code></td>
+              <td>${it.label}</td>
+              <td class="row-sub">${dilCat(it.category).label}</td>
+              <td><button class="btn btn-primary btn-sm" onclick="window.setState({screen:'dil-m-wizard', dilWizardSection:'${it.category}'})">Upload</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>` : ''}`;
+}
+
+// ─── MGA: Submission Scorecard ───
+function renderDilMgaScorecard() {
+  const progs = dilProgramsForMga(state.dilMgaId);
+  const p = dilProg(state.dilProgramId) || progs.find(p => p.status === 'draft') || progs[0];
+  const pct = dilCompleteness(p);
+  const canSubmit = pct >= 80 && p.items.filter(i => i.priority === 'H').every(i => i.status === 'received' || i.status === 'na');
+  const highMissing = p.items.filter(i => i.priority === 'H' && i.status !== 'received' && i.status !== 'na');
+  return `
+  <section class="page-header"><div><h1>Submission Scorecard</h1>
+    <p class="page-subtitle">${p.programName} · Are you ready to submit to ${dilCar(p.carrierId).name}?</p></div>
+    <div class="page-header-actions">${dilProgramPicker(progs, p.id)}</div></section>
+
+  <section class="card dil-score-hero">
+    <div class="dil-score-ring">
+      <svg viewBox="0 0 120 120" class="dil-score-svg">
+        <circle cx="60" cy="60" r="50" class="dil-score-track"/>
+        <circle cx="60" cy="60" r="50" class="dil-score-fill" style="stroke-dasharray: ${(pct/100)*314} 314;"/>
+      </svg>
+      <div class="dil-score-pct">${pct}%</div>
+    </div>
+    <div class="dil-score-summary">
+      <h2>${canSubmit ? 'Ready to submit' : (pct >= 80 ? 'Submit with reviewer flags' : 'Not yet ready')}</h2>
+      <p>${canSubmit ? 'All high-priority items provided. Submission gate: open.' : (highMissing.length > 0 ? `${highMissing.length} high-priority item${highMissing.length===1?'':'s'} still missing — the submission gate is closed until these are resolved.` : 'A few medium or low-priority items outstanding. You can submit, but the carrier will flag them.')}</p>
+      <button class="btn btn-primary btn-lg" onclick="window.setState({screen:'${canSubmit ? 'dil-m-submit-confirm' : 'dil-m-submit-blocked'}', dilProgramId:'${p.id}'})">${canSubmit ? 'Submit to carrier' : 'Show what\'s blocking submission'}</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Readiness by category</h3></div>
+    <div class="dil-score-grid">
+      ${D.DIL_CATEGORIES.map(cat => {
+        const r = dilCategoryReadiness(p, cat.id);
+        const flag = dilCategoryFlag(p, cat.id);
+        return `
+        <div class="dil-score-cat dil-flag-${flag}">
+          <div class="dil-score-cat-head">
+            <span>${cat.icon} ${cat.label}</span>
+            <span class="dil-flag-dot dil-flag-${flag}"></span>
+          </div>
+          ${dilProgressBar(r.pct)}
+          <div class="row-sub">${r.done}/${r.total} items · ${r.high - r.highMet} high open</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </section>
+
+  ${highMissing.length > 0 ? `
+  <section class="card dil-missing-card">
+    <div class="card-header"><h3>🚨 High-priority blockers · ${highMissing.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Code</th><th>Requirement</th><th>Category</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${highMissing.map(it => `
+            <tr>
+              <td><code>${it.code}</code></td>
+              <td><strong>${it.label}</strong></td>
+              <td class="row-sub">${dilCat(it.category).label}</td>
+              <td><span class="dil-status-pill ${it.status}">${dilStatusLabel(it.status)}</span></td>
+              <td><button class="btn btn-primary btn-sm" onclick="window.setState({screen:'dil-m-wizard', dilWizardSection:'${it.category}'})">Resolve</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>` : ''}
+
+  <section class="card">
+    <div class="card-header"><h3>Likely review blockers</h3></div>
+    <ul class="dil-quality-list">
+      ${pct < 90 ? `<li>⚠️ Scorecard below 90% — carrier may request additional artifacts before advancing from triage.</li>` : `<li>✅ Scorecard above 90% — carrier triage should be smooth.</li>`}
+      ${p.items.filter(i => i.status === 'follow-up').length > 0 ? `<li>⚠️ ${p.items.filter(i => i.status === 'follow-up').length} open follow-ups — reviewer is waiting.</li>` : `<li>✅ No open follow-ups with the carrier.</li>`}
+      ${p.items.some(i => i.priority === 'H' && i.status === 'pending') ? `<li>🚨 High-priority items missing — will block committee advancement.</li>` : `<li>✅ All high-priority items provided.</li>`}
+      ${p.items.filter(i => i.fileUploaded && (new Date('2026-04-23') - new Date(i.fileUploaded))/(1000*60*60*24) > 45).length > 0 ? `<li>⚠️ One or more uploads are >45 days stale — refresh before submission.</li>` : `<li>✅ All uploads current.</li>`}
+    </ul>
+  </section>`;
+}
+
+// ─── MGA: Q&A Center ───
+function renderDilMgaQA() {
+  const progs = dilProgramsForMga(state.dilMgaId);
+  const p = dilProg(state.dilProgramId) || progs.find(p => p.status === 'diligence') || progs[0];
+  const followups = p.items.filter(i => i.status === 'follow-up');
+  return `
+  <section class="page-header"><div><h1>Q&amp;A Center</h1>
+    <p class="page-subtitle">${p.programName} · Every question the carrier has raised, pinned to the exact diligence item.</p></div>
+    <div class="page-header-actions">${dilProgramPicker(progs, p.id)}</div></section>
+
+  ${kpiCards([
+    { label: 'Open follow-ups', value: followups.length, warning: followups.length > 0 },
+    { label: 'High-priority open', value: followups.filter(f => f.priority === 'H').length, warning: followups.filter(f => f.priority === 'H').length > 0 },
+    { label: 'Closed this round', value: p.items.filter(i => i.status === 'received' && i.qa && i.qa.length).length },
+    { label: 'Avg response time', value: '1.4d' }
+  ], 4)}
+
+  ${followups.length === 0 ? `<section class="card"><p class="empty-state">No open questions from the carrier right now.</p></section>` :
+    followups.map(it => `
+    <section class="card dil-qa-thread">
+      <div class="dil-qa-head">
+        <div>
+          <code>${it.code}</code> <span class="dil-prio-chip dil-prio-${it.priority}">${it.priority === 'H' ? 'HIGH' : it.priority === 'M' ? 'MED' : 'LOW'}</span>
+          <strong>${it.label}</strong>
+          <div class="row-sub">${dilCat(it.category).label}</div>
+        </div>
+        <span class="dil-status-pill followup">follow-up</span>
+      </div>
+      <div class="dil-qa-msgs">
+        <div class="dil-qa-msg carrier">
+          <div class="dil-qa-msg-who">Carrier reviewer · ${p.reviewerAssignments[dilCat(it.category).reviewer]?.name || 'Reviewer'}</div>
+          <div class="dil-qa-msg-text">${it.comments || it.reviewerNote || 'Follow-up requested.'}</div>
+        </div>
+        ${it.answer ? `<div class="dil-qa-msg mga">
+          <div class="dil-qa-msg-who">You — prior answer</div>
+          <div class="dil-qa-msg-text">${it.answer}</div>
+        </div>` : ''}
+      </div>
+      <div class="dil-qa-reply">
+        <textarea placeholder="Type your response — will version your existing ${it.type === 'doc' ? 'upload' : 'answer'}"></textarea>
+        <div class="dil-qa-reply-actions">
+          ${it.type === 'doc' ? `<button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'dil-file-upload', dilUploadCode:'${it.code}'})">📎 Upload new version</button>` : ''}
+          <button class="btn btn-primary btn-sm" onclick="window.setState({dilQaSentCode:'${it.code}'})">Send response</button>
+        </div>
+      </div>
+    </section>`).join('')}`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// DILIGENCE — CARRIER SIDE
+// ════════════════════════════════════════════════════════════════
+
+// ─── Carrier: Pipeline (kanban-style lifecycle view) ───
+function renderDilCarrierPipeline() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  const stages = ['submitted','triage','diligence','committee','approved','implementation','declined'];
+  const byStage = {};
+  stages.forEach(s => byStage[s] = []);
+  all.forEach(p => {
+    if (byStage[p.status]) byStage[p.status].push(p);
+    else if (p.status === 'draft') {} // MGA drafts not visible to carrier
+  });
+  const car = dilCar(state.dilCarrierId);
+  return `
+  <section class="page-header">
+    <div>
+      <h1>${car.name} · Program Pipeline</h1>
+      <p class="page-subtitle">Every incoming MGA submission from triage through implementation.</p>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-directory'})">Browse MGAs</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-invite'})">+ Invite MGA</button>
+    </div>
+  </section>
+
+  ${kpiCards([
+    { label: 'New / Triage', value: byStage.submitted.length + byStage.triage.length, warning: byStage.triage.length > 2 },
+    { label: 'In Diligence', value: byStage.diligence.length },
+    { label: 'At Committee', value: byStage.committee.length },
+    { label: 'Approved / Live', value: byStage.approved.length + byStage.implementation.length }
+  ], 4)}
+
+  <div class="dil-kanban">
+    ${stages.filter(s => s !== 'declined').map(s => {
+      const life = dilLife(s);
+      return `
+      <div class="dil-kanban-col">
+        <div class="dil-kanban-col-head dil-kanban-${life.color}">
+          <span>${life.label}</span>
+          <span class="dil-kanban-count">${byStage[s].length}</span>
+        </div>
+        <div class="dil-kanban-cards">
+          ${byStage[s].length === 0 ? `<div class="dil-kanban-empty">—</div>` : byStage[s].map(p => {
+            const pct = dilCompleteness(p);
+            const mga = dilMga(p.mgaId);
+            return `
+            <div class="dil-kanban-card" onclick="window.setState({screen:'dil-c-triage', dilProgramId:'${p.id}'})">
+              <div class="dil-kanban-card-head"><strong>${p.programName}</strong></div>
+              <div class="row-sub">${mga.name}</div>
+              <div class="row-sub">${p.lob} · ${p.states.length} state${p.states.length===1?'':'s'}</div>
+              <div class="dil-kanban-card-foot">
+                ${dilProgressBar(pct)}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  ${byStage.declined.length > 0 ? `
+  <section class="card">
+    <div class="card-header"><h3>Declined programs · ${byStage.declined.length}</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>MGA</th><th>LOB</th><th>Decision date</th><th>Reason</th><th></th></tr></thead>
+        <tbody>
+          ${byStage.declined.map(p => `
+            <tr>
+              <td>${p.programName}</td>
+              <td>${dilMga(p.mgaId).name}</td>
+              <td class="row-sub">${p.lob}</td>
+              <td class="row-sub">${p.decisionAt || '—'}</td>
+              <td class="row-sub">${p.declineReason || '—'}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-c-triage', dilProgramId:'${p.id}'})">View</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>` : ''}`;
+}
+
+// ─── Carrier: Triage (normalised summary + "worth reviewing?" gate) ───
+function renderDilCarrierTriage() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  const p = dilProg(state.dilProgramId) || all.find(x => x.status === 'triage' || x.status === 'submitted') || all[0];
+  if (!p) return `<p>No submissions yet.</p>`;
+  const mga = dilMga(p.mgaId);
+  const pct = dilCompleteness(p);
+  return `
+  <section class="page-header">
+    <div>
+      <h1>Triage · ${p.programName}</h1>
+      <p class="page-subtitle">${mga.name} · ${badge(dilLife(p.status).color, dilLife(p.status).label)}</p>
+    </div>
+    <div class="page-header-actions">${dilCarrierProgPicker(all, p.id)}</div>
+  </section>
+
+  <div class="dil-triage-grid">
+    <section class="card">
+      <div class="card-header"><h3>MGA profile snapshot</h3></div>
+      <table class="data-table dil-kv">
+        <tbody>
+          <tr><td>Entity</td><td>${mga.name}</td></tr>
+          <tr><td>Founded</td><td>${mga.founded}</td></tr>
+          <tr><td>Domicile</td><td>${mga.domicile}</td></tr>
+          <tr><td>Leadership</td><td>${mga.leadership}</td></tr>
+          <tr><td>GWP (total)</td><td>${mga.gwp}</td></tr>
+          <tr><td>Carrier panel</td><td>${mga.panelSize} carriers</td></tr>
+          <tr><td>Licenses</td><td>${mga.licenses} state producer licenses</td></tr>
+          <tr><td>States (active)</td><td>${mga.states.join(', ')}</td></tr>
+          <tr><td>LOBs written</td><td>${mga.lobs.join(', ')}</td></tr>
+          <tr><td>Binding limit</td><td>${mga.bindingLimit}</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Program ask</h3></div>
+      <table class="data-table dil-kv">
+        <tbody>
+          <tr><td>Program</td><td><strong>${p.programName}</strong></td></tr>
+          <tr><td>LOB</td><td>${p.lob}</td></tr>
+          <tr><td>Admitted?</td><td>${p.admitted ? 'Admitted' : 'Non-admitted / E&S'}</td></tr>
+          <tr><td>States</td><td>${p.states.join(', ')}</td></tr>
+          <tr><td>Distribution</td><td>${p.distribution}</td></tr>
+          <tr><td>Claims model</td><td>${p.claimsModel}</td></tr>
+          <tr><td>Capacity ask</td><td>${p.capacityAsk}</td></tr>
+          <tr><td>Target effective</td><td>${p.targetEffective}</td></tr>
+          <tr><td>Submitted</td><td>${p.submittedAt || 'not submitted'}</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <section class="card dil-triage-score">
+    <div class="dil-triage-score-head">
+      <div>
+        <h3>Submission completeness</h3>
+        <p class="row-sub">Weighted by priority (H=3, M=2, L=1) — high items gate advancement.</p>
+      </div>
+      <div class="dil-triage-score-val">${pct}%</div>
+    </div>
+    <div class="dil-score-grid">
+      ${D.DIL_CATEGORIES.map(cat => {
+        const r = dilCategoryReadiness(p, cat.id);
+        const flag = dilCategoryFlag(p, cat.id);
+        return `
+        <div class="dil-score-cat dil-flag-${flag}">
+          <div class="dil-score-cat-head"><span>${cat.icon} ${cat.label}</span><span class="dil-flag-dot dil-flag-${flag}"></span></div>
+          ${dilProgressBar(r.pct)}
+          <div class="row-sub">${r.done}/${r.total} · ${r.high - r.highMet} H open</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Triage decision — is this worth a full review?</h3></div>
+    <div class="dil-triage-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-triage-rmi', dilProgramId:'${p.id}'})">⟲ Request more info before review</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-review', dilProgramId:'${p.id}'})">✓ Accept into diligence → route to reviewers</button>
+      <button class="btn btn-ghost" onclick="window.setState({screen:'dil-c-triage-decline', dilProgramId:'${p.id}'})">✕ Decline at triage</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Reviewer assignments</h3></div>
+    ${Object.keys(p.reviewerAssignments).length === 0 ? `<p class="empty-state">Not yet routed. Accept into diligence to assign.</p>` : `
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Reviewer role</th><th>Assigned to</th><th>Status</th><th>SLA</th><th>Items (done/open)</th></tr></thead>
+        <tbody>
+          ${Object.entries(p.reviewerAssignments).map(([role, a]) => `
+            <tr>
+              <td><strong>${role}</strong></td>
+              <td>${a.name}</td>
+              <td>${a.status === 'complete' ? badge('green','complete') : a.status === 'blocked' ? badge('red','blocked') : a.status === 'queued' ? badge('blue','queued') : badge('yellow','in progress')}</td>
+              <td class="row-sub">${a.sla}</td>
+              <td class="row-sub">${a.itemsDone} / ${a.itemsOpen + a.itemsDone}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`}
+  </section>`;
+}
+
+function dilCarrierProgPicker(progs, currentId) {
+  return `
+  <select class="dil-prog-picker" onchange="window.setState({dilProgramId: this.value})">
+    ${progs.map(p => `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${p.programName} · ${dilMga(p.mgaId).name}</option>`).join('')}
+  </select>`;
+}
+
+// ─── Carrier: Review Workspace (side-by-side + reviewer sub-role filter) ───
+function renderDilCarrierReview() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  const p = dilProg(state.dilProgramId) || all.find(x => x.status === 'diligence') || all[0];
+  if (!p) return `<p>No submissions yet.</p>`;
+  const reviewerFilter = state.dilReviewerRole || 'all';
+  const filterCatId = D.DIL_CATEGORIES.find(c => c.reviewer === reviewerFilter)?.id;
+  let items = p.items;
+  if (reviewerFilter !== 'all') {
+    const catIds = D.DIL_CATEGORIES.filter(c => c.reviewer === reviewerFilter).map(c => c.id);
+    items = items.filter(i => catIds.includes(i.category));
+  }
+  items = items.slice().sort((a,b) => {
+    const ord = { H:0, M:1, L:2 };
+    const so = { pending:0, 'follow-up':1, received:2, na:3 };
+    return (so[a.status] - so[b.status]) || (ord[a.priority] - ord[b.priority]);
+  });
+  const roles = ['all','Program','Compliance','Underwriting','Claims','Finance','Actuarial'];
+  return `
+  <section class="page-header"><div>
+    <h1>Review · ${p.programName}</h1>
+    <p class="page-subtitle">${dilMga(p.mgaId).name} · ${badge(dilLife(p.status).color, dilLife(p.status).label)}</p></div>
+    <div class="page-header-actions">${dilCarrierProgPicker(all, p.id)}</div>
+  </section>
+
+  <div class="dil-review-filter">
+    <span class="dil-review-filter-label">Filter by reviewer role:</span>
+    ${roles.map(r => `
+      <button class="sr-btn${reviewerFilter === r ? ' active' : ''}" onclick="window.setState({dilReviewerRole:'${r}'})">${r === 'all' ? 'All reviewers' : r}</button>
+    `).join('')}
+  </div>
+
+  ${reviewerFilter !== 'all' && p.reviewerAssignments[reviewerFilter] ? `
+    <section class="card dil-reviewer-card">
+      <div><strong>${p.reviewerAssignments[reviewerFilter].name}</strong> · ${reviewerFilter} reviewer</div>
+      <div class="row-sub">SLA: ${p.reviewerAssignments[reviewerFilter].sla} · Status: ${p.reviewerAssignments[reviewerFilter].status} · ${p.reviewerAssignments[reviewerFilter].itemsDone} done / ${p.reviewerAssignments[reviewerFilter].itemsOpen} open</div>
+    </section>` : ''}
+
+  <div class="dil-review-layout">
+    <div class="dil-review-list">
+      <section class="card">
+        <div class="card-header"><h3>Items · ${items.length}</h3></div>
+        <div class="table-scroll">
+          <table class="data-table dil-review-table">
+            <thead><tr><th></th><th>Code</th><th>Item</th><th>Category</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              ${items.map(it => `
+                <tr class="dil-review-row" onclick="window.setState({dilProgramId:'${p.id}', screen:'dil-c-review', dilReviewItemCode:'${it.code}'})">
+                  <td><span class="dil-prio-dot dil-prio-${it.priority}"></span></td>
+                  <td><code>${it.code}</code></td>
+                  <td><strong>${it.label.slice(0,60)}${it.label.length>60?'…':''}</strong></td>
+                  <td class="row-sub">${dilCat(it.category).label}</td>
+                  <td><span class="dil-status-pill ${it.status}">${dilStatusLabel(it.status)}</span></td>
+                  <td class="row-sub">${it.fileName ? '📄' : (it.answer ? '✏️' : '—')}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <aside class="dil-review-detail">
+      ${(() => {
+        const sel = items.find(i => i.code === state.dilReviewItemCode) || items[0];
+        if (!sel) return `<section class="card"><p class="empty-state">No items for this reviewer role.</p></section>`;
+        const cat = dilCat(sel.category);
+        return `
+        <section class="card">
+          <div class="card-header">
+            <h3><code>${sel.code}</code> <span class="dil-prio-chip dil-prio-${sel.priority}">${sel.priority==='H'?'HIGH':sel.priority==='M'?'MED':'LOW'}</span></h3>
+            <span class="dil-status-pill ${sel.status}">${dilStatusLabel(sel.status)}</span>
+          </div>
+          <h2>${sel.label}</h2>
+          <p class="row-sub">${cat.icon} ${cat.label} · Reviewer: <strong>${cat.reviewer}</strong></p>
+
+          <div class="dil-review-why">
+            <strong>Why it matters:</strong> ${sel.why}
+          </div>
+
+          ${sel.type === 'doc' && sel.fileName ? `
+            <div class="dil-file-chip">
+              <span class="dil-file-icon">📄</span>
+              <div><strong>${sel.fileName}</strong><div class="row-sub">${sel.fileVersion} · ${sel.fileUploaded}</div></div>
+              <div class="dil-file-actions"><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-file-preview', dilPreviewFile:'${sel.fileName}', dilPreviewCode:'${sel.code}'})">Preview</button></div>
+            </div>` : ''}
+
+          ${sel.answer ? `
+            <div class="dil-review-answer">
+              <div class="row-sub">MGA answer:</div>
+              <blockquote>${sel.answer}</blockquote>
+            </div>` : ''}
+
+          ${!sel.fileName && !sel.answer ? `<p class="empty-state dil-review-missing">Not provided by MGA.</p>` : ''}
+
+          ${sel.reviewerNote ? `<div class="dil-reviewer-note">⚠️ Current reviewer note: ${sel.reviewerNote}</div>` : ''}
+
+          <div class="dil-review-actions">
+            <button class="btn btn-ghost btn-sm" onclick="window.setState({dilReviewMarkedCode:'${sel.code}', dilReviewMarkedStatus:'received'})">✓ Mark Received</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.setState({dilReviewMarkedCode:'${sel.code}', dilReviewMarkedStatus:'na'})">○ Mark N/A</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.setState({dilReviewMarkedCode:'${sel.code}', dilReviewMarkedStatus:'follow-up'})">⟲ Request follow-up</button>
+          </div>
+
+          <div class="dil-review-qa">
+            <h4>Add a question to the MGA</h4>
+            <textarea placeholder="e.g. Please provide state-filed rate evidence for TX, AZ, NV and CO — we only see CA."></textarea>
+            <button class="btn btn-primary btn-sm" onclick="window.setState({dilReviewQaPostedCode:'${sel.code}'})">Post question</button>
+          </div>
+        </section>`;
+      })()}
+    </aside>
+  </div>`;
+}
+
+// ─── Carrier: Gap Tracker (high-prio missing items first) ───
+function renderDilCarrierGaps() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  const active = all.filter(p => ['triage','diligence','committee'].includes(p.status));
+  const gaps = [];
+  active.forEach(p => {
+    p.items.forEach(it => {
+      if (it.status === 'pending' || it.status === 'follow-up') {
+        gaps.push({ ...it, progId: p.id, program: p.programName, mga: dilMga(p.mgaId).name, progStatus: p.status });
+      }
+    });
+  });
+  gaps.sort((a,b) => {
+    const ord = { H:0, M:1, L:2 };
+    return (ord[a.priority] - ord[b.priority]) || (a.status === 'follow-up' ? -1 : 1);
+  });
+  return `
+  <section class="page-header"><div><h1>Gap Tracker</h1>
+    <p class="page-subtitle">Every missing or follow-up item across every active submission. Highest priority first.</p></div></section>
+
+  ${kpiCards([
+    { label: 'Total open gaps', value: gaps.length, warning: gaps.length > 10 },
+    { label: 'High-priority', value: gaps.filter(g => g.priority === 'H').length, warning: gaps.filter(g => g.priority === 'H').length > 0 },
+    { label: 'Awaiting MGA response', value: gaps.filter(g => g.status === 'follow-up').length },
+    { label: 'Never provided', value: gaps.filter(g => g.status === 'pending').length }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Gaps — sorted by priority × age</h3></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Priority</th><th>Code</th><th>Item</th><th>Program · MGA</th><th>Status</th><th>Category</th><th></th></tr></thead>
+        <tbody>
+          ${gaps.map(g => `
+            <tr ${g.priority === 'H' ? 'class="dil-gap-high"' : ''}>
+              <td><span class="dil-prio-dot dil-prio-${g.priority}"></span>${g.priority}</td>
+              <td><code>${g.code}</code></td>
+              <td><strong>${g.label}</strong>${g.reviewerNote ? `<div class="row-sub">${g.reviewerNote}</div>` : ''}</td>
+              <td>${g.program}<div class="row-sub">${g.mga}</div></td>
+              <td><span class="dil-status-pill ${g.status}">${dilStatusLabel(g.status)}</span></td>
+              <td class="row-sub">${dilCat(g.category).icon} ${dilCat(g.category).label}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-c-review', dilProgramId:'${g.progId}', dilReviewItemCode:'${g.code}'})">Open →</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── Carrier: Q&A ───
+function renderDilCarrierQA() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  const p = dilProg(state.dilProgramId) || all.find(x => x.status === 'diligence') || all[0];
+  if (!p) return `<p>No submissions yet.</p>`;
+  const followups = p.items.filter(i => i.status === 'follow-up');
+  return `
+  <section class="page-header"><div><h1>Q&amp;A Center</h1>
+    <p class="page-subtitle">${p.programName} · ${dilMga(p.mgaId).name}</p></div>
+    <div class="page-header-actions">${dilCarrierProgPicker(all, p.id)}</div></section>
+
+  ${kpiCards([
+    { label: 'Open with MGA', value: followups.length },
+    { label: 'High-priority open', value: followups.filter(f => f.priority==='H').length, warning: followups.filter(f => f.priority==='H').length > 0 },
+    { label: 'Closed this week', value: 3 },
+    { label: 'Avg MGA response', value: '1.4d' }
+  ], 4)}
+
+  ${followups.length === 0 ? `<section class="card"><p class="empty-state">No open questions. Post a new one from the Review Workspace.</p></section>` :
+    followups.map(it => `
+    <section class="card dil-qa-thread">
+      <div class="dil-qa-head">
+        <div>
+          <code>${it.code}</code> <span class="dil-prio-chip dil-prio-${it.priority}">${it.priority==='H'?'HIGH':it.priority==='M'?'MED':'LOW'}</span>
+          <strong>${it.label}</strong>
+          <div class="row-sub">${dilCat(it.category).label} · Reviewer: ${dilCat(it.category).reviewer}</div>
+        </div>
+        <span class="dil-status-pill followup">awaiting MGA</span>
+      </div>
+      <div class="dil-qa-msgs">
+        <div class="dil-qa-msg carrier">
+          <div class="dil-qa-msg-who">${p.reviewerAssignments[dilCat(it.category).reviewer]?.name || 'Reviewer'} — ${it.reviewerNote ? 'reviewer note' : 'question'}</div>
+          <div class="dil-qa-msg-text">${it.comments || it.reviewerNote}</div>
+        </div>
+      </div>
+      <div class="dil-qa-reply">
+        <textarea placeholder="Add a clarifying question or nudge the MGA..."></textarea>
+        <button class="btn btn-primary btn-sm" onclick="window.setState({dilQaNudgedCode:'${it.code}'})">Send</button>
+      </div>
+    </section>`).join('')}`;
+}
+
+// ─── Carrier: Decision Memo (auto-compiled) ───
+function renderDilCarrierMemo() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  const p = dilProg(state.dilProgramId) || all.find(x => x.status === 'diligence' || x.status === 'committee') || all[0];
+  if (!p) return `<p>No submissions yet.</p>`;
+  const pct = dilCompleteness(p);
+  const greens = D.DIL_CATEGORIES.filter(c => dilCategoryFlag(p, c.id) === 'green');
+  const yellows = D.DIL_CATEGORIES.filter(c => dilCategoryFlag(p, c.id) === 'yellow');
+  const reds = D.DIL_CATEGORIES.filter(c => dilCategoryFlag(p, c.id) === 'red');
+  const recommendation = reds.length > 1 ? 'Decline' : reds.length === 1 ? 'Request More Info' : yellows.length > 2 ? 'Continue diligence' : 'Advance to Committee';
+  return `
+  <section class="page-header"><div><h1>Decision Memo · ${p.programName}</h1>
+    <p class="page-subtitle">${dilMga(p.mgaId).name} · auto-compiled from diligence state · export when finalised</p></div>
+    <div class="page-header-actions">
+      ${dilCarrierProgPicker(all, p.id)}
+      <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-c-memo-export'})">📤 Export</button>
+    </div></section>
+
+  <section class="card dil-memo">
+    <div class="dil-memo-head">
+      <div>
+        <div class="row-sub">Diligence Memo · auto-generated ${new Date().toISOString().slice(0,10)}</div>
+        <h2>${p.programName}</h2>
+        <p>${dilMga(p.mgaId).name} → ${dilCar(p.carrierId).name} · ${p.lob} · ${p.states.join(', ')}</p>
+      </div>
+      <div class="dil-memo-reco dil-memo-reco-${reds.length>1?'red':reds.length===1?'yellow':'green'}">
+        <div class="row-sub">Recommendation</div>
+        <h3>${recommendation}</h3>
+      </div>
+    </div>
+
+    <h3>Executive summary</h3>
+    <p>${p.programName} is a ${p.lob} program with ${p.capacityAsk}, targeting effective ${p.targetEffective} in ${p.states.length} state${p.states.length===1?'':'s'} (${p.states.join(', ')}). Distribution is through ${p.distribution}; claims model is "${p.claimsModel}". Overall submission completeness is <strong>${pct}%</strong>, with ${reds.length} category flag${reds.length===1?'':'s'} red, ${yellows.length} yellow, and ${greens.length} green.</p>
+
+    <h3>Category flags</h3>
+    <div class="dil-memo-flags">
+      ${D.DIL_CATEGORIES.map(cat => {
+        const f = dilCategoryFlag(p, cat.id);
+        const r = dilCategoryReadiness(p, cat.id);
+        return `
+        <div class="dil-memo-flag dil-flag-${f}">
+          <div class="dil-flag-dot dil-flag-${f}"></div>
+          <div>
+            <div><strong>${cat.icon} ${cat.label}</strong> <span class="row-sub">${cat.reviewer}</span></div>
+            <div class="row-sub">${r.done}/${r.total} provided · ${r.high - r.highMet} high-priority open</div>
+            ${f === 'red' ? `<div class="row-sub"><em>Gating:</em> ${p.items.filter(i => i.category === cat.id && i.priority === 'H' && i.status !== 'received' && i.status !== 'na').map(i => i.code).join(', ') || '—'}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    ${reds.length > 0 ? `
+    <h3>🚨 Key risks / red flags</h3>
+    <ul class="dil-memo-list">
+      ${reds.map(cat => p.items.filter(i => i.category === cat.id && i.priority === 'H' && i.status !== 'received' && i.status !== 'na').map(it => `
+        <li><strong>${cat.label} — ${it.code}:</strong> ${it.label}. ${it.reviewerNote || 'Not provided.'}</li>`).join('')).join('')}
+    </ul>` : ''}
+
+    ${yellows.length > 0 ? `
+    <h3>⚠️ Open items (yellow)</h3>
+    <ul class="dil-memo-list">
+      ${yellows.slice(0,5).map(cat => {
+        const open = p.items.filter(i => i.category === cat.id && (i.status === 'pending' || i.status === 'follow-up'));
+        return open.slice(0,3).map(it => `<li><strong>${it.code}:</strong> ${it.label} <span class="row-sub">— ${it.status}</span></li>`).join('');
+      }).join('')}
+    </ul>` : ''}
+
+    <h3>Reviewer progress</h3>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Role</th><th>Reviewer</th><th>Status</th><th>SLA</th><th>Completion</th></tr></thead>
+        <tbody>
+          ${Object.entries(p.reviewerAssignments).map(([role, a]) => `
+            <tr>
+              <td>${role}</td><td>${a.name}</td>
+              <td>${a.status === 'complete' ? badge('green','complete') : a.status === 'blocked' ? badge('red','blocked') : badge('yellow', a.status)}</td>
+              <td class="row-sub">${a.sla}</td>
+              <td>${dilProgressBar(Math.round((a.itemsDone/(a.itemsOpen+a.itemsDone))*100))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="dil-memo-cta">
+    <button class="btn btn-ghost" onclick="window.setState({screen:'dil-c-decision-decline'})">✕ Decline</button>
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-decision-rmi'})">⟲ Request More Info</button>
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-committee'})">→ Advance to Committee</button>
+    <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-decision-termsheet'})">📑 Issue Term Sheet</button>
+  </div>`;
+}
+
+// ─── Carrier: Committee ───
+function renderDilCarrierCommittee() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  const committee = all.filter(p => p.status === 'committee');
+  return `
+  <section class="page-header"><div><h1>Program Committee</h1>
+    <p class="page-subtitle">Programs awaiting final vote. Each requires a quorum of 3 (UW lead, Finance lead, Chief UW Officer).</p></div></section>
+
+  ${kpiCards([
+    { label: 'At Committee', value: committee.length },
+    { label: 'This week', value: committee.filter(p => true).length },
+    { label: 'Approved YTD', value: all.filter(p => p.status === 'approved' || p.status === 'implementation').length },
+    { label: 'Declined YTD', value: all.filter(p => p.status === 'declined').length }
+  ], 4)}
+
+  ${committee.length === 0 ? `<section class="card"><p class="empty-state">Nothing at committee right now. Advance a program from the Decision Memo.</p></section>` :
+    committee.map(p => `
+    <section class="card dil-committee-card">
+      <div class="card-header">
+        <h3>${p.programName}</h3>
+        <span>${badge('purple','Committee')}</span>
+      </div>
+      <table class="data-table dil-kv">
+        <tbody>
+          <tr><td>MGA</td><td>${dilMga(p.mgaId).name}</td></tr>
+          <tr><td>LOB · States</td><td>${p.lob} · ${p.states.join(', ')}</td></tr>
+          <tr><td>Capacity ask</td><td>${p.capacityAsk}</td></tr>
+          <tr><td>Completeness</td><td>${dilProgressBar(dilCompleteness(p))}</td></tr>
+          <tr><td>Submitted</td><td>${p.submittedAt}</td></tr>
+        </tbody>
+      </table>
+      <div class="dil-committee-votes">
+        <h4>Votes</h4>
+        <div class="dil-vote-row"><span>UW Lead — Sonia Patel</span><span>${badge('green','approve')}</span></div>
+        <div class="dil-vote-row"><span>Finance Lead — Derek Tan</span><span>${badge('green','approve')}</span></div>
+        <div class="dil-vote-row"><span>CUO — Marcus Webb</span><span>${badge('gray','pending')}</span></div>
+      </div>
+      <div class="dil-committee-actions">
+        <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-memo', dilProgramId:'${p.id}'})">View memo</button>
+        <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-vote-cast'})">Cast approving vote</button>
+        <button class="btn btn-ghost" onclick="window.setState({screen:'dil-c-decision-decline'})">Cast decline</button>
+      </div>
+    </section>`).join('')}`;
+}
+
+// ─── Carrier: Implementation ───
+function renderDilCarrierImpl() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  // Implementation programs visible to any carrier; for demo, look across all carriers
+  const implPrograms = D.DIL_PROGRAMS.filter(p => p.status === 'implementation');
+  const p = dilProg(state.dilProgramId) || implPrograms[0];
+  if (!p || !p.implementation) return `
+    <section class="page-header"><div><h1>Implementation Handoff</h1>
+      <p class="page-subtitle">Programs approved at committee land here with a checklist of onboarding tasks.</p></div></section>
+    <section class="card"><p class="empty-state">No programs currently in implementation.</p></section>`;
+
+  const impl = p.implementation;
+  const done = impl.tasks.filter(t => t.status === 'done').length;
+  const inProg = impl.tasks.filter(t => t.status === 'in-progress').length;
+  return `
+  <section class="page-header"><div><h1>Implementation · ${p.programName}</h1>
+    <p class="page-subtitle">${dilMga(p.mgaId).name} → ${dilCar(p.carrierId).name} · Target live: <strong>${impl.targetLive}</strong></p></div>
+    <div class="page-header-actions">${dilCarrierProgPicker(implPrograms.length ? implPrograms : [p], p.id)}</div></section>
+
+  ${kpiCards([
+    { label: 'Tasks complete', value: done + ' / ' + impl.tasks.length },
+    { label: 'In progress', value: inProg },
+    { label: 'Days to live', value: Math.max(0, Math.round((new Date(impl.targetLive) - new Date('2026-04-23'))/(1000*60*60*24))) },
+    { label: 'Blockers', value: 0 }
+  ], 4)}
+
+  <section class="card">
+    <div class="card-header"><h3>Onboarding checklist</h3>
+      <button class="btn btn-primary btn-sm" onclick="window.setState({screen:'dil-c-impl-task-add'})">+ Add task</button>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Status</th><th>Task</th><th>Owner</th><th>Due</th><th></th></tr></thead>
+        <tbody>
+          ${impl.tasks.map(t => `
+            <tr>
+              <td>${t.status === 'done' ? badge('green','done') : t.status === 'in-progress' ? badge('yellow','in progress') : badge('gray','not started')}</td>
+              <td><strong>${t.label}</strong><div class="row-sub">${t.id}</div></td>
+              <td class="row-sub">${t.owner}</td>
+              <td class="row-sub">${t.due}</td>
+              <td>
+                ${t.status !== 'done' ? `<button class="btn btn-ghost btn-sm" onclick="window.setState({dilImplTaskDone:'${t.id}'})">Mark done</button>` : ''}
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h3>Approved diligence items — auto-converted to onboarding tasks</h3></div>
+    <p class="row-sub">The diligence record stays attached. When the MGA refreshes a stale artifact post-launch, the system re-runs the flag.</p>
+  </section>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// DILIGENCE — SHARED (directory, profile)
+// ════════════════════════════════════════════════════════════════
+
+// ─── Shared: Directory (Carriers + MGAs) ───
+function renderDilDirectory() {
+  const role = dilRole();
+  const tab = state.dilDirTab || (role === 'mga' ? 'carriers' : 'mgas');
+  const f = state.dilDirFilters || { lob: '', state: '', query: '' };
+
+  const allLobs = [...new Set([...D.DIL_CARRIERS.flatMap(c => c.lobs), ...D.DIL_MGAS.flatMap(m => m.lobs)])].sort();
+  const allStates = [...new Set([...D.DIL_CARRIERS.flatMap(c => c.states), ...D.DIL_MGAS.flatMap(m => m.states)])].filter(s => s !== 'All 50').sort();
+
+  return `
+  <section class="page-header"><div><h1>Directory</h1>
+    <p class="page-subtitle">Browse carriers and MGAs. Start a new program directly from a profile.</p></div></section>
+
+  <div class="dil-dir-tabs">
+    <button class="sr-btn${tab==='carriers'?' active':''}" onclick="window.setState({dilDirTab:'carriers'})">🛡️ Carriers · ${D.DIL_CARRIERS.length}</button>
+    <button class="sr-btn${tab==='mgas'?' active':''}" onclick="window.setState({dilDirTab:'mgas'})">⚡ MGAs · ${D.DIL_MGAS.length}</button>
+  </div>
+
+  <section class="card dil-dir-filters">
+    <label>Line of business
+      <select id="dil-dir-lob"><option value="">All</option>${allLobs.map(l => `<option ${f.lob===l?'selected':''}>${l}</option>`).join('')}</select>
+    </label>
+    <label>State
+      <select id="dil-dir-state"><option value="">All</option>${allStates.map(s => `<option ${f.state===s?'selected':''}>${s}</option>`).join('')}</select>
+    </label>
+    <label>Search <input type="text" id="dil-dir-query" value="${f.query}" placeholder="entity name"/></label>
+  </section>
+
+  ${tab === 'carriers' ? renderDilDirCarriers(f) : renderDilDirMgas(f)}`;
+}
+
+function renderDilDirCarriers(f) {
+  let list = D.DIL_CARRIERS;
+  if (f.lob)    list = list.filter(c => c.lobs.includes(f.lob));
+  if (f.state)  list = list.filter(c => c.states.includes(f.state) || c.states.includes('All 50'));
+  if (f.query)  list = list.filter(c => c.name.toLowerCase().includes(f.query.toLowerCase()));
+  if (list.length === 0) return `<section class="card"><p class="empty-state">No carriers match the current filters.</p></section>`;
+  return `
+  <div class="dil-dir-grid">
+    ${list.map(c => {
+      const utilPct = Math.round(c.capacityUsed*100);
+      const stateLabel = c.states[0] === 'All 50' ? 'All 50' : `${c.states.length} states`;
+      return `
+      <section class="card dil-dir-card" onclick="window.setState({screen:'dil-profile', dilCarrierId:'${c.id}'})">
+        <div class="dil-dir-head">
+          <div class="dil-dir-title">
+            <h3>${c.name}</h3>
+            <div class="dil-dir-sub">${c.amBest} · ${c.admitted ? 'Admitted' : 'E&S'} · ${stateLabel}</div>
+          </div>
+          <div class="dil-dir-util ${utilPct>=80?'high':utilPct>=60?'mid':'low'}">
+            <span class="dil-dir-util-val">${utilPct}%</span>
+            <span class="dil-dir-util-label">util</span>
+          </div>
+        </div>
+        <div class="dil-dir-stats">
+          <div><span>Capacity</span><strong>${c.capacity}</strong></div>
+          <div><span>MGA panel</span><strong>${c.panel}</strong></div>
+          <div><span>LOBs</span><strong>${c.lobs.length}</strong></div>
+        </div>
+        <div class="dil-dir-tags">
+          ${c.lobs.slice(0,3).map(l => `<span class="dil-tag">${l}</span>`).join('')}
+          ${c.lobs.length > 3 ? `<span class="dil-tag dil-tag-more">+${c.lobs.length-3}</span>` : ''}
+        </div>
+        <div class="dil-dir-foot">
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); window.setState({screen:'dil-profile', dilCarrierId:'${c.id}'})">View profile</button>
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.setState({screen:'dil-m-new', dilCarrierId:'${c.id}'})">Submit program →</button>
+        </div>
+      </section>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderDilDirMgas(f) {
+  let list = D.DIL_MGAS;
+  if (f.lob)    list = list.filter(m => m.lobs.includes(f.lob));
+  if (f.state)  list = list.filter(m => m.states.includes(f.state) || m.states.includes('All 50'));
+  if (f.query)  list = list.filter(m => m.name.toLowerCase().includes(f.query.toLowerCase()));
+  if (list.length === 0) return `<section class="card"><p class="empty-state">No MGAs match the current filters.</p></section>`;
+  return `
+  <div class="dil-dir-grid">
+    ${list.map(m => {
+      const stateLabel = m.states[0] === 'All 50' ? 'All 50' : `${m.states.length} states`;
+      return `
+      <section class="card dil-dir-card" onclick="window.setState({screen:'dil-profile', dilMgaId:'${m.id}'})">
+        <div class="dil-dir-head">
+          <div class="dil-dir-title">
+            <h3>${m.name}</h3>
+            <div class="dil-dir-sub">${m.domicile} · Founded ${m.founded} · ${stateLabel}</div>
+          </div>
+          <div class="dil-dir-gwp">
+            <span class="dil-dir-gwp-val">${m.gwp}</span>
+            <span class="dil-dir-gwp-label">GWP</span>
+          </div>
+        </div>
+        <div class="dil-dir-stats">
+          <div><span>Carriers</span><strong>${m.panelSize}</strong></div>
+          <div><span>Licenses</span><strong>${m.licenses}</strong></div>
+          <div><span>Programs</span><strong>${m.programs}</strong></div>
+        </div>
+        <div class="dil-dir-tags">
+          ${m.lobs.slice(0,3).map(l => `<span class="dil-tag">${l}</span>`).join('')}
+          ${m.lobs.length > 3 ? `<span class="dil-tag dil-tag-more">+${m.lobs.length-3}</span>` : ''}
+        </div>
+        <div class="dil-dir-foot">
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); window.setState({screen:'dil-profile', dilMgaId:'${m.id}'})">View profile</button>
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.setState({screen:'dil-c-invite'})">Invite →</button>
+        </div>
+      </section>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderDilProfile() {
+  // Route to carrier or MGA profile depending on state
+  if (state.dilDirTab === 'mgas' || (state.dilMgaId && !state.dilCarrierId)) {
+    const m = dilMga(state.dilMgaId) || D.DIL_MGAS[0];
+    return renderDilMgaProfile(m);
+  }
+  const c = dilCar(state.dilCarrierId) || D.DIL_CARRIERS[0];
+  return renderDilCarrierProfile(c);
+}
+
+function renderDilCarrierProfile(c) {
+  const progs = dilProgramsForCarrier(c.id);
+  return `
+  <section class="page-header"><div><h1>🛡️ ${c.name}</h1>
+    <p class="page-subtitle">${c.amBest} · ${c.admitted ? 'Admitted' : 'Non-admitted / E&S'} · ${c.contact}</p></div>
+    <div class="page-header-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-directory'})">← Directory</button>
+      ${dilRole() === 'mga' ? `<button class="btn btn-primary" onclick="window.setState({screen:'dil-m-new', dilCarrierId:'${c.id}'})">Submit program →</button>` : ''}
+    </div></section>
+
+  <div class="dil-profile-grid">
+    <section class="card">
+      <div class="card-header"><h3>Capacity & appetite</h3></div>
+      <table class="data-table dil-kv">
+        <tbody>
+          <tr><td>Total capacity</td><td>${c.capacity}</td></tr>
+          <tr><td>Utilisation</td><td>${Math.round(c.capacityUsed*100)}%</td></tr>
+          <tr><td>MGA panel</td><td>${c.panel}</td></tr>
+          <tr><td>LOBs</td><td>${c.lobs.join(', ')}</td></tr>
+          <tr><td>Appetite</td><td>${c.appetite.join(' · ')}</td></tr>
+          <tr><td>States</td><td>${c.states.join(', ')}</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Current programs on platform · ${progs.length}</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Program</th><th>MGA</th><th>Status</th></tr></thead>
+          <tbody>
+            ${progs.map(p => `
+              <tr>
+                <td>${p.programName}</td>
+                <td>${dilMga(p.mgaId).name}</td>
+                <td>${badge(dilLife(p.status).color, dilLife(p.status).label)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>`;
+}
+
+function renderDilMgaProfile(m) {
+  const progs = dilProgramsForMga(m.id);
+  return `
+  <section class="page-header"><div><h1>⚡ ${m.name}</h1>
+    <p class="page-subtitle">Founded ${m.founded} · ${m.domicile} · ${m.leadership}</p></div>
+    <div class="page-header-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-directory'})">← Directory</button>
+      ${dilRole() === 'carrier' ? `<button class="btn btn-primary" onclick="window.setState({screen:'dil-c-invite'})">Invite to submit →</button>` : ''}
+    </div></section>
+
+  <div class="dil-profile-grid">
+    <section class="card">
+      <div class="card-header"><h3>Firmographic</h3></div>
+      <table class="data-table dil-kv">
+        <tbody>
+          <tr><td>Total GWP</td><td>${m.gwp}</td></tr>
+          <tr><td>Carrier panel</td><td>${m.panelSize} carriers</td></tr>
+          <tr><td>Binding limit</td><td>${m.bindingLimit}</td></tr>
+          <tr><td>Active programs</td><td>${m.programs}</td></tr>
+          <tr><td>Licenses</td><td>${m.licenses} state producer licenses</td></tr>
+          <tr><td>LOBs</td><td>${m.lobs.join(', ')}</td></tr>
+          <tr><td>States</td><td>${m.states.join(', ')}</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h3>Programs on platform · ${progs.length}</h3></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Program</th><th>Carrier</th><th>Status</th></tr></thead>
+          <tbody>
+            ${progs.map(p => `
+              <tr>
+                <td>${p.programName}</td>
+                <td>${dilCar(p.carrierId).name}</td>
+                <td>${badge(dilLife(p.status).color, dilLife(p.status).label)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// DILIGENCE — ACTION SCREENS (replace all toasts with real screens)
+// ════════════════════════════════════════════════════════════════
+
+function dilActionHeader(title, subtitle, backScreen) {
+  return `
+  <section class="page-header">
+    <div>
+      <h1>${title}</h1>
+      ${subtitle ? `<p class="page-subtitle">${subtitle}</p>` : ''}
+    </div>
+    <div class="page-header-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'${backScreen}'})">← Back</button>
+    </div>
+  </section>`;
+}
+
+// ─── Shared: file preview (both MGA and carrier can land here) ───
+function renderDilFilePreview() {
+  const fn = state.dilPreviewFile || 'sample_document.pdf';
+  const code = state.dilPreviewCode || '';
+  const backScreen = state.dilRole === 'mga' ? 'dil-m-dataroom' : 'dil-c-review';
+  const ext = (fn.split('.').pop() || 'pdf').toLowerCase();
+  const isXl = ['xlsx','xls','csv'].includes(ext);
+  return `
+  ${dilActionHeader(`📄 ${fn}`, code ? `Attached to diligence item ${code}` : 'File preview', backScreen)}
+  <section class="card dil-preview-card">
+    <div class="dil-preview-toolbar">
+      <span class="row-sub">${ext.toUpperCase()} · ${isXl ? '38 KB' : '2.4 MB'} · last modified ${isXl ? '2026-03-07' : '2026-03-02'}</span>
+      <div class="dil-preview-tools">
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'${backScreen}'})">Close</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-file-version'})">Version history</button>
+        <button class="btn btn-secondary btn-sm" onclick="window.setState({screen:'dil-file-upload', dilUploadCode:'${code}'})">Replace with new version</button>
+      </div>
+    </div>
+    <div class="dil-preview-pane">
+      ${isXl ? `
+        <div class="dil-preview-sheet">
+          <div class="dil-sheet-header">Sheet 1 · 2019-2025 development triangle</div>
+          <table class="data-table">
+            <thead><tr><th>AY</th><th>12m</th><th>24m</th><th>36m</th><th>48m</th><th>60m</th><th>72m</th><th>84m</th></tr></thead>
+            <tbody>
+              ${[2019,2020,2021,2022,2023,2024,2025].map(y => `
+                <tr><td>${y}</td>${[1,2,3,4,5,6,7].map(i => `<td>$${((Math.sin(y*i)+1)*800+200).toFixed(0)}K</td>`).join('')}</tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>` : `
+        <div class="dil-preview-doc">
+          <div class="dil-preview-page">
+            <h3 style="margin-top:0">${fn.replace(/[_-]/g,' ').replace(/\.\w+$/, '')}</h3>
+            <p class="row-sub">This is a mock preview. In production this pane would render the actual PDF via a document viewer.</p>
+            <hr style="border:none; border-top:1px solid var(--border-subtle); margin: 16px 0;"/>
+            <p><strong>Section 1.</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer at tortor non metus consequat vulputate. Praesent rutrum, nisl eget vehicula tempor, elit libero gravida massa.</p>
+            <p><strong>Section 2.</strong> Donec a porta lectus. Fusce in tempor nisl, ut placerat velit. Ut id purus ac eros ullamcorper iaculis. Suspendisse potenti. Curabitur sit amet tellus vitae ex eleifend gravida.</p>
+            <p><strong>Section 3.</strong> Ut ac magna at tortor commodo pulvinar in nec ex. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
+            <p class="row-sub" style="margin-top:24px; text-align:center;">— page 1 of 12 —</p>
+          </div>
+        </div>`}
+    </div>
+  </section>`;
+}
+
+function renderDilFileVersion() {
+  const backScreen = state.dilRole === 'mga' ? 'dil-m-dataroom' : 'dil-c-review';
+  return `
+  ${dilActionHeader('Version history', state.dilPreviewFile || '', backScreen)}
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Version</th><th>Uploaded</th><th>By</th><th>Size</th><th>Change note</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><strong>v3 (current)</strong></td><td class="row-sub">2026-03-02 16:47</td><td>Priya Sharma (MGA)</td><td class="row-sub">2.4 MB</td><td>Refreshed after 2025 year-end development</td><td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-file-preview'})">Open</button></td></tr>
+          <tr><td>v2</td><td class="row-sub">2025-11-14 09:12</td><td>Priya Sharma (MGA)</td><td class="row-sub">2.3 MB</td><td>Added Q3 2025 data</td><td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-file-preview'})">Open</button></td></tr>
+          <tr><td>v1</td><td class="row-sub">2025-07-30 13:22</td><td>Priya Sharma (MGA)</td><td class="row-sub">2.1 MB</td><td>Initial upload</td><td><button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-file-preview'})">Open</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ─── MGA: Smart Document Collection — single-item upload pipeline ───
+// Flow: drop zone → analyze (AI reads doc) → review (fields + validation + cross-doc) → committed
+function renderDilFileUpload() {
+  const code = state.dilUploadCode || '';
+  const progs = dilProgramsForMga(state.dilMgaId);
+  const p = dilProg(state.dilProgramId) || progs[0];
+  const it = p ? p.items.find(i => i.code === code) : null;
+  const suggested = (() => {
+    if (!it) return null;
+    const guesses = {
+      '1.02.00': 'EO_cert_hiscox_2026.pdf',
+      '1.03.00': 'surety_bond_travelers.pdf',
+      '1.04.00': 'cyber_cert_beazley_2026.pdf',
+      '2.01.00': 'producer_license_schedule.xlsx',
+      '4.03.00': 'audited_financials_2023-2025.pdf',
+      '5.01.00': 'UW_guidelines_v5.3.pdf',
+      '6.08.00': 'loss_run_2026-03-31.xlsx'
+    };
+    return guesses[code] || null;
+  })();
+  return `
+  ${dilActionHeader('Smart Document Upload', it ? `${code} · ${it.label}` : 'Upload a file — the AI will match it to a diligence item', 'dil-m-dataroom')}
+
+  <section class="card">
+    <div class="dil-smart-strip">
+      <div class="dil-smart-strip-col">
+        <strong>1. Read</strong>
+        <span class="row-sub">OCR / structured parse</span>
+      </div>
+      <span class="dil-smart-strip-arrow">→</span>
+      <div class="dil-smart-strip-col">
+        <strong>2. Extract</strong>
+        <span class="row-sub">Pull named fields from the doc</span>
+      </div>
+      <span class="dil-smart-strip-arrow">→</span>
+      <div class="dil-smart-strip-col">
+        <strong>3. Validate</strong>
+        <span class="row-sub">Against program + item rules</span>
+      </div>
+      <span class="dil-smart-strip-arrow">→</span>
+      <div class="dil-smart-strip-col">
+        <strong>4. Cross-check</strong>
+        <span class="row-sub">Against other docs you've submitted</span>
+      </div>
+      <span class="dil-smart-strip-arrow">→</span>
+      <div class="dil-smart-strip-col">
+        <strong>5. You commit</strong>
+        <span class="row-sub">Review the AI's findings, accept or fix</span>
+      </div>
+    </div>
+    <div class="dil-upload-zone large" onclick="window.setState({screen:'dil-file-analyze', dilUploadCode:'${code}', dilUploadFileName:'${suggested || 'new_document.pdf'}'})">
+      <span class="dil-upload-icon">⬆️</span>
+      <p>Drop file here or click to select</p>
+      <small>PDF · DOCX · XLSX · CSV · JPG · PNG · max 50 MB${suggested ? ` · demo will load <code>${suggested}</code>` : ''}</small>
+    </div>
+    <div class="dil-upload-meta">
+      <div><strong>Target item:</strong> ${code ? code + (it ? ' · ' + it.label : '') : 'auto-detect from filename + content'}</div>
+      <div><strong>Required checks:</strong> ${it ? dilValidationSummary(code) : 'depends on detected item'}</div>
+      <div><strong>Version policy:</strong> replacing an existing file creates a new version — prior versions retained and timestamped</div>
+    </div>
+  </section>`;
+}
+
+function dilValidationSummary(code) {
+  const checks = D.dilValidateDoc(code);
+  if (!checks.length) return '—';
+  return checks.map(c => c.label).slice(0, 3).join(' · ') + (checks.length > 3 ? ` · +${checks.length - 3} more` : '');
+}
+
+// Screen: AI analyzing
+function renderDilFileAnalyze() {
+  const code = state.dilUploadCode || '';
+  const fileName = state.dilUploadFileName || 'new_document.pdf';
+  const extracted = D.dilExtract(code);
+  const it = (() => {
+    const progs = dilProgramsForMga(state.dilMgaId);
+    const p = dilProg(state.dilProgramId) || progs[0];
+    return p ? p.items.find(i => i.code === code) : null;
+  })();
+  return `
+  ${dilActionHeader('Analysing document…', `${fileName}${it ? ' → ' + code + ' · ' + it.label : ''}`, 'dil-file-upload')}
+  <section class="card dil-analyze">
+    <div class="dil-analyze-icon">
+      <div class="dil-analyze-spin"></div>
+      <span>🔎</span>
+    </div>
+    <h2>Reading and extracting fields</h2>
+    <p class="row-sub">Typically completes in 2-5 seconds. The findings load on the next screen.</p>
+    <ol class="dil-analyze-steps">
+      ${extracted.steps.map((s, i) => `<li class="dil-analyze-step dil-analyze-step-${i}"><span class="dil-analyze-check">✓</span>${s}</li>`).join('')}
+    </ol>
+    <div class="dil-analyze-meter">
+      <div class="dil-analyze-meter-fill"></div>
+    </div>
+  </section>
+  <div class="dil-form-actions">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-file-upload'})">Cancel</button>
+    <button class="btn btn-primary" onclick="window.setState({screen:'dil-file-review'})">Continue to review →</button>
+  </div>
+  <script>setTimeout(() => { if (window.state.screen === 'dil-file-analyze') window.setState({screen:'dil-file-review'}); }, 2600);</script>`;
+}
+
+// Screen: structured review of AI findings
+function renderDilFileReview() {
+  const code = state.dilUploadCode || '';
+  const fileName = state.dilUploadFileName || 'new_document.pdf';
+  const progs = dilProgramsForMga(state.dilMgaId);
+  const p = dilProg(state.dilProgramId) || progs[0];
+  const it = p ? p.items.find(i => i.code === code) : null;
+  const extracted = D.dilExtract(code);
+  const checks = D.dilValidateDoc(code);
+  const cross = D.dilCrossCheck(code);
+  const passed = checks.filter(c => c.status === 'pass').length;
+  const warns = checks.filter(c => c.status === 'warn').length;
+  const fails = checks.filter(c => c.status === 'fail').length;
+  const overallState = fails > 0 ? 'fail' : warns > 0 ? 'warn' : 'pass';
+  const overallLabel = fails > 0 ? 'Action required' : warns > 0 ? 'Review & accept' : 'Ready to commit';
+  const confidenceAvg = extracted.fields.length
+    ? Math.round(extracted.fields.reduce((a,f) => a + (f.confidence || 95), 0) / extracted.fields.length)
+    : 95;
+
+  return `
+  ${dilActionHeader('AI review — confirm before committing', `${fileName}${it ? ' → ' + code + ' · ' + it.label : ''}`, 'dil-file-upload')}
+
+  <section class="card dil-review-hero dil-review-hero-${overallState}">
+    <div class="dil-review-hero-left">
+      <div class="dil-review-hero-icon">${overallState==='pass' ? '✓' : overallState==='warn' ? '!' : '✕'}</div>
+      <div>
+        <h2>${overallLabel}</h2>
+        <p class="row-sub">${passed} check${passed===1?'':'s'} passed · ${warns} warning${warns===1?'':'s'}${fails?` · ${fails} failed`:''}. Overall extraction confidence ${confidenceAvg}%.</p>
+      </div>
+    </div>
+    <div class="dil-review-hero-right">
+      <span class="dil-review-match-label">Matched to</span>
+      <div class="dil-review-match-code">${code}</div>
+      <div class="row-sub">${it ? it.label : ''}</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <h3>What the AI extracted</h3>
+      <span class="row-sub">${extracted.summary}</span>
+    </div>
+    ${extracted.fields.length ? `
+    <div class="dil-extract-grid">
+      ${extracted.fields.map(f => `
+        <div class="dil-extract-field">
+          <div class="dil-extract-field-label">${f.label}</div>
+          <div class="dil-extract-field-value">${f.value}</div>
+          ${f.confidence != null ? `<div class="dil-extract-field-conf">confidence ${f.confidence}%</div>` : ''}
+          <button class="dil-extract-edit" title="Override">✎</button>
+        </div>`).join('')}
+    </div>` : `<p class="empty-state">No structured fields available for this item type. A reviewer will inspect this document manually.</p>`}
+  </section>
+
+  ${checks.length ? `
+  <section class="card">
+    <div class="card-header"><h3>Validation against ${code} requirements</h3><span class="row-sub">${passed}/${checks.length} passed</span></div>
+    <ul class="dil-check-list">
+      ${checks.map(c => `
+        <li class="dil-check-row dil-check-${c.status}">
+          <span class="dil-check-mark">${c.status === 'pass' ? '✓' : c.status === 'warn' ? '!' : '✕'}</span>
+          <div>
+            <div class="dil-check-label">${c.label}</div>
+            ${c.note ? `<div class="dil-check-note">${c.note}</div>` : ''}
+          </div>
+        </li>`).join('')}
+    </ul>
+  </section>` : ''}
+
+  ${cross.length ? `
+  <section class="card">
+    <div class="card-header"><h3>Cross-checks against other documents you've submitted</h3></div>
+    <ul class="dil-check-list">
+      ${cross.map(c => `
+        <li class="dil-check-row dil-check-${c.level === 'info' ? 'pass' : c.level}">
+          <span class="dil-check-mark">${c.level === 'info' ? '✓' : c.level === 'warn' ? '!' : '✕'}</span>
+          <div>
+            <div class="dil-check-label">${c.text}</div>
+            ${c.refs && c.refs.length ? `<div class="dil-check-note">Cross-refs: ${c.refs.map(r => `<code>${r}</code>`).join(' · ')}</div>` : ''}
+          </div>
+        </li>`).join('')}
+    </ul>
+  </section>` : ''}
+
+  <div class="dil-form-actions">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-file-upload'})">Cancel</button>
+    <button class="btn btn-ghost" onclick="window.setState({screen:'dil-file-upload'})">Upload a different file</button>
+    <button class="btn btn-primary" onclick="window.setState({screen:'dil-file-upload-result'})">Commit to data room</button>
+  </div>`;
+}
+
+function renderDilFileUploadResult() {
+  const code = state.dilUploadCode || '1.01.00';
+  const fileName = state.dilUploadFileName || 'new_document.pdf';
+  const extracted = D.dilExtract(code);
+  const category = dilCodeToCategory(code);
+  return `
+  ${dilActionHeader('Committed to data room', `${fileName} → ${code}`, 'dil-m-dataroom')}
+  <section class="card">
+    <div class="dil-result-hero">
+      <div class="dil-result-icon success">✓</div>
+      <div>
+        <h2>File accepted</h2>
+        <p class="row-sub">${extracted.summary}</p>
+      </div>
+    </div>
+    <div class="dil-upload-meta">
+      <div><strong>File:</strong> ${fileName}</div>
+      <div><strong>Tagged to:</strong> ${code}</div>
+      <div><strong>Status:</strong> ${D.DIL_STATUS_LABELS.received}</div>
+      <div><strong>Version:</strong> new upload</div>
+      <div><strong>Flags cleared:</strong> Missing, Stale</div>
+    </div>
+    <div class="dil-form-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-m-dataroom'})">Back to data room</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-m-wizard', dilWizardSection:'${category}', dilWizardItemCode:'${code}'})">Back to item in wizard →</button>
+    </div>
+  </section>`;
+}
+
+// ─── MGA: bulk upload ───
+function renderDilBulkUpload() {
+  return `
+  ${dilActionHeader('Bulk upload', 'Drop multiple files — each is auto-tagged to a diligence item.', 'dil-m-dataroom')}
+  <section class="card">
+    <div class="dil-upload-zone large" onclick="window.setState({screen:'dil-bulk-upload-queue'})">
+      <span class="dil-upload-icon">⬆️</span>
+      <p>Drop folder / files or click to select</p>
+      <small>Up to 50 files at once · each file's content is inspected to infer the target item</small>
+    </div>
+    <div class="dil-upload-meta">
+      <div><strong>How it works:</strong> filename and first page are read; items are matched on keyword + document fingerprint.</div>
+      <div><strong>Unsure matches:</strong> shown in a review queue before they are committed.</div>
+    </div>
+  </section>`;
+}
+
+function renderDilBulkUploadQueue() {
+  const sample = [
+    { file: 'new_uw_guidelines_v5.3.pdf',         matched: '5.01.00', label: 'Underwriting guidelines (incl. submission requirements)',     conf: 98, action: 'replace v5.2' },
+    { file: 'march_premium_bordereau.xlsx',       matched: '1.07.00', label: 'Sample premium bordereaux',                                    conf: 97, action: 'replace v1' },
+    { file: 'complaint_log_2026_q1.xlsx',         matched: '2.08.00', label: 'Consumer complaint procedures + complaint log',                conf: 94, action: 'new upload' },
+    { file: 'monthly_gwp_forecast_2026-2028.xlsx',matched: '5.10.00', label: '3-year GWP forecast (monthly breakout)',                      conf: 93, action: 'replace v1' },
+    { file: 'loss_run_2026-03-31.xlsx',           matched: '6.08.00', label: 'Currently-valued detailed loss run',                           conf: 96, action: 'replace v1' },
+    { file: 'WorksheetB.pdf',                     matched: null,      label: 'Unable to classify — needs manual mapping',                    conf: 34, action: 'manual' }
+  ];
+  return `
+  ${dilActionHeader('Upload queue — review and commit', `${sample.length} files ready`, 'dil-m-dataroom')}
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>File</th><th>Matched item</th><th>Confidence</th><th>Action</th><th></th></tr></thead>
+        <tbody>
+          ${sample.map(s => `
+            <tr>
+              <td><strong>📄 ${s.file}</strong></td>
+              <td>${s.matched ? `<code>${s.matched}</code> — ${s.label}` : `<span class="dil-status-pill pending">unmatched</span><div class="row-sub">${s.label}</div>`}</td>
+              <td>${s.conf < 60 ? badge('red', s.conf+'%') : s.conf < 85 ? badge('yellow', s.conf+'%') : badge('green', s.conf+'%')}</td>
+              <td class="row-sub">${s.action}</td>
+              <td>${s.matched ? '' : `<button class="btn btn-ghost btn-sm" onclick="window.setState({screen:'dil-file-upload'})">Assign manually</button>`}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="dil-form-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-m-dataroom'})">Cancel</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-bulk-upload-committed'})">Commit ${sample.filter(s => s.matched).length} matched files</button>
+    </div>
+  </section>`;
+}
+
+function renderDilBulkUploadCommitted() {
+  return `
+  ${dilActionHeader('Bulk upload committed', '5 files added to the data room and tagged to diligence items.', 'dil-m-dataroom')}
+  <section class="card">
+    <div class="dil-result-hero">
+      <div class="dil-result-icon success">✓</div>
+      <div>
+        <h2>5 files committed, 0 rejected</h2>
+        <p class="row-sub">1 unmatched file remains in the queue — open the Data Room to map it manually.</p>
+      </div>
+    </div>
+    <div class="dil-form-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-m-scorecard'})">See readiness scorecard</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-m-dataroom'})">Back to data room</button>
+    </div>
+  </section>`;
+}
+
+// ─── MGA: submission gate + submit confirmation ───
+function renderDilSubmitBlocked() {
+  const progs = dilProgramsForMga(state.dilMgaId);
+  const p = dilProg(state.dilProgramId) || progs.find(x => x.status === 'draft') || progs[0];
+  const highMissing = p.items.filter(i => i.priority === 'H' && i.status !== 'received' && i.status !== 'na');
+  return `
+  ${dilActionHeader('Submission gate — blocked', `${p.programName} · readiness ${dilCompleteness(p)}%`, 'dil-m-scorecard')}
+  <section class="card dil-missing-card">
+    <div class="card-header"><h3>🚨 ${highMissing.length} high-priority item${highMissing.length===1?'':'s'} must be resolved before submission</h3></div>
+    <p>The carrier will reject a submission without these. Fix the items below and the submit gate will open automatically.</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Code</th><th>Requirement</th><th>Category</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${highMissing.map(it => `
+            <tr>
+              <td><code>${it.code}</code></td>
+              <td><strong>${it.label}</strong></td>
+              <td class="row-sub">${dilCat(it.category).label}</td>
+              <td><span class="dil-status-pill ${it.status}">${dilStatusLabel(it.status)}</span></td>
+              <td><button class="btn btn-primary btn-sm" onclick="window.setState({screen:'dil-m-wizard', dilWizardSection:'${it.category}'})">Resolve</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function renderDilSubmitConfirm() {
+  const progs = dilProgramsForMga(state.dilMgaId);
+  const p = dilProg(state.dilProgramId) || progs[0];
+  const car = dilCar(p.carrierId);
+  return `
+  ${dilActionHeader('Submission sent', `${p.programName} → ${car.name}`, 'dil-m-dashboard')}
+  <section class="card">
+    <div class="dil-result-hero">
+      <div class="dil-result-icon success">📤</div>
+      <div>
+        <h2>Submission received by ${car.name}</h2>
+        <p class="row-sub">The program is now in their Triage Queue. Their program lead is notified, and diligence routing will happen within 1 business day.</p>
+      </div>
+    </div>
+    <h3>What happens next</h3>
+    <ul class="dil-timeline-ordered">
+      <li><strong>1. Triage (&lt; 1 business day)</strong> — the carrier decides whether to accept into full diligence, request more info, or decline at triage.</li>
+      <li><strong>2. Diligence routing</strong> — accepted submissions are split across Program, Compliance, Claims, Finance, Underwriting, and Actuarial reviewers.</li>
+      <li><strong>3. Follow-ups</strong> — any questions come through the Q&amp;A Center pinned to the exact item.</li>
+      <li><strong>4. Decision</strong> — typical cycle: 3-6 weeks for a first-program decision.</li>
+    </ul>
+    <div class="dil-form-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-m-dashboard'})">Go to dashboard</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-m-program', dilProgramId:'${p.id}'})">View submission</button>
+    </div>
+  </section>`;
+}
+
+// ─── MGA: Mark an item N/A ───
+function renderDilMarkNA() {
+  const code = state.dilNACode || '';
+  return `
+  ${dilActionHeader('Mark as Not Applicable', `Diligence item ${code}`, 'dil-m-wizard')}
+  <section class="card">
+    <p>Explain why this item is not applicable to your program. The carrier reviewer will see your justification and may accept, reject, or ask for clarification.</p>
+    <label class="dil-form-label">Justification
+      <textarea class="dil-answer-area" placeholder="e.g. This program is non-admitted only; admitted-only producer-appointment procedures do not apply."></textarea>
+    </label>
+    <div class="dil-form-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-m-wizard'})">Cancel</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-m-wizard'})">Mark N/A and return</button>
+    </div>
+  </section>`;
+}
+
+// ─── Carrier: invite MGA ───
+function renderDilInviteMga() {
+  return `
+  ${dilActionHeader('Invite an MGA to submit a program', 'Send a secure submission link to an MGA you want to evaluate.', 'dil-c-pipeline')}
+  <section class="card">
+    <div class="dil-form">
+      <label>MGA legal entity
+        <input type="text" placeholder="e.g. Quantana Underwriters LLC" />
+      </label>
+      <label>Primary contact email
+        <input type="email" placeholder="priya@quantana-mga.com" />
+      </label>
+      <label>Program target LOB
+        <select>
+          <option>Commercial Auto</option><option>General Liability</option><option>Workers Compensation</option>
+          <option>Property</option><option>Professional Liability</option><option>Cyber</option><option>D&amp;O</option>
+        </select>
+      </label>
+      <label>Suggested target effective date
+        <input type="date" />
+      </label>
+      <label style="grid-column:1 / -1">Short note to the MGA (optional)
+        <textarea class="dil-answer-area" placeholder="We've seen your book in this class — would like to evaluate a program partnership."></textarea>
+      </label>
+    </div>
+  </section>
+  <section class="card">
+    <h3>What the MGA will receive</h3>
+    <div class="dil-email-preview">
+      <div class="dil-email-from"><strong>From:</strong> Acme National Insurance &lt;programs@acmenational.com&gt;</div>
+      <div class="dil-email-subj"><strong>Subject:</strong> Program submission invitation — Acme National Insurance</div>
+      <div class="dil-email-body">
+        <p>Hello,</p>
+        <p>Our program team would like to evaluate a delegated-authority program with you. Use the secure link below to build your submission on our shared diligence platform.</p>
+        <p><a href="#">[ Open Diligence submission → ]</a></p>
+        <p class="row-sub">Link expires in 14 days.</p>
+      </div>
+    </div>
+  </section>
+  <div class="dil-form-actions">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-pipeline'})">Cancel</button>
+    <button class="btn btn-primary" onclick="window.setState({screen:'dil-invite-sent'})">Send invite →</button>
+  </div>`;
+}
+
+function renderDilInviteSent() {
+  return `
+  ${dilActionHeader('Invite sent', 'The MGA will see an email with a secure submission link.', 'dil-c-pipeline')}
+  <section class="card">
+    <div class="dil-result-hero">
+      <div class="dil-result-icon success">✉</div>
+      <div>
+        <h2>Invitation delivered</h2>
+        <p class="row-sub">When the MGA begins a submission, it will appear in your Pipeline under "New / Triage."</p>
+      </div>
+    </div>
+    <div class="dil-form-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-invite'})">Send another</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-pipeline'})">Back to pipeline</button>
+    </div>
+  </section>`;
+}
+
+// ─── Carrier: triage decisions ───
+function renderDilTriageRMI() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  const p = dilProg(state.dilProgramId) || all[0];
+  return `
+  ${dilActionHeader('Request more info before review', `${p.programName} · ${dilMga(p.mgaId).name}`, 'dil-c-triage')}
+  <section class="card">
+    <p>The submission will bounce back to the MGA with your list of missing or unclear items. Diligence routing is paused until they resolve the gaps.</p>
+    <label class="dil-form-label">Items you need before starting diligence (comma-separated codes, or free text)
+      <textarea class="dil-answer-area" placeholder="e.g. 1.06.00, 5.10.00 — need monthly GWP forecast, not annual."></textarea>
+    </label>
+    <label class="dil-form-label">Note to the MGA (optional)
+      <textarea class="dil-answer-area" placeholder="We can start diligence as soon as the items above are refreshed."></textarea>
+    </label>
+  </section>
+  <div class="dil-form-actions">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-triage'})">Cancel</button>
+    <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-triage-rmi-sent'})">Send request →</button>
+  </div>`;
+}
+
+function renderDilTriageRMISent() {
+  return `
+  ${dilActionHeader('Request sent', 'Program returned to MGA for updates.', 'dil-c-pipeline')}
+  <section class="card">
+    <div class="dil-result-hero">
+      <div class="dil-result-icon success">⟲</div>
+      <div>
+        <h2>Submission bounced back to MGA</h2>
+        <p class="row-sub">The MGA sees your items as Q&amp;A requests pinned to each diligence code. When they resolve them, the submission comes back to triage automatically.</p>
+      </div>
+    </div>
+    <div class="dil-form-actions">
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-pipeline'})">Back to pipeline</button>
+    </div>
+  </section>`;
+}
+
+function renderDilTriageDecline() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  const p = dilProg(state.dilProgramId) || all[0];
+  return `
+  ${dilActionHeader('Decline at triage', `${p.programName} · ${dilMga(p.mgaId).name}`, 'dil-c-triage')}
+  <section class="card">
+    <p>Triage declines are non-reversible. The MGA is notified with your reason and the submission moves to the Declined bucket.</p>
+    <label class="dil-form-label">Reason category
+      <select>
+        <option>Outside appetite</option>
+        <option>Pricing / rate adequacy</option>
+        <option>Loss history insufficient</option>
+        <option>MGA capacity / staffing concerns</option>
+        <option>Regulatory / licensing gap</option>
+        <option>Other</option>
+      </select>
+    </label>
+    <label class="dil-form-label">Detailed reason to share with the MGA
+      <textarea class="dil-answer-area" placeholder="Be specific — the MGA will use this to decide whether to re-approach in 12 months."></textarea>
+    </label>
+  </section>
+  <div class="dil-form-actions">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-triage'})">Cancel</button>
+    <button class="btn btn-ghost dil-danger" onclick="window.setState({screen:'dil-c-triage-decline-sent'})">Decline and close</button>
+  </div>`;
+}
+
+function renderDilTriageDeclineSent() {
+  return `
+  ${dilActionHeader('Decline recorded', 'MGA notified, submission moved to Declined.', 'dil-c-pipeline')}
+  <section class="card">
+    <div class="dil-result-hero">
+      <div class="dil-result-icon neutral">✕</div>
+      <div>
+        <h2>Submission declined</h2>
+        <p class="row-sub">The full reason history is retained in the program's activity timeline for future reference.</p>
+      </div>
+    </div>
+    <div class="dil-form-actions">
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-pipeline'})">Back to pipeline</button>
+    </div>
+  </section>`;
+}
+
+// ─── Carrier: memo export ───
+function renderDilMemoExport() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  const p = dilProg(state.dilProgramId) || all[0];
+  return `
+  ${dilActionHeader('Export decision memo', `${p.programName}`, 'dil-c-memo')}
+  <section class="card">
+    <p>Choose what to include in the PDF export. Memos can be shared with committee members, reinsurance partners, or retained for audit.</p>
+    <div class="dil-export-options">
+      <label class="dil-check"><input type="checkbox" checked/> Executive summary</label>
+      <label class="dil-check"><input type="checkbox" checked/> Category flags (R/Y/G)</label>
+      <label class="dil-check"><input type="checkbox" checked/> Open items by priority</label>
+      <label class="dil-check"><input type="checkbox" checked/> Reviewer progress</label>
+      <label class="dil-check"><input type="checkbox"/> Full activity timeline</label>
+      <label class="dil-check"><input type="checkbox"/> Linked artifact list</label>
+    </div>
+  </section>
+  <div class="dil-form-actions">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-memo'})">Cancel</button>
+    <button class="btn btn-primary" onclick="window.setState({screen:'dil-memo-exported'})">Generate PDF →</button>
+  </div>`;
+}
+
+function renderDilMemoExported() {
+  return `
+  ${dilActionHeader('Memo generated', 'PDF is ready to download.', 'dil-c-memo')}
+  <section class="card">
+    <div class="dil-result-hero">
+      <div class="dil-result-icon success">📄</div>
+      <div>
+        <h2>diligence_memo_2026-04-23.pdf</h2>
+        <p class="row-sub">18 pages · 2.4 MB · watermarked "Confidential — for Committee use only"</p>
+      </div>
+    </div>
+    <div class="dil-form-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-memo'})">Back to memo</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-memo'})">Download</button>
+    </div>
+  </section>`;
+}
+
+// ─── Carrier: decision screens ───
+function renderDilDecisionDecline() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  const p = dilProg(state.dilProgramId) || all[0];
+  return `
+  ${dilActionHeader('Decline program', `${p.programName} · ${dilMga(p.mgaId).name}`, 'dil-c-memo')}
+  <section class="card">
+    <p>Post-diligence declines should reference specific gating items. The reason will appear in the MGA's activity timeline and the program's decline bucket.</p>
+    <label class="dil-form-label">Reason category
+      <select>
+        <option>Rate / pricing adequacy</option>
+        <option>Loss history concerns</option>
+        <option>Gaps in UW / claims controls</option>
+        <option>Financial strength / projections</option>
+        <option>Compliance / licensing</option>
+        <option>Program economics</option>
+        <option>Other</option>
+      </select>
+    </label>
+    <label class="dil-form-label">Detail (shared with MGA)
+      <textarea class="dil-answer-area" placeholder="Describe the specific gap or concern. Reference diligence item codes where relevant (e.g. 6.02.00 rate benchmark below target)."></textarea>
+    </label>
+    <label class="dil-form-label">Internal note (not shared)
+      <textarea class="dil-answer-area" placeholder="Optional — any internal reasoning, whether to reconsider in future."></textarea>
+    </label>
+  </section>
+  <div class="dil-form-actions">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-memo'})">Cancel</button>
+    <button class="btn btn-ghost dil-danger" onclick="window.setState({screen:'dil-decision-declined'})">Record decline</button>
+  </div>`;
+}
+
+function renderDilDecisionDeclined() {
+  return `
+  ${dilActionHeader('Decline recorded', 'The MGA has been notified.', 'dil-c-pipeline')}
+  <section class="card">
+    <div class="dil-result-hero"><div class="dil-result-icon neutral">✕</div>
+      <div><h2>Program moved to Declined</h2>
+        <p class="row-sub">The decline reason is visible to the MGA and retained on the program timeline.</p>
+      </div>
+    </div>
+    <div class="dil-form-actions">
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-pipeline'})">Back to pipeline</button>
+    </div>
+  </section>`;
+}
+
+function renderDilDecisionRMI() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  const p = dilProg(state.dilProgramId) || all[0];
+  return `
+  ${dilActionHeader('Request more information', `${p.programName}`, 'dil-c-memo')}
+  <section class="card">
+    <p>This pauses your reviewers and feeds back to the MGA's Q&amp;A Center. Any items you mark below will appear as open questions pinned to the item code.</p>
+    <label class="dil-form-label">Items that need more information (one per line)
+      <textarea class="dil-answer-area" style="min-height: 160px;" placeholder="6.08.00 — loss run refresh to 2026-03-31&#10;5.10.00 — monthly GWP breakout, not annual&#10;1.06.00 — latest DR test report"></textarea>
+    </label>
+    <label class="dil-form-label">Overall note to MGA
+      <textarea class="dil-answer-area"></textarea>
+    </label>
+  </section>
+  <div class="dil-form-actions">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-memo'})">Cancel</button>
+    <button class="btn btn-primary" onclick="window.setState({screen:'dil-decision-rmi-sent'})">Send to MGA</button>
+  </div>`;
+}
+
+function renderDilDecisionRMISent() {
+  return `
+  ${dilActionHeader('Request sent', 'MGA has been notified; program stays in Diligence.', 'dil-c-pipeline')}
+  <section class="card">
+    <div class="dil-result-hero"><div class="dil-result-icon success">⟲</div>
+      <div><h2>Ball is in the MGA's court</h2>
+        <p class="row-sub">When the MGA responds, the program automatically moves back to active Diligence for you.</p>
+      </div>
+    </div>
+    <div class="dil-form-actions">
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-pipeline'})">Back to pipeline</button>
+    </div>
+  </section>`;
+}
+
+function renderDilDecisionTermSheet() {
+  const all = dilProgramsForCarrier(state.dilCarrierId);
+  const p = dilProg(state.dilProgramId) || all[0];
+  return `
+  ${dilActionHeader('Issue term sheet', `${p.programName}`, 'dil-c-memo')}
+  <section class="card">
+    <h3>Draft term sheet</h3>
+    <div class="dil-termsheet-grid">
+      <label>Effective date <input type="date" value="${p.targetEffective || ''}"/></label>
+      <label>Capacity allocation <input type="text" placeholder="$25M GWP Year 1"/></label>
+      <label>MGA commission <input type="text" placeholder="22% fixed + slide to 28% at 50% LR"/></label>
+      <label>Profit share trigger <input type="text" placeholder="Above 65% combined, 20% of margin to MGA"/></label>
+      <label>Ceded reinsurance <input type="text" placeholder="50% QS to Swiss Re"/></label>
+      <label>Binding authority limits <input type="text" placeholder="$1M per risk, $2M with referral"/></label>
+      <label>Claims authority <input type="text" placeholder="Up to $250K in-house; above to carrier"/></label>
+      <label>Reporting cadence <input type="text" placeholder="Premium + claims bordereau monthly, financial statements quarterly"/></label>
+      <label style="grid-column:1/-1">Covenants and conditions <textarea class="dil-answer-area" placeholder="Key-person insurance, audit rights, minimum rate filings completed pre-bind, quarterly compliance attestation..."></textarea></label>
+    </div>
+  </section>
+  <div class="dil-form-actions">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-memo'})">Cancel</button>
+    <button class="btn btn-primary" onclick="window.setState({screen:'dil-decision-ts-sent'})">Issue term sheet to MGA</button>
+  </div>`;
+}
+
+function renderDilDecisionTermSheetSent() {
+  return `
+  ${dilActionHeader('Term sheet issued', 'MGA has 10 business days to accept, counter, or decline.', 'dil-c-pipeline')}
+  <section class="card">
+    <div class="dil-result-hero"><div class="dil-result-icon success">📑</div>
+      <div><h2>Term sheet sent to MGA</h2>
+        <p class="row-sub">On acceptance, the program advances to Committee (if required) and then Implementation.</p>
+      </div>
+    </div>
+    <div class="dil-form-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-committee'})">Go to Committee</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-pipeline'})">Back to pipeline</button>
+    </div>
+  </section>`;
+}
+
+// ─── Carrier: committee vote + implementation ───
+function renderDilVoteCast() {
+  return `
+  ${dilActionHeader('Vote cast', 'Committee vote recorded.', 'dil-c-committee')}
+  <section class="card">
+    <div class="dil-result-hero"><div class="dil-result-icon success">✓</div>
+      <div><h2>3 of 3 approvals — program advances to Implementation</h2>
+        <p class="row-sub">Onboarding tasks have been auto-generated from approved diligence items.</p>
+      </div>
+    </div>
+    <div class="dil-form-actions">
+      <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-committee'})">Back to committee</button>
+      <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-impl', dilProgramId:'PRG-04'})">Open Implementation</button>
+    </div>
+  </section>`;
+}
+
+function renderDilImplTaskAdd() {
+  return `
+  ${dilActionHeader('Add implementation task', 'Tasks appear on the onboarding checklist.', 'dil-c-impl')}
+  <section class="card">
+    <div class="dil-form">
+      <label>Task <input type="text" placeholder="e.g. Executed DUA + schedules" /></label>
+      <label>Owner <select><option>Carrier</option><option>MGA</option><option>Joint</option><option>IT</option></select></label>
+      <label>Due date <input type="date"/></label>
+      <label>Priority <select><option>High</option><option>Medium</option><option>Low</option></select></label>
+      <label style="grid-column:1/-1">Description
+        <textarea class="dil-answer-area" placeholder="What the owner needs to do and any dependencies."></textarea>
+      </label>
+    </div>
+  </section>
+  <div class="dil-form-actions">
+    <button class="btn btn-secondary" onclick="window.setState({screen:'dil-c-impl'})">Cancel</button>
+    <button class="btn btn-primary" onclick="window.setState({screen:'dil-c-impl'})">Add task</button>
+  </div>`;
+}
+
+// Helper — map a code to its category id for wizard navigation
+function dilCodeToCategory(code) {
+  const item = D.DIL_ITEMS_TEMPLATE.find(t => t.code === code);
+  return item ? item.category : 'program';
+}
+
+// Status pill label (Missing / Accepted / Needs revision / Not applicable) — shows the carrier-diligence vocabulary
+function dilStatusLabel(status) {
+  return (D.DIL_STATUS_LABELS && D.DIL_STATUS_LABELS[status]) || status;
+}
+
+// Compact variant used inside the wizard row list
+function dilStatusLabelShort(status) {
+  const short = { pending: 'Missing', received: 'Accepted', 'follow-up': 'Needs rev.', na: 'N/A' };
+  return short[status] || dilStatusLabel(status);
+}
+
+// ─── Bindings ───
+function bindDiligence() {
+  // Role picker
+  $$('.dil-role-card').forEach(card => {
+    card.addEventListener('click', () => {
+      setState({ dilRole: card.dataset.dilrole, screen: card.dataset.dilrole === 'mga' ? 'dil-m-dashboard' : 'dil-c-pipeline' });
+    });
+  });
+
+  // Top bar role switch
+  $$('.dil-role-switch .sr-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const r = btn.dataset.dilrole;
+      setState({ dilRole: r, screen: r === 'mga' ? 'dil-m-dashboard' : 'dil-c-pipeline' });
+    });
+  });
+
+  // Exit to portal selector
+  const exitBtn = $('#dil-exit');
+  if (exitBtn) exitBtn.addEventListener('click', () => setState({ portal: null, dilRole: null, screen: 'dashboard' }));
+
+  // Sidebar
+  $$('.dil-side-nav .side-nav-item').forEach(item => {
+    item.addEventListener('click', () => setState({ screen: item.dataset.screen }));
+  });
+
+  // Guided wizard — category stepper, filter chips, item rows
+  $$('.dil-wz-cat').forEach(btn => {
+    btn.addEventListener('click', () => setState({ dilWizardSection: btn.dataset.section, dilWizardItemCode: null }));
+  });
+  $$('.dil-wz-chip').forEach(btn => {
+    btn.addEventListener('click', () => setState({ dilWizardFilter: btn.dataset.filter, dilWizardItemCode: null }));
+  });
+  $$('.dil-wz-row').forEach(row => {
+    row.addEventListener('click', () => setState({ dilWizardItemCode: row.dataset.code }));
+  });
+
+  // Directory filters
+  const lobSel   = $('#dil-dir-lob');
+  const stateSel = $('#dil-dir-state');
+  const query    = $('#dil-dir-query');
+  if (lobSel)   lobSel.addEventListener('change',   () => setState({ dilDirFilters: { ...state.dilDirFilters, lob: lobSel.value } }));
+  if (stateSel) stateSel.addEventListener('change', () => setState({ dilDirFilters: { ...state.dilDirFilters, state: stateSel.value } }));
+  if (query)    query.addEventListener('input',      () => setState({ dilDirFilters: { ...state.dilDirFilters, query: query.value } }));
+}
+
 // ─── Boot ───
 render();
-
-
-
 
 
 
